@@ -1,0 +1,12 @@
+[
+  {"id": "ann-01", "name": "Priya Nair", "active": true},
+  {"id": "ann-02", "name": "Tom Becker", "active": "yes"},
+  {"id": "Ann-03", "name": "Lin Zhao", "active": 1},
+  {"id": "ann-04", "name": "Sam Ortiz", "active": true},
+  {"id": "ann-05", "name": "Ola Bakare", "active": "true"},
+  {"id": " ann-06", "name": "Raj Mehta", "active": "TRUE"},
+  {"id": "ann-07", "name": "Mei Tanaka"},
+  {"id": "ann-08", "name": "Kofi Mensah", "active": "false"},
+  {"id": "ann-09", "name": "Zoe Martin", "active": "no"},
+  {"id": "ann-10", "name": "Ivy Chen", "active": 0}
+]

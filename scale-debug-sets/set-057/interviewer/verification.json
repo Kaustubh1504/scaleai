@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_adjudication"
+    ],
+    "failures": {
+      "tests.test_1_adjudication.TestAdjudication.test_legacy_tool_offsets": "AssertionError: Lists differ: [[13, 17, 'LOC', 'Pari'], [37, 43, 'DATE', '12 Jun']] != [[13, 18, 'LOC', 'Paris'], [22, 26, 'LOC', 'Lima'], [37, 44, 'DATE', '12 June']]\n\nFirst differing element 0:\n[13, 17, 'LOC', 'Pari']\n[13, 18, 'LOC', 'Paris']\n\nSecond list contains 1 additional elements.\nFirst extra element 2:\n[37, 44, 'DATE', '12 June']\n\n- [[13, 17, 'LOC', 'Pari'], [37, 43, 'DATE', '12 Jun']]\n?        ^                        ^\n\n+ [[13, 18, 'LOC', 'Paris'], [22, 26, 'LOC', 'Lima'], [37, 44, 'DATE', '12 June']]\n?        ^              +   +++++++++++++++++++++++++       ^                 +\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_adjudication"
+    ],
+    "failures": {
+      "tests.test_1_adjudication.TestAdjudication.test_overlapping_spans": "AssertionError: Lists differ: [[4, 10, 'PER', 'Morgan'], [29, 35, 'LOC', 'Bos[27 chars]19']] != [[4, 18, 'ORG', 'Morgan Stanley'], [29, 35, 'LO[35 chars]19']]\n\nFirst differing element 0:\n[4, 10, 'PER', 'Morgan']\n[4, 18, 'ORG', 'Morgan Stanley']\n\n- [[4, 10, 'PER', 'Morgan'], [29, 35, 'LOC', 'Boston'], [46, 50, 'DATE', '2019']]\n+ [[4, 18, 'ORG', 'Morgan Stanley'],\n+  [29, 35, 'LOC', 'Boston'],\n+  [46, 50, 'DATE', '2019']]"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_summary"
+    ],
+    "failures": {
+      "tests.test_2_summary.TestSummary.test_named_entities": "AssertionError: 14 != 6"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_adjudication",
+      "test_2_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_adjudication.TestAdjudication.test_legacy_tool_offsets",
+      "tests.test_1_adjudication.TestAdjudication.test_overlapping_spans",
+      "tests.test_2_summary.TestSummary.test_named_entities"
+    ]
+  }
+}

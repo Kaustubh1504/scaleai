@@ -1,0 +1,186 @@
+{
+  "id": "set-008",
+  "title": "Vendor roster ingestion with cross-file dedupe",
+  "domain": "data_ingestion_dedupe",
+  "length": "FULL",
+  "difficulty": "easy",
+  "format": "one_to_one",
+  "package": "rosterload",
+  "scenario": "Read three vendor roster exports (two CSVs, one with a BOM, and a JSON file), validate and clean each row, merge duplicate contributors by email with a latest-update-wins rule, and summarise loads and rejections.",
+  "verified": [
+    {
+      "file": "rosterload/dedupe.py",
+      "symbol": "newer",
+      "why_correct": "The `>=` looks like it lets an older row win, but the tuple includes the read order, so it only matters on an exact tie, where README rule 13 says the later row wins (femi: vendor_b replaces vendor_a)."
+    },
+    {
+      "file": "rosterload/normalize.py",
+      "symbol": "parse_date",
+      "why_correct": "It accepts exactly the three formats in README rule 4 and raises RowError (a ValueError) otherwise, so bad dates become invalid_value."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "BOM kept in the first header",
+      "type": "csv-bom-encoding",
+      "file": "rosterload/readers.py",
+      "function": "read_csv",
+      "test": "test_1_records.TestRecords.test_lineage",
+      "old": "    with open(path, newline=\"\", encoding=\"utf-8-sig\") as fh:",
+      "new": "    with open(path, newline=\"\", encoding=\"utf-8\") as fh:",
+      "symptom": "Test 1 test_lineage: every vendor_a source loses its reference ('vendor_a:' instead of 'vendor_a:A-101', 'vendor_a:A-102', 'vendor_a:A-110').",
+      "why": "vendor_a.csv starts with a UTF-8 BOM. Decoded as plain utf-8, the BOM stays glued to the first header, so the column is `\\ufeffsource_ref` and `row.get('source_ref')` finds nothing for every vendor_a row. `.strip()` does not remove U+FEFF.",
+      "unblocks": "test_1_records.TestRecords.test_lineage.",
+      "hints": [
+        "Only vendor_a sources lose their reference. What is different about that file?",
+        "Print the column names read_csv sees for vendor_a.csv.",
+        "Open CSVs with encoding=\"utf-8-sig\"."
+      ],
+      "probes": [
+        "Why didn't `str.strip()` in _norm_keys clean the header?",
+        "Why were all the other vendor_a columns fine?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Merged skills keep repeats",
+      "type": "missing-dedupe",
+      "file": "rosterload/dedupe.py",
+      "function": "merge_duplicates",
+      "test": "test_1_records.TestRecords.test_skills",
+      "old": "        out[\"skills\"] = sorted({s for rec in group for s in rec[\"skills\"]})",
+      "new": "        out[\"skills\"] = sorted(s for rec in group for s in rec[\"skills\"])",
+      "symptom": "Test 1 test_skills: merged contributors repeat skills, e.g. asha ['python', 'python', 'spark', 'sql'] and ben ['nlp', 'nlp', 'nlp', 'python', 'sql']. kai (never merged) is fine.",
+      "why": "The set comprehension was turned into a generator, so the union keeps every copy of a skill that appears in more than one row. Records that were never merged are fine because parse_skills already dedupes each row.",
+      "unblocks": "test_1_records.TestRecords.test_skills.",
+      "hints": [
+        "Only merged contributors have repeated skills. Where are rows combined?",
+        "Look at how merge_duplicates builds skills.",
+        "Use a set comprehension `{...}` inside sorted()."
+      ],
+      "probes": [
+        "Why does kai@lab.io pass even with the bug?",
+        "What is the difference between `sorted({...})` and `sorted(...)` here?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Defaults copied shallowly",
+      "type": "aliasing-shallow-copy",
+      "file": "rosterload/normalize.py",
+      "function": "build_record",
+      "test": "test_2_cleaning.TestCleaning.test_notes",
+      "old": "    record = copy.deepcopy(DEFAULTS)",
+      "new": "    record = dict(DEFAULTS)",
+      "symptom": "Test 2 test_notes: all 16 records have notes, and every record shows the same long list of name_from_email / rate_missing entries collected from every row.",
+      "why": "`dict(DEFAULTS)` copies the outer dict only; every record's `notes` is the same list object as `DEFAULTS[\"notes\"]`. Each `append` lands in that one list, so every record shows every note from every row.",
+      "unblocks": "test_2_cleaning.TestCleaning.test_notes.",
+      "hints": [
+        "Every record has the same long notes list. Where is each record's notes list created?",
+        "Look at how build_record starts a new record from DEFAULTS.",
+        "Use copy.deepcopy(DEFAULTS) (or build fresh lists)."
+      ],
+      "probes": [
+        "Why are `skills` and `sources` unaffected even though DEFAULTS has a list for skills too?",
+        "What does `DEFAULTS[\"notes\"]` contain after a run with the shallow copy?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Day rate floor-divided",
+      "type": "integer-division",
+      "file": "rosterload/normalize.py",
+      "function": "parse_rate",
+      "test": "test_2_cleaning.TestCleaning.test_rates",
+      "old": "        rate = float(text[: -len(\"/day\")]) / 8",
+      "new": "        rate = float(text[: -len(\"/day\")]) // 8",
+      "symptom": "Test 2 test_rates: kai@lab.io has 19.0 instead of 19.5. Every other rate is right.",
+      "why": "`//` is floor division even on floats: 156.0 // 8 is 19.0, not 19.5. Only kai's rate is written as a day rate.",
+      "unblocks": "test_2_cleaning.TestCleaning.test_rates.",
+      "hints": [
+        "Only kai@lab.io's rate is off, by half a unit. How is it written in vendor_b.csv?",
+        "Look at the `/day` branch of parse_rate.",
+        "Use true division: `/ 8`."
+      ],
+      "probes": [
+        "What type does `156.0 // 8` return, and why is the float type no protection here?",
+        "Why does rounding to 2 decimals not hide this?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Reason lookup checks the base class first",
+      "type": "exception-order",
+      "file": "rosterload/pipeline.py",
+      "function": "ingest",
+      "test": "test_3_summary.TestSummary.test_rejected_by_reason",
+      "old": "REASONS = [(MissingField, \"missing_field\"), (ValueError, \"invalid_value\")]",
+      "new": "REASONS = [(ValueError, \"invalid_value\"), (MissingField, \"missing_field\")]",
+      "symptom": "Test 3 test_rejected_by_reason: {'invalid_value': 8} instead of {'invalid_value': 5, 'missing_field': 3}.",
+      "why": "MissingField is a subclass of RowError, which is a ValueError. The lookup takes the first class the exception is an instance of, so with ValueError first every missing-email row is labelled invalid_value. The rows are still rejected, which is why only the summary changes.",
+      "unblocks": "test_3_summary.TestSummary.test_rejected_by_reason.",
+      "hints": [
+        "No row is reported as missing_field, yet three rows have no email. Where is the reason chosen?",
+        "Look at the order of REASONS and the class hierarchy in schema.py.",
+        "Put (MissingField, \"missing_field\") before (ValueError, \"invalid_value\")."
+      ],
+      "probes": [
+        "How is this the same mistake as ordering `except ValueError:` before `except MissingField:`?",
+        "Why does test_rejected_rows pass with this bug?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Country aliases looked up before upper-casing",
+      "type": "id-normalization",
+      "file": "rosterload/schema.py",
+      "function": "norm_country",
+      "test": "test_3_summary.TestSummary.test_countries",
+      "old": "    code = str(raw or \"\").strip().upper()",
+      "new": "    code = str(raw or \"\").strip()",
+      "symptom": "Test 3 test_countries: keys such as 'us', 'uk', 'india', 'United States', 'ca', 'se' appear next to US/GB/IN, and US drops to 3.",
+      "why": "COUNTRY_ALIASES keys are upper-case. Without `.upper()`, mixed-case values such as `us`, `uk`, `india` and `United States` miss the alias table and are kept as written.",
+      "unblocks": "test_3_summary.TestSummary.test_countries.",
+      "hints": [
+        "The countries summary has lower-case and long-form keys. Where are country values cleaned?",
+        "Look at norm_country in schema.py.",
+        "Upper-case the code before the alias lookup."
+      ],
+      "probes": [
+        "Why did `USA` (quinn) still map to US?",
+        "Why did vik end up as UNKNOWN either way?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What is the flow inside build_report()?",
+      "a": "`pipeline.ingest` walks `data/` in file-name order, reads each `.csv`/`.json` with `readers.read_export`, turns each row into a record with `normalize.build_record` (or a rejection entry), and then calls `dedupe.merge_duplicates`. `report.build_report` keeps a fixed set of fields per record and builds the summary Counters."
+    },
+    {
+      "q": "What do the rows returned by read_export look like?",
+      "a": "A list of dicts keyed by the column names after `str(k).strip().lower()`. Values are left as read: strings from CSV, and strings, numbers or None from JSON."
+    },
+    {
+      "q": "How does ingest pick the rejection reason?",
+      "a": "Any ValueError raised by build_record is caught, and the reason is the label of the first `(class, label)` pair in the module-level REASONS list that the exception is an instance of."
+    },
+    {
+      "q": "Which exception classes exist and how are they related?",
+      "a": "`schema.py` defines `RowError(ValueError)` and `MissingField(RowError)`. Plain ValueErrors also come from `float()` in parse_rate."
+    },
+    {
+      "q": "How does build_record create a new record?",
+      "a": "After the email checks it starts from a copy of `schema.DEFAULTS`, then sets email, vendor, order, updated_at, sources, skills, country and name, and appends to `record[\"notes\"]` when the name or rate is blank."
+    },
+    {
+      "q": "In merge_duplicates, which row's fields survive?",
+      "a": "Rows are grouped by email. The winner starts as the first row and is replaced by any later row for which `newer(row, winner)` is true. The output is a dict copy of the winner with `skills` and `sources` rebuilt from the whole group. `absorbed` adds group size minus 1."
+    },
+    {
+      "q": "What does parse_rate accept?",
+      "a": "It strips a leading `$`, divides values ending in `/day` by 8, converts with float(), raises RowError for negatives and rounds to 2 decimals. build_record only calls it when the cleaned rate is non-blank."
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "id": "set-094",
+  "title": "Moderation HITL router: thresholds, legacy models, reviewer pools, calibration",
+  "domain": "hitl_routing",
+  "length": "FULL",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "hitlroute",
+  "scenario": "Route moderation predictions to auto / expert / crowd by label threshold, sensitivity, flags and severity (5 = most severe), with legacy models never auto-accepting. Expert items are assigned per language pool (least-loaded, seniors only for severity 5). Test 3 is a calibration report from yesterday's human reviews.",
+  "verified": [
+    {
+      "file": "hitlroute/assign.py",
+      "symbol": "queue_order",
+      "why_correct": "The minus on severity looks like a flipped sort, but 5 is the most severe, so ascending on -severity handles severity 5 first. Then earliest received_at, then item_id, exactly as rule 9 says."
+    },
+    {
+      "file": "hitlroute/loader.py",
+      "symbol": "parse_confidence",
+      "why_correct": "The comma replace and the percent branch look like guesswork, but the README lists exactly these formats: '0,90' and '88%' must come out as 0.9 and 0.88. Blank returns None, which the router treats as no_confidence."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Threshold 0.0 replaced by the default",
+      "type": "falsy-zero",
+      "file": "hitlroute/policy.py",
+      "function": "Policy.threshold_for",
+      "test": "test_1_routing.TestRouting.test_guard_mini_routing",
+      "old": "        return rule.threshold if rule.threshold is not None else self.default_threshold",
+      "new": "        return rule.threshold or self.default_threshold",
+      "symptom": "Test 1 test_guard_mini_routing: M01 (0.35) and M03 (61%) come out ('crowd', 'low_confidence') instead of ('auto', 'confident'). M02 (0.92) is still auto. Nothing downstream changes, because severity-1 fallbacks go to crowd.",
+      "why": "promo has threshold 0.0, which is falsy, so `or` swaps in the 0.8 default. Promo predictions below 0.8 then fail rule 5 and fall back to crowd.",
+      "unblocks": "test_guard_mini_routing.",
+      "hints": [
+        "M01 and M03 are promo predictions. What is promo's threshold in policy.json?",
+        "Look at how a null threshold is turned into the default.",
+        "Use `rule.threshold if rule.threshold is not None else self.default_threshold`."
+      ],
+      "probes": [
+        "Why was M02 still auto-accepted?",
+        "Why did nothing change in the expert assignments?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Legacy-model check compares an Enum to a string",
+      "type": "enum-vs-string",
+      "file": "hitlroute/router.py",
+      "function": "decide",
+      "test": "test_1_routing.TestRouting.test_legacy_model_routing",
+      "old": "    if route is Route.AUTO and pred.model in policy.legacy_models:",
+      "new": "    if route == \"auto\" and pred.model in policy.legacy_models:",
+      "symptom": "Test 1 test_legacy_model_routing: L01, L02 and L04 from legacy guard-v1 come out ('auto', 'confident') instead of ('crowd', 'legacy_model').",
+      "why": "route is a Route member. Route is a plain Enum, not a str subclass, so Route.AUTO == \"auto\" is False and the legacy override never runs. guard-v1 predictions with high confidence are auto-accepted.",
+      "unblocks": "test_legacy_model_routing.",
+      "hints": [
+        "L01, L02 and L04 come from guard-v1, which is in legacy_models. Why are they auto?",
+        "Put a breakpoint on the legacy check in decide(). What type is `route` there?",
+        "Compare against the enum: `route is Route.AUTO`."
+      ],
+      "probes": [
+        "What would Route(str, Enum) have changed here?",
+        "Why does `d.route.value` in reports.py work while this comparison doesn't?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "and/or precedence lets any senior take any item",
+      "type": "or-precedence",
+      "file": "hitlroute/assign.py",
+      "function": "eligible",
+      "test": "test_2_assignment.TestAssignment.test_spanish_pool",
+      "old": "    return reviewer.active and reviewer.load < reviewer.capacity and (severity < SENIOR_ONLY_SEVERITY or reviewer.senior)",
+      "new": "    return reviewer.active and reviewer.load < reviewer.capacity and severity < SENIOR_ONLY_SEVERITY or reviewer.senior",
+      "symptom": "Test 2 test_spanish_pool: inactive reviewer rv-06 is given I04 and I20, rv-07 only gets I12, and the es backlog is empty instead of ['I20'].",
+      "why": "Without the parentheses, `and` binds tighter, so the test reads `(active and has room and severity < 5) or senior`. Any senior counts as eligible, even an inactive one or one at capacity. Inactive senior rv-06 has the fewest items, so they pick up the Spanish queue.",
+      "unblocks": "test_spanish_pool.",
+      "hints": [
+        "rv-06 is inactive, yet has items. Which property of rv-06 makes the code think they can take work?",
+        "Read eligible() slowly. Which operators group together?",
+        "Parenthesise the senior clause: `... and (severity < SENIOR_ONLY_SEVERITY or reviewer.senior)`."
+      ],
+      "probes": [
+        "Why didn't the English pool change, even though rv-01 is a senior too?",
+        "Which data would make this show up in the German pool?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Reviewer pool not lower-cased",
+      "type": "id-normalization",
+      "file": "hitlroute/loader.py",
+      "function": "load_reviewers",
+      "test": "test_2_assignment.TestAssignment.test_english_pool",
+      "old": "            pool=clean(row[\"pool\"]).lower(),",
+      "new": "            pool=clean(row[\"pool\"]),",
+      "symptom": "Test 2 test_english_pool: rv-02 gets nothing, rv-01 gets ['I03', 'L03', 'I14'], rv-03 gets ['I02', 'I11'], and I19 goes to the en backlog.",
+      "why": "rv-02's pool is ' EN'. Trimmed but not lower-cased it becomes 'EN', which never equals the item language 'en'. The English pool loses a reviewer, the others take on more, and I19 lands in the backlog.",
+      "unblocks": "test_english_pool.",
+      "hints": [
+        "rv-02 is active with capacity 2 but got nothing. Which pool does the code put rv-02 in?",
+        "Compare how item languages and reviewer pools are cleaned in loader.py.",
+        "load_reviewers needs `clean(row[\"pool\"]).lower()`."
+      ],
+      "probes": [
+        "Why was the item side ('EN' in I02, 'DE' in I16) fine?",
+        "Would a set of pools built from reviewers.csv have caught this sooner?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Confusion ties broken by insertion order",
+      "type": "wrong-tie-break",
+      "file": "hitlroute/calibration.py",
+      "function": "label_confusions",
+      "test": "test_3_calibration.TestCalibration.test_label_confusions",
+      "old": "        result[label] = min(counts, key=lambda h: (-counts[h], h)) if counts else None",
+      "new": "        result[label] = counts.most_common(1)[0][0] if counts else None",
+      "symptom": "Test 3 test_label_confusions: promo → 'spam' (should be 'off_topic') and spam → 'promo' (should be 'low_quality'). Every other label is right.",
+      "why": "most_common breaks ties by first insertion, so whichever human label appeared first in reviews.csv wins. The spec breaks ties alphabetically. promo (spam vs off_topic) and spam (promo vs low_quality) are both 1-1 ties.",
+      "unblocks": "test_label_confusions.",
+      "hints": [
+        "promo was confused with spam once and with off_topic once. Which should win?",
+        "How does label_confusions choose among equal counts?",
+        "Use min(counts, key=lambda h: (-counts[h], h))."
+      ],
+      "probes": [
+        "Why did harassment come out right?",
+        "Would sorting reviews.csv change the buggy answer? Is that a fix?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "groupby over unsorted reviews",
+      "type": "groupby-misuse",
+      "file": "hitlroute/calibration.py",
+      "function": "model_calibration",
+      "test": "test_3_calibration.TestCalibration.test_model_calibration",
+      "old": "    for model, group in groupby(sorted(reviews, key=_model), key=_model):",
+      "new": "    for model, group in groupby(reviews, key=_model):",
+      "symptom": "Test 3 test_model_calibration: each model's stats come from only its last run of consecutive rows, e.g. guard-mini shows reviews 1, agreement 1.0 instead of 6 / 0.667. test_models_listed still passes.",
+      "why": "itertools.groupby only groups consecutive rows. reviews.csv alternates models, so each model shows up as many short runs, and each run overwrites the table entry. Only the last run of each model survives.",
+      "unblocks": "test_model_calibration.",
+      "hints": [
+        "guard-v3 has 9 usable reviews. How many does the table report?",
+        "What does itertools.groupby assume about the order of its input?",
+        "Sort before grouping: groupby(sorted(reviews, key=_model), key=_model)."
+      ],
+      "probes": [
+        "Why does test_models_listed still pass?",
+        "How would you write this with a defaultdict(list) instead, and is it better?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() return and in what order are things computed?",
+      "a": "It loads the policy, predictions, reviewers and reviews, routes every prediction with `router.route_all`, passes the decisions to `assign.assign_expert_queue`, and computes `calibration.model_calibration` and `label_confusions` from the reviews. Calibration does not depend on routing or assignment."
+    },
+    {
+      "q": "What does decide() check, in order?",
+      "a": "Unknown label, then sensitive, then flagged, then missing confidence. After that it compares the confidence with `policy.threshold_for(rule)` to choose `auto`/`confident` or the fallback/`low_confidence`, and finally applies the legacy-model override."
+    },
+    {
+      "q": "What is the Route type?",
+      "a": "`enums.Route` is a plain `Enum` with members AUTO='auto', EXPERT='expert' and CROWD='crowd'. Decisions store the member; reports.py writes `route.value` into the output."
+    },
+    {
+      "q": "How does assign_expert_queue build the pools?",
+      "a": "It groups (prediction, decision) pairs whose route is EXPERT by `pred.lang`. For each pool, in sorted pool order, it takes reviewers whose `pool` equals the pool name, sorts the items with `queue_order`, and assigns each item to the eligible reviewer with the lowest `(load, reviewer_id)`, or adds it to that pool's backlog."
+    },
+    {
+      "q": "Does reviewer load carry across pools?",
+      "a": "Load lives on each Reviewer object and starts at 0 when loaded. A reviewer is only considered for the pool their `pool` field matches, so in practice each reviewer's load comes from one pool."
+    },
+    {
+      "q": "Which reviews does the calibration use?",
+      "a": "`load_reviews` drops rows whose confidence is blank. Everything else is kept in file order, with models and labels lower-cased."
+    },
+    {
+      "q": "What does label_confusions return for a label the humans always agreed with?",
+      "a": "Every model_label seen gets a Counter, even with no disagreements. A label whose Counter is empty maps to None."
+    }
+  ]
+}

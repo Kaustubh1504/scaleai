@@ -1,0 +1,37 @@
+at,worker,action,queue,task
+2026-06-01 09:00,alice,claim,ingest,
+2026-06-01 09:00,Bob,claim,ingest,
+06/01/2026 09:01,cara,CLAIM,review,
+2026-06-01 09:05,alice,heartbeat,,t01
+2026-06-01 09:12,cara,ack,,T04
+2026-06-01 09:13,bob ,claim,Ingest,
+2026-06-01 09:14,alice,heartbeat,,t01
+2026-06-01T09:20:00,alice,Heartbeat,,t01
+2026-06-01 09:22,dan,claim,review,
+2026-06-01 09:23,bob,ack,, t02
+2026-06-01 09:25,Alice,ack,,T01
+2026-06-01 09:26,erin,claim,ingest,
+2026-06-01 09:30,bob,claim,ingest,
+2026-06-01 09:31,dan,ack,,t04
+06/01/2026 09:35,erin,ack,,T01
+2026-06-01 09:40,cara,claim,review,
+2026-06-01 09:41,bob,ack,,T02
+2026-06-01 09:42,frank,claim,review,
+2026-06-01 09:45,cara,heartbeat,,t05
+2026-06-01 09:52,frank,claim,export,
+2026-06-01 09:54,cara,Ack,,T05
+2026-06-01 10:00,gina,claim,export,
+2026-06-01 10:01,frank,heartbeat,, t07
+2026-06-01 10:09,FRANK,ack,,T07
+2026-06-01 10:12,gina,ack,,t09
+2026-06-01 10:20,alice,claim,review,
+2026-06-01 10:20,bob,claim,export,
+2026-06-01 10:21,cara,claim,export,
+2026-06-01 10:25,bob,ack,,T09
+2026-06-01 10:40,gina,claim,ingest,
+2026-06-01 10:45, Gina ,ack,,t99
+2026-06-01 11:00,erin,claim,ingest,
+2026-06-01T11:05:00,erin,ack,,t03
+2026-06-01 11:30,dan,claim,review,
+2026-06-01 11:50,erin,claim,ingest,
+2026-06-01 11:55,frank,claim,audit,

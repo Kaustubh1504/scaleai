@@ -1,0 +1,17 @@
+episode_id,robot_id,task,operator,started_at,outcome
+E01,r-01,pick_place,Ana,2026-10-01 09:00,success
+E02,r-01,wipe_table,ben,2026-10-01 09:20,fail
+e03,R-02,pick_place,chen,10/01/2026 10:05,Success
+E04,R-02 ,open_drawer,ana,2026-10-01T10:30:00,fail
+E05,r-03,pick_place,dara,2026-10-02 08:15,success
+E06,r-03,Open_Drawer,Ben,2026-10-02 08:40, success
+E07,r-04,pick_place,chen,2026-10-02 09:10,FAIL
+E08,r-04,open_drawer,dara,10/02/2026 09:30,success
+E09,r-01,pick_place,ana,2026-10-02 10:00,success
+E10, r-05,pick_place,ben,2026-10-02 11:00,success
+E11,r-01,wipe_table,chen,2026-10-03 09:00,fail
+E12,r-01,open_drawer,ana,2026-10-03 09:30,
+E13,r-99,pick_place,dara,2026-10-03 10:00,success
+E14,r-01,open_drawer,ben,2026-10-03T10:30:00,success
+E15,r-01,fold_towel,Chen,2026-10-04 09:00,fail
+E16,r-01,wipe_table,dara,10/04/2026 09:45,success

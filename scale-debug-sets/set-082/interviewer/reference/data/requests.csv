@@ -1,0 +1,36 @@
+request_id,tenant_id,ts,endpoint,units
+gw1-0001,cinder,2026-02-27T14:05:00Z,/v1/embed,9000
+gw1-0002,acme,2026-03-02 09:00:00,/v1/complete,8000
+gw2-0001,Borealis,03/02/2026 09:30:00,/v1/complete,4000
+gw2-0002,cinder,2026-03-01T00:30:00+01:00,/v1/embed,12500
+gw1-0003,elm-labs,2026-03-03T12:00:00Z,/v1/complete,300
+gw1-0004,ELM-LABS,2026-03-03T12:00:02Z,/v1/complete,300
+gw2-0003,elm-labs,2026-03-03 12:00:04,/v1/complete,300
+gw1-0005,elm-labs,2026-03-03T12:00:07Z,/v1/complete,300
+gw2-0004,elm-labs,03/03/2026 12:00:10,/v1/complete,300
+gw1-0006,dunmore,2026-03-04T08:00:00.250Z,/v1/classify,100
+gw1-0007,dunmore,2026-03-04T08:00:01.750Z,/v1/classify,100
+gw2-0005,Dunmore,2026-03-04T08:00:03.500Z,/v1/classify,100
+gw1-0008,dunmore,2026-03-04T08:00:05.300Z,/v1/classify,100
+gw2-0006,dunmore,2026-03-04 08:00:06,/v1/classify,100
+gw2-0007,acme,2026-03-05T10:15:00Z,/v1/complete,6000
+gw1-0009,halcyon,2026-03-05 11:00:00,/v1/complete,1200
+gw1-0010,halcyon,2026-03-05 11:00:20,/v1/complete,
+gw2-0008,ibis,2026-03-05T11:30:00Z,/v1/complete,500
+gw2-0009,cinder,2026-03-06T16:00:00Z,/v1/embed,20000
+gw2-0011,garnet,2026-03-07T09:00:00Z,/v1/complete,1500
+gw1-0011,garnet,2026-03-07T09:00:00Z,/v1/embed,2000
+gw2-0010,garnet,2026-03-07 09:00:30,/v1/complete,1000
+gw1-0012, Garnet,03/07/2026 09:00:30,/v1/embed,1500
+gw1-0013,acme,2026-03-08T13:00:00Z,/v1/complete,4000
+gw2-0012,halcyon,2026-03-08 11:00:00,/v1/complete,1.5k
+gw1-0014,halcyon,2026-03-08 11:00:40,/v1/complete,800
+gw2-0013,juniper,2026-03-09T07:00:00Z,/v1/complete,250
+gw1-0015,juniper,2026-03-09T07:00:03Z,/v1/complete,250
+gw2-0014,borealis,2026-03-10T15:00:00Z,/v1/complete, 3300
+gw1-0016,cinder,2026-03-12 18:30:00,/v1/embed,30400
+gw2-0015,IBIS,2026-03-13T08:00:00Z,/v1/complete,700
+gw1-0017,acme,03/15/2026 17:45:00,/v1/complete,5000
+gw2-0016,borealis,2026-03-18T12:00:00Z,/v1/complete,5000
+gw1-0018,cinder,2026-03-20T09:00:00Z,/v1/embed,25000
+gw2-0017,acme,2026-03-22T21:10:00Z,/v1/complete,3000

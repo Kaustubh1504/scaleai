@@ -1,0 +1,126 @@
+{
+  "id": "set-073",
+  "title": "Hours-capped crew planner with expiring certifications",
+  "domain": "contributor_assignment",
+  "length": "MINI",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "crewplan",
+  "scenario": "Fill project seats in priority order (higher number = more important) from contributors with weekly hour budgets and current course certifications, then build a course coverage table (holders, open-project demand, most demanded course).",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_staffing",
+      "test_2_courses"
+    ]
+  },
+  "verified": [
+    {
+      "file": "crewplan/eligibility.py",
+      "symbol": "is_current",
+      "why_correct": "`.days` looks like the classic timedelta trap, but the operands are dates, so `.days` is the whole difference. The chained `0 <= ... <= valid_days` rejects future completions (K10's QA-101) and keeps K01's MED-200, completed exactly 365 days before as_of."
+    },
+    {
+      "file": "crewplan/scheduler.py",
+      "symbol": "rank_candidates",
+      "why_correct": "The negated sort key looks like a sort-direction slip, but `-rating` then `-hours_left` then `id` is exactly rule 5: highest rating, then more remaining hours, then the lower id."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Paused check compares an Enum to a string",
+      "type": "enum-vs-string",
+      "file": "crewplan/scheduler.py",
+      "function": "staff",
+      "test": "test_1_staffing.TestStaffing.test_assignments",
+      "old": "        if project.status == Status.PAUSED:",
+      "new": "        if project.status == \"paused\":",
+      "symptom": "Test 1 test_assignments: the paused projects get teams (P06 ['K13', 'K11'], P07 ['K08'], P12 ['K08']). Every open project's team is exactly as expected, and open_seats is unchanged.",
+      "why": "project.status is a Status member, and a plain Enum member never equals its value string, so the check is always False and paused projects are staffed. They are the lowest priority, so they only take leftover hours and every open project is unchanged.",
+      "unblocks": "test_assignments.",
+      "hints": [
+        "The paused projects have teams. Does the scheduler know they are paused?",
+        "Print project.status and what the skip check compares it to.",
+        "Compare with Status.PAUSED (or `is Status.PAUSED`), not the string \"paused\"."
+      ],
+      "probes": [
+        "Would the comparison work if Status subclassed str? Why?",
+        "Why did no open project's team change with this bug present?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Holder sets shared by every course",
+      "type": "shared-class-attribute",
+      "file": "crewplan/models.py",
+      "function": "CourseStats.__init__",
+      "test": "test_2_courses.TestCourseCoverage.test_course_holders",
+      "old": "    demand = 0\n\n    def __init__(self, course_id):\n        self.holders = set()\n",
+      "new": "    demand = 0\n    holders = set()\n\n    def __init__(self, course_id):\n",
+      "symptom": "Test 2 test_course_holders: every course shows 13 holders ({'CODE-300': 13, 'LANG-ES': 13, 'MED-200': 13, 'QA-101': 13}) instead of 4/3/6/9.",
+      "why": "A set defined at class level is one object shared by every CourseStats instance, and .add() mutates it in place, so every course reports the union of all holders. `demand = 0` is fine at class level because `+= 1` on an int rebinds an instance attribute.",
+      "unblocks": "test_course_holders.",
+      "hints": [
+        "Every course has the same holder count. What would make four courses see the same set?",
+        "Look at where CourseStats gets its holders set.",
+        "Create the set per instance in __init__: self.holders = set()."
+      ],
+      "probes": [
+        "Why doesn't `demand = 0` at class level have the same problem?",
+        "Why is 13 (and not 14) the number every course shows?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Demand counts paused projects",
+      "type": "counting-wrong-subset",
+      "file": "crewplan/reports.py",
+      "function": "course_table",
+      "old": "            if project.status is Status.OPEN:\n                entry.demand += 1",
+      "new": "            entry.demand += 1",
+      "test": "test_2_courses.TestCourseCoverage.test_most_demanded",
+      "symptom": "Test 2 test_most_demanded: 'MED-200' instead of 'QA-101'.",
+      "why": "Demand should count only open projects. Counting all of them adds the three paused MED-200 projects, so MED-200 ties QA-101 at 5 and wins the tie on course id.",
+      "unblocks": "test_most_demanded.",
+      "hints": [
+        "Compute demand per course by hand from projects.csv. Which projects did you count?",
+        "Look at which projects course_table adds to demand.",
+        "Only count a requirement when project.status is Status.OPEN."
+      ],
+      "probes": [
+        "Why does MED-200 win rather than tie in the output?",
+        "Which other report field would show this bug directly?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() call, in order?",
+      "a": "load_config, load_contributors, load_projects, then eligibility.current_certs over load_completions. scheduler.staff produces assignments and open_seats, reports.course_table builds the coverage table, and most_demanded picks from it."
+    },
+    {
+      "q": "How are project statuses represented after loading?",
+      "a": "loader.load_projects converts the cleaned, lower-cased cell with Status(...), so project.status is a models.Status member (Status.OPEN or Status.PAUSED)."
+    },
+    {
+      "q": "What does current_certs return?",
+      "a": "A defaultdict(set) mapping contributor id to the set of course ids for which at least one completion passes is_current(completed_on, as_of, valid_days)."
+    },
+    {
+      "q": "How does staff() pick each seat?",
+      "a": "For each seat it builds a pool of contributors not already on the team for whom is_eligible(...) is true, sorts it with rank_candidates and takes the first, then subtracts hours_per_seat from that contributor's hours_left."
+    },
+    {
+      "q": "How does course_table build each row?",
+      "a": "A nested stats() helper creates a CourseStats on first sight of a course id. Each current certification adds the contributor id to that course's holders set, and each project requirement may add 1 to demand. The table is returned sorted by course id."
+    },
+    {
+      "q": "What does CourseStats.as_dict return?",
+      "a": "{'holders': len(self.holders), 'demand': self.demand}."
+    },
+    {
+      "q": "How is most_demanded chosen?",
+      "a": "min over the CourseStats values by (-demand, course_id), so the highest demand wins and ties go to the lower course id. It returns None for an empty table."
+    }
+  ]
+}

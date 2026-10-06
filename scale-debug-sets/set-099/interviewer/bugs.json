@@ -1,0 +1,116 @@
+{
+  "id": "set-099",
+  "title": "Lease broker replay with heartbeats and nacks",
+  "domain": "task_queue_leases",
+  "length": "MINI",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "leasehold",
+  "scenario": "Replay claim/heartbeat/ack/nack events against a lease broker with per-type lease lengths (priority 1 = most urgent). Every event reaps expired leases first. Rejections are classified through an exception hierarchy, and the report ends with mean first-claim-to-ack seconds per type.",
+  "verified": [
+    {
+      "file": "leasehold/broker.py",
+      "symbol": "is_expired",
+      "why_correct": "`>=` looks like an off-by-one, but rule 1 says a lease is expired when now >= expires_at, so a lease ending exactly at an event's time is reaped before that event."
+    },
+    {
+      "file": "leasehold/broker.py",
+      "symbol": "pick_next",
+      "why_correct": "min() over (priority, created_at, id) looks like it might pick the least urgent task, but priority 1 is the most urgent here, so the smallest number first is right. Earliest creation and lowest id are the tie-breaks from rule 3."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Leases removed while iterating",
+      "type": "mutate-while-iterating",
+      "file": "leasehold/broker.py",
+      "function": "Broker.reap",
+      "test": "test_1_replay.TestReplay.test_expired_leases",
+      "old": "        for lease in list(self.leases):",
+      "new": "        for lease in self.leases:",
+      "symptom": "Test 1 test_expired_leases: K05's expiry is logged at 08:02:40 instead of 08:02:30. Dispatch, statuses and attempts are all unchanged.",
+      "why": "reap removes items from self.leases while looping over it. When K12's lease is removed, K05's lease (next in the list, also expired) slides into its slot and the loop steps past it. K05 is only reaped at the next event.",
+      "unblocks": "test_1_replay.TestReplay.test_expired_leases",
+      "hints": [
+        "Two leases ran out before the 08:02:30 event. How many expiries are logged at 08:02:30?",
+        "Look at how reap walks the lease list while it removes expired ones.",
+        "Iterate over a copy: `for lease in list(self.leases):`."
+      ],
+      "probes": [
+        "Why did nothing else in the report change, given that K05 stayed 'leased' for one extra event?",
+        "Describe event data that would have turned this into a wrong final status."
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Generic lease error matched before TaskClosed",
+      "type": "exception-order",
+      "file": "leasehold/broker.py",
+      "function": "Broker.handle",
+      "test": "test_1_replay.TestReplay.test_rejected_events",
+      "old": "    (TaskClosed, \"closed\"),\n    (LeaseError, \"not_holder\"),\n",
+      "new": "    (LeaseError, \"not_holder\"),\n    (TaskClosed, \"closed\"),\n",
+      "symptom": "Test 1 test_rejected_events: the 08:04:00 ack of K02 and the 08:09:40 ack of K07 are logged as 'not_holder' instead of 'closed'.",
+      "why": "handle() takes the first REJECTION_REASONS entry the exception is an instance of. TaskClosed is a subclass of LeaseError, so with LeaseError listed first every TaskClosed is reported as not_holder. The more specific class has to come first, as with except clauses.",
+      "unblocks": "test_1_replay.TestReplay.test_rejected_events",
+      "hints": [
+        "K02 was already done at 08:04. Which reason should that ack get?",
+        "Look at how a raised exception is turned into a reason string.",
+        "In REJECTION_REASONS, put (TaskClosed, \"closed\") above (LeaseError, \"not_holder\")."
+      ],
+      "probes": [
+        "Why were unknown_task and unknown_worker still reported correctly?",
+        "How would the same mistake look written as try/except clauses?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Mean ack time floor-divided",
+      "type": "integer-division",
+      "file": "leasehold/reports.py",
+      "function": "ack_times",
+      "test": "test_2_report.TestReport.test_mean_ack_seconds",
+      "old": "    return {t: round(sum(s) / len(s), 1) for t, s in sorted(spans.items())}",
+      "new": "    return {t: round(sum(s) // len(s), 1) for t, s in sorted(spans.items())}",
+      "symptom": "Test 2 test_mean_ack_seconds: audio 336 and ocr 136 instead of 336.7 and 136.7. Review (160.0) is unaffected.",
+      "why": "`//` floor-divides the summed seconds before rounding, so the fractional part is gone and round(..., 1) has nothing left to round.",
+      "unblocks": "test_2_report.TestReport.test_mean_ack_seconds",
+      "hints": [
+        "Only some of the means are off, and those lose their decimals. Why would review be fine?",
+        "Look at how ack_times turns the spans into a mean.",
+        "Use true division: `round(sum(s) / len(s), 1)`."
+      ],
+      "probes": [
+        "Why is the int() around total_seconds() harmless here?",
+        "Which value in the data made review come out right anyway?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does Broker.handle do for each event?",
+      "a": "It calls `reap(ev.at)` first, then raises UnknownWorker if the worker isn't in `self.workers` (active workers only), otherwise dispatches to the method named by the action (`claim`, `heartbeat`, `ack`, `nack`). Any LeaseError is turned into a reason string via REJECTION_REASONS and appended to `self.rejected`."
+    },
+    {
+      "q": "What does _held check and raise?",
+      "a": "UnknownTask if the task id isn't loaded; TaskClosed if the task status is 'done' or 'dead'; a plain LeaseError if there's no current lease for the task or it belongs to another worker. Otherwise it returns (task, lease)."
+    },
+    {
+      "q": "How is the exception hierarchy laid out?",
+      "a": "In models.py, LeaseError subclasses Exception, and UnknownTask, UnknownWorker and TaskClosed each subclass LeaseError directly."
+    },
+    {
+      "q": "What does reap do with an expired lease?",
+      "a": "It removes the lease from `self.leases`, appends `[HH:MM:SS, worker, task_id]` to `self.expired`, and calls `_release`, which sets the task to 'dead' if attempts >= max_attempts and to 'pending' otherwise."
+    },
+    {
+      "q": "Where does first_claimed_at get set, and how is mean_ack_seconds built?",
+      "a": "`claim` sets `task.first_claimed_at` only if it is still None. `reports.ack_times` collects `int(total_seconds())` of finished_at - first_claimed_at for done tasks, grouped by type, then reduces each list to a rounded mean."
+    },
+    {
+      "q": "Which workers end up in Broker.workers?",
+      "a": "`loader.load_workers` keeps entries whose `active` is the JSON value true, or missing (it defaults to True), and maps the lower-cased id to a set of lower-cased types."
+    }
+  ]
+}

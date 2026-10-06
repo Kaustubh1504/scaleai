@@ -1,0 +1,111 @@
+{
+  "id": "set-069",
+  "title": "Guideline TTL cache: expiry boundary, cache key, shared payloads",
+  "domain": "cache_ttl",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "guidecache",
+  "scenario": "Replay a request trace through a TTL cache in front of a guideline origin, keyed by project and locale, with client-specific labels added per response. Test 2 checks the payloads clients actually received.",
+  "verified": [
+    {
+      "file": "guidecache/origin.py",
+      "symbol": "GuidelineOrigin.fetch",
+      "why_correct": "`published_at <= now` is the README rule ('at or before now'), so bbox en v2 (published 09:30) is correctly invisible during the trace while ner v2 (09:08) appears at N3. It returns a new dict with a copied label list, so callers can't mutate origin records."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Entry still fresh at exactly its TTL",
+      "type": "time-window-boundary",
+      "file": "guidecache/cache.py",
+      "function": "TTLCache.get",
+      "test": "test_1_lookups.TestLookups.test_ner_lookups",
+      "old": "        if now < entry.expires_at:",
+      "new": "        if now <= entry.expires_at:",
+      "symptom": "Test 1 test_ner_lookups: N3 is ('hit', 1) instead of ('miss', 2), N4 becomes ('miss', 2) and N5 ('hit', 2). The 600 s boundary falls on N3 and N5.",
+      "why": "The README says an entry is fresh while age < ttl, so at exactly 600 s it has expired. With `<=`, N3 (09:10:00, exactly 600 s after N1) is served the stale v1 instead of fetching v2, and the miss/hit pattern after it shifts.",
+      "unblocks": "test_ner_lookups.",
+      "hints": [
+        "N3 is served version 1, but version 2 was published at 09:08. How old is the cached entry at N3?",
+        "Look at the freshness comparison in TTLCache.get.",
+        "Use now < entry.expires_at."
+      ],
+      "probes": [
+        "Why did N4 become a miss with the old comparison?",
+        "The VERIFIED fetch uses <=. Why is that not the same mistake?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Cache key ignores locale",
+      "type": "cache-key-missing-param",
+      "file": "guidecache/service.py",
+      "function": "GuidelineService.lookup",
+      "test": "test_1_lookups.TestLookups.test_bbox_lookups",
+      "old": "        key = (req[\"project\"], req[\"locale\"])",
+      "new": "        key = req[\"project\"]",
+      "symptom": "Test 1 test_bbox_lookups: B2 (fr) is ('hit', 1, 'en') instead of ('miss', 1, 'fr'), and B4 (fr) is served locale 'en'.",
+      "why": "Keyed by project only, the French bbox request B2 hits the English entry cached by B1 a minute earlier, so a French client gets English labels.",
+      "unblocks": "test_bbox_lookups.",
+      "hints": [
+        "B2 asked for fr but was served locale en as a hit. Which entry did it hit?",
+        "Look at how lookup builds the cache key.",
+        "The key must include the locale: (req['project'], req['locale'])."
+      ],
+      "probes": [
+        "Why didn't the ner and sentiment results change?",
+        "The origin fetch already takes a locale. Why wasn't that enough?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Cache hands out its stored object",
+      "type": "aliasing-shallow-copy",
+      "file": "guidecache/cache.py",
+      "function": "TTLCache.get",
+      "test": "test_2_report.TestReport.test_sentiment_payloads",
+      "old": "            return copy.deepcopy(entry.value)",
+      "new": "            return entry.value",
+      "symptom": "Test 2 test_sentiment_payloads: S2 through S5 all show ['positive', 'negative', 'neutral', 'sarcasm', 'sarcasm']. Every sentiment hit shares the cached list, which acme's two hits appended to. Only S1 (miss) and S6 (fresh miss) are correct.",
+      "why": "lookup appends override labels to the value it got back. If get returns the cached object itself, acme's 'sarcasm' is appended to the cache entry, so later hits from other clients see it and acme gets it twice.",
+      "unblocks": "test_sentiment_payloads.",
+      "hints": [
+        "S4 comes from client c3, which has no overrides, yet it gets 'sarcasm'. Where did that label come from?",
+        "lookup mutates value['labels']. Which object is that on a hit?",
+        "TTLCache.get should return copy.deepcopy(entry.value)."
+      ],
+      "probes": [
+        "Why was S1 (a miss) never a problem, even without the copy on get?",
+        "Would a shallow copy (dict(entry.value)) have been enough? Why not?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() do?",
+      "a": "It creates a GuidelineOrigin from guidelines.json and a GuidelineService with config.json, then replays load_trace(trace.csv) in ts order through service.lookup, recording each outcome, the version and locale served, and the labels."
+    },
+    {
+      "q": "Walk me through GuidelineService.lookup.",
+      "a": "It builds a cache key, calls cache.get(key, ts). On None it calls origin.fetch; if that is also None it returns ('not_found', None) without caching. Otherwise it puts the value with the project's TTL and marks a miss. Finally it extends value['labels'] with the client's overrides for the project and returns (outcome, value)."
+    },
+    {
+      "q": "How does TTLCache decide whether an entry is fresh?",
+      "a": "Each Entry stores stored_at and ttl_s; expires_at is their sum. get compares now with expires_at; an expired entry is deleted and get returns None."
+    },
+    {
+      "q": "What does put store?",
+      "a": "An Entry holding copy.deepcopy(value), the current time and the TTL, under the given key, replacing anything already there."
+    },
+    {
+      "q": "How are timestamps turned into numbers?",
+      "a": "origin.parse_time tries four formats and returns datetime.timestamp() (seconds as a float, local time). Both the trace and published_at use it, so they are on the same clock."
+    },
+    {
+      "q": "Which clients have overrides?",
+      "a": "config.json: acme gets 'sarcasm' on sentiment, and globex gets 'occluded' on pose (pose is not in the origin, so that request is not_found)."
+    }
+  ]
+}

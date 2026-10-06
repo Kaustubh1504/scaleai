@@ -1,0 +1,111 @@
+{
+  "id": "set-043",
+  "title": "Workshop seat holds with 10-minute expiry",
+  "domain": "seat_reservation",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "seatbook",
+  "scenario": "Replay a hold/confirm/cancel/comp event log against workshop capacities, with 10-minute hold expiry, then report occupancy and per-attendee seats.",
+  "verified": [
+    {
+      "file": "seatbook/engine.py",
+      "symbol": "has_room",
+      "why_correct": "`left - seats >= 0` is the same as seats <= left, which is rule 2 (in use + requested at most capacity). E02 fills WS-01 exactly and is accepted, as it should be."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Hold age read with timedelta.seconds",
+      "type": "timedelta-seconds",
+      "file": "seatbook/engine.py",
+      "function": "is_expired",
+      "test": "test_1_ledger.TestLedgerOutcomes.test_hold_expiry",
+      "old": "    return (now - hold.held_at).total_seconds() > HOLD_SECONDS",
+      "new": "    return (now - hold.held_at).seconds > HOLD_SECONDS",
+      "why": "`timedelta.seconds` is only the seconds part after whole days are taken out. zed's hold is 1 day 6 minutes old, so `.seconds` is 360 and the hold looks fresh. The late confirm succeeds, and the later cancel then finds a booking to cancel.",
+      "unblocks": "test_hold_expiry",
+      "hints": [
+        "E35 confirms a hold placed the previous afternoon. How old is it?",
+        "Look at how is_expired measures the hold's age.",
+        "Use (now - hold.held_at).total_seconds(), not .seconds."
+      ],
+      "probes": [
+        "Why did E05 (12 minutes) still expire correctly?",
+        "Why didn't WS-07's occupancy in the report change?"
+      ],
+      "symptom": "test_1 test_hold_expiry: E35 is 'ok' instead of 'expired' and E36 is 'ok' instead of 'nothing_to_cancel'. E05's 12-minute expiry is still right, and the report is unchanged."
+    },
+    {
+      "id": "B2",
+      "title": "Event session ids upper-cased but not trimmed",
+      "type": "id-normalization",
+      "file": "seatbook/loader.py",
+      "function": "load_events",
+      "test": "test_1_ledger.TestLedgerOutcomes.test_rejection_reasons",
+      "old": "                session_id=norm_session(row[\"session_id\"]),",
+      "new": "                session_id=row[\"session_id\"].upper(),",
+      "why": "The session ids in events.csv are only upper-cased, so E17's ' WS-09' keeps its leading space and doesn't match the trimmed key from sessions.csv. It is reported as unknown_session instead of full. The mixed-case ids still match, which hides the problem.",
+      "unblocks": "test_rejection_reasons",
+      "hints": [
+        "E17 says unknown_session, but WS-09 exists. Look at the raw row.",
+        "Compare how session ids are cleaned in load_sessions and in load_events.",
+        "Use norm_session(row[\"session_id\"]) in load_events."
+      ],
+      "probes": [
+        "Why did ws-01 and ws-05 events work even with this change?",
+        "Why did no occupancy number change?"
+      ],
+      "symptom": "test_1 test_rejection_reasons: E17 is 'unknown_session' instead of 'full'. Everything else matches."
+    },
+    {
+      "id": "B3",
+      "title": "Cancelled bookings counted in attendee seats",
+      "type": "or-precedence",
+      "file": "seatbook/report.py",
+      "function": "attendee_seats",
+      "test": "test_2_report.TestReport.test_attendee_seats",
+      "old": "        if b.status == \"confirmed\" or b.status == \"comped\":",
+      "new": "        if b.status == \"confirmed\" or \"comped\":",
+      "why": "`b.status == \"confirmed\" or \"comped\"` parses as `(b.status == \"confirmed\") or \"comped\"`, and the non-empty string is always truthy, so every booking counts, including dev's cancelled 3 seats.",
+      "unblocks": "test_attendee_seats",
+      "hints": [
+        "dev@lab.io cancelled, yet shows 3 seats.",
+        "Look at the status filter in attendee_seats.",
+        "Write `b.status in (\"confirmed\", \"comped\")` (or compare b.status twice)."
+      ],
+      "probes": [
+        "Why are the session `taken` numbers still right?",
+        "What would `b.status == (\"confirmed\" or \"comped\")` do instead?"
+      ],
+      "symptom": "test_2 test_attendee_seats: an extra 'dev@lab.io': 3 entry (dev cancelled that booking). Session occupancy is unaffected."
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "How does replay() process the events?",
+      "a": "It builds a `Ledger` from the sessions and calls `ledger.apply(ev)` for each event in file order. `apply` checks unknown session and `closed` first, then dispatches to `hold`, `confirm`, `cancel` or `comp` by the action name and stores the outcome in `ledger.outcomes`."
+    },
+    {
+      "q": "Where are holds stored, and when are they removed?",
+      "a": "`Ledger.holds` is a dict keyed by `(session_id, attendee)`. `confirm` pops the hold for its key, and `cancel` pops it if there is no active booking. Expired holds aren't deleted on their own; `held()` and `hold()` call `is_expired` to skip them."
+    },
+    {
+      "q": "What does Ledger.taken count?",
+      "a": "The seats of bookings for that session whose status is in `OCCUPYING` (`confirmed`, `comped`). Holds are counted separately by `held()`."
+    },
+    {
+      "q": "How are ids cleaned on load?",
+      "a": "`load_sessions` keys sessions by `norm_session` (trim + upper). `load_events` sets `action` and `attendee` with `clean(...).lower()` and builds `session_id` from the row on the `session_id=` line. A blank seats cell becomes 1."
+    },
+    {
+      "q": "What does is_expired compare?",
+      "a": "It takes `now - hold.held_at` (a timedelta), converts it to a number of seconds and checks whether that is greater than `HOLD_SECONDS` (600)."
+    },
+    {
+      "q": "What feeds the attendees section of the report?",
+      "a": "`attendee_seats(ledger.bookings)`, which loops over all bookings (including cancelled ones), applies a status condition and sums seats per attendee into a Counter, returned as a sorted dict."
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+[
+  {"name": "faq", "enabled": true, "model": ""},
+  {"name": "Legal", "enabled": true, "model": "embed-legal-v1"},
+  {"name": "product", "enabled": "yes", "model": null},
+  {"name": "news ", "enabled": true},
+  {"name": "support", "enabled": 1, "model": ""},
+  {"name": "archive", "enabled": "false", "model": ""},
+  {"name": "billing", "enabled": true, "model": ""},
+  {"name": "hr", "enabled": false, "model": ""},
+  {"name": "research", "enabled": "no", "model": "embed-large-v1"},
+  {"name": "sales", "enabled": true, "model": ""}
+]

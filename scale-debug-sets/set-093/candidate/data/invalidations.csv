@@ -1,0 +1,11 @@
+ts,sku,reason
+2026-09-20 07:00:00,SKU-1,nightly price load
+2026-09-20 08:45:00,sku-3,supplier update
+2026-09-20 12:00:00,SKU-7,promo ended
+2026-09-20T13:30:00,SKU-8,discontinued
+2026-09-20 18:00:00, SKU-4 ,nightly price load
+2026-09-20 18:00:00,SKU-5,nightly price load
+2026-09-21 02:00:00,SKU-2,currency refresh
+2026-09-21 09:20:00,SKU-6,stock sync
+1789983600000,SKU-1,stock sync
+2026-09-21 11:00:00,SKU-3,supplier update

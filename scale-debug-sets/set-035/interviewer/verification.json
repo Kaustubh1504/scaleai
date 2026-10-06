@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_win_rates"
+    ],
+    "failures": {
+      "tests.test_1_win_rates.TestWinRates.test_win_rates": "AssertionError: {'m-alpha': 0.042, 'm-beta': 0.077, 'm-delta': 0.042, '[26 chars].045} != {'m-alpha': 0.875, 'm-beta': 0.692, 'm-delta': 0.125, '[24 chars] 0.5}\n- {'m-alpha': 0.042,\n?               ^^^\n\n+ {'m-alpha': 0.875,\n?               ^^^\n\n-  'm-beta': 0.077,\n?              ^^^\n\n+  'm-beta': 0.692,\n?              ^^^\n\n-  'm-delta': 0.042,\n?               ^^\n\n+  'm-delta': 0.125,\n?               ^ +\n\n-  'm-eps': 0.05,\n?             ^\n\n+  'm-eps': 0.25,\n?             ^\n\n-  'm-gamma': 0.045}\n?               --\n\n+  'm-gamma': 0.5}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_elo"
+    ],
+    "failures": {
+      "tests.test_2_elo.TestElo.test_elo_ratings": "AssertionError: {'m-alpha': 1107.4, 'm-beta': 1075.9, 'm-delta': 884.1,[29 chars]94.9} != {'m-alpha': 1118.7, 'm-beta': 1062.0, 'm-delta': 883.1,[30 chars]00.4}\n- {'m-alpha': 1107.4,\n?               ^ --\n\n+ {'m-alpha': 1118.7,\n?               ^^^\n\n-  'm-beta': 1075.9,\n?              ^^ ^\n\n+  'm-beta': 1062.0,\n?              ^^ ^\n\n-  'm-delta': 884.1,\n?               ^\n\n+  'm-delta': 883.1,\n?               ^\n\n-  'm-eps': 937.7,\n?             ^ ^\n\n+  'm-eps': 935.8,\n?             ^ ^\n\n-  'm-gamma': 994.9}\n?             ^^ --\n\n+  'm-gamma': 1000.4}\n?             ^^^^^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_elo"
+    ],
+    "failures": {
+      "tests.test_2_elo.TestElo.test_leaderboard": "AssertionError: Lists differ: ['m-alpha', 'm-beta', 'm-delta'] != ['m-alpha', 'm-beta', 'm-gamma', 'm-delta']\n\nFirst differing element 2:\n'm-delta'\n'm-gamma'\n\nSecond list contains 1 additional elements.\nFirst extra element 3:\n'm-delta'\n\n- ['m-alpha', 'm-beta', 'm-delta']\n+ ['m-alpha', 'm-beta', 'm-gamma', 'm-delta']\n?                      +++++++++++\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_win_rates",
+      "test_2_elo"
+    ],
+    "failing_tests": [
+      "tests.test_1_win_rates.TestWinRates.test_win_rates",
+      "tests.test_2_elo.TestElo.test_elo_ratings",
+      "tests.test_2_elo.TestElo.test_leaderboard"
+    ]
+  }
+}

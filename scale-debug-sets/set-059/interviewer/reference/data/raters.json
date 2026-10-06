@@ -1,0 +1,12 @@
+[
+  {"rater_id": "r01", "qualified": true},
+  {"rater_id": "r02", "qualified": "yes"},
+  {"rater_id": "R03", "qualified": true},
+  {"rater_id": "r04", "qualified": 1},
+  {"rater_id": "r05", "qualified": "false"},
+  {"rater_id": "r06", "qualified": "Y"},
+  {"rater_id": "r07 ", "qualified": true},
+  {"rater_id": "r08", "qualified": "no"},
+  {"rater_id": "r09", "qualified": "TRUE"},
+  {"rater_id": "r10"}
+]

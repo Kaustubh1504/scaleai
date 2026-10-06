@@ -1,0 +1,13 @@
+{
+  "request": "POST /oauth/token",
+  "status": 200,
+  "headers": {
+    "date": "Wed, 01 May 2024 08:00:00 GMT"
+  },
+  "body": {
+    "access_token": "tok_31e1408dfa099877b28f",
+    "token_type": "bearer",
+    "expires_in": 300.0,
+    "refresh_token": "rft_ecc8b7743a9bf647783b"
+  }
+}

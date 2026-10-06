@@ -1,0 +1,12 @@
+reviewer_id,name,pool,active,capacity,senior
+rv-01,Asha,en,yes,3,yes
+RV-02,Ben, EN,yes,2,no
+rv-03,Carla,en,true,2,
+rv-04,Dmitri,en,no,3,no
+rv-05,Elena,es,yes,2,no
+rv-06,Felipe,es,no,3,yes
+rv-07,Gabriela,es,yes,2,y
+rv-08,Hans,de,1,2,no
+rv-09,Ilse,de,yes,1,no
+rv-10,Jonas,de,,2,no
+rv-11,Karim,fr,yes,2,yes

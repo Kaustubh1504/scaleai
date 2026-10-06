@@ -1,0 +1,16 @@
+episode_id,robot_id,task,operator,recorded_at
+EP-01,arm-01,pick,ana,2026-04-02 09:10
+ep-02,arm-02,pick,ben,04/02/2026 09:40
+EP-03,ARM-03 ,Pick,carl,2026-04-02T10:05:00
+EP-04,arm-04,place,ana,2026-04-02 10:30
+ EP-05,arm-05,stack,dana,04/03/2026 08:15
+EP-06,arm-01,stack,ben,2026-04-03 08:50
+EP-07,arm-02,pick,carl,2026-04-03T09:20:00
+EP-08,arm-05,place,dana,2026-04-03 09:45
+EP-02,arm-02,place,ben,2026-04-03 11:00
+Ep-09,arm-03,place,ana,04/04/2026 13:00
+EP-10,arm-06,pick,ben,2026-04-04 13:30
+EP-11,arm-07,pick,carl,2026-04-04T14:00:00
+EP-12,arm-11,stack,dana,2026-04-04 14:20
+EP-13,ARM-09,place,,2026-04-05 07:55
+EP-14, arm-10,Stack ,ana,04/05/2026 08:30

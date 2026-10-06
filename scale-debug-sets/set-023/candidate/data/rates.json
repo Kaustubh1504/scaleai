@@ -1,0 +1,11 @@
+{
+  "late_after_hours": 24,
+  "late_factor": 0.5,
+  "currency_rates": {"USD": 1.0, "EUR": 0.92, "GBP": "0.79", "INR": 83.1},
+  "task_types": {
+    "bbox": {"per_task_cents": 45},
+    "rank": {"per_task_cents": 30},
+    "transcribe": {"hourly_cents": 1500},
+    "review": {"hourly_cents": 1800}
+  }
+}

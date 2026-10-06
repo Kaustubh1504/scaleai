@@ -1,0 +1,11 @@
+tenant_id,plan,rate_override,discount_pct
+ ACME,Growth ,,15%
+borealis,starter,,
+Cinder,growth,, 0
+dunmore,STARTER, 2/5s,
+elm-labs,free,,
+fjord,scale,,
+Garnet ,growth,,0%
+halcyon,starter,,
+juniper,free,,
+kestrel,scale,30/1m,5%

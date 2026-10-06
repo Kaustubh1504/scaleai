@@ -1,0 +1,116 @@
+{
+  "id": "set-079",
+  "title": "LLM judge score rollup: parsing, medians, weighted leaderboard",
+  "domain": "llm_eval_scoring",
+  "length": "MINI",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "judgescore",
+  "scenario": "Free-text judge replies (JSON, Score: N/D, verdicts) are normalised to 0-1, combined per sample by median, and rolled up into a category-weighted leaderboard and per-category means. Test 2 holds the leaderboard and category table.",
+  "verified": [
+    {
+      "file": "judgescore/parsing.py",
+      "symbol": "extract_fraction",
+      "why_correct": "The regex looks fragile, but it accepts both 'Score' and 'Rating', ':' or '=', decimals and spaces around '/', and requires the keyword. That is exactly README rule 2, and every fraction-style reply in the data parses."
+    },
+    {
+      "file": "judgescore/aggregate.py",
+      "symbol": "median",
+      "why_correct": "`(n - 1) // 2` looks like an off-by-one, but for odd n it is the middle index and for even n it is the lower of the two middle indices, which are then averaged. For n = 2 that gives the mean of both, and for n = 1 the single value."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Malformed JSONL line silently skipped",
+      "type": "swallowed-exception",
+      "file": "judgescore/loader.py",
+      "function": "load_judgments",
+      "test": "test_1_judgments.TestJudgments.test_parse_failures",
+      "old": "            except json.JSONDecodeError:\n                failures.append(f\"line-{n}\")\n                continue",
+      "new": "            except json.JSONDecodeError:\n                continue",
+      "symptom": "Test 1 test_parse_failures: `['j10', 'j15', 'j32', 'j34'] != [..., 'line-21']`. The truncated line 21 is missing from the failures. Sample scores are unchanged.",
+      "why": "Line 21 is truncated JSON. The except branch drops it without recording a failure, so the error is swallowed. s11 still scores 0.67 from its other judge, so nothing else changes.",
+      "unblocks": "test_parse_failures",
+      "hints": [
+        "Which failure is missing, and what is special about that line of the file?",
+        "Look at what load_judgments does when json.loads raises.",
+        "Record it: failures.append(f\"line-{n}\") before `continue`."
+      ],
+      "probes": [
+        "Why did s11's score stay correct with this line silently dropped?",
+        "When is swallowing an exception acceptable, and what should you always do instead of a bare `continue`?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Leaderboard averages display-rounded scores",
+      "type": "float-rounding",
+      "file": "judgescore/reports.py",
+      "function": "build_report",
+      "test": "test_2_leaderboard.TestLeaderboard.test_leaderboard",
+      "old": "weighted_mean(by_model[m], scores, weights)",
+      "new": "weighted_mean(by_model[m], shown, weights)",
+      "symptom": "Test 2 test_leaderboard: `{'atlas-7b': 0.678, 'borealis-13b': 0.68, 'cirrus-70b': 0.775}` instead of 0.679 / 0.681 / 0.776. The ranking order is unchanged.",
+      "why": "`shown` holds scores rounded to 2 decimals for display. Averaging those piles up rounding error (0.8333 becomes 0.83, 0.6667 becomes 0.67), so the leaderboard moves by about 0.001. The spec rounds only the final values.",
+      "unblocks": "test_leaderboard",
+      "hints": [
+        "Each leaderboard value is off by about 0.001. Recompute atlas-7b by hand from the judge replies.",
+        "Which sample-score mapping does the leaderboard use, and how was it built?",
+        "Pass the unrounded `scores` to weighted_mean, not `shown`."
+      ],
+      "probes": [
+        "Why does the category table not show the same drift?",
+        "Name a case where rounding early would change a ranking, not just a value."
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "group_by's default dict shared across calls",
+      "type": "mutable-default",
+      "file": "judgescore/aggregate.py",
+      "function": "group_by",
+      "test": "test_2_leaderboard.TestLeaderboard.test_categories",
+      "old": "def group_by(items, key, into=None):\n    \"\"\"Group items by key(item), appending to `into` when one is given.\"\"\"\n    groups = {} if into is None else into",
+      "new": "def group_by(items, key, into={}):\n    \"\"\"Group items by key(item), appending to `into` when one is given.\"\"\"\n    groups = into",
+      "symptom": "Test 2 test_categories: the table starts with model keys, e.g. `{'atlas-7b': {'n': 12, 'mean': 0.706}, 'borealis-13b': ...}`, ahead of the real categories. In a full-suite run the `n` values are doubled, because the shared dict also kept test_1's run. The leaderboard is unaffected.",
+      "why": "The default dict is created once, when the function is defined. The model grouping and the category grouping (and every later build_report run) fill the same dict, so the category table also gets model keys. The leaderboard looks fine because it only reads its own model keys, and duplicated lists don't change a mean.",
+      "unblocks": "test_categories",
+      "hints": [
+        "Where do the model names in the category table come from?",
+        "Look at group_by's signature and what happens on its second call.",
+        "Use `into=None` and create a fresh dict inside the function."
+      ],
+      "probes": [
+        "Why is the leaderboard still right even though its groups are shared?",
+        "If you ran only test_2 on its own, would the category `n` values be different from a full-suite run? Why?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does load_judgments return?",
+      "a": "A tuple (judgments, failures). judgments is a list of Judgment(judgment_id, sample_id, judge, score) for readable replies on known samples. failures is a list of ids whose reply normalised_score could not read, plus entries for lines that could not be decoded."
+    },
+    {
+      "q": "In what order does normalised_score try the formats?",
+      "a": "First a JSON object (fenced or bare) with a 'score' key, using 'scale' with a default of 10. Then extract_fraction for 'Score/Rating: N/D'. Then the VERDICT regex for pass/fail. A final range check rejects den <= 0 or num outside 0..den."
+    },
+    {
+      "q": "What is the difference between `scores` and `shown` in build_report?",
+      "a": "`scores` comes from sample_scores: sample id -> unrounded median. `shown` is a new dict with each value rounded to 2 decimals, sorted by sample id, and is what the report returns as 'samples'."
+    },
+    {
+      "q": "How does weighted_mean work?",
+      "a": "It takes a list of Sample objects, a sample-id -> score mapping and the category weights, and returns sum(weight[category] * score) / sum(weight[category]) over those samples."
+    },
+    {
+      "q": "How many times is group_by called per build_report?",
+      "a": "Twice: once with key=model (by_model, used for the leaderboard) and once with key=category (by_category, used for the categories table). Neither call passes `into`."
+    },
+    {
+      "q": "Which samples have only one readable judgment?",
+      "a": "s05 (j10 has no score phrase), s08 (j15 is 11/10), s11 (judge-b's line is malformed), s15, s17 (j32's score is 'high') and s18. s19's only reply is unreadable and s20 has none."
+    }
+  ]
+}

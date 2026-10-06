@@ -1,0 +1,22 @@
+{"id": "b-1001", "task": "T02", "worker": "a10", "answer": "clean", "submitted": 1772446800}
+{"id": "b-1002", "task": "T03", "worker": "a09", "answer": "toxic", "submitted": 1772451000}
+{"id": "b-1003", "task": "t03", "worker": "a10", "answer": "threat", "submitted": 1772451300}
+{"id": "b-1004", "task": "T04", "worker": "A09", "answer": "clean", "submitted": 1772454000}
+{"id": "b-1005", "task": "S01", "worker": "a05", "answer": "spam", "submitted": 1772525400}
+{"id": "b-1006", "task": "S03", "worker": "a03", "answer": "ham", "submitted": 1772532000}
+{"id": "b-1007", "task": "S03", "worker": "a04", "answer": "Ham", "submitted": 1772532300}
+{"id": "b-1008", "task": "S03", "worker": "a10", "answer": "ham", "submitted": 1772532600}
+{"id": "b-1009", "task": "S04", "worker": "a03", "answer": "spam", "submitted": 1772543400}
+{"id": "b-1010", "task": "Q01", "worker": "a07", "answer": "good", "submitted": 1772616000}
+{"id": "b-1011", "task": "Q02", "worker": "a11", "answer": "fair", "submitted": 1772619000}
+{"id": "b-1012", "task": "Q02", "worker": "a07", "answer": "fair ", "submitted": 1772619300}
+{"id": "b-1013", "task": "Q03", "worker": "a03", "answer": "fair", "submitted": 1772622600}
+{"id": "b-1014", "task": "Q04", "worker": "a07", "answer": "good", "submitted": 1772626800}
+{"id": "b-1015", "task": "Q04", "worker": "a11", "answer": "good", "submitted": 1772627100}
+{"id": "b-1016", "task": "Q04", "worker": "a03", "answer": "GOOD", "submitted": 1772627400}
+{"id": "b-1017", "task": "Q05", "worker": "a11", "answer": "good", "submitted": 1772629200}
+{"id": "b-1018", "task": "Q05", "worker": "a07", "answer": "good", "submitted": 1772629500}
+{"id": "b-1019", "task": "S01", "worker": "zz99", "answer": "spam", "submitted": 1772526000}
+{"id": "b-1020", "task": "Q02", "worker": "a09", "answer": "fair", "submitted": 1772619600}
+{"id": "b-1021", "task": "S03", "worker": "a07", "answer": "ham", "submitted": 1772532900}
+{"id": "b-1022", "task": "T01", "worker": "a03", "answer": "nsfw", "submitted": 1772444400}

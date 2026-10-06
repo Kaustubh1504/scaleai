@@ -1,0 +1,181 @@
+{
+  "id": "set-060",
+  "title": "Async embedding backfill: paginated dataset, batches, index commit",
+  "domain": "endpoint_client",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "vecsync",
+  "scenario": "An asyncio client pages through a dataset API, selects records, embeds them in concurrent batches (semaphore, retries with backoff), classifies each batch result, and commits ok batches to a vector index via gather. Test 3 is the run report (commit outcome, tokens).",
+  "verified": [
+    {
+      "file": "vecsync/retry.py",
+      "symbol": "backoff_delay",
+      "why_correct": "`2 ** (attempt - 1)` looks like an off-by-one next to the README's backoff_s x 2^(n-1), but attempt is 1-based here (with_retries increments before calling), so the first wait is backoff_s and the second is 2 x backoff_s, exactly as specified. Retry-After takes precedence, including '0'."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Last page's records dropped",
+      "type": "pagination-cursor",
+      "file": "vecsync/dataset.py",
+      "function": "fetch_all",
+      "test": "test_1_requests.TestRequests.test_dataset_fully_read",
+      "old": "        records.extend(page[\"records\"])\n        token = page.get(\"next_page_token\")\n        if not token:\n            break\n",
+      "new": "        token = page.get(\"next_page_token\")\n        if not token:\n            break\n        records.extend(page[\"records\"])\n",
+      "symptom": "test_1_requests.test_dataset_fully_read: (fetched, pages) is (25, 6) instead of (27, 6). Selection, batches and vectors are unchanged because the last page holds only deleted records.",
+      "why": "The loop breaks as soon as next_page_token is null, before the page that carried the null token is added, so the final page's records (faq-26, faq-27) are lost. They happen to be deleted records, so nothing downstream changes, only `fetched`.",
+      "unblocks": "test_dataset_fully_read.",
+      "hints": [
+        "fetched is 25 but the dataset has 27 records, and all 6 pages were requested. Which records are missing?",
+        "Look at the order of operations inside fetch_all's loop.",
+        "Extend records with the page before checking for the end."
+      ],
+      "probes": [
+        "Why didn't the missing records change any batch or vector?",
+        "What would happen with this code if the dataset fit in a single page?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Semaphore created but never acquired for embeddings",
+      "type": "semaphore-unused",
+      "file": "vecsync/client.py",
+      "function": "EmbeddingClient.embed_batch",
+      "test": "test_1_requests.TestRequests.test_concurrency_limit",
+      "old": "        async with self.sem:\n            response, attempts = await self._send_embeddings(batch_id, records)\n",
+      "new": "        response, attempts = await self._send_embeddings(batch_id, records)\n",
+      "symptom": "test_1_requests.test_concurrency_limit: max_in_flight is 6 (or however many worker threads are free) instead of 2.",
+      "why": "self.sem is built from max_concurrency but embed_batch never enters it, so gather launches all six batches at once and the server sees more than 2 embedding requests in flight.",
+      "unblocks": "test_concurrency_limit.",
+      "hints": [
+        "The server saw more simultaneous embedding requests than max_concurrency. Where is the limit enforced?",
+        "Find where self.sem is used, and where it isn't.",
+        "Wrap the _send_embeddings call in `async with self.sem:`."
+      ],
+      "probes": [
+        "Why did every result still come out right without the limit?",
+        "Should the semaphore be held during the retry backoff sleeps? What are the trade-offs?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Backoff sleep never awaited",
+      "type": "missing-await",
+      "file": "vecsync/retry.py",
+      "function": "with_retries",
+      "test": "test_1_requests.TestRequests.test_backoff_between_attempts",
+      "old": "        await asyncio.sleep(backoff_delay(response, attempt, base))",
+      "new": "        asyncio.sleep(backoff_delay(response, attempt, base))",
+      "symptom": "test_1_requests.test_backoff_between_attempts: 'gaps between b2 attempts: [0.059, 0.052]' (about the server latency) instead of at least 0.1 and 0.2 s. A 'coroutine ... was never awaited' RuntimeWarning appears in the output. Attempt counts stay right.",
+      "why": "asyncio.sleep() only creates a coroutine; without await it never runs (Python warns 'coroutine was never awaited'), so retries go out immediately with no backoff.",
+      "unblocks": "test_backoff_between_attempts.",
+      "hints": [
+        "b2's retries arrive about 0.05 s apart. How long should the client wait?",
+        "Look at what with_retries does between attempts. Check the warnings in the test output.",
+        "await the asyncio.sleep call."
+      ],
+      "probes": [
+        "Why does the attempt count stay right even though no waiting happens?",
+        "What would time.sleep() do here instead, and why is that worse?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "4xx responses passed to the parser",
+      "type": "ignoring-http-status",
+      "file": "vecsync/client.py",
+      "function": "EmbeddingClient.embed_batch",
+      "test": "test_2_results.TestResults.test_rejected_batch",
+      "old": "        if response.status >= 400:",
+      "new": "        if response.status >= 500:",
+      "symptom": "test_2_results.test_rejected_batch: b5 has status 'bad_response' (http_status 400) instead of 'http_error'.",
+      "why": "Only 5xx is treated as an HTTP failure, so b5's 400 error body is handed to parse_embeddings, which finds no data list and reports bad_response, hiding the real HTTP status problem.",
+      "unblocks": "test_rejected_batch.",
+      "hints": [
+        "b5 got HTTP 400. Why does its status say bad_response?",
+        "Look at how embed_batch decides a response failed.",
+        "Treat any status >= 400 as http_error."
+      ],
+      "probes": [
+        "Why wasn't b5 retried either way?",
+        "Which other status codes would have slipped through this check?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Base ResponseError caught before DimensionMismatch",
+      "type": "exception-order",
+      "file": "vecsync/client.py",
+      "function": "EmbeddingClient.embed_batch",
+      "test": "test_2_results.TestResults.test_dimension_mismatch",
+      "old": "        except DimensionMismatch:\n            result.status = \"dim_mismatch\"\n        except ResponseError:\n            result.status = \"bad_response\"\n",
+      "new": "        except ResponseError:\n            result.status = \"bad_response\"\n        except DimensionMismatch:\n            result.status = \"dim_mismatch\"\n",
+      "symptom": "test_2_results.test_dimension_mismatch: b4 has status 'bad_response' instead of 'dim_mismatch'.",
+      "why": "DimensionMismatch subclasses ResponseError, and except clauses are tried top to bottom, so the base-class clause catches it first and the dim_mismatch branch can never run.",
+      "unblocks": "test_dimension_mismatch.",
+      "hints": [
+        "b4's vectors have 3 dims, but its status is bad_response. Which exception does parse_embeddings raise?",
+        "Look at the class hierarchy in parsing.py and the order of the except clauses.",
+        "Put `except DimensionMismatch` before `except ResponseError`."
+      ],
+      "probes": [
+        "Why does the order of except clauses matter only for related classes?",
+        "How would you have caught this with a linter or a test?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "One upsert failure hides every commit outcome",
+      "type": "gather-hides-failures",
+      "file": "vecsync/runner.py",
+      "function": "commit",
+      "test": "test_3_report.TestReport.test_commit_outcomes",
+      "old": "    outcomes = await asyncio.gather(*(client.upsert(r) for r in ok), return_exceptions=True)",
+      "new": "    outcomes = await asyncio.gather(*(client.upsert(r) for r in ok))",
+      "symptom": "test_3_report.test_commit_outcomes: {'committed': [], 'failed': ['b6']} instead of {'committed': ['b1', 'b2', 'b3'], 'failed': ['b6']}.",
+      "why": "Without return_exceptions, gather raises b6's UpsertError as soon as it happens and the other outcomes are thrown away. run() catches it and reports committed [] / failed ['b6'], although b1-b3 committed fine.",
+      "unblocks": "test_commit_outcomes.",
+      "hints": [
+        "commit says nothing was committed, but the index accepted three batches. Where are their outcomes?",
+        "Look at how commit() collects the upsert results.",
+        "Pass return_exceptions=True to asyncio.gather."
+      ],
+      "probes": [
+        "Why does commit() check isinstance(outcome, UpsertError) separately from other exceptions?",
+        "With the bug, did the b1-b3 upserts actually reach the server?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What happens inside run(), step by step?",
+      "a": "It loads the config, builds an EmbeddingClient, calls fetch_all to page through the dataset, select() to filter and clean records, make_batches to cut them into b1..bN, gathers embed_batch for every batch, then calls commit() for the ok batches (catching UpsertError) and assembles the report."
+    },
+    {
+      "q": "How does transport.request work with asyncio?",
+      "a": "It runs the blocking urllib call `_send` via asyncio.to_thread. `_send` returns a Response for 2xx and also for HTTPError (4xx/5xx), with the status, headers and JSON-decoded body; it never raises for an HTTP status."
+    },
+    {
+      "q": "How does fetch_all move from page to page?",
+      "a": "It calls client.records_page(token), starting with None; records_page adds `page_token` to the query when a token is given. fetch_all counts pages, reads `next_page_token` from each page and stops when it is falsy."
+    },
+    {
+      "q": "What does with_retries return, and what counts as retryable?",
+      "a": "(response, attempts). It loops calling call(), returning when the status is not in RETRYABLE {429, 500, 502, 503, 504} or attempt > max_retries; otherwise it calls asyncio.sleep with backoff_delay(response, attempt, base)."
+    },
+    {
+      "q": "What can parse_embeddings raise?",
+      "a": "ResponseError if the body has no data list or the indexes aren't exactly 0..count-1, and DimensionMismatch (a subclass of ResponseError) if any vector's length differs from the configured dimensions. It returns vectors sorted by index."
+    },
+    {
+      "q": "Where is the semaphore used?",
+      "a": "EmbeddingClient.__init__ creates `self.sem = asyncio.Semaphore(config.max_concurrency)`. `upsert` acquires it around its request; look at embed_batch to see how it sends the embeddings request."
+    },
+    {
+      "q": "What does the mock server do with each batch?",
+      "a": "b2 gets two 503s then succeeds, b3 a 429 with Retry-After: 0 then succeeds, b4 succeeds but with 3-dim vectors, b5 always gets 400, b1's data comes back in reverse index order, and the index upsert for b6 returns 500. Each embeddings request sleeps 50 ms and the server tracks the maximum number in flight."
+    }
+  ]
+}

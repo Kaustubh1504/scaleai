@@ -1,0 +1,15 @@
+{
+  "model": "embed-small-3",
+  "dimensions": 4,
+  "batch_size": 3,
+  "max_concurrency": 2,
+  "max_retries": 2,
+  "backoff_seconds": 0.05,
+  "usage_page_size": 2,
+  "defaults": {"normalize": true},
+  "collections": {
+    "faq": {"normalize": true},
+    "KB": {"normalize": false},
+    "policies": {"normalize": true}
+  }
+}

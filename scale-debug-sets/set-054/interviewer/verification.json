@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_transitions"
+    ],
+    "failures": {
+      "tests.test_1_transitions.TestTransitions.test_rejection_reasons": "AssertionError: Lists differ: ['not_assignee', 'not_assignee', 'invalid_t[98 chars]ion'] != ['conflict_of_interest', 'conflict_of_inter[122 chars]ion']\n\nFirst differing element 0:\n'not_assignee'\n'conflict_of_interest'\n\n- ['not_assignee',\n-  'not_assignee',\n+ ['conflict_of_interest',\n+  'conflict_of_interest',\n   'invalid_transition',\n   'not_assignee',\n   'unknown_task',\n-  'not_assignee',\n+  'conflict_of_interest',\n   'invalid_transition',\n   'invalid_transition']"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_tasks"
+    ],
+    "failures": {
+      "tests.test_2_tasks.TestTasks.test_history": "AssertionError: Lists differ: ['submitted', 'submitted', 'submitted', 'submitted', 'su[1125 chars]ted'] != ['submitted', 'l1_review', 'awaiting_l2', 'l2_review', 'approved']\n\nFirst differing element 1:\n'submitted'\n'l1_review'\n\nFirst list contains 83 additional elements.\nFirst extra element 5:\n'submitted'\n\nDiff is 1519 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_tasks"
+    ],
+    "failures": {
+      "tests.test_2_tasks.TestTasks.test_waiting_queue": "AssertionError: Lists differ: [['T2[15 chars], ['T7', 'awaiting_l2'], ['T12', 'submitted'],[39 chars]ed']] != [['T2[15 chars], ['T11', 'submitted'], ['T12', 'submitted'], [39 chars]ed']]\n\nFirst differing element 1:\n['T7', 'awaiting_l2']\n['T11', 'submitted']\n\n  [['T2', 'submitted'],\n+  ['T11', 'submitted'],\n+  ['T12', 'submitted'],\n   ['T7', 'awaiting_l2'],\n-  ['T12', 'submitted'],\n-  ['T11', 'submitted'],\n   ['T10', 'submitted']]"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_tasks"
+    ],
+    "failures": {
+      "tests.test_2_tasks.TestTasks.test_reviewer_stats": "AssertionError: {'Dana': {'passed': 1, 'changes': 1, 'rejec[209 chars]: 1}} != {'dana': {'passed': 2, 'changes': 1, 'rejec[157 chars]: 1}}\n- {'Dana': {'changes': 1, 'passed': 1, 'rejected': 0},\n?   ^                               ^\n\n+ {'dana': {'changes': 1, 'passed': 2, 'rejected': 0},\n?   ^                               ^\n\n-  'dana': {'changes': 0, 'passed': 1, 'rejected': 0},\n   'lee': {'changes': 0, 'passed': 2, 'rejected': 1},\n   'rae': {'changes': 1, 'passed': 3, 'rejected': 1},\n   'sam': {'changes': 0, 'passed': 3, 'rejected': 1}}"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_cycle_hours": "AssertionError: {'T1': 2.2, 'T3': 0.5, 'T4': 6.0, 'T5': 3.5, 'T6': 21.5, 'T8': 23.7, 'T9': 3.0} != {'T1': 2.2, 'T3': 24.5, 'T4': 6.0, 'T5': 3.5, 'T6': 21.5, 'T8': 23.7, 'T9': 3.0}\n- {'T1': 2.2, 'T3': 0.5, 'T4': 6.0, 'T5': 3.5, 'T6': 21.5, 'T8': 23.7, 'T9': 3.0}\n?                   ^\n\n+ {'T1': 2.2, 'T3': 24.5, 'T4': 6.0, 'T5': 3.5, 'T6': 21.5, 'T8': 23.7, 'T9': 3.0}\n?                   ^^\n"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_approval_rate": "AssertionError: 0.0 != 0.571"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_transitions",
+      "test_2_tasks",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_transitions.TestTransitions.test_rejection_reasons",
+      "tests.test_2_tasks.TestTasks.test_history",
+      "tests.test_2_tasks.TestTasks.test_reviewer_stats",
+      "tests.test_2_tasks.TestTasks.test_waiting_queue",
+      "tests.test_3_report.TestReport.test_approval_rate",
+      "tests.test_3_report.TestReport.test_cycle_hours"
+    ]
+  }
+}

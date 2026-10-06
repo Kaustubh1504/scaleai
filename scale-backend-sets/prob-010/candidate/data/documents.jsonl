@@ -1,0 +1,20 @@
+{"doc_id": "DOC-1001", "title": "msa_acme.pdf", "text": "Master services agreement between Acme Corp and Globex. Both parties agree to the termination clause in section 9."}
+{"doc_id": "DOC-1002", "title": "inv_88213.pdf", "text": "Invoice 88213. Amount due: $4,200.00 including tax. Please remit by June 30."}
+{"doc_id": "DOC-1003", "title": "scan_0412.jpg", "text": "Passport. Surname: Okafor. Nationality: Nigerian. Date of birth: 1990-04-12."}
+{"doc_id": "DOC-1004", "title": "letter_ruiz.txt", "text": "Dear support team, I have a problem with my account and need assistance. Sincerely, M. Ruiz"}
+{"doc_id": "DOC-1099", "title": "broken.pdf", "text": "truncated
+{"doc_id": "DOC-1005", "title": "newsletter_q2.pdf", "text": "Quarterly newsletter: our office moves to the fifth floor next month."}
+["DOC-1098", "array.pdf", "a JSON array, not an object"]
+{"doc_id": "DOC-1006", "title": "renewal_terms.pdf", "text": "Renewal agreement. Payment terms: net 30."}
+{"doc_id": "DOC-1002", "title": "inv_88213_copy.pdf", "text": "Invoice 88213 (duplicate upload)."}
+{"doc_id": "../secrets", "title": "evil.txt", "text": "Path traversal attempt in the id."}
+{"doc_id": "DOC-1007", "title": "nda_initech.pdf", "text": "Mutual non-disclosure agreement. Each party hereby agrees to keep the other party's information confidential."}
+{"doc_id": "DOC-1013", "title": "blank.pdf", "text": "   "}
+{"doc_id": "DOC-1014", "title": "numeric.pdf", "text": 12345}
+{"doc_id": "DOC-1008", "title": "inv_88214.pdf", "text": "Invoice 88214 for consulting services. Total due $950."}
+
+{"doc_id": "DOC-1009", "title": "license_scan.png", "text": "Driver license. ID number D1234567. Date of birth 1985-11-02.", "pages": 1}
+{"doc_id": "DOC-1015", "text": "A document without a title."}
+{"doc_id": "DOC-1010", "title": "complaint_lee.txt", "text": "I want to file a complaint: the issue with my delivery is still not fixed."}
+{"doc_id": "DOC-1011", "title": "memo.txt", "text": "Reminder: the parking lot will be repaved on Saturday."}
+{"doc_id": "DOC-1012", "title": "help_identity.txt", "text": "Please help, my identity was stolen."}

@@ -1,0 +1,9 @@
+{
+  "model": "embed-small-3",
+  "job_id": " backfill-0412 ",
+  "batch_size": 3,
+  "max_concurrency": 2,
+  "max_retries": 3,
+  "backoff_seconds": 0.5,
+  "page_size": 5
+}

@@ -1,0 +1,12 @@
+[
+  {"id": "a01", "tool": "brat"},
+  {"id": "a02", "tool": "brat"},
+  {"id": "A03", "tool": "LabelKit"},
+  {"id": "a04", "tool": "brat"},
+  {"id": "a05", "tool": "labelkit "},
+  {"id": "a06", "tool": "brat"},
+  {"id": "a07", "tool": "brat"},
+  {"id": "a08", "tool": "labelkit"},
+  {"id": "a09", "tool": "brat"},
+  {"id": "a10", "tool": "brat"}
+]

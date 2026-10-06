@@ -1,0 +1,181 @@
+{
+  "id": "set-064",
+  "title": "Overnight queue simulation with retries",
+  "domain": "job_scheduler",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "nightshift",
+  "scenario": "Simulate an overnight batch run minute by minute: per-queue slots, priority 1 most urgent, same-queue dependencies, scripted failures retried up to max_retries with linear backoff. Report each job's timeline, wait and lateness.",
+  "verified": [
+    {
+      "file": "nightshift/retry.py",
+      "symbol": "next_ready_at",
+      "why_correct": "Rule 5 asks for backoff_min × n after the n-th failed attempt, and the dispatcher passes job.attempts, which already counts the failed attempt. Multiplying by the attempt number looks like it should be an exponent or n-1, but linear backoff is exactly what the spec says."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Priority order reversed",
+      "type": "sort-direction",
+      "file": "nightshift/dispatcher.py",
+      "function": "dispatch_order",
+      "test": "test_1_dispatch.TestDispatch.test_1_etl_schedule",
+      "old": "    return sorted(ready, key=lambda j: (j.priority, j.submitted_at, j.job_id))",
+      "new": "    return sorted(ready, key=lambda j: (-j.priority, j.submitted_at, j.job_id))",
+      "symptom": "Test 1 test_1_etl_schedule: etl-3 (priority 3) runs first at 00:00 and etl-2/etl-4 (priority 1) run last. The other queues' timelines are unchanged.",
+      "why": "Negating the priority puts the highest number first, but in this repo priority 1 is the most urgent. Only the etl queue ever has ready jobs of different priorities competing for a slot, so only its timeline moves.",
+      "unblocks": "test_1_etl_schedule.",
+      "hints": [
+        "etl-3 has priority 3. Should it be the first etl job to run?",
+        "Check dispatch_order against rule 3 of the README.",
+        "Drop the minus sign: sort by (j.priority, j.submitted_at, j.job_id)."
+      ],
+      "probes": [
+        "Why didn't the ops, reports or training timelines change?",
+        "The comment says 'most urgent first'. What does 'most urgent' mean in this repo?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "One retry too few",
+      "type": "retry-off-by-one",
+      "file": "nightshift/retry.py",
+      "function": "should_retry",
+      "test": "test_1_dispatch.TestDispatch.test_2_training_outcomes",
+      "old": "    return job.attempts <= job.max_retries",
+      "new": "    return job.attempts < job.max_retries",
+      "symptom": "Test 1 test_2_training_outcomes: trn-1 is failed after 2 attempts (finished None) and trn-2 is blocked with 0 attempts.",
+      "why": "`job.attempts` already counts the failed attempt, so with max_retries 2 the job must still retry after attempt 2. `<` stops at max_retries attempts in total, so trn-1 fails after two attempts and its dependent trn-2 is blocked.",
+      "unblocks": "test_2_training_outcomes.",
+      "hints": [
+        "trn-1 has max_retries 2 and succeeds on attempt 3. How many attempts does it get?",
+        "Look at the condition that decides whether a failed job is retried.",
+        "should_retry uses `<`; the spec allows a retry while n ≤ max_retries."
+      ],
+      "probes": [
+        "Why did ops-3 (max_retries 3, one failure) still get its retry?",
+        "Why does fixing this also change trn-2?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Dependency ids only trimmed",
+      "type": "id-normalization",
+      "file": "nightshift/loader.py",
+      "function": "load_jobs",
+      "test": "test_2_jobs.TestJobs.test_3_reports_dependencies",
+      "old": "                depends_on=[norm_id(d) for d in split_deps(r[\"depends_on\"])],",
+      "new": "                depends_on=[d.strip() for d in split_deps(r[\"depends_on\"])],",
+      "symptom": "Test 2 test_3_reports_dependencies: rpt-2 is blocked with no start or finish; rpt-1, rpt-3 and rpt-4 are unchanged.",
+      "why": "Job ids are lower-cased but the dependency list is only trimmed, so rpt-2's `RPT-1` never matches a job and deps_done is never true. rpt-4's lower-case dependencies still match.",
+      "unblocks": "test_3_reports_dependencies.",
+      "hints": [
+        "rpt-1 finished at 00:45. Why did rpt-2 never start?",
+        "Compare how job ids and dependency ids are normalised in the loader.",
+        "Use norm_id(d) for depends_on, not d.strip()."
+      ],
+      "probes": [
+        "Why did rpt-4 run fine even though it also has dependencies?",
+        "What would deps_done return if a dependency named a job in another queue?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Wait uses timedelta.seconds",
+      "type": "timedelta-seconds",
+      "file": "nightshift/timeutil.py",
+      "function": "minutes_between",
+      "test": "test_2_jobs.TestJobs.test_4_ops_wait_minutes",
+      "old": "    return int((later - earlier).total_seconds() // 60)",
+      "new": "    return int((later - earlier).seconds // 60)",
+      "symptom": "Test 2 test_4_ops_wait_minutes: ops-1 shows 150 instead of 1590; the other waits are right.",
+      "why": "`timedelta.seconds` is only the seconds part after whole days are taken out. ops-1 waited 1 day 2 h 30 min, and `.seconds` drops the day, giving 150 instead of 1590.",
+      "unblocks": "test_4_ops_wait_minutes.",
+      "hints": [
+        "ops-1 was submitted on May 2. How long had it waited by 00:00 on May 4?",
+        "Look at how minutes_between turns a timedelta into minutes.",
+        "Use total_seconds(), not .seconds."
+      ],
+      "probes": [
+        "Why were all the other wait times right?",
+        "What would `.seconds` give for a negative timedelta of one minute?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Queue logs share one default list",
+      "type": "mutable-default",
+      "file": "nightshift/models.py",
+      "function": "QueueLog.__init__",
+      "test": "test_3_summary.TestSummary.test_5_attempts_for_etl_and_ops",
+      "old": "    def __init__(self, name, entries=None):\n        self.name = name\n        self.entries = [] if entries is None else entries",
+      "new": "    def __init__(self, name, entries=[]):\n        self.name = name\n        self.entries = entries",
+      "symptom": "Test 3 test_5_attempts_for_etl_and_ops: etl and ops both show the same inflated count (57 when the whole suite runs, since every build_report() call adds 19 attempts to one shared list) instead of 5 and 5.",
+      "why": "A default `[]` is created once, when the function is defined, so every QueueLog built without entries appends to the same list. All four queues end up reporting the same length, and because the list lives at module level it keeps growing every time build_report() runs in the same process.",
+      "unblocks": "test_5_attempts_for_etl_and_ops.",
+      "hints": [
+        "etl and ops report the same count, and it is far more than the 16 jobs could run. Where could the extra entries come from?",
+        "Look at how QueueLog gets its entries list.",
+        "Use `entries=None` and create a new list inside __init__."
+      ],
+      "probes": [
+        "Why does the count change depending on how many tests ran before this one?",
+        "Why didn't the per-job attempt counts change?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Finishing on the deadline counted as late",
+      "type": "time-window-boundary",
+      "file": "nightshift/report.py",
+      "function": "is_late",
+      "test": "test_3_summary.TestSummary.test_6_late_jobs",
+      "old": "job.finished_at > job.deadline",
+      "new": "job.finished_at >= job.deadline",
+      "symptom": "Test 3 test_6_late_jobs: ops-1, which finishes exactly at its 00:40 deadline, is listed as late.",
+      "why": "The spec says finishing exactly at the deadline is on time. `>=` makes ops-1, which finishes at its 00:40 deadline, late.",
+      "unblocks": "test_6_late_jobs.",
+      "hints": [
+        "Compare ops-1's finish time with its deadline.",
+        "Look at the comparison in is_late.",
+        "Use finished_at > deadline."
+      ],
+      "probes": [
+        "Why does only ops-1 change?",
+        "Which test data would you add to pin down this boundary?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() do, step by step?",
+      "a": "It loads the config, the jobs (with deadlines placed on the run day) and the scripted outcomes. Then, for each queue name in sorted order, it calls `run_queue` with that queue's jobs and slot count and keeps the returned QueueLog. Job rows and the summary are built after every queue has run."
+    },
+    {
+      "q": "How does run_queue decide what to start each minute?",
+      "a": "It first completes running attempts whose finish time is at or before the current minute, looking up each outcome by `(job_id, attempts)`. Then it builds the ready list (pending, `ready_at <= now`, `deps_done`), sorts it with `dispatch_order` and starts as many as there are free slots."
+    },
+    {
+      "q": "When is job.attempts incremented relative to should_retry?",
+      "a": "It is incremented when an attempt starts. So when a failed attempt completes and `should_retry(job)` runs, `job.attempts` already includes that failed attempt."
+    },
+    {
+      "q": "What does deps_done check?",
+      "a": "That every id in `job.depends_on` is a key in `by_id` (the jobs of the same queue) and that job's status is `done`."
+    },
+    {
+      "q": "Where do wait_min values come from?",
+      "a": "`report.wait_minutes` returns None if the job never started, otherwise `timeutil.minutes_between(job.submitted_at, job.first_start)`. `first_start` is set the first time the job is dispatched."
+    },
+    {
+      "q": "What is QueueLog used for?",
+      "a": "`run_queue` creates one per queue and calls `record(job_id, attempt, outcome)` each time an attempt completes. The summary's `attempts_by_queue` is the length of each log's `entries` list."
+    },
+    {
+      "q": "How are deadlines parsed?",
+      "a": "`parse_deadline` splits `HH:MM` and replaces the hour and minute on `run_start`, so every deadline is on the run day. A blank cell gives None, and is_late treats None as no deadline."
+    }
+  ]
+}

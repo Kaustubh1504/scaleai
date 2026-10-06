@@ -1,0 +1,193 @@
+{
+  "id": "set-074",
+  "title": "Rubric-calibrated Likert consensus",
+  "domain": "annotation_consensus",
+  "length": "FULL",
+  "difficulty": "hard",
+  "format": "multi",
+  "package": "likert",
+  "scenario": "Measure each annotator's per-rubric bias on gold items (memoised per run), subtract it from their 1-5 ratings, and resolve each item by median with an agreement threshold. Test 3 summarises statuses per rubric.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_calibration",
+      "test_2_consensus",
+      "test_3_summary"
+    ]
+  },
+  "verified": [
+    {
+      "file": "likert/utils.py",
+      "symbol": "parse_submitted",
+      "why_correct": "Epoch values look like they might be milliseconds, but the spec says epoch seconds, and fromtimestamp(..., tz=utc) followed by dropping tzinfo gives the naive UTC time that matches the text formats. The values decode to the same June 2026 window as the text timestamps."
+    },
+    {
+      "file": "likert/calibration.py",
+      "symbol": "adjust",
+      "why_correct": "Subtracting the bias looks backwards, but bias is mean(score - gold), so an annotator who rates high has a positive bias and score - bias pulls them back toward gold. The clamp keeps results on the 1-5 scale (I06: a03's 4 + 1 becomes 5)."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Ratings on the closing day dropped",
+      "type": "time-window-boundary",
+      "file": "likert/loader.py",
+      "function": "counting_ratings",
+      "old": "        if not config[\"opens\"] <= r.submitted_at.date() <= config[\"closes\"]:",
+      "new": "        if not config[\"opens\"] <= r.submitted_at.date() < config[\"closes\"]:",
+      "symptom": "Test 1: a08's v2 bias is 0.0 instead of -2.0. Test 2: I12 has 0 votes and I10 has 2 (both insufficient), and I02/I08 scores shift (2.25, 3.5) because a08's v2 lean is no longer removed. Test 3: v2 shows 2 insufficient and I08 becomes contested.",
+      "why": "The window includes the whole closing day. `<` on the date drops every rating from 2026-06-14, including a08's only v2 gold rating and all of I12's ratings.",
+      "unblocks": "Test 1 (a08 v2) and the I10/I12 rows in Test 2.",
+      "hints": [
+        "I12 has 4 ratings in the export, yet it is insufficient. When were they submitted?",
+        "Check the window comparison against README rule 2.",
+        "Use `<= config[\"closes\"]` so the closing day counts."
+      ],
+      "probes": [
+        "Why was I10's 2026-06-15 00:05 rating correctly excluded both before and after the fix?",
+        "Why does the bias table change when only the closing day is affected?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Bias pools gold from both rubrics",
+      "type": "counting-wrong-subset",
+      "file": "likert/calibration.py",
+      "function": "compute_bias",
+      "old": "    rows = [r for r in gold if r.annotator_id == annotator_id and items[r.item_id].rubric == rubric]",
+      "new": "    rows = [r for r in gold if r.annotator_id == annotator_id]",
+      "symptom": "Test 1: each annotator has one blended bias for both rubrics (a01 0.5/0.5, a02 0.25/0.25, a05 0.333/0.333 ...). Test 2: most scores move (I02 2.208, I03 3.75 and contested, I06 4.542 ...). Test 3: contested becomes ['I03', 'I04', 'I08', 'I09', 'I10'].",
+      "why": "The bias must come from that annotator's gold ratings of the same rubric. Pooling both rubrics gives one blended value per annotator (a01: 0.5 for both instead of 1.0 / 0.0).",
+      "unblocks": "Test 1 bias table; it exposes B3.",
+      "hints": [
+        "Every annotator has the same bias for v1 and v2. Is that plausible from the gold data?",
+        "Which gold rows does compute_bias average?",
+        "Filter rows by items[r.item_id].rubric == rubric as well as by annotator."
+      ],
+      "probes": [
+        "Why did a03 and a04 look correct even with this bug?",
+        "After this fix, why does the table still show identical v1/v2 values for most annotators?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Memo key ignores the rubric",
+      "type": "cache-key-missing-param",
+      "file": "likert/calibration.py",
+      "function": "bias_for",
+      "old": "    return memo.get_or_compute((annotator_id, rubric), lambda: compute_bias(gold, items, annotator_id, rubric))",
+      "new": "    return memo.get_or_compute(annotator_id, lambda: compute_bias(gold, items, annotator_id, rubric))",
+      "masked_by": [
+        "B2"
+      ],
+      "symptom": "Only visible after B2 is fixed. Test 1: v2 repeats the v1 value for annotators whose first rated item was v1 (a01 1.0/1.0, a02 0.0/0.0, a05 0.5/0.5). Test 2: I02 3.0, I06 4.5, I08 4.0, I10 2.5, I12 4.0. Test 3: contested becomes ['I04', 'I09', 'I10'].",
+      "why": "The memo is keyed by annotator only, so whichever rubric is computed first for an annotator is returned for the other rubric too. consensus.resolve walks items in file order, so most annotators get their first-seen rubric's bias for both.",
+      "unblocks": "Test 1 bias table and the scores/agreements in Test 2.",
+      "hints": [
+        "After B2, a01 still shows 1.0 for v2. Compute a01's v2 bias by hand from the gold rows.",
+        "compute_bias gives the right answer when called directly. What sits between it and the report?",
+        "The memo key must include the rubric: (annotator_id, rubric)."
+      ],
+      "probes": [
+        "Why was this invisible while compute_bias ignored the rubric?",
+        "Why does a02 come out with 0.0 for both rubrics rather than 0.5?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Even-length median takes the upper pair",
+      "type": "off-by-one",
+      "file": "likert/aggregate.py",
+      "function": "median",
+      "old": "    return (ordered[mid - 1] + ordered[mid]) / 2",
+      "new": "    return (ordered[mid] + ordered[mid + 1]) / 2",
+      "symptom": "Test 2 only: every 4-vote item's score is too high (I02 3.0, I06 4.75, I07 4.25, I08 5.0, I09 3.75, I12 4.0). 3- and 5-vote items are unaffected, and statuses happen not to change.",
+      "why": "For an even count n, the two middle values are at n//2 - 1 and n//2. Using n//2 and n//2 + 1 averages the upper pair, which inflates every 4-vote median.",
+      "unblocks": "Test 2 scores for the 4-vote items and the dependent agreement/status.",
+      "hints": [
+        "Only items with 4 votes have the score off. What do they have in common?",
+        "Work the median of [2, 2.5, 3, 3] by hand and compare with the code.",
+        "Use ordered[mid - 1] and ordered[mid] for the even case."
+      ],
+      "probes": [
+        "Why don't the 3- and 5-vote items change?",
+        "With min_votes 3, why doesn't this ever raise IndexError?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Agreement counter not reset per item",
+      "type": "state-not-reset",
+      "file": "likert/consensus.py",
+      "function": "resolve",
+      "old": "    results = {}\n    for item in items.values():\n        if item.gold is not None:\n            continue\n        within = 0\n",
+      "new": "    results = {}\n    within = 0\n    for item in items.values():\n        if item.gold is not None:\n            continue\n",
+      "symptom": "Test 2: agreement keeps growing past 1.0 (I02 2.0, I03 2.2, ...) so nothing is contested. Test 3: contested is [] and by_rubric shows 0 contested for both rubrics.",
+      "why": "`within` is set once before the loop, so each item's count adds on top of every earlier item's. Agreement climbs above 1.0 and nothing after I01 can be contested.",
+      "unblocks": "Test 2 agreements/statuses and the Test 3 contested list.",
+      "hints": [
+        "Agreement is a fraction. How can it be 2.0?",
+        "Follow `within` across loop iterations in resolve().",
+        "Reset `within = 0` inside the loop for each item."
+      ],
+      "probes": [
+        "Why is I01's agreement still right?",
+        "Why did insufficient items not push the counter up?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "groupby over unsorted results",
+      "type": "groupby-misuse",
+      "file": "likert/reports.py",
+      "function": "rubric_summary",
+      "old": "    ordered = sorted(results.values(), key=lambda r: r.rubric)\n    summary = {}\n    for rubric, group in groupby(ordered, key=lambda r: r.rubric):",
+      "new": "    summary = {}\n    for rubric, group in groupby(results.values(), key=lambda r: r.rubric):",
+      "visible_only_in": [
+        "test_3_summary"
+      ],
+      "symptom": "Test 3 test_by_rubric only: v1 {'agreed': 0, 'contested': 0, 'insufficient': 1} and v2 {'agreed': 1, 'contested': 0, 'insufficient': 0}; only the last item of each rubric is counted.",
+      "why": "itertools.groupby only groups consecutive equal keys. Items alternate v1/v2 in file order, so each run has length 1 and every later run overwrites summary[rubric]; only the last item of each rubric survives.",
+      "unblocks": "Test 3 by_rubric.",
+      "hints": [
+        "by_rubric adds up to 2 items, but there are 12. Where did the others go?",
+        "What does groupby require of its input?",
+        "Sort the results by rubric before grouping."
+      ],
+      "probes": [
+        "Why would this pass if items.csv listed all v1 items first?",
+        "Name a way to count per rubric that does not depend on order."
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() do, in order?",
+      "a": "It loads config, registry and items, reads every data/ratings_*.csv with read_ratings, filters them with counting_ratings, takes the gold subset with gold_ratings, creates one Memo, runs consensus.resolve, then builds the bias table by calling bias_for for every active annotator and rubric, and finally the summary."
+    },
+    {
+      "q": "What does counting_ratings filter on?",
+      "a": "Known item id, registry.get(annotator_id) being truthy, the submitted date compared with config opens/closes, and then it keeps the rating with the greatest submitted_at per (item_id, annotator_id)."
+    },
+    {
+      "q": "How does Memo work?",
+      "a": "get_or_compute(key, compute) calls compute() only the first time a key is seen, stores the result in a dict and returns the stored value afterwards. One Memo is created per build_report call; misses counts how many computes ran."
+    },
+    {
+      "q": "Where is bias_for called from?",
+      "a": "From consensus.resolve, once per counting rating on a non-gold item with that item's rubric, and from build_report when the bias table is built. Both pass the same Memo."
+    },
+    {
+      "q": "How are votes for an item computed?",
+      "a": "resolve groups ratings by item id, and for each non-gold item maps every rating through adjust(r.score, bias_for(..., r.annotator_id, item.rubric)). Gold items are skipped entirely."
+    },
+    {
+      "q": "What does rubric_summary return?",
+      "a": "A dict rubric -> {'agreed': n, 'contested': n, 'insufficient': n}, built by grouping Result objects by r.rubric with itertools.groupby and counting statuses with a Counter."
+    },
+    {
+      "q": "Which order are items processed in?",
+      "a": "items is a dict filled in items.csv file order, so resolve walks G1, I01, I02, G3, I03, ... and the results dict is in that same order (gold items omitted)."
+    }
+  ]
+}

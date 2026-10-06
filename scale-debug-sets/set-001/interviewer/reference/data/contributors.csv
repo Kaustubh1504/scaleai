@@ -1,0 +1,17 @@
+contributor_id,name,skills,completed_courses,rating,joined,available
+C01,Ana Ruiz,Python;SQL,ML-101,4.8,2023-02-10,yes
+c02 ,Ben Okafor,python,,4.5,03/15/2022,yes
+C03,Chen Wei,sql; Spark,ml-101 ; DE-201,4.6,2024-01-05,yes
+C04,Dara Singh,python;spark,DE-201,4.9,5 Jan 2023,no
+C05,Eli Moss,labeling,,4.2,2022-08-01,yes
+ C06,Fatima Noor,Labeling;python,QA-110,4.9,2021-11-20,yes
+C07,Gus Pereira,labeling,qa-110,4.2,07/04/2021,Yes
+C08,Hana Ito,sql,,,2025-01-01,yes
+C09,Ivan Petrov,python;sql,ML-101,4.0,2023-06-30,TRUE
+c10,Jo Kim,spark,de-201,4.4,2024-03-12,y
+C11,Kai Lund,labeling,,3.5,2024-05-05,yes
+C12,Lea Brandt,python, ML-101,4.7,2022-02-02,no
+C13,Mo Haddad,sql;python,,4.1,2023-09-09,yes
+C14,Nia Cole,labeling;sql,QA-110,3.8,12/01/2023,yes
+C15,Omar Diaz,Python,ml-101,4.5,2021-04-18,yes
+C16,Pia Laine,spark;sql,,3.9,14 Feb 2024,yes

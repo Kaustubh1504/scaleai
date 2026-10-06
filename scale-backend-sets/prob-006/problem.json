@@ -1,0 +1,11 @@
+{
+  "id": "prob-006",
+  "title": "Project Throughput Report",
+  "kind": "api-client",
+  "topics": ["api-pagination", "api-auth-tokens", "data-aggregation"],
+  "mode": "plain-python",
+  "difficulty": "medium",
+  "starter": "skeleton",
+  "planted_bugs": false,
+  "package": "report"
+}

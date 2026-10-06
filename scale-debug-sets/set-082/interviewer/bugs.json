@@ -1,0 +1,193 @@
+{
+  "id": "set-082",
+  "title": "Gateway metering: sliding-window limits and tiered invoices",
+  "domain": "rate_limit_billing",
+  "length": "FULL",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "meterbill",
+  "scenario": "Replay a gateway log through per-tenant sliding-window rate limiters (half-open window, retry hints), then bill accepted units per UTC month in whole 1,000-unit blocks with graduated tiers, a percentage discount rounded half-up, and capped account credits.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_ingest",
+      "test_2_limits",
+      "test_3_invoices"
+    ]
+  },
+  "verified": [
+    {
+      "file": "meterbill/timeparse.py",
+      "symbol": "parse_ts",
+      "why_correct": "It looks like it might drop offsets or choke on the trailing Z, but it rewrites Z as +00:00, lets fromisoformat handle the ISO/space forms (including fractions and offsets), falls back to the month/day slash format, assumes UTC when there is no offset and converts to UTC. That is exactly what pushes cinder's 00:30+01:00 request into February."
+    },
+    {
+      "file": "meterbill/plans.py",
+      "symbol": "tiered_cents",
+      "why_correct": "The floor/ceiling bookkeeping looks fragile, but each tier charges the blocks between the previous tier's limit and min(blocks, its own limit), stops once the usage fits, and treats null as unbounded. 56 blocks on growth is 50 x 25 + 6 x 18 = 1358."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Unparseable units swallowed as 0",
+      "type": "swallowed-exception",
+      "file": "meterbill/loader.py",
+      "function": "parse_units",
+      "test": "test_1_ingest.TestIngest.test_skipped_rows",
+      "old": "def parse_units(value):\n    return int(value.strip())",
+      "new": "def parse_units(value):\n    try:\n        return int(value.strip())\n    except ValueError:\n        return 0",
+      "symptom": "Test 1 test_skipped_rows: malformed is [] instead of ['gw1-0010', 'gw2-0012']; unknown_tenant is unchanged. Nothing else fails: the two halcyon rows are replayed as 0-unit calls with headroom to spare.",
+      "why": "load_requests relies on parse_units raising ValueError to classify a row as malformed. Catching it inside the helper and returning 0 hides the error, so the blank and `1.5k` rows are replayed and billed as zero-unit calls instead of being skipped.",
+      "unblocks": "test_1 test_skipped_rows.",
+      "hints": [
+        "Which two rows should be malformed, and where do they end up instead?",
+        "Follow how load_requests decides a row is malformed, then look at the helper it calls for units.",
+        "parse_units must let the ValueError propagate (drop the try/except or re-raise)."
+      ],
+      "probes": [
+        "Why didn't the invoices change even though two extra requests were replayed?",
+        "What could have gone wrong for a tenant close to its rate limit?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Same-instant requests re-ordered by id",
+      "type": "wrong-tie-break",
+      "file": "meterbill/timeparse.py",
+      "function": "chronological",
+      "test": "test_1_ingest.TestIngest.test_same_instant_keeps_log_order",
+      "old": "    return sorted(requests, key=lambda r: r.ts)",
+      "new": "    return sorted(requests, key=lambda r: (r.ts, r.request_id))",
+      "symptom": "Test 1 test_same_instant_keeps_log_order: garnet's timeline is ['gw1-0011', 'gw2-0011', 'gw1-0012', 'gw2-0010']; each same-second pair is swapped.",
+      "why": "The spec keeps log order for equal timestamps, which a stable sort on ts alone already does. Adding request_id to the key breaks the tie by id, and ids come from two gateway shards, so gw1-… jumps ahead of gw2-….",
+      "unblocks": "test_1 test_same_instant_keeps_log_order.",
+      "hints": [
+        "The garnet requests that swap places share something. What?",
+        "Look at the sort key used before replay.",
+        "Sort on r.ts only; Python's sort is stable and keeps file order for ties."
+      ],
+      "probes": [
+        "Why is the request id a poor tie-breaker for this log?",
+        "When would this ordering change which request gets rejected?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Window treated as closed at t − W",
+      "type": "time-window-boundary",
+      "file": "meterbill/limiter.py",
+      "function": "SlidingWindow.offer",
+      "test": "test_2_limits.TestRateLimits.test_rejected_requests",
+      "old": "        while self.accepted and self.accepted[0] <= cutoff:",
+      "new": "        while self.accepted and self.accepted[0] < cutoff:",
+      "symptom": "Test 2 test_rejected_requests: an extra rejection, gw2-0004 (elm-labs at 12:00:10, exactly 10 s after its first accepted call).",
+      "why": "The window is (t − W, t]. A request exactly W seconds old sits on the excluded boundary and must be evicted; with `<` it stays, so elm-labs' 12:00:10 call sees a full window.",
+      "unblocks": "test_2 test_rejected_requests.",
+      "hints": [
+        "How far apart are elm-labs' first accepted request and the extra rejected one?",
+        "Look at how expired timestamps are evicted from the window.",
+        "Evict while accepted[0] <= cutoff."
+      ],
+      "probes": [
+        "Why does no invoice change?",
+        "Which data point would you add to catch the opposite mistake?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Retry hint drops fractional seconds",
+      "type": "timedelta-seconds",
+      "file": "meterbill/limiter.py",
+      "function": "SlidingWindow.offer",
+      "test": "test_2_limits.TestRateLimits.test_retry_after_hints",
+      "old": "        elapsed = (ts - self.accepted[0]).total_seconds()",
+      "new": "        elapsed = (ts - self.accepted[0]).seconds",
+      "symptom": "Test 2 test_retry_after_hints: dunmore hints are {'gw2-0005': 2.0, 'gw2-0006': 1.0} instead of 1.75 / 0.75. elm-labs' 3.0 hint is unchanged.",
+      "why": "timedelta.seconds is only the whole-seconds component (no microseconds, no days). dunmore's timestamps have millisecond fractions, so elapsed is truncated and every hint comes out larger by the dropped fraction.",
+      "unblocks": "test_2 test_retry_after_hints.",
+      "hints": [
+        "The hints that differ are each off by less than a second. Which tenant's timestamps have fractions?",
+        "Look at how elapsed time is measured for the hint.",
+        "Use .total_seconds(), not .seconds."
+      ],
+      "probes": [
+        "Why is elm-labs' 3.0 hint correct even with .seconds?",
+        "Besides fractions, when else does .seconds differ from total_seconds()?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Partial blocks dropped",
+      "type": "integer-division",
+      "file": "meterbill/plans.py",
+      "function": "blocks_for",
+      "test": "test_3_invoices.TestInvoices.test_subtotals",
+      "old": "    return -(-billable // BLOCK_UNITS)  # whole blocks",
+      "new": "    return billable // BLOCK_UNITS  # whole blocks",
+      "symptom": "Test 3 test_subtotals: borealis 2180 (expected 2220), cinder/2026-02 4925 (4950), cinder/2026-03 6240 (6258). acme, dunmore, garnet and halcyon are unchanged.",
+      "why": "Floor division throws away the partial block, but the spec bills a partial block as a whole one. The double negation is the integer ceiling. Tenants whose billable units are an exact multiple of 1,000 (acme) or zero are unaffected.",
+      "unblocks": "test_3 test_subtotals.",
+      "hints": [
+        "Which subtotals are too low, and what do their billable units have in common?",
+        "Look at how billable units are turned into blocks.",
+        "Round up: -(-billable // BLOCK_UNITS) (or math.ceil(billable / BLOCK_UNITS))."
+      ],
+      "probes": [
+        "Why was acme's subtotal right?",
+        "How does -(-a // b) compute a ceiling?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Half-cent discount rounded to even",
+      "type": "float-rounding",
+      "file": "meterbill/invoices.py",
+      "function": "apply_discount",
+      "test": "test_3_invoices.TestInvoices.test_discounted_total",
+      "old": "    return int(discounted.quantize(Decimal(1), rounding=ROUND_HALF_UP))",
+      "new": "    return round(discounted)",
+      "symptom": "Test 3 test_discounted_total: 4292 != 4293 for acme/2026-03.",
+      "why": "round() uses banker's rounding (half to even), also for Decimal. 5050 × 0.85 = 4292.5, which rounds to 4292 instead of the spec's half-up 4293.",
+      "unblocks": "test_3 test_discounted_total.",
+      "hints": [
+        "acme is one cent short. Work out 5050 less 15% by hand.",
+        "Look at how the discounted amount is rounded.",
+        "Quantize with ROUND_HALF_UP instead of round()."
+      ],
+      "probes": [
+        "Which other values would round() and ROUND_HALF_UP disagree on?",
+        "Why does nobody else's total change?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report do, in order?",
+      "a": "It loads plans, tenants and the request log (`load_requests` also returns the skipped ids), resolves each tenant's `(limit, window_s)` with `effective_limit`, replays the log with `limiter.replay`, builds invoices from the accepted requests, applies credits, and assembles the report dict."
+    },
+    {
+      "q": "How does load_requests classify rows?",
+      "a": "It normalises the tenant id and skips the row as `unknown_tenant` if the tenant isn't registered. Then it calls `parse_units` and `parse_ts` inside a `try`, and any `ValueError` puts the request id in `malformed`. Both lists are sorted at the end."
+    },
+    {
+      "q": "What does SlidingWindow keep, and what does offer return?",
+      "a": "A deque of timestamps of accepted requests. `offer(ts)` first evicts timestamps at or before the cutoff it computes, then accepts if the deque is shorter than the limit and returns `(True, None)`, or else `(False, hint)` where the hint is computed from the oldest timestamp still in the deque."
+    },
+    {
+      "q": "In what order does replay process requests?",
+      "a": "It processes all tenants' requests in one pass over `timeparse.chronological(requests)`, and each tenant uses its own SlidingWindow. The timeline records ids in that same order."
+    },
+    {
+      "q": "How is an invoice's subtotal computed?",
+      "a": "`build_invoices` sums units per (tenant, UTC month) for billed plans, then sets `subtotal_cents = monthly_fee_cents + tiered_cents(blocks_for(usage, plan), plan.tiers)` and `total_cents = apply_discount(subtotal, discount_pct)`."
+    },
+    {
+      "q": "What type is discount_pct and where is it parsed?",
+      "a": "A `Decimal`, parsed by `loader.parse_discount`, which strips whitespace and a trailing `%` and returns `Decimal(0)` for blank."
+    },
+    {
+      "q": "How do credits interact with totals?",
+      "a": "`apply_credits` walks credits in file order, finds the invoice for `(tenant_id, month)`, and adds `min(amount, total - credits so far)` to `credits_cents`. Credits with no invoice are returned as unapplied ids."
+    }
+  ]
+}

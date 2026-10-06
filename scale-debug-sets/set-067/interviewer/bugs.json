@@ -1,0 +1,111 @@
+{
+  "id": "set-067",
+  "title": "Box-office holds: seat order, overnight expiry, action routing",
+  "domain": "seat_reservation",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "seatbook",
+  "scenario": "Replay a box-office request log: holds pick the best available seats, expire after 15 minutes, and are confirmed, released or ignored. Test 2 checks sales and request outcomes.",
+  "verified": [
+    {
+      "file": "seatbook/booking.py",
+      "symbol": "best_available",
+      "why_correct": "It filters to available seats in the section, sorts by (row, number) and refuses partial holds with `len(free) < quantity`. The slice [:quantity] is exact. It is only as good as the types it is given: if number were a string, the sort would be lexicographic, but that would be a loader problem, not this function's."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Seat numbers kept as strings",
+      "type": "string-vs-int",
+      "file": "seatbook/loader.py",
+      "function": "load_seats",
+      "test": "test_1_holds.TestHolds.test_orchestra_holds",
+      "old": "                number=int(row[\"number\"]),",
+      "new": "                number=clean(row[\"number\"]),",
+      "symptom": "Test 1 test_orchestra_holds: R01 gets ORCH-A1, A10, A11, A12 instead of A1-A4, and R02, R04 and R07 shift the same way (e.g. R04 gets A6, A7, A8). Row B and the balcony are unchanged.",
+      "why": "With string numbers, best_available's sort is lexicographic, so '10', '11', '12' come before '2'. Only orchestra row A has seats numbered 10+, so only those holds change.",
+      "unblocks": "test_orchestra_holds.",
+      "hints": [
+        "R01 asked for 4 seats in an empty orchestra and got A1, A10, A11, A12. What order were the seats sorted in?",
+        "best_available is VERIFIED, so look at what it is given: the type of Seat.number.",
+        "load_seats stores clean(row['number']); store int(row['number'])."
+      ],
+      "probes": [
+        "Why did the balcony and orchestra row B holds come out right?",
+        "Why did sold counts and revenue not change?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Hold age read from timedelta.seconds",
+      "type": "timedelta-seconds",
+      "file": "seatbook/booking.py",
+      "function": "Venue.expire",
+      "test": "test_1_holds.TestHolds.test_balcony_holds",
+      "old": "            age = (now - hold.held_at).total_seconds()",
+      "new": "            age = (now - hold.held_at).seconds",
+      "symptom": "Test 1 test_balcony_holds: R17 (erin, May 2 18:05) gets BALC-A3/A4 instead of A1/A2, and R22 gets A1/A2 instead of A3/A4. Dora's May 1 18:00 hold was still blocking A1/A2.",
+      "why": "timedelta.seconds is only the seconds part after whole days. Dora's hold from 18:00 on May 1 is 1 day 5 minutes old at 18:05 on May 2, but .seconds says 300, so the hold survives and blocks BALC-A1/A2.",
+      "unblocks": "test_balcony_holds.",
+      "hints": [
+        "R17 (erin) gets BALC-A3/A4 although dora's hold on A1/A2 is from the previous day.",
+        "Look at how expire() measures a hold's age.",
+        "Use (now - hold.held_at).total_seconds(), not .seconds."
+      ],
+      "probes": [
+        "Why did all the same-day expiries (ben at 09:19) still work?",
+        "Why does dora's R21 confirm still come out no_hold?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Release branch condition always true",
+      "type": "or-precedence",
+      "file": "seatbook/booking.py",
+      "function": "Venue.handle",
+      "test": "test_2_report.TestReport.test_ignored_requests",
+      "old": "        elif req.action == \"release\" or req.action == \"cancel\":",
+      "new": "        elif req.action == \"release\" or \"cancel\":",
+      "symptom": "Test 2 test_ignored_requests: the ignored list is [] instead of ['R08', 'R20']. The upgrade and refund requests were handled as releases (outcome noop).",
+      "why": "`a == 'release' or 'cancel'` is `(a == 'release') or 'cancel'`, and the non-empty string is truthy, so every action that isn't hold or confirm goes through release. 'upgrade' and 'refund' come out as noop instead of ignored.",
+      "unblocks": "test_ignored_requests.",
+      "hints": [
+        "R08 (upgrade) and R20 (refund) are not in the ignored list. What outcome did they get?",
+        "Look at the branch in handle() that routes release and cancel.",
+        "Write `req.action == 'release' or req.action == 'cancel'` (or `in ('release', 'cancel')`)."
+      ],
+      "probes": [
+        "What would have happened if gus or lee had an active hold at the time?",
+        "Why didn't hold and confirm requests fall into the release branch?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "In what order are requests handled?",
+      "a": "load_requests parses every row and returns them sorted by ts with Python's stable sort, so equal timestamps keep file order. reports.run then calls Venue.handle on each request in that order."
+    },
+    {
+      "q": "What does Venue.handle do before it looks at the action?",
+      "a": "It calls expire(req.ts), which walks a copy of self.holds and frees every hold whose age is at least HOLD_TTL_S (900 seconds), then removes it from self.holds."
+    },
+    {
+      "q": "How does best_available pick seats?",
+      "a": "It takes seats in the requested section whose status is 'available', sorts them by (seat.row, seat.number), returns None if fewer than quantity remain, and otherwise returns the first quantity seats."
+    },
+    {
+      "q": "What are the possible outcomes for a request?",
+      "a": "hold \u2192 held, duplicate (customer already has an active hold) or rejected (not enough seats); confirm \u2192 confirmed or no_hold; release/cancel \u2192 released or noop; anything else \u2192 ignored. They are stored in Venue.statuses."
+    },
+    {
+      "q": "Where do held_seats and the sales numbers come from?",
+      "a": "Venue._hold records the labels of the picked seats in held_seats under the request id. build_report counts seats whose final status is 'sold', prices them with the PRICES table by tier, and groups by section."
+    },
+    {
+      "q": "Why does ben's confirm R05 come out no_hold?",
+      "a": "Ben's hold R02 is at 09:04 and R05 is at 09:19, exactly 900 seconds later. expire runs first with `age >= HOLD_TTL_S`, so the hold is freed before _confirm looks for it."
+    }
+  ]
+}

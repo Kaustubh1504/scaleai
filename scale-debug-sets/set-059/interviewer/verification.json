@@ -1,0 +1,48 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_ratings",
+      "test_2_leaderboard"
+    ],
+    "failures": {
+      "tests.test_1_ratings.TestRatings.test_comparisons_used": "AssertionError: 18 != 22",
+      "tests.test_1_ratings.TestRatings.test_elo": "AssertionError: {'atlas-7b': 1036.1, 'borealis': 966.8, 'cirrus-2': 987.4, 'drift-xl': 1009.7} != {'atlas-7b': 1030.9, 'borealis': 978.7, 'cirrus-2': 962.5, 'drift-xl': 1028.0}\n- {'atlas-7b': 1036.1, 'borealis': 966.8, 'cirrus-2': 987.4, 'drift-xl': 1009.7}\n?                 ^ ^               ^^ ^               ^^ ^                 ---\n\n+ {'atlas-7b': 1030.9, 'borealis': 978.7, 'cirrus-2': 962.5, 'drift-xl': 1028.0}\n?                 ^ ^               ^^ ^               ^^ ^                +++\n",
+      "tests.test_1_ratings.TestRatings.test_win_rates": "AssertionError: {'atl[14 chars]s': 11, 'wins': 7, 'ties': 1, 'win_rate': 0.68[199 chars]571}} != {'atl[14 chars]s': 13, 'wins': 8, 'ties': 1, 'win_rate': 0.65[198 chars]0.6}}\nDiff is 1091 characters long. Set self.maxDiff to None to see it.",
+      "tests.test_2_leaderboard.TestLeaderboard.test_contested_prompts": "AssertionError: Lists differ: ['p03', 'p04'] != ['p03', 'p04', 'p06', 'p10']\n\nSecond list contains 2 additional elements.\nFirst extra element 2:\n'p06'\n\n- ['p03', 'p04']\n+ ['p03', 'p04', 'p06', 'p10']",
+      "tests.test_2_leaderboard.TestLeaderboard.test_leaderboard": "AssertionError: Lists differ: ['atlas-7b', 'drift-xl', 'cirrus-2', 'borealis'] != ['atlas-7b', 'drift-xl', 'borealis', 'cirrus-2']\n\nFirst differing element 2:\n'cirrus-2'\n'borealis'\n\n- ['atlas-7b', 'drift-xl', 'cirrus-2', 'borealis']\n?                                    ------------\n\n+ ['atlas-7b', 'drift-xl', 'borealis', 'cirrus-2']\n?                          ++++++++++++\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_ratings",
+      "test_2_leaderboard"
+    ],
+    "failures": {
+      "tests.test_1_ratings.TestRatings.test_elo": "AssertionError: {'atlas-7b': 1054.9, 'borealis': 956.5, 'cirrus-2': 984.6, 'drift-xl': 1004.0} != {'atlas-7b': 1030.9, 'borealis': 978.7, 'cirrus-2': 962.5, 'drift-xl': 1028.0}\n- {'atlas-7b': 1054.9, 'borealis': 956.5, 'cirrus-2': 984.6, 'drift-xl': 1004.0}\n?                ^^                 ^^ ^               ^^ ^                ^^\n\n+ {'atlas-7b': 1030.9, 'borealis': 978.7, 'cirrus-2': 962.5, 'drift-xl': 1028.0}\n?                ^^                 ^^ ^               ^^ ^                ^^\n",
+      "tests.test_1_ratings.TestRatings.test_win_rates": "AssertionError: {'atl[25 chars]ns': 9, 'ties': 1, 'win_rate': 0.731}, 'boreal[187 chars]0.5}} != {'atl[25 chars]ns': 8, 'ties': 1, 'win_rate': 0.654}, 'boreal[187 chars]0.6}}\nDiff is 1112 characters long. Set self.maxDiff to None to see it.",
+      "tests.test_2_leaderboard.TestLeaderboard.test_contested_prompts": "AssertionError: Lists differ: ['p03', 'p04', 'p08', 'p10'] != ['p03', 'p04', 'p06', 'p10']\n\nFirst differing element 2:\n'p08'\n'p06'\n\n- ['p03', 'p04', 'p08', 'p10']\n?                   ^\n\n+ ['p03', 'p04', 'p06', 'p10']\n?                   ^\n",
+      "tests.test_2_leaderboard.TestLeaderboard.test_leaderboard": "AssertionError: Lists differ: ['atlas-7b', 'drift-xl', 'cirrus-2', 'borealis'] != ['atlas-7b', 'drift-xl', 'borealis', 'cirrus-2']\n\nFirst differing element 2:\n'cirrus-2'\n'borealis'\n\n- ['atlas-7b', 'drift-xl', 'cirrus-2', 'borealis']\n?                                    ------------\n\n+ ['atlas-7b', 'drift-xl', 'borealis', 'cirrus-2']\n?                          ++++++++++++\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_leaderboard"
+    ],
+    "failures": {
+      "tests.test_2_leaderboard.TestLeaderboard.test_contested_prompts": "AssertionError: Lists differ: ['p04', 'p10'] != ['p03', 'p04', 'p06', 'p10']\n\nFirst differing element 0:\n'p04'\n'p03'\n\nSecond list contains 2 additional elements.\nFirst extra element 2:\n'p06'\n\n- ['p04', 'p10']\n+ ['p03', 'p04', 'p06', 'p10']"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_ratings",
+      "test_2_leaderboard"
+    ],
+    "failing_tests": [
+      "tests.test_1_ratings.TestRatings.test_comparisons_used",
+      "tests.test_1_ratings.TestRatings.test_elo",
+      "tests.test_1_ratings.TestRatings.test_win_rates",
+      "tests.test_2_leaderboard.TestLeaderboard.test_contested_prompts",
+      "tests.test_2_leaderboard.TestLeaderboard.test_leaderboard"
+    ]
+  }
+}

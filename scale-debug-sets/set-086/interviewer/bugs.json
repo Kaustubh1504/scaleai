@@ -1,0 +1,196 @@
+{
+  "id": "set-086",
+  "title": "Load balancer replay with health checks and sticky sessions",
+  "domain": "load_balancer",
+  "length": "FULL",
+  "difficulty": "hard",
+  "format": "multi",
+  "package": "lbreplay",
+  "scenario": "Replay a request log through a smooth-weighted-round-robin balancer with fall/rise health checks, per-backend connection limits and sticky sessions that fail over. The report covers per-backend counts, nearest-rank median latency, zone totals and failovers.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_health",
+      "test_2_routing",
+      "test_3_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "lbreplay/loader.py",
+      "symbol": "parse_offset",
+      "why_correct": "A bare number is milliseconds and `s` multiplies by 1000, exactly as the README lists. `int(round(...))` avoids float truncation for values like 1.5s. It looks like a classic ms/s trap, but every format in the data is handled right."
+    },
+    {
+      "file": "lbreplay/balancer.py",
+      "symbol": "pick",
+      "why_correct": "This is the nginx smooth weighted round robin: add each eligible backend's weight, pick the highest current value (lowest id on ties), then subtract the total eligible weight from the winner. Subtracting the total, rather than the weight, is what keeps the sequence smooth."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "enabled=false backend joins the pool",
+      "type": "bool-from-string",
+      "file": "lbreplay/loader.py",
+      "function": "parse_flag",
+      "old": "    return norm(value) in YES",
+      "new": "    return bool(norm(value))",
+      "symptom": "All three files fail. Test 1: b05 appears in final_state (down) with an extra [9500, 'b05', 'down'] transition. Test 2: R03 goes to b05, and the opening requests, assignments and sessions all shift. Test 3: b05 has 4 requests, zones are east 22 / west 8, and failovers is 2.",
+      "why": "Any non-empty string is truthy, so b05's `false` reads as enabled. b05 takes traffic from the start, and its two failed checks (which are ignored for a disabled backend) now mark it down at 9.5 s.",
+      "unblocks": "test_backends_in_rotation, the b05 transition in test_1, and the early routing in test_2.",
+      "hints": [
+        "Where does b05 come from? Check its row in backends.csv.",
+        "Look at how the `enabled` column is interpreted.",
+        "parse_flag should be `norm(value) in YES`."
+      ],
+      "probes": [
+        "Why does s05 (blank enabled) stay out even with the bug?",
+        "Why did a loader problem show up as a health transition?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Fail streak not reset by a passing check",
+      "type": "state-not-reset",
+      "file": "lbreplay/health.py",
+      "function": "HealthTracker.observe",
+      "old": "            if check.ok:\n                self.fails[bid] = 0\n                return",
+      "new": "            if check.ok:\n                return",
+      "symptom": "Test 1: extra transitions [14000, 'b02', 'down'] and [18000, 'b02', 'healthy']. Test 2: requests around 14-18 s move off b02 (e.g. R20 -> b03) and erin ends on b01. Test 3: counts b01 15 / b02 7 / b03 2 / b04 6, failovers 2.",
+      "why": "FALL counts consecutive failures. Without the reset, b02's fail-pass-fail at 10/12/14 s adds up to 2 and marks it down from 14 s to 18 s, so mid-run requests move to other backends.",
+      "unblocks": "test_transitions and test_final_state (b02), and the 14-18 s routing.",
+      "hints": [
+        "b02 never fails twice in a row in health.csv, yet it goes down. Why?",
+        "Look at what a passing check does to a healthy backend's counters.",
+        "Restore `self.fails[bid] = 0` when a healthy backend passes."
+      ],
+      "probes": [
+        "The down state resets `passes` on a failure. Why is the healthy state the mirror image of that?",
+        "Why did b02 come back at 18 s rather than 16 s?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Sticky check compares an Enum to a string",
+      "type": "enum-vs-string",
+      "file": "lbreplay/replay.py",
+      "function": "Replay.route",
+      "old": "        if previous is not None and self.health.state[previous] is BackendState.HEALTHY:",
+      "new": "        if previous is not None and self.health.state[previous] == \"healthy\":",
+      "symptom": "Tests 2 and 3 fail; Test 1 passes. Sticky sessions are never reused: from R07 on, assignments follow pure round robin, dave ends on b01 and erin on b04, and failovers is 7 instead of 1.",
+      "why": "`BackendState` is a plain Enum, so `BackendState.HEALTHY == \"healthy\"` is always False. Sticky sessions are never reused, every repeat request goes through round robin, and most of them count as failovers.",
+      "unblocks": "Most of test_2 and the failover count in test_3. It also exposes B4.",
+      "hints": [
+        "Failovers are far higher than the single real one. Does any session ever stay on its backend?",
+        "Look at the condition that decides whether the sticky backend can be reused.",
+        "Compare with `BackendState.HEALTHY` (as `usable` does), not the string \"healthy\"."
+      ],
+      "probes": [
+        "Why does the report still print \"healthy\" as a string?",
+        "How would `class BackendState(str, Enum)` have changed this behaviour?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Sticky reuse allowed at max_conns",
+      "type": "off-by-one",
+      "file": "lbreplay/sessions.py",
+      "function": "has_room",
+      "old": "    return active < backend.max_conns",
+      "new": "    return active <= backend.max_conns",
+      "masked_by": [
+        "B3"
+      ],
+      "symptom": "Hidden while B3 is present. Once B3 is fixed: R07 goes to b03 (expected b01) and the rotation shifts after that. Test 3 counts become b01 13 / b02 8 / b03 4 / b04 5, and zones east 21 / west 9.",
+      "why": "A backend with max_conns 1 that already has 1 request in flight is full. With `<=`, carol's R07 stays on b03 while R03 is still running, so b03 serves two requests at once and the round-robin sequence shifts from there. This branch can't be reached while B3 stops every sticky reuse.",
+      "unblocks": "R07 and the later assignments in test_2, plus the request counts, medians and zones in test_3.",
+      "hints": [
+        "R07 is carol's second request, sent while R03 is still running. How many requests can b03 take?",
+        "Look at the capacity check used when reusing a sticky backend.",
+        "has_room should be `active < backend.max_conns`."
+      ],
+      "probes": [
+        "Why was this invisible until the Enum comparison was fixed?",
+        "Round robin eligibility uses a separate capacity check. Why did that one not need changing?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Median takes the upper middle value",
+      "type": "off-by-one",
+      "file": "lbreplay/metrics.py",
+      "function": "p50",
+      "old": "    return ordered[math.ceil(0.5 * len(ordered)) - 1]",
+      "new": "    return ordered[len(ordered) // 2]",
+      "visible_only_in": [
+        "test_3_report"
+      ],
+      "symptom": "Only test_3 test_median_latency fails: b01 p50 is 320 instead of 300. Every other backend is right.",
+      "why": "The nearest-rank median of n values is the ceil(n/2)-th value (1-based). `n // 2` as a 0-based index matches only for odd n. For even n it takes the next value up, so b01 (14 requests) reports 320 instead of 300.",
+      "unblocks": "test_median_latency.",
+      "hints": [
+        "Sort b01's durations by hand and find the 7th of 14.",
+        "Look at the index p50 uses.",
+        "Use `ordered[math.ceil(0.5 * len(ordered)) - 1]`."
+      ],
+      "probes": [
+        "Why were b03 and b04 right with the bug?",
+        "b02 also has an even count. Why didn't it change?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Counter.update on a zone string",
+      "type": "counter-misuse",
+      "file": "lbreplay/report.py",
+      "function": "zone_totals",
+      "old": "            zones[backends[bid].zone] += 1",
+      "new": "            zones.update(backends[bid].zone)",
+      "visible_only_in": [
+        "test_3_report"
+      ],
+      "symptom": "Only test_3 test_zones fails: zones is {'a': 24, 'e': 30, 's': 30, 't': 30, 'w': 6} instead of {'east': 24, 'west': 6}.",
+      "why": "`Counter.update` with a string counts its characters, so each request adds 1 to 'e', 'a', 's', 't' (or 'w', 'e', 's', 't') instead of 1 to the zone.",
+      "unblocks": "test_zones.",
+      "hints": [
+        "What are those single-letter keys in zones?",
+        "Look at how each request is added to the zone Counter.",
+        "Use `zones[backends[bid].zone] += 1` (or update([zone]))."
+      ],
+      "probes": [
+        "Why is the 'e' count equal to the total number of requests?",
+        "Name another iterable that would quietly do the same thing in Counter.update."
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "In what order does Replay.run process health checks and requests?",
+      "a": "Checks and requests are each sorted by time. Before routing a request, every check with t_ms <= the request time is fed to `HealthTracker.observe`. After the last request, the remaining checks are applied, so `final_state` reflects the whole health log."
+    },
+    {
+      "q": "What does HealthTracker ignore?",
+      "a": "Checks for backend ids that are not in its `state` dict. The tracker is built from the loaded backends, i.e. enabled `api` backends only."
+    },
+    {
+      "q": "How does route() decide where a request goes?",
+      "a": "It looks up the session's previous backend. If there is one and the state check and `has_room` both pass, it reuses it. Otherwise it builds the eligible list with `usable()` (healthy and below max_conns), calls `rr.pick`, and counts a failover when the session had a previous backend and the new pick differs. The chosen backend gets the request's end time in `inflight` and becomes the session's sticky backend."
+    },
+    {
+      "q": "How is a backend's in-flight count computed?",
+      "a": "`active(bid, now)` keeps only end times strictly greater than `now` and returns how many are left. A request that ends exactly at `now` no longer counts."
+    },
+    {
+      "q": "What does the SWRR `current` dict look like over time?",
+      "a": "It starts at 0 for every loaded backend. Each pick adds each eligible backend's weight to its value and subtracts the eligible total from the winner. Backends that were not eligible for a pick are left unchanged. A sticky reuse does not touch `current`."
+    },
+    {
+      "q": "How are request times parsed?",
+      "a": "`parse_offset` accepts `1.5s`, `1500ms` or a bare `1500` (milliseconds) and returns integer milliseconds. Request ids are upper-cased and sessions lower-cased. A blank session means no stickiness."
+    },
+    {
+      "q": "What goes into summary.backends?",
+      "a": "`per_backend` groups each routed request's duration_ms by its assigned backend and returns `requests` (the count) and `p50_ms` from `p50()` for every loaded backend, sorted by id."
+    }
+  ]
+}

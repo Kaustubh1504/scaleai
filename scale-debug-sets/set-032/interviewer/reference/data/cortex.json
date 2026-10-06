@@ -1,0 +1,14 @@
+[
+  {"task_id": "T003", "email": "j.ruiz@cortex.ai", "label": "neutral", "submitted": "2026-03-05T12:00:00", "duration_s": 48, "tags": ["sentiment", "long"], "batch": "b1"},
+  {"task_id": "T024", "email": "s.ito@cortex.ai", "label": "mixed", "submitted": "2026-03-05 12:10", "duration_s": 37, "tags": ["long"], "batch": "b6"},
+  {"task_id": "T025", "email": "s.ito@cortex.ai", "label": "meh", "submitted": "2026-03-05 12:20", "duration_s": 30, "tags": ["short"], "batch": "b6"},
+  {"task_id": "t026", "email": " S.Ito@Cortex.AI", "label": "+", "submitted": "03/05/2026 12:30", "duration_s": "26", "tags": "sentiment;short", "batch": "b6"},
+  {"task_id": "T027", "email": "j.ruiz@cortex.ai", "label": "-", "submitted": "2026-03-05T12:40:00", "duration_s": 41, "tags": [], "batch": "b6"},
+  {"task_id": "T028", "email": "j.ruiz@cortex.ai", "label": "pos", "submitted": "2026-03-05 12:50", "duration_s": null, "tags": ["short"], "batch": "b6"},
+  {"task_id": "T012", "email": "s.ito@cortex.ai", "label": "neg", "submitted": "2026-03-01 07:00", "duration_s": 30, "tags": ["sarcasm"], "batch": "b6"},
+  {"task_id": "T029", "email": "j.ruiz@cortex.ai", "label": "positive", "submitted": "2026-03-06 08:00", "duration_s": 35, "tags": ["tmp:qa", "sarcasm"], "batch": "B6"},
+  {"task_id": "T030", "email": "s.ito@cortex.ai", "label": "negative", "submitted": "2026-03-06 08:10", "duration_s": 22, "tags": ["Long", " "], "batch": ""},
+  {"task_id": "T031", "email": "s.ito@cortex.ai", "label": "neutral", "submitted": "", "duration_s": 20, "tags": [], "batch": "b6"},
+  {"task_id": "T015", "email": "s.ito@cortex.ai", "label": "neutral", "submitted": "2026-03-02 11:05", "duration_s": 39, "tags": ["short"], "batch": "b4"},
+  {"task_id": "T001", "email": "x.wu@cortex.ai", "label": "pos", "submitted": "2026-03-01 08:00", "duration_s": 31, "tags": ["short", "sentiment"]}
+]

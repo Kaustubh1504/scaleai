@@ -1,0 +1,193 @@
+{
+  "id": "set-080",
+  "title": "Multi-vendor contributor roster: validate, merge, export",
+  "domain": "data_ingestion_dedupe",
+  "length": "FULL",
+  "difficulty": "hard",
+  "format": "multi",
+  "package": "rosterflow",
+  "scenario": "Two CSV vendor exports (one with a UTF-8 BOM) and a JSON dump are validated row by row, inactive people are dropped, and duplicates are merged by email (latest update wins, source priority 1 breaks ties, skills unioned). The roster is then exported as JSON. Test 3 checks summary counts and the exported timestamps.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_ingest",
+      "test_2_roster",
+      "test_3_export"
+    ]
+  },
+  "verified": [
+    {
+      "file": "rosterflow/normalize.py",
+      "symbol": "clean_email",
+      "why_correct": "Stripping 'mailto:' looks like it might mangle addresses, but the README requires it, and only a leading prefix is removed. Lower-casing the whole address is also what the spec asks for."
+    },
+    {
+      "file": "rosterflow/serialize.py",
+      "symbol": "_encode",
+      "why_correct": "It turns datetimes into isoformat() strings and sets into sorted lists, and raises TypeError for anything else, which is what json's `default` hook is supposed to do. It only works if it is actually passed as `default`."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "CSV opened without BOM handling",
+      "type": "csv-bom-encoding",
+      "file": "rosterflow/readers.py",
+      "function": "read_csv_source",
+      "old": "    with open(path, newline=\"\", encoding=\"utf-8-sig\") as fh:",
+      "new": "    with open(path, newline=\"\", encoding=\"utf-8\") as fh:",
+      "symptom": "Every test file fails. Test 1: vendor_a shows accepted 0 / rejected 11 / inactive 0, and every vendor_a row is rejected as 'missing email'. Test 2: duplicates is 3 instead of 6, dev/gus/noa are missing, ana has hours 28 and skills ['spark', 'sql'] (vendor_b only). Test 3: python count 4, IL and SE missing, ana's timestamp is 2026-02-20T10:00:00.",
+      "why": "vendor_a.csv starts with a UTF-8 BOM. Read as plain utf-8, the first header becomes '\\ufeffemail', so row.get('email') is None for every vendor_a row and all 11 are rejected as `missing email`. vendor_b has no BOM and is unaffected.",
+      "unblocks": "All vendor_a contributors (ana's merge, dev, gus, noa, kim's tie). It also exposes B2.",
+      "hints": [
+        "Every vendor_a row is rejected as missing email, yet the file plainly has emails. Print the keys of one parsed row.",
+        "Look at how read_csv_source opens the file, and at the first bytes of vendor_a.csv.",
+        "Open CSVs with encoding=\"utf-8-sig\"."
+      ],
+      "probes": [
+        "Why was only the first column affected?",
+        "Why is utf-8-sig safe for files that have no BOM?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "String 'FALSE' treated as active",
+      "type": "bool-from-string",
+      "file": "rosterflow/normalize.py",
+      "function": "parse_active",
+      "old": "    if isinstance(value, str):\n        return value.strip().lower() in TRUTHY\n    return bool(value)",
+      "new": "    return bool(value)",
+      "masked_by": [
+        "B1"
+      ],
+      "symptom": "Masked by B1 (vendor_a rows are all rejected). Once B1 is fixed: Test 1 shows vendor_a accepted 8 / inactive 0, Test 2 has extra ben@x.io and leo@x.io in the roster, and Test 3 gains GB, NG, 'java' and a third 'spark'.",
+      "why": "bool() of any non-empty string is True, so vendor_a's 'FALSE'/'false' rows count as active. Only vendor_a uses string flags (vendor_c uses JSON booleans and vendor_b has no column), so the problem stays hidden while vendor_a is fully rejected.",
+      "unblocks": "vendor_a inactive count and the roster membership (ben, leo).",
+      "hints": [
+        "After the encoding fix, ben and leo appear in the roster. What does their `active` cell say?",
+        "Look at how parse_active treats string values.",
+        "Restore the string branch: value.strip().lower() in TRUTHY."
+      ],
+      "probes": [
+        "Why couldn't you see this until vendor_a rows were being read?",
+        "Why did vic (vendor_c, active: false) stay inactive the whole time?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Merged skills not de-duplicated",
+      "type": "missing-dedupe",
+      "file": "rosterflow/dedupe.py",
+      "function": "merge",
+      "old": "            skills=sorted({s for r in group for s in r.skills}),",
+      "new": "            skills=sorted(s for r in group for s in r.skills),",
+      "symptom": "Test 2 test_records: merged people repeat skills (ana `['python', 'spark', 'sql', 'sql']`, gus `['python', 'python']`, cara/mia/raj likewise). Test 3 test_skill_counts: python 11, sql 6, labeling 2.",
+      "why": "Without the set, the skills from every duplicate row are simply concatenated, so people with more than one row get repeated skills (gus: python, python; ana: sql, sql). skill_counts counts list entries, so it is inflated too (python 11 instead of 8).",
+      "unblocks": "Test 2 records for merged contributors, and the Test 3 skill counts.",
+      "hints": [
+        "Which contributors have a skill listed twice? What do they have in common?",
+        "Look at how merge combines skills across a person's rows.",
+        "Use a set comprehension inside sorted(): sorted({s for r in group for s in r.skills})."
+      ],
+      "probes": [
+        "Why were single-source contributors unaffected?",
+        "Is `sources` safe from the same issue? Why?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Blank skill entries kept after split",
+      "type": "empty-split",
+      "file": "rosterflow/normalize.py",
+      "function": "parse_skills",
+      "old": "    return [text(s).lower() for s in items if text(s)]",
+      "new": "    return [text(s).lower() for s in items]",
+      "symptom": "Test 2 test_records: dev `['', 'python']`, fay `['']`, uma `['', 'ml', 'python']`. Test 3 test_skill_counts gains a `'': 3` entry.",
+      "why": "\"\".split(\";\") is [\"\"] and \"python;\".split(\";\") ends with \"\", so a blank cell or a trailing separator produces an empty-string skill. The spec drops empty entries.",
+      "unblocks": "Test 2 records (fay, dev, uma) and the '' key in Test 3 skill_counts.",
+      "hints": [
+        "Some contributors have a skill that is an empty string. Look at their raw skills cells.",
+        "What does str.split return for an empty string or a trailing separator?",
+        "Filter out blanks: `... for s in items if text(s)`."
+      ],
+      "probes": [
+        "Why did zoe (a JSON empty list) not get an empty skill?",
+        "What would \"\".split() (no argument) have returned instead?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Timestamp ties go to the least trusted source",
+      "type": "wrong-tie-break",
+      "file": "rosterflow/dedupe.py",
+      "function": "pick_winner",
+      "old": "    return max(group, key=lambda r: (r.updated_at, -r.priority))",
+      "new": "    return max(group, key=lambda r: (r.updated_at, r.priority))",
+      "symptom": "Test 2 test_records: cara becomes `{'name': 'Cara D.', 'country': 'US', 'hours': 35}` (vendor_c) instead of Cara Diaz / MX / 40, and kim gets vendor_a's hours 15 instead of 18. Test 3 test_countries: MX missing, US 2.",
+      "why": "Priority 1 is the most trusted, so on an updated_at tie the lower number has to win. max() over (updated_at, priority) picks the higher number, so cara takes vendor_c's name/country/hours and kim takes vendor_a's hours.",
+      "unblocks": "Test 2 records for cara (and kim once B1 is fixed), and the Test 3 country counts.",
+      "hints": [
+        "cara's name and country come from vendor_c. Compare the two cara rows: which fields are equal?",
+        "Check how pick_winner breaks a tie, against the priority convention in sources.json.",
+        "Use -r.priority in the key (or min with a reversed date)."
+      ],
+      "probes": [
+        "Why did kim only show this problem once vendor_a was read correctly?",
+        "Why do mixed timestamp formats (2026-01-20T10:00:00 vs 2026-01-20 10:00) still tie here?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Export serialises datetimes with str()",
+      "type": "json-serialization",
+      "file": "rosterflow/serialize.py",
+      "function": "export_roster",
+      "old": "    return json.dumps(rows, default=_encode, indent=2, sort_keys=True)",
+      "new": "    return json.dumps(rows, default=str, indent=2, sort_keys=True)",
+      "visible_only_in": [
+        "test_3_export"
+      ],
+      "symptom": "Test 3 only, test_export_timestamps: every timestamp has a space instead of 'T' (`'2026-03-01 09:30:00'` vs `'2026-03-01T09:30:00'`).",
+      "why": "default=str avoids the TypeError, but str(datetime) uses a space separator ('2026-03-01 09:30:00'), not the ISO-8601 'T' the spec requires. The VERIFIED _encode helper exists but is never passed in.",
+      "unblocks": "test_export_timestamps.",
+      "hints": [
+        "The exported timestamps have a space where the spec has a 'T'. What turns a datetime into a string here?",
+        "Look at the `default` argument of json.dumps in export_roster.",
+        "Pass default=_encode."
+      ],
+      "probes": [
+        "Why does default=str 'work' without raising, and why is that dangerous?",
+        "What would default=str do to a set?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does ingest() return, and in what order are sources read?",
+      "a": "A tuple (per_source, rejected, roster, duplicates). Sources come from sources.json with lower-cased names and are processed in sorted order: vendor_a, vendor_b, vendor_c. Each row goes through check_row, and accepted Records are merged at the end by dedupe.merge."
+    },
+    {
+      "q": "How does read_source decide how to read a file?",
+      "a": "By suffix: .json goes to read_json_source (json.load of a list), and anything else to read_csv_source (csv.DictReader). Both wrap each row as RawRow(source, row_number_from_1, dict_of_fields)."
+    },
+    {
+      "q": "What does check_row return?",
+      "a": "One of ('rejected', reason), ('inactive', None) or ('ok', Record). Checks run in order: missing email, invalid email, unparseable date, invalid hours, then active."
+    },
+    {
+      "q": "What are the first bytes of vendor_a.csv?",
+      "a": "EF BB BF, the UTF-8 byte-order mark, followed by the header line `email,name,country,skills,hours_per_week,updated_at,active`. vendor_b.csv starts directly with `name,email,...`."
+    },
+    {
+      "q": "Which emails appear in more than one accepted row?",
+      "a": "In the source data: ana (vendor_a, vendor_b), cara (vendor_b, vendor_c), gus (twice in vendor_a), kim (vendor_a, vendor_b), mia (vendor_b, vendor_c) and raj (vendor_b, vendor_c). cara's and kim's pairs have identical updated_at values."
+    },
+    {
+      "q": "How is the export string produced?",
+      "a": "export_roster sorts the roster by email, turns each Contributor dataclass into a dict with vars(), and calls json.dumps with indent=2 and sort_keys=True. The `default` argument handles values json can't encode natively, such as datetime."
+    },
+    {
+      "q": "Where are skill_counts and countries computed?",
+      "a": "In reports.build_report, with collections.Counter over the merged roster's values: each contributor's skills list for skill_counts, and each contributor's country for countries. Both are returned sorted by key."
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+job_id,attempt,outcome
+J05,1,fail
+J05,2,fail
+J02,1,ok
+J01,1,ok
+J03,1,fail
+j03,2,OK
+J04,1, Ok
+J06,1,ok
+J08,1,fail
+J08 ,2,ok
+J07,1,fail
+ j07,2,FAIL
+J07,3,ok
+J11,1,ok
+J12,1,ok

@@ -1,0 +1,14 @@
+{
+  "backends": [
+    {"id": "api-1", "pool": "api", "weight": 2, "max_conns": 3, "enabled": true},
+    {"id": "API-2", "pool": "api", "weight": 1, "max_conns": 2, "enabled": "yes"},
+    {"id": " api-3", "pool": "API", "weight": 1, "max_conns": 2, "enabled": 1},
+    {"id": "api-4", "pool": "api", "weight": 4, "max_conns": 4, "enabled": "no"},
+    {"id": "st-1", "pool": "static", "weight": 1, "max_conns": 1},
+    {"id": "st-2", "pool": "static ", "weight": 1, "max_conns": 1, "enabled": "True"},
+    {"id": "st-3", "pool": "static", "weight": 2, "max_conns": 2, "enabled": "0"},
+    {"id": "bt-1", "pool": "batch", "weight": 3, "max_conns": 3, "enabled": "Y"},
+    {"id": "bt-2", "pool": "batch", "weight": 1, "max_conns": 1, "enabled": false},
+    {"id": "Bt-3", "pool": "batch", "weight": 1, "max_conns": 1}
+  ]
+}

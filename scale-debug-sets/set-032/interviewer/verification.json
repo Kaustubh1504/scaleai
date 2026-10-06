@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_loading"
+    ],
+    "failures": {
+      "tests.test_1_loading.TestLoading.test_rejections": "AssertionError: {'acme:3': ['missing_duration'], 'acme:4': ['bad[309 chars]mp']} != {'acme:4': ['bad_email'], 'acme:7': ['missing_ta[277 chars]mp']}\n  {'acme:11': ['bad_timestamp'],\n   'acme:12': ['negative_duration'],\n   'acme:14': ['bad_email', 'bad_timestamp'],\n-  'acme:3': ['missing_duration'],\n   'acme:4': ['bad_email'],\n   'acme:7': ['missing_task_id'],\n   'acme:8': ['missing_duration'],\n   'brightlabel:13': ['bad_timestamp'],\n   'brightlabel:9': ['bad_email'],\n   'cortex:10': ['bad_timestamp'],\n   'cortex:6': ['missing_duration']}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_records"
+    ],
+    "failures": {
+      "tests.test_2_records.TestRecords.test_same_time_submissions": "AssertionError: {'T008': ('brightlabel', 'k.osei@brightlabel.com'), [33 chars]ai')} != {'T008': ('acme', 'j.ruiz@acme.io'), 'T015': ('brigh[30 chars]om')}\n+ {'T008': ('acme', 'j.ruiz@acme.io'),\n- {'T008': ('brightlabel', 'k.osei@brightlabel.com'),\n? ^   ^^                    ^ ^^^                   ^\n\n+  'T015': ('brightlabel', 'r.diaz@brightlabel.com')}\n? ^   ^^                    ^ ^ ++                  ^\n\n-  'T015': ('cortex', 's.ito@cortex.ai')}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_records"
+    ],
+    "failures": {
+      "tests.test_2_records.TestRecords.test_merged_tags": "AssertionError: {'T00[15 chars]', 'sentiment', 'short', 'short'], 'T002': ['s[243 chars]rt']} != {'T00[15 chars]', 'short'], 'T002': ['sarcasm', 'sentiment'],[157 chars]rt']}\n- {'T001': ['sentiment', 'sentiment', 'short', 'short'],\n+ {'T001': ['sentiment', 'short'],\n-  'T002': ['sarcasm', 'sentiment', 'sentiment'],\n?                     -------------\n\n+  'T002': ['sarcasm', 'sentiment'],\n-  'T003': ['long', 'long', 'sentiment', 'sentiment'],\n+  'T003': ['long', 'sentiment'],\n-  'T008': ['sarcasm', 'sentiment', 'sentiment'],\n?                     -------------\n\n+  'T008': ['sarcasm', 'sentiment"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_label_counts": "AssertionError: {'negative': 7, 'neutral': 7, 'positive': 8} != {'mixed': 1, 'negative': 7, 'neutral': 6, 'positive': 8}\n- {'negative': 7, 'neutral': 7, 'positive': 8}\n?                            ^\n\n+ {'mixed': 1, 'negative': 7, 'neutral': 6, 'positive': 8}\n?  ++++++++++++                          ^\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_tag_counts": "AssertionError: {'long': 7, 'sarcasm': 5, 'sentiment': 7, 'short': 9, 'tmp:review': 1} != {'long': 7, 'sarcasm': 5, 'sentiment': 7, 'short': 9}\n- {'long': 7, 'sarcasm': 5, 'sentiment': 7, 'short': 9, 'tmp:review': 1}\n?                                                     -----------------\n\n+ {'long': 7, 'sarcasm': 5, 'sentiment': 7, 'short': 9}"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_by_batch": "AssertionError: {'b1': 2, 'b4': 4, 'b5': 3, 'b6': 5, 'unbatched': 8} != {'b1': 3, 'b2': 3, 'b3': 1, 'b4': 4, 'b5': 3, 'b6': 5, 'unbatched': 3}\n- {'b1': 2, 'b4': 4, 'b5': 3, 'b6': 5, 'unbatched': 8}\n?                                                   ^\n\n+ {'b1': 3, 'b2': 3, 'b3': 1, 'b4': 4, 'b5': 3, 'b6': 5, 'unbatched': 3}\n?        +++++ ++++ +++++++++                                         ^\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_loading",
+      "test_2_records",
+      "test_3_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_loading.TestLoading.test_rejections",
+      "tests.test_2_records.TestRecords.test_merged_tags",
+      "tests.test_2_records.TestRecords.test_same_time_submissions",
+      "tests.test_3_summary.TestSummary.test_by_batch",
+      "tests.test_3_summary.TestSummary.test_label_counts",
+      "tests.test_3_summary.TestSummary.test_tag_counts"
+    ]
+  }
+}

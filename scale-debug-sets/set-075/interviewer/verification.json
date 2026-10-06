@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_replay"
+    ],
+    "failures": {
+      "tests.test_1_replay.TestReplay.test_checkpoint": "AssertionError: {'T01[65 chars]e': 'dead', 'owner': None, 'attempts': 3}, 'T0[554 chars]: 0}} != {'T01[65 chars]e': 'leased', 'owner': 'W4', 'attempts': 3}, '[559 chars]: 0}}\n  {'T01': {'attempts': 1, 'owner': None, 'state': 'done'},\n-  'T02': {'attempts': 3, 'owner': None, 'state': 'dead'},\n?                                  ^^^^            ^\n\n+  'T02': {'attempts': 3, 'owner': 'W4', 'state': 'leased'},\n?                                  ^^^^            ^  ++\n\n   'T03': {'attempts': 1, 'owner': None, 'state': 'done'},\n   'T04': {'attempts': 1, 'owner': None, 'state': 'done'},\n   'T05': {'atte"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_summary"
+    ],
+    "failures": {
+      "tests.test_2_summary.TestSummary.test_rejections": "AssertionError: {'expired': 0, 'not_owner': 0, 'invalid': 7} != {'expired': 4, 'not_owner': 2, 'invalid': 1}\n- {'expired': 0, 'invalid': 7, 'not_owner': 0}\n?             ^             ^               ^\n\n+ {'expired': 4, 'invalid': 1, 'not_owner': 2}\n?             ^             ^               ^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_summary"
+    ],
+    "failures": {
+      "tests.test_2_summary.TestSummary.test_wait_stats": "AssertionError: {'mean_s': 48.8, 'max_s': 230000} != {'mean_s': 48.8, 'max_s': 230.0}\n- {'max_s': 230000, 'mean_s': 48.8}\n?              ^^\n\n+ {'max_s': 230.0, 'mean_s': 48.8}\n?              ^\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_replay",
+      "test_2_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_replay.TestReplay.test_checkpoint",
+      "tests.test_2_summary.TestSummary.test_rejections",
+      "tests.test_2_summary.TestSummary.test_wait_stats"
+    ]
+  }
+}

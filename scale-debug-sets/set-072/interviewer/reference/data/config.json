@@ -1,0 +1,6 @@
+{
+  "seed": "vox-2027",
+  "test_percent": 25,
+  "val_percent": 25,
+  "duration_ms": {"min": 1000, "max": 30000}
+}

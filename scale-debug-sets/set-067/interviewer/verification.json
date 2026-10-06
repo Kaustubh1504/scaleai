@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_holds"
+    ],
+    "failures": {
+      "tests.test_1_holds.TestHolds.test_orchestra_holds": "AssertionError: {'R01[17 chars]RCH-A10', 'ORCH-A11', 'ORCH-A12'], 'R02': ['OR[184 chars]B3']} != {'R01[17 chars]RCH-A2', 'ORCH-A3', 'ORCH-A4'], 'R02': ['ORCH-[184 chars]B3']}\n- {'R01': ['ORCH-A1', 'ORCH-A10', 'ORCH-A11', 'ORCH-A12'],\n?                            ^^          ^^          ^^\n\n+ {'R01': ['ORCH-A1', 'ORCH-A2', 'ORCH-A3', 'ORCH-A4'],\n?                            ^          ^          ^\n\n-  'R02': ['ORCH-A2', 'ORCH-A3', 'ORCH-A4', 'ORCH-A5'],\n+  'R02': ['ORCH-A5', 'ORCH-A6', 'ORCH-A7', 'ORCH-A8'],\n-  'R04': ['ORCH-A6', 'ORCH-A7', 'ORCH-A8'],\n?                 ^          ^          ^\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_holds"
+    ],
+    "failures": {
+      "tests.test_1_holds.TestHolds.test_balcony_holds": "AssertionError: {'R09[67 chars], 'R17': ['BALC-A3', 'BALC-A4'], 'R22': ['BALC-A1', 'BALC-A2']} != {'R09[67 chars], 'R17': ['BALC-A1', 'BALC-A2'], 'R22': ['BALC-A3', 'BALC-A4']}\n  {'R09': ['BALC-A1', 'BALC-A2', 'BALC-A3'],\n   'R16': ['BALC-A1', 'BALC-A2'],\n-  'R17': ['BALC-A3', 'BALC-A4'],\n?                 ^          ^\n\n+  'R17': ['BALC-A1', 'BALC-A2'],\n?                 ^          ^\n\n-  'R22': ['BALC-A1', 'BALC-A2']}\n?                 ^          ^\n\n+  'R22': ['BALC-A3', 'BALC-A4']}\n?                 ^          ^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_ignored_requests": "AssertionError: Lists differ: [] != ['R08', 'R20']\n\nSecond list contains 2 additional elements.\nFirst extra element 0:\n'R08'\n\n- []\n+ ['R08', 'R20']"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_holds",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_holds.TestHolds.test_balcony_holds",
+      "tests.test_1_holds.TestHolds.test_orchestra_holds",
+      "tests.test_2_report.TestReport.test_ignored_requests"
+    ]
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "id": "set-044",
+  "title": "Async embeddings batcher with bounded concurrency and index listing",
+  "domain": "endpoint_client",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "embedclient",
+  "scenario": "An asyncio client embeds guideline snippets in batches against a mock /v1/embeddings endpoint (bounded concurrency, Retry-After/backoff retries, failed batches reported), then pages through a cursor-paginated index listing to find stale ids.",
+  "verified": [
+    {
+      "file": "embedclient/retry.py",
+      "symbol": "backoff_delay",
+      "why_correct": "It returns Retry-After as a float when present (the spec allows fractional values), else base \u00d7 2^attempt with attempt starting at 0, so the first fallback wait is exactly backoff_seconds. `2 ** attempt` binds tighter than `*`, so the expression is base * (2 ** attempt)."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Fresh semaphore created per batch",
+      "type": "semaphore-unused",
+      "file": "embedclient/client.py",
+      "function": "EmbeddingClient._run_batch",
+      "test": "test_1_requests.TestRequests.test_concurrency_limit",
+      "old": "        async with self._sem:",
+      "new": "        async with asyncio.Semaphore(self.config.max_concurrency):",
+      "why": "Each call builds its own Semaphore, so every batch acquires a different, uncontended semaphore and nothing is limited. All seven batches hit the server at once. The shared `self._sem` created in __init__ is never used.",
+      "unblocks": "test_concurrency_limit",
+      "hints": [
+        "The server saw more than 2 requests in flight. What is supposed to stop that?",
+        "Look at which semaphore _run_batch acquires.",
+        "Use `async with self._sem:` instead of creating a new Semaphore per call."
+      ],
+      "probes": [
+        "Why are all the results still correct even though the limit was ignored?",
+        "Where must a semaphore be created for it to limit a group of tasks?"
+      ],
+      "symptom": "test_1 test_concurrency_limit: 'AssertionError: 7 not less than or equal to 2'. The server saw all 7 batches in flight at once, and every result is still correct."
+    },
+    {
+      "id": "B2",
+      "title": "Backoff sleep never awaited",
+      "type": "missing-await",
+      "file": "embedclient/retry.py",
+      "function": "post_with_retries",
+      "test": "test_1_requests.TestRequests.test_retry_after_honoured",
+      "old": "        await asyncio.sleep(backoff_delay(resp, attempt, backoff_seconds))",
+      "new": "        asyncio.sleep(backoff_delay(resp, attempt, backoff_seconds))",
+      "why": "Calling asyncio.sleep() without await only creates a coroutine object, which is thrown away (Python warns 'coroutine ... was never awaited'). The retry goes out right away instead of after the 0.2 s Retry-After.",
+      "unblocks": "test_retry_after_honoured",
+      "hints": [
+        "b2's second attempt arrives about 50 ms after the first, but the server asked for 0.2 s. Check the warnings in the test output.",
+        "Look at the wait between attempts in post_with_retries.",
+        "Add `await` before asyncio.sleep(...)."
+      ],
+      "probes": [
+        "Why didn't the attempt counts change?",
+        "What would time.sleep() there do to the other batches?"
+      ],
+      "symptom": "test_1 test_retry_after_honoured: b2's retry arrives about 0.06 s after the first attempt instead of at least 0.2 s. The output also shows a RuntimeWarning that coroutine 'sleep' was never awaited."
+    },
+    {
+      "id": "B3",
+      "title": "One retry too many",
+      "type": "retry-off-by-one",
+      "file": "embedclient/retry.py",
+      "function": "post_with_retries",
+      "test": "test_1_requests.TestRequests.test_attempts_per_batch",
+      "old": "if resp.status not in TRANSIENT or attempt >= max_retries:",
+      "new": "if resp.status not in TRANSIENT or attempt > max_retries:",
+      "why": "`attempt` counts retries already made, starting at 0. With `>` the loop returns only after max_retries + 1 retries, so b4 (always 503) is sent 4 times instead of max_retries + 1 = 3.",
+      "unblocks": "test_attempts_per_batch",
+      "hints": [
+        "b4 was sent 4 times. How many attempts does the README allow with max_retries = 2?",
+        "Trace attempt through the loop in post_with_retries for a batch that always returns 503.",
+        "Stop when attempt >= max_retries."
+      ],
+      "probes": [
+        "Why is b4 still reported as 'HTTP 503' either way?",
+        "Why did b2 (one 429, then 200) have the right count?"
+      ],
+      "symptom": "test_1 test_attempts_per_batch: b4 was attempted 4 times instead of 3. Everything else matches, and b4 is still reported as HTTP 503."
+    },
+    {
+      "id": "B4",
+      "title": "Exceptions from gather silently skipped",
+      "type": "gather-hides-failures",
+      "file": "embedclient/client.py",
+      "function": "EmbeddingClient.embed_all",
+      "test": "test_2_results.TestResults.test_failed_batches",
+      "old": "            if isinstance(result, Exception):\n                failed[batch.id] = str(result)\n                continue",
+      "new": "            if isinstance(result, Exception):\n                continue",
+      "why": "gather(..., return_exceptions=True) returns the BatchFailed exceptions as values. The loop skips them without recording them, so `failed` is always empty and the failed batches simply disappear.",
+      "unblocks": "test_failed_batches",
+      "hints": [
+        "`failed` is empty, but b4 and b6 have no vectors. Where did their errors go?",
+        "Follow what embed_all does with each item gathered from the batches.",
+        "Record `failed[batch.id] = str(result)` before `continue`."
+      ],
+      "probes": [
+        "What would happen without return_exceptions=True if b6 raised first?",
+        "Why does missing_docs in the summary still list the right ids?"
+      ],
+      "symptom": "test_2 test_failed_batches: `failed` is {} instead of {'b4': 'HTTP 503', 'b6': 'HTTP 400'}. Vectors and missing_docs are still right."
+    },
+    {
+      "id": "B5",
+      "title": "Token total snapshotted before the await",
+      "type": "async-shared-state",
+      "file": "embedclient/client.py",
+      "function": "EmbeddingClient._embed_batch",
+      "test": "test_3_summary.TestSummary.test_total_tokens",
+      "old": "        resp = await post_with_retries(f\"{self.base_url}/v1/embeddings\", self.headers, payload,\n                                       self.config.max_retries, self.config.backoff_seconds)\n        if resp.status != 200:\n            raise BatchFailed(f\"HTTP {resp.status}\")\n        body = resp.body\n        self.usage_tokens += body[\"usage\"][\"total_tokens\"]",
+      "new": "        tokens_before = self.usage_tokens\n        resp = await post_with_retries(f\"{self.base_url}/v1/embeddings\", self.headers, payload,\n                                       self.config.max_retries, self.config.backoff_seconds)\n        if resp.status != 200:\n            raise BatchFailed(f\"HTTP {resp.status}\")\n        body = resp.body\n        self.usage_tokens = tokens_before + body[\"usage\"][\"total_tokens\"]",
+      "why": "The shared counter is read before the request and written after it. Another batch updates it while this one is awaiting, and the write then overwrites that update, so tokens are lost.",
+      "unblocks": "test_total_tokens",
+      "hints": [
+        "total_tokens is lower than the sum of the successful batches' usage. Which update is getting lost?",
+        "Look at when _embed_batch reads self.usage_tokens versus when it writes it.",
+        "Do `self.usage_tokens += body[\"usage\"][\"total_tokens\"]` after the response, without the earlier snapshot."
+      ],
+      "probes": [
+        "Why is `+=` safe here in asyncio when it wouldn't be with threads?",
+        "Why does the lost amount depend on how the batches overlap?"
+      ],
+      "symptom": "test_3 test_total_tokens: a lower total (71 in the verification run; the exact value depends on how the batches overlap) instead of 91."
+    },
+    {
+      "id": "B6",
+      "title": "Last index page dropped",
+      "type": "pagination-cursor",
+      "file": "embedclient/index.py",
+      "function": "list_index_ids",
+      "test": "test_3_summary.TestSummary.test_stale_ids",
+      "old": "        ids.extend(resp.body[\"ids\"])\n        cursor = resp.body.get(\"next_cursor\")\n        if not cursor:\n            break",
+      "new": "        cursor = resp.body.get(\"next_cursor\")\n        if not cursor:\n            break\n        ids.extend(resp.body[\"ids\"])",
+      "why": "The loop breaks on a null cursor before keeping the page it just fetched, so the last page (d40, d27) is fetched but never added. All three pages are still requested, which hides the problem.",
+      "unblocks": "test_stale_ids",
+      "hints": [
+        "Three index pages were requested, yet d27 and d40 never appear. Which page are they on?",
+        "Look at the order of statements in list_index_ids' loop.",
+        "Extend ids before checking next_cursor and breaking."
+      ],
+      "probes": [
+        "Why does test_index_listed_page_by_page pass with this code?",
+        "What would change if the index had exactly 8 ids?"
+      ],
+      "symptom": "test_3 test_stale_ids: ['d31'] instead of ['d27', 'd31', 'd40']. Three index pages are still requested."
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What happens inside run()?",
+      "a": "It loads the config and corpus, builds batches with `make_batches`, creates an `EmbeddingClient`, awaits `embed_all(batches)`, then awaits `list_index_ids` and builds the report dicts from the vectors, the failures, `client.usage_tokens` and the index ids."
+    },
+    {
+      "q": "How does the transport make HTTP calls without blocking the event loop?",
+      "a": "`transport.request` runs the blocking urllib call in `asyncio.to_thread`. HTTP errors come back as a `Response` with the error status rather than an exception."
+    },
+    {
+      "q": "How are response embeddings matched to doc ids?",
+      "a": "Each `data` item has an `index`; `_embed_batch` maps `batch.doc_ids[item[\"index\"]]` to `item[\"embedding\"]`. The mock server returns the items in reverse order."
+    },
+    {
+      "q": "What does the mock server do for each batch?",
+      "a": "Every embeddings call sleeps 50 ms and tracks in-flight requests (`max_in_flight`). b2 gets a 429 with `Retry-After: 0.2` and then succeeds, b4 always returns 503, b6 returns 400, and the rest return 200 with word-count tokens. It also records each request's arrival time in `at`."
+    },
+    {
+      "q": "Where is concurrency controlled?",
+      "a": "`EmbeddingClient.__init__` creates `self._sem` from `max_concurrency`. `_run_batch` wraps `_embed_batch` in an `async with` block on a semaphore, and `embed_all` starts every batch with `asyncio.gather`."
+    },
+    {
+      "q": "How does list_index_ids know when to stop?",
+      "a": "It loops: request a page with `limit` (and `cursor` when it has one), then read `next_cursor` from the body, and break when it is falsy. The ids are collected with `ids.extend(...)` inside the same loop."
+    },
+    {
+      "q": "How is a batch's failure represented?",
+      "a": "`_embed_batch` raises `BatchFailed(\"HTTP <status>\")` when the final response isn't 200. `embed_all` uses `gather(..., return_exceptions=True)`, so the exception comes back as that batch's result."
+    }
+  ]
+}

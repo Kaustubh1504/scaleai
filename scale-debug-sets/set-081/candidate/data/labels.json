@@ -1,0 +1,13 @@
+[
+  {"alias": "per", "label": "PERSON"},
+  {"alias": "Person ", "label": "person"},
+  {"alias": "org", "label": "ORG"},
+  {"alias": "organization", "label": "ORG"},
+  {"alias": "Company", "label": "org"},
+  {"alias": "loc", "label": "LOC"},
+  {"alias": "location", "label": "LOC"},
+  {"alias": "GPE", "label": "LOC"},
+  {"alias": "place", "label": " LOC"},
+  {"alias": "date", "label": "DATE"},
+  {"alias": "", "label": "DATE"}
+]

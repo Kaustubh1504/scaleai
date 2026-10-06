@@ -1,0 +1,186 @@
+{
+  "id": "set-020",
+  "title": "Async batch labeling client: concurrency, pages and archive",
+  "domain": "endpoint_client",
+  "length": "FULL",
+  "difficulty": "easy",
+  "format": "one_to_one",
+  "package": "labelbatch",
+  "scenario": "An asyncio client submits one batch job per shard to a mock tagging API, polls each job, reads its page-numbered results, archives it, and routes low-confidence labels to review. At most max_concurrency shards run at once. Test 3 is the token/cost summary.",
+  "verified": [
+    {
+      "file": "labelbatch/transport.py",
+      "symbol": "_blocking_send",
+      "why_correct": "It is the blocking urllib call that `send` runs in a worker thread via asyncio.to_thread. HTTP errors are caught and returned as Response objects with their status, headers and decoded body, so callers can check the status themselves."
+    },
+    {
+      "file": "labelbatch/client.py",
+      "symbol": "poll_delay",
+      "why_correct": "Returning 0 for attempt 0 looks like it ignores the interval, but it only skips the wait before the first poll. Every later poll waits poll_interval_s, so there are exactly max_polls status calls spaced as rule 2 says."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Semaphore created but never acquired",
+      "type": "semaphore-unused",
+      "file": "labelbatch/pipeline.py",
+      "function": "run_shard",
+      "test": "test_1_requests.TestRequests.test_1_concurrency_limit",
+      "old": "    async with limit:\n        return await process_shard(client, shard, items)",
+      "new": "    return await process_shard(client, shard, items)",
+      "symptom": "test_1_concurrency_limit fails: AssertionError: 5 not less than or equal to 2 (all five shards submit at once). Every result and summary value is still right.",
+      "why": "run_all builds a Semaphore(max_concurrency) and passes it down, but run_shard never enters it, so gather starts all five shards at once and the server sees five submits in flight together.",
+      "unblocks": "test_1_concurrency_limit.",
+      "hints": [
+        "The server saw more than two submits at the same time. What is supposed to limit that?",
+        "Follow the `limit` object from run_all into run_shard.",
+        "Wrap the call in `async with limit:`."
+      ],
+      "probes": [
+        "Why did every result still come out right without the limit?",
+        "Why does the semaphore have to cover the whole shard (submit to archive) and not just the submit call?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "archive() coroutine never awaited",
+      "type": "missing-await",
+      "file": "labelbatch/pipeline.py",
+      "function": "process_shard",
+      "test": "test_1_requests.TestRequests.test_2_every_batch_archived",
+      "old": "    await client.archive(batch_id)\n    return outcome",
+      "new": "    client.archive(batch_id)\n    return outcome",
+      "symptom": "test_2_every_batch_archived fails: the server's archived list is [] instead of all five batch ids, and a RuntimeWarning \"coroutine 'BatchClient.archive' was never awaited\" appears on stderr.",
+      "why": "Calling an async def without await only creates a coroutine object; it never runs, so no DELETE is sent. Python prints a 'coroutine ... was never awaited' RuntimeWarning when the object is garbage collected.",
+      "unblocks": "test_2_every_batch_archived.",
+      "hints": [
+        "The server never received a single DELETE. Look at stderr while the tests run.",
+        "Find where archive() is called.",
+        "Add `await` in front of client.archive(batch_id)."
+      ],
+      "probes": [
+        "What does calling an async function without await actually return?",
+        "Why did nothing else in the run change?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Last results page never fetched",
+      "type": "pagination-cursor",
+      "file": "labelbatch/client.py",
+      "function": "BatchClient.fetch_results",
+      "test": "test_2_results.TestResults.test_3_shard_s2_all_pages",
+      "old": "        for page in range(2, first[\"total_pages\"] + 1):",
+      "new": "        for page in range(2, first[\"total_pages\"]):",
+      "symptom": "test_3_shard_s2_all_pages fails: R10 (the only result on S2's third page) has status missing with label/score None instead of labeled dog 0.86.",
+      "why": "range's stop is exclusive, so pages 2..total_pages-1 are read and the last page is skipped. Only S2 has more than one page (7 results at page_size 3), so only R10 goes missing.",
+      "unblocks": "test_3_shard_s2_all_pages.",
+      "hints": [
+        "Only R10 is missing, and it's the 7th result of S2. How many pages does S2 have?",
+        "Look at the loop that reads pages after the first.",
+        "Use range(2, total_pages + 1)."
+      ],
+      "probes": [
+        "Why didn't any other shard lose results?",
+        "Which page numbers does the loop request for total_pages = 3, before and after the fix?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Score equal to the threshold sent to review",
+      "type": "off-by-one",
+      "file": "labelbatch/pipeline.py",
+      "function": "classify",
+      "test": "test_2_results.TestResults.test_4_shard_s3_review_threshold",
+      "old": "    status = \"labeled\" if score >= threshold else \"needs_review\"",
+      "new": "    status = \"labeled\" if score > threshold else \"needs_review\"",
+      "symptom": "test_4_shard_s3_review_threshold fails: R12 (score exactly 0.7) is needs_review instead of labeled.",
+      "why": "The spec labels any score >= review_threshold. With `>`, R12's score of exactly 0.7 is routed to review.",
+      "unblocks": "test_4_shard_s3_review_threshold.",
+      "hints": [
+        "R12 has a score of exactly 0.7. What does the spec say about that?",
+        "Look at the threshold comparison in classify.",
+        "Use score >= threshold."
+      ],
+      "probes": [
+        "Why is R13 (0.69) needs_review both before and after the fix?",
+        "Is comparing floats with >= safe here? Where does 0.7 come from?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Request ids trimmed but not upper-cased",
+      "type": "id-normalization",
+      "file": "labelbatch/loader.py",
+      "function": "load_requests",
+      "test": "test_2_results.TestResults.test_5_shard_s5",
+      "old": "            item = {\"id\": norm_id(row[\"request_id\"]), \"text\": clean(row[\"text\"])}",
+      "new": "            item = {\"id\": clean(row[\"request_id\"]), \"text\": clean(row[\"text\"])}",
+      "symptom": "test_5_shard_s5 fails: the S5 rows contain `r17` with label unknown, score 0.0, status needs_review, and no `R17` entry.",
+      "why": "`r17` is sent and reported as lower-case. The API doesn't recognise that id, so it returns label `unknown` with score 0.0, and the report key is `r17` instead of `R17`.",
+      "unblocks": "test_5_shard_s5.",
+      "hints": [
+        "S5 has an `r17` key and an `unknown` label. Look at that row in requests.csv.",
+        "Compare how request ids and shard ids are cleaned in the loader.",
+        "Use norm_id for the request id."
+      ],
+      "probes": [
+        "Why did ` R03` in S1 come through fine?",
+        "Why did the mock answer `unknown` instead of an error?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Tokens rounded to whole thousands before pricing",
+      "type": "float-rounding",
+      "file": "labelbatch/reports.py",
+      "function": "summarize",
+      "test": "test_3_summary.TestSummary.test_6_cost",
+      "old": "        \"cost_usd\": round(tokens * config.price_per_1k_tokens / 1000, 4),",
+      "new": "        \"cost_usd\": round(tokens / 1000) * config.price_per_1k_tokens,",
+      "symptom": "test_6_cost fails: cost_usd is 0.18 instead of 0.1763. total_tokens (8815) still passes.",
+      "why": "round(tokens / 1000) rounds 8.815 thousand tokens up to 9 before multiplying, so the cost is 0.18 instead of 0.1763. Rounding has to be the last step, at 4 decimals.",
+      "unblocks": "test_6_cost.",
+      "hints": [
+        "8815 tokens at $0.02 per 1k is not 0.18.",
+        "Look at where rounding happens in the cost formula.",
+        "Multiply first, then round(..., 4)."
+      ],
+      "probes": [
+        "How large could the error be per run with the old formula?",
+        "Why does total_tokens pass while cost_usd fails?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What happens inside build_report()?",
+      "a": "It loads the config and requests.csv (`load_requests` returns shards and a list of skipped ids), creates a `BatchClient`, runs `asyncio.run(run_all(client, shards))`, then builds per-request rows with `request_rows` and the summary with `summarize`."
+    },
+    {
+      "q": "How does run_all start the shards?",
+      "a": "It creates `asyncio.Semaphore(client.config.max_concurrency)`, builds one `run_shard(limit, client, shard, items)` coroutine per shard, and awaits `asyncio.gather(..., return_exceptions=True)`. Any exception becomes a `ShardOutcome` with status `error`."
+    },
+    {
+      "q": "What does process_shard do, in order?",
+      "a": "submit → poll_until_done → (if completed) take `usage.total_tokens` and classify every item from `fetch_results` → archive → return the ShardOutcome."
+    },
+    {
+      "q": "What does a results page look like from the mock server?",
+      "a": "`{\"data\": [{\"id\", \"label\", \"score\"}, ...], \"page\": N, \"total_pages\": T}`, with `limit` items per page in the order the inputs were submitted. Unknown ids get label `unknown`, score 0.0."
+    },
+    {
+      "q": "What does the mock server record that tests can look at?",
+      "a": "`requests` (every call with method, path, query, auth header and body), `archived` (batch ids that got a DELETE), and `peak_inflight` (the most submit calls being handled at the same moment; each submit takes about 0.12 s)."
+    },
+    {
+      "q": "How are retries handled on submit?",
+      "a": "`BatchClient.submit` loops `max_retries + 1` times, sleeping `Retry-After` seconds after a 429/5xx response. A final status other than 201 raises `BatchError`."
+    },
+    {
+      "q": "Where are skipped requests decided?",
+      "a": "In `load_requests`: after trimming, an empty text puts `(shard, id)` on the skipped list and the request is never sent. `request_rows` adds those as `skipped` rows."
+    }
+  ]
+}

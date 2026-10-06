@@ -1,0 +1,5 @@
+{
+  "min_duration_s": 2.0,
+  "min_sync_rate": 0.9,
+  "sync_tolerance_ms": 10
+}

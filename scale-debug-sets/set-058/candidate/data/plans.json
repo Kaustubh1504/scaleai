@@ -1,0 +1,5 @@
+{
+  "free": {"rpm": 2, "included_units": 300, "price_per_1k_cents": 0, "base_cents": 0},
+  "Pro": {"rpm": 3, "included_units": 1000, "price_per_1k_cents": 250, "base_cents": 2900},
+  "enterprise": {"rpm": 4, "included_units": 0, "price_per_1k_cents": 0, "base_cents": 50000}
+}

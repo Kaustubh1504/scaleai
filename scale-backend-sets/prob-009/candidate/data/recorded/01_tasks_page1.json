@@ -1,0 +1,70 @@
+{
+  "request": "GET /v1/projects/prj_01/tasks?limit=3",
+  "status": 200,
+  "headers": {
+    "date": "Wed, 01 May 2024 08:00:00 GMT",
+    "x-ratelimit-limit": "4",
+    "x-ratelimit-remaining": "3",
+    "x-ratelimit-reset": "1714550410"
+  },
+  "body": {
+    "data": [
+      {
+        "id": "tsk_0015",
+        "project_id": "prj_01",
+        "status": "completed",
+        "priority": 5,
+        "is_gold": false,
+        "gold_label": null,
+        "payload": {
+          "text": "Sample sentence 15 for review."
+        },
+        "tags": [
+          "urban"
+        ],
+        "reward_cents": 20,
+        "created_at": "2024-04-02T06:03:50Z",
+        "completed_at": "2024-04-02T07:07:50Z",
+        "updated_at": "2024-04-02T07:07:50Z"
+      },
+      {
+        "id": "tsk_0021",
+        "project_id": "prj_01",
+        "status": "completed",
+        "priority": 1,
+        "is_gold": false,
+        "gold_label": null,
+        "payload": {
+          "text": "Sample sentence 21 for review."
+        },
+        "tags": [
+          "highway"
+        ],
+        "reward_cents": 12,
+        "created_at": "2024-04-03T11:58:09Z",
+        "completed_at": "2024-04-03T13:43:09Z",
+        "updated_at": "2024-04-03T13:43:09Z"
+      },
+      {
+        "id": "tsk_0022",
+        "project_id": "prj_01",
+        "status": "completed",
+        "priority": 4,
+        "is_gold": false,
+        "gold_label": null,
+        "payload": {
+          "text": "Sample sentence 22 for review."
+        },
+        "tags": [
+          "highway",
+          "urban"
+        ],
+        "reward_cents": 35,
+        "created_at": "2024-04-05T18:33:22Z",
+        "completed_at": "2024-04-06T01:01:22Z",
+        "updated_at": "2024-04-06T01:01:22Z"
+      }
+    ],
+    "next_cursor": "eyJyIjogInRhc2tzIiwgImsiOiBbInRza18wMDIyIiwgInRza18wMDIyIl19"
+  }
+}

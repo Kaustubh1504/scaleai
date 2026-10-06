@@ -1,0 +1,126 @@
+{
+  "id": "set-071",
+  "title": "Weekly contributor payouts with adjustments and carryover",
+  "domain": "payouts",
+  "length": "MINI",
+  "difficulty": "hard",
+  "format": "multi",
+  "package": "payrun",
+  "scenario": "Turn a weekly work log, a manual adjustments sheet (saved with a byte-order mark) and a contributor roster into payout statements with tier percentages, half-up rounding, a minimum payout and carryover.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_statements",
+      "test_2_payouts"
+    ]
+  },
+  "verified": [
+    {
+      "file": "payrun/rules.py",
+      "symbol": "in_period",
+      "why_correct": "The `<` against midnight of end + 1 day looks like it drops the end date, but it is exactly what makes the whole end date (up to 23:59:59) count while 00:10 the next day does not. The spec says both dates are included in full."
+    },
+    {
+      "file": "payrun/rules.py",
+      "symbol": "pct_of",
+      "why_correct": "`(cents * pct + 50) // 100` looks like integer-division truncation, but adding 50 before dividing by 100 is integer half-up rounding. Replacing it with round() would use banker's rounding and turn C02's 544.5 into 544."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Byte-order mark kept in the first header",
+      "type": "csv-bom-encoding",
+      "file": "payrun/loader.py",
+      "function": "_rows",
+      "old": "    with open(path, newline=\"\", encoding=\"utf-8-sig\") as fh:",
+      "new": "    with open(path, newline=\"\", encoding=\"utf-8\") as fh:",
+      "symptom": "Test 1: every bonus/clawback is (0, 0) and unmatched_adjustments is 10 instead of 1. Test 2: settlement drops all adjustments (C01 gross 2298 instead of 3798, C04 1588 instead of 338), C10 and C12 fall below the minimum and total_paid is 4934 instead of 12165.",
+      "why": "adjustments.csv starts with a UTF-8 byte-order mark. Read as plain utf-8, the first header becomes '\\ufeffcontributor_id' (strip() does not remove U+FEFF), so row.get('contributor_id') is '' for every row and every adjustment is treated as unmatched.",
+      "unblocks": "Test 1 adjustments and unmatched count, and part of Test 2. It exposes B2.",
+      "hints": [
+        "The summary says all 10 adjustments are unmatched, yet the ids in the sheet look exactly like roster ids. What id does the loader actually read for each row?",
+        "Print the header keys that _rows yields for adjustments.csv, with repr().",
+        "_rows opens the file with encoding='utf-8'; it needs 'utf-8-sig' so the byte-order mark is dropped."
+      ],
+      "probes": [
+        "Why did contributors.csv and work_log.csv load fine through the same helper?",
+        "Why doesn't the clean(k) on every header remove the mark?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Adjustment totals shared between contributors",
+      "type": "mutable-default",
+      "file": "payrun/ledger.py",
+      "function": "adjustment_totals",
+      "old": "def adjustment_totals(adjustments, totals=None):\n    if totals is None:\n        totals = {\"bonus\": 0, \"clawback\": 0}",
+      "new": "def adjustment_totals(adjustments, totals={\"bonus\": 0, \"clawback\": 0}):",
+      "masked_by": [
+        "B1"
+      ],
+      "symptom": "Only visible after B1 is fixed. Test 1: adjustments become running totals down the sorted roster (C02 (1500, 410), C03 (2000, 410), C04 (2000, 1660) ...). Test 2 is worse still because the totals carry over from Test 1's build_report call: every contributor clears the minimum and total_paid is 54024.",
+      "why": "The default dict is created once when the function is defined, so every call without `totals` adds into the same dict. Each statement gets the running total of every contributor processed before it (and of earlier build_report calls).",
+      "unblocks": "Test 1 adjustments and Test 2 settlement.",
+      "hints": [
+        "After B1, bonuses only ever grow as you go down the sorted contributor list. What would make one contributor's number include another's?",
+        "Look at how adjustment_totals gets a fresh dict for each contributor.",
+        "The default `totals={...}` is shared across calls. Default to None and create the dict inside the function."
+      ],
+      "probes": [
+        "Why was this invisible while every adjustment was unmatched?",
+        "Why do the numbers in Test 2 differ from those in Test 1 with this one bug present?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Every status treated as payable",
+      "type": "or-precedence",
+      "file": "payrun/rules.py",
+      "function": "is_payable",
+      "old": "    return entry.status in (\"approved\", \"auto-approved\")",
+      "new": "    return entry.status == \"approved\" or \"auto-approved\"",
+      "symptom": "Test 1: lines/earned include rejected and pending entries (C01 (4, 2658), C02 (3, 1755), C07 (3, 1635), C08 (3, 1434), C10 (2, 175)). Test 2: C07 is now paid, and total_paid is 14985 instead of 12165.",
+      "why": "`a == b or \"auto-approved\"` parses as `(a == b) or \"auto-approved\"`, and a non-empty string is truthy, so rejected and pending entries are paid too.",
+      "unblocks": "Test 1 lines/earned and Test 2 settlement.",
+      "hints": [
+        "C01 shows 4 lines; count the C01 entries's entries that the spec says should be paid.",
+        "Look at the status check in rules.py.",
+        "`status == \"approved\" or \"auto-approved\"` is always truthy. Use `status in (\"approved\", \"auto-approved\")`."
+      ],
+      "probes": [
+        "What does `entry.status == \"approved\" or \"auto-approved\"` evaluate to for a rejected entry?",
+        "Why did the qa-review entry for C09 still stay unpaid with this bug present?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() do, step by step?",
+      "a": "It loads rates.json, the roster, the work log and the adjustments through loader.py, calls ledger.build_statements to get one Statement per active contributor plus the unmatched-adjustment count, then reports.settle computes paid and carry_forward for each statement before the summary is assembled."
+    },
+    {
+      "q": "What does loader._rows yield?",
+      "a": "One dict per CSV row. Keys are the header names passed through clean() and lower(); values are the cells passed through clean(). It is used for all three CSV files."
+    },
+    {
+      "q": "How does load_entries handle repeated entry ids?",
+      "a": "It stores entries in a dict keyed by the normalised entry id, so a later row with the same id replaces the earlier one. The result is the dict's values, in first-seen key order."
+    },
+    {
+      "q": "Which entries does build_statements count toward earned?",
+      "a": "Those for which rules.counts_toward_pay is true: is_payable(entry), the task type is a key of rates['task_types'], and in_period(completed_at, start, end). Each counted entry adds 1 to lines and line_amount(...) to earned."
+    },
+    {
+      "q": "How are bonus and clawback filled in on a Statement?",
+      "a": "build_statements groups adjustments by contributor id (ids not in the roster increment `unmatched`), then calls adjustment_totals(extras.get(cid, [])) for each active contributor and copies the 'bonus' and 'clawback' values from the returned dict."
+    },
+    {
+      "q": "How is line_amount computed?",
+      "a": "units \u00d7 the task type's cents per unit, passed to pct_of together with the tier percentage from rates['tiers']."
+    },
+    {
+      "q": "What decides whether a statement is paid?",
+      "a": "reports.settle: if statement.gross >= rates['min_payout'] (2000) the gross is paid, otherwise paid is 0 and carry_forward is the gross."
+    }
+  ]
+}

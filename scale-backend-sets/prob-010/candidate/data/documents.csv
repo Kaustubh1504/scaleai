@@ -1,0 +1,11 @@
+doc_id,title,text,source
+CSV-2001,lease_2024.pdf,"Lease agreement, unit 4B. The parties agree that termination requires 60 days notice.
+Signature page attached.",email
+CSV-2002,inv_5521.pdf,"Invoice 5521: amount due $310, tax included.",portal
+CSV-2003,long_row.pdf,an unquoted comma splits this text, and then some,extra
+CSV-2004,id_card.jpg,,scanner
+ CSV-2005 ,letter_chen.txt,"  Dear support, thanks for your help with the login issue. Sincerely, A. Chen  ",email
+
+CSV-2006,menu.txt,"Lunch menu for the team offsite, with vegetarian options.",portal
+CSV 2007,bad_id.pdf,The id has a space in it.,portal
+CSV-2008,inv_contract.pdf,Invoice for contract work.,email

@@ -1,0 +1,37 @@
+{"id": "j01", "sample": "s01", "judge": "judge-a", "output": "{\"score\": 8, \"scale\": 10}"}
+{"id": "j02", "sample": "s01", "judge": "judge-b", "output": "Score: 5/6. Clear chain of thought."}
+{"id": "j03", "sample": "S02", "judge": "judge-a", "output": "```json\n{\"score\": 2, \"scale\": 3}\n```"}
+{"id": "j04", "sample": "s02", "judge": "judge-b", "output": "Rating: 4/5"}
+{"id": "j05", "sample": "s03", "judge": "judge-a", "output": "Verdict: PASS"}
+{"id": "j06", "sample": "s03", "judge": "judge-b", "output": "verdict = pass, no unsafe content"}
+{"id": "j07", "sample": "s04", "judge": "judge-a", "output": "Score: 3/6"}
+{"id": "j08", "sample": "s04", "judge": "Judge-B", "output": "{\"score\": \"6\", \"scale\": 10}"}
+{"id": "j09", "sample": "s05", "judge": "judge-a", "output": "Score: 1/3 - fails two tests"}
+{"id": "j10", "sample": "s05", "judge": "judge-b", "output": "I would rate this fairly low."}
+{"id": "j11", "sample": "s06", "judge": "judge-a", "output": "{\"score\": 7}"}
+{"id": "j12", "sample": "s06", "judge": "judge-b", "output": "Score: 9/10"}
+{"id": "j13", "sample": "s07", "judge": "judge-a", "output": "Score: 2/3"}
+{"id": "j14", "sample": "s07", "judge": "judge-b", "output": "Rating: 3/5"}
+{"id": "j15", "sample": "s08", "judge": "judge-a", "output": "{\"score\": 11, \"scale\": 10}"}
+{"id": "j16", "sample": "s08", "judge": "judge-b", "output": "Score: 5/6"}
+{"id": "j17", "sample": "s09", "judge": "judge-a", "output": "Verdict: FAIL"}
+{"id": "j18", "sample": "s09", "judge": "judge-b", "output": "Score: 1/3"}
+{"id": "j19", "sample": "s10", "judge": "judge-a", "output": "Rating: 4.5/5"}
+{"id": "j20", "sample": "s10", "judge": "judge-b", "output": "{\"score\": 9, \"scale\": 10}"}
+{"id": "j37", "sample": "s11", "judge": "judge-b", "output": "Score: 1/
+{"id": "j21", "sample": "s11", "judge": "judge-a", "output": "Score: 2/3"}
+{"id": "j22", "sample": "s12", "judge": "judge-a", "output": "Verdict: PASS"}
+{"id": "j23", "sample": "s12", "judge": "judge-b", "output": "Rating: 2/3"}
+{"id": "j24", "sample": "s13", "judge": "judge-a", "output": "Score: 5/6"}
+{"id": "j25", "sample": "s13", "judge": "judge-b", "output": "Score: 5/6"}
+{"id": "j26", "sample": "s14", "judge": "judge-a", "output": "```\n{\"score\": 9, \"scale\": 10, \"notes\": {\"tests\": \"pass\"}}\n```"}
+{"id": "j27", "sample": "s14", "judge": "judge-b", "output": "Score: 2/3"}
+{"id": "j28", "sample": "s15", "judge": "judge-a", "output": "Verdict: PASS"}
+{"id": "j29", "sample": "s16", "judge": "judge-a", "output": "Rating: 1/3"}
+{"id": "j30", "sample": "s16", "judge": "judge-b", "output": "Score: 7/10"}
+{"id": "j31", "sample": "s17", "judge": "judge-a", "output": "Score: 2/3"}
+{"id": "j32", "sample": "s17", "judge": "judge-b", "output": "{\"score\": \"high\", \"scale\": 10}"}
+{"id": "j33", "sample": "s18", "judge": "judge-a", "output": "Score: 5/6"}
+{"id": "j34", "sample": "s19", "judge": "judge-a", "output": "Looks fine to me."}
+{"id": "j35", "sample": "s21", "judge": "judge-a", "output": "Score: 6/10"}
+{"id": "j36", "sample": "s99", "judge": "judge-b", "output": "Score: 4/10"}

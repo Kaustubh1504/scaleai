@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_limits"
+    ],
+    "failures": {
+      "tests.test_1_limits.TestLimits.test_enterprise_not_throttled": "AssertionError: Lists differ: ['2026-05-01 14:00:40', '2026-05-01 14:00:50'] != []\n\nFirst list contains 2 additional elements.\nFirst extra element 0:\n'2026-05-01 14:00:40'\n\n- ['2026-05-01 14:00:40', '2026-05-01 14:00:50']\n+ []"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_limits"
+    ],
+    "failures": {
+      "tests.test_1_limits.TestLimits.test_window_boundary": "AssertionError: Lists differ: ['2026-05-01 10:01:00'] != ['2026-05-01 10:01:05']\n\nFirst differing element 0:\n'2026-05-01 10:01:00'\n'2026-05-01 10:01:05'\n\n- ['2026-05-01 10:01:00']\n?                     ^\n\n+ ['2026-05-01 10:01:05']\n?                     ^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_limits"
+    ],
+    "failures": {
+      "tests.test_1_limits.TestLimits.test_suspended_tenant": "AssertionError: Lists differ: [] != ['2026-05-01 08:00:00', '2026-05-01 12:30:00', '2026-05-02 08:00:00']\n\nSecond list contains 3 additional elements.\nFirst extra element 0:\n'2026-05-01 08:00:00'\n\n- []\n+ ['2026-05-01 08:00:00', '2026-05-01 12:30:00', '2026-05-02 08:00:00']"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_invoices"
+    ],
+    "failures": {
+      "tests.test_2_invoices.TestInvoices.test_credit_applied": "AssertionError: {'pla[27 chars]gross_cents': 3000, 'credit_cents': 0, 'amount_cents': 3000} != {'pla[27 chars]gross_cents': 3000, 'credit_cents': 1500, 'amount_cents': 1500}\n- {'amount_cents': 3000,\n?                  ^^\n\n+ {'amount_cents': 1500,\n?                  ^^\n\n-  'credit_cents': 0,\n+  'credit_cents': 1500,\n?                  +++\n\n   'gross_cents': 3000,\n   'plan': 'pro',\n   'units': 1400}"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_2_invoices"
+    ],
+    "failures": {
+      "tests.test_2_invoices.TestInvoices.test_overage_part_cents": "AssertionError: {'pla[26 chars]'gross_cents': 3200, 'credit_cents': 200, 'amount_cents': 3000} != {'pla[26 chars]'gross_cents': 3201, 'credit_cents': 200, 'amount_cents': 3001}\n- {'amount_cents': 3000,\n?                     ^\n\n+ {'amount_cents': 3001,\n?                     ^\n\n   'credit_cents': 200,\n-  'gross_cents': 3200,\n?                    ^\n\n+  'gross_cents': 3201,\n?                    ^\n\n   'plan': 'pro',\n   'units': 2203}"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_statement"
+    ],
+    "failures": {
+      "tests.test_3_statement.TestStatement.test_top_tenants": "AssertionError: Lists differ: [['quill', 1], ['fjord', 2], ['acorn', 3]] != [['orbit', 6], ['brightpath', 5], ['kestrel', 5]]\n\nFirst differing element 0:\n['quill', 1]\n['orbit', 6]\n\n- [['quill', 1], ['fjord', 2], ['acorn', 3]]\n+ [['orbit', 6], ['brightpath', 5], ['kestrel', 5]]"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_limits",
+      "test_2_invoices",
+      "test_3_statement"
+    ],
+    "failing_tests": [
+      "tests.test_1_limits.TestLimits.test_enterprise_not_throttled",
+      "tests.test_1_limits.TestLimits.test_suspended_tenant",
+      "tests.test_1_limits.TestLimits.test_window_boundary",
+      "tests.test_2_invoices.TestInvoices.test_credit_applied",
+      "tests.test_2_invoices.TestInvoices.test_overage_part_cents",
+      "tests.test_3_statement.TestStatement.test_top_tenants"
+    ]
+  }
+}

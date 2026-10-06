@@ -1,0 +1,89 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_ingest",
+      "test_2_roster",
+      "test_3_export"
+    ],
+    "failures": {
+      "tests.test_1_ingest.TestIngest.test_rejected_rows": "AssertionError: Lists differ: [('vendor_a', 1, 'missing email'), ('vendor_a', 2, 'mis[492 chars]te')] != [('vendor_a', 9, 'missing email'), ('vendor_a', 10, 'in[220 chars]te')]\n\nFirst differing element 0:\n('vendor_a', 1, 'missing email')\n('vendor_a', 9, 'missing email')\n\nFirst list contains 8 additional elements.\nFirst extra element 8:\n('vendor_a', 9, 'missing email')\n\n- [('vendor_a', 1, 'missing email'),\n?               ^\n\n+ [('vendor_a', 9, 'missing email'),\n?               ^\n\n+  ('vendor_a', 10, 'invalid hours'),\n+  ('vendor_a', 11, 'invalid hours'),\n-  ('vendor_a', 2, 'missing email'),\n-  ",
+      "tests.test_1_ingest.TestIngest.test_source_counts": "AssertionError: {'ven[28 chars]ed': 0, 'rejected': 11, 'inactive': 0}, 'vendo[130 chars]: 1}} != {'ven[28 chars]ed': 6, 'rejected': 3, 'inactive': 2}, 'vendor[129 chars]: 1}}\n- {'vendor_a': {'accepted': 0, 'inactive': 0, 'rejected': 11, 'rows': 11},\n?                           ^              ^              ^^\n\n+ {'vendor_a': {'accepted': 6, 'inactive': 2, 'rejected': 3, 'rows': 11},\n?                           ^              ^              ^\n\n   'vendor_b': {'accepted': 8, 'inactive': 0, 'rejected': 3, 'rows': 11},\n   'vendor_c': {'accepted': 7, 'inactive': 1, 'rejected': 2, 'rows': 10}}",
+      "tests.test_2_roster.TestRoster.test_duplicates": "AssertionError: 3 != 6",
+      "tests.test_2_roster.TestRoster.test_members": "AssertionError: Lists differ: ['ana[17 chars]o', 'eli@x.io', 'fay@x.io', 'kim@x.io', 'mia@x[72 chars].io'] != ['ana[17 chars]o', 'dev@x.io', 'eli@x.io', 'fay@x.io', 'gus@x[108 chars].io']\n\nFirst differing element 2:\n'eli@x.io'\n'dev@x.io'\n\nSecond list contains 3 additional elements.\nFirst extra element 12:\n'wes@x.io'\n\n  ['ana@x.io',\n   'cara@x.io',\n+  'dev@x.io',\n   'eli@x.io',\n   'fay@x.io',\n+  'gus@x.io',\n   'kim@x.io',\n   'mia@x.io',\n+  'noa@x.io',\n   'raj@x.io',\n   'tia@x.io',\n   'uma@x.io',\n   'wes@x.io',\n   'xan@x.io',\n   'zoe@x.io']",
+      "tests.test_2_roster.TestRoster.test_records": "AssertionError: {'ana[50 chars]rs': 28, 'skills': ['spark', 'sql'], 'sources'[1291 chars]c']}} != {'ana[50 chars]rs': 30, 'skills': ['python', 'spark', 'sql'],[1675 chars]c']}}\n  {'ana@x.io': {'country': 'ES',\n-               'hours': 28,\n?                        ^^\n\n+               'hours': 30,\n?                        ^^\n\n                'name': 'Ana Ruiz',\n-               'skills': ['spark', 'sql'],\n+               'skills': ['python', 'spark', 'sql'],\n?                          ++++++++++\n\n-               'sources': ['vendor_b']},\n+               'sources': ['vendor_a', 'vendor_b']},\n?    ",
+      "tests.test_3_export.TestExport.test_countries": "AssertionError: {'AU'[38 chars]1, 'IN': 2, 'KR': 2, 'MX': 1, 'NZ': 1, 'US': 1} != {'AU'[38 chars]1, 'IL': 1, 'IN': 3, 'KR': 2, 'MX': 1, 'NZ': 1[14 chars]': 1}\n  {'AU': 1,\n   'CZ': 1,\n   'DE': 1,\n   'ES': 1,\n   'HK': 1,\n+  'IL': 1,\n-  'IN': 2,\n?        ^\n\n+  'IN': 3,\n?        ^\n\n   'KR': 2,\n   'MX': 1,\n   'NZ': 1,\n+  'SE': 1,\n   'US': 1}",
+      "tests.test_3_export.TestExport.test_export_timestamps": "AssertionError: {'ana@x.io': '2026-02-20T10:00:00', 'cara@x.io': '2026-03-05T[355 chars]:00'} != {'ana@x.io': '2026-03-01T09:30:00', 'cara@x.io': '2026-03-05T[460 chars]:00'}\n- {'ana@x.io': '2026-02-20T10:00:00',\n?                     ^ -  -  ^\n\n+ {'ana@x.io': '2026-03-01T09:30:00',\n?                     ^  +  + ^\n\n   'cara@x.io': '2026-03-05T10:00:00',\n+  'dev@x.io': '2026-03-02T14:00:00',\n   'eli@x.io': '2026-03-01T00:00:00',\n   'fay@x.io': '2026-02-14T00:00:00',\n+  'gus@x.io': '2026-02-15T08:00:00',\n   'kim@x.io': '2026-01-20T10:00:00',\n   'mia@x.io': '2026-03-04T16:00:00',\n+  'noa@x.io': '",
+      "tests.test_3_export.TestExport.test_skill_counts": "AssertionError: {'go': 2, 'labeling': 1, 'ml': 3, 'python':[40 chars]': 4} != {'excel': 1, 'go': 2, 'labeling': 1, 'ml': [62 chars]': 4}\n+ {'excel': 1,\n- {'go': 2,\n? ^\n\n+  'go': 2,\n? ^\n\n   'labeling': 1,\n   'ml': 3,\n+  'nlp': 1,\n-  'python': 4,\n?            ^\n\n+  'python': 8,\n?            ^\n\n   'qa': 2,\n   'rust': 1,\n   'spark': 2,\n   'sql': 4}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_ingest",
+      "test_2_roster",
+      "test_3_export"
+    ],
+    "failures": {
+      "tests.test_1_ingest.TestIngest.test_source_counts": "AssertionError: {'ven[28 chars]ed': 8, 'rejected': 3, 'inactive': 0}, 'vendor[129 chars]: 1}} != {'ven[28 chars]ed': 6, 'rejected': 3, 'inactive': 2}, 'vendor[129 chars]: 1}}\n- {'vendor_a': {'accepted': 8, 'inactive': 0, 'rejected': 3, 'rows': 11},\n?                           ^              ^\n\n+ {'vendor_a': {'accepted': 6, 'inactive': 2, 'rejected': 3, 'rows': 11},\n?                           ^              ^\n\n   'vendor_b': {'accepted': 8, 'inactive': 0, 'rejected': 3, 'rows': 11},\n   'vendor_c': {'accepted': 7, 'inactive': 1, 'rejected': 2, 'rows': 10}}",
+      "tests.test_2_roster.TestRoster.test_members": "AssertionError: Lists differ: ['ana@x.io', 'ben@x.io', 'cara@x.io', 'dev@x.io', 'eli@[145 chars].io'] != ['ana@x.io', 'cara@x.io', 'dev@x.io', 'eli@x.io', 'fay@[121 chars].io']\n\nFirst differing element 1:\n'ben@x.io'\n'cara@x.io'\n\nFirst list contains 2 additional elements.\nFirst extra element 15:\n'xan@x.io'\n\n  ['ana@x.io',\n-  'ben@x.io',\n   'cara@x.io',\n   'dev@x.io',\n   'eli@x.io',\n   'fay@x.io',\n   'gus@x.io',\n   'kim@x.io',\n-  'leo@x.io',\n   'mia@x.io',\n   'noa@x.io',\n   'raj@x.io',\n   'tia@x.io',\n   'uma@x.io',\n   'wes@x.io',\n   'xan@x.io',\n   'zoe@x.io']",
+      "tests.test_2_roster.TestRoster.test_records": "AssertionError: {'ana[131 chars]]}, 'ben@x.io': {'name': 'Ben Ode', 'country':[1813 chars]c']}} != {'ana[131 chars]]}, 'cara@x.io': {'name': 'Cara Diaz', 'countr[1594 chars]c']}}\n  {'ana@x.io': {'country': 'ES',\n                'hours': 30,\n                'name': 'Ana Ruiz',\n                'skills': ['python', 'spark', 'sql'],\n                'sources': ['vendor_a', 'vendor_b']},\n-  'ben@x.io': {'country': 'NG',\n-               'hours': 20,\n-               'name': 'Ben Ode',\n-               'skills': ['java'],\n-               'sources': ['vendor_a']},\n   'cara@x.io': {'country': 'MX',\n      ",
+      "tests.test_3_export.TestExport.test_countries": "AssertionError: {'AU'[28 chars] 1, 'GB': 1, 'HK': 1, 'IL': 1, 'IN': 3, 'KR': [42 chars]': 1} != {'AU'[28 chars] 1, 'HK': 1, 'IL': 1, 'IN': 3, 'KR': 2, 'MX': [24 chars]': 1}\n  {'AU': 1,\n   'CZ': 1,\n   'DE': 1,\n   'ES': 1,\n-  'GB': 1,\n   'HK': 1,\n   'IL': 1,\n   'IN': 3,\n   'KR': 2,\n   'MX': 1,\n-  'NG': 1,\n   'NZ': 1,\n   'SE': 1,\n   'US': 1}",
+      "tests.test_3_export.TestExport.test_export_timestamps": "AssertionError: {'ana[27 chars]0', 'ben@x.io': '2026-02-11T00:00:00', 'cara@x[513 chars]:00'} != {'ana[27 chars]0', 'cara@x.io': '2026-03-05T10:00:00', 'dev@x[443 chars]:00'}\n  {'ana@x.io': '2026-03-01T09:30:00',\n-  'ben@x.io': '2026-02-11T00:00:00',\n   'cara@x.io': '2026-03-05T10:00:00',\n   'dev@x.io': '2026-03-02T14:00:00',\n   'eli@x.io': '2026-03-01T00:00:00',\n   'fay@x.io': '2026-02-14T00:00:00',\n   'gus@x.io': '2026-02-15T08:00:00',\n   'kim@x.io': '2026-01-20T10:00:00',\n-  'leo@x.io': '2026-02-02T00:00:00',\n   'mia@x.io': '2026-03-04T16:00:00',\n   'noa@x.io': '2026-03-03T12:00:00',\n   'ra",
+      "tests.test_3_export.TestExport.test_skill_counts": "AssertionError: {'exc[13 chars] 2, 'java': 1, 'labeling': 1, 'ml': 3, 'nlp': [52 chars]': 4} != {'exc[13 chars] 2, 'labeling': 1, 'ml': 3, 'nlp': 1, 'python'[41 chars]': 4}\n  {'excel': 1,\n   'go': 2,\n-  'java': 1,\n   'labeling': 1,\n   'ml': 3,\n   'nlp': 1,\n   'python': 8,\n   'qa': 2,\n   'rust': 1,\n-  'spark': 3,\n?           ^\n\n+  'spark': 2,\n?           ^\n\n   'sql': 4}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_roster",
+      "test_3_export"
+    ],
+    "failures": {
+      "tests.test_2_roster.TestRoster.test_records": "AssertionError: {'ana[89 chars]'sql', 'sql'], 'sources': ['vendor_a', 'vendor[1692 chars]c']}} != {'ana[89 chars]'sql'], 'sources': ['vendor_a', 'vendor_b']}, [1636 chars]c']}}\n  {'ana@x.io': {'country': 'ES',\n                'hours': 30,\n                'name': 'Ana Ruiz',\n-               'skills': ['python', 'spark', 'sql', 'sql'],\n?                                             -------\n\n+               'skills': ['python', 'spark', 'sql'],\n                'sources': ['vendor_a', 'vendor_b']},\n   'cara@x.io': {'country': 'MX',\n                 'hours': 40,\n                 'name': 'Cara Diaz',",
+      "tests.test_3_export.TestExport.test_skill_counts": "AssertionError: {'exc[24 chars]ng': 2, 'ml': 3, 'nlp': 1, 'python': 11, 'qa':[31 chars]': 6} != {'exc[24 chars]ng': 1, 'ml': 3, 'nlp': 1, 'python': 8, 'qa': [30 chars]': 4}\n  {'excel': 1,\n   'go': 2,\n-  'labeling': 2,\n?              ^\n\n+  'labeling': 1,\n?              ^\n\n   'ml': 3,\n   'nlp': 1,\n-  'python': 11,\n?            ^^\n\n+  'python': 8,\n?            ^\n\n   'qa': 2,\n   'rust': 1,\n   'spark': 2,\n-  'sql': 6}\n?         ^\n\n+  'sql': 4}\n?         ^\n"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_roster",
+      "test_3_export"
+    ],
+    "failures": {
+      "tests.test_2_roster.TestRoster.test_records": "AssertionError: {'ana[339 chars]': ['', 'python'], 'sources': ['vendor_a']}, '[1396 chars]c']}} != {'ana[339 chars]': ['python'], 'sources': ['vendor_a']}, 'eli@[1386 chars]c']}}\n  {'ana@x.io': {'country': 'ES',\n                'hours': 30,\n                'name': 'Ana Ruiz',\n                'skills': ['python', 'spark', 'sql'],\n                'sources': ['vendor_a', 'vendor_b']},\n   'cara@x.io': {'country': 'MX',\n                 'hours': 40,\n                 'name': 'Cara Diaz',\n                 'skills': ['labeling', 'qa'],\n                 'sources': ['vendor_b', 'vendor_c']},\n   'dev@x.i",
+      "tests.test_3_export.TestExport.test_skill_counts": "AssertionError: {'': 3, 'excel': 1, 'go': 2, 'labeling': 1,[69 chars]': 4} != {'excel': 1, 'go': 2, 'labeling': 1, 'ml': [62 chars]': 4}\n- {'': 3,\n-  'excel': 1,\n? ^\n\n+ {'excel': 1,\n? ^\n\n   'go': 2,\n   'labeling': 1,\n   'ml': 3,\n   'nlp': 1,\n   'python': 8,\n   'qa': 2,\n   'rust': 1,\n   'spark': 2,\n   'sql': 4}"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_2_roster",
+      "test_3_export"
+    ],
+    "failures": {
+      "tests.test_2_roster.TestRoster.test_records": "AssertionError: {'ana[159 chars]ara D.', 'country': 'US', 'hours': 35, 'skills[1564 chars]c']}} != {'ana[159 chars]ara Diaz', 'country': 'MX', 'hours': 40, 'skil[1566 chars]c']}}\n  {'ana@x.io': {'country': 'ES',\n                'hours': 30,\n                'name': 'Ana Ruiz',\n                'skills': ['python', 'spark', 'sql'],\n                'sources': ['vendor_a', 'vendor_b']},\n-  'cara@x.io': {'country': 'US',\n?                            ^^\n\n+  'cara@x.io': {'country': 'MX',\n?                            ^^\n\n-                'hours': 35,\n?                         ^^\n\n+                'hou",
+      "tests.test_3_export.TestExport.test_countries": "AssertionError: {'AU'[40 chars] 'IL': 1, 'IN': 3, 'KR': 2, 'NZ': 1, 'SE': 1, 'US': 2} != {'AU'[40 chars] 'IL': 1, 'IN': 3, 'KR': 2, 'MX': 1, 'NZ': 1, 'SE': 1, 'US': 1}\n  {'AU': 1,\n   'CZ': 1,\n   'DE': 1,\n   'ES': 1,\n   'HK': 1,\n   'IL': 1,\n   'IN': 3,\n   'KR': 2,\n+  'MX': 1,\n   'NZ': 1,\n   'SE': 1,\n-  'US': 2}\n?        ^\n\n+  'US': 1}\n?        ^\n"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_export"
+    ],
+    "failures": {
+      "tests.test_3_export.TestExport.test_export_timestamps": "AssertionError: {'ana[14 chars]03-01 09:30:00', 'cara@x.io': '2026-03-05 10:0[456 chars]:00'} != {'ana[14 chars]03-01T09:30:00', 'cara@x.io': '2026-03-05T10:0[456 chars]:00'}\n- {'ana@x.io': '2026-03-01 09:30:00',\n?                         ^\n\n+ {'ana@x.io': '2026-03-01T09:30:00',\n?                         ^\n\n-  'cara@x.io': '2026-03-05 10:00:00',\n?                          ^\n\n+  'cara@x.io': '2026-03-05T10:00:00',\n?                          ^\n\n-  'dev@x.io': '2026-03-02 14:00:00',\n?                         ^\n\n+  'dev@x.io': '2026-03-02T14:00:00',\n?                         ^\n\n-  'eli@x.io': '202"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_ingest",
+      "test_2_roster",
+      "test_3_export"
+    ],
+    "failing_tests": [
+      "tests.test_1_ingest.TestIngest.test_rejected_rows",
+      "tests.test_1_ingest.TestIngest.test_source_counts",
+      "tests.test_2_roster.TestRoster.test_duplicates",
+      "tests.test_2_roster.TestRoster.test_members",
+      "tests.test_2_roster.TestRoster.test_records",
+      "tests.test_3_export.TestExport.test_countries",
+      "tests.test_3_export.TestExport.test_export_timestamps",
+      "tests.test_3_export.TestExport.test_skill_counts"
+    ]
+  }
+}

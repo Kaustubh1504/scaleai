@@ -1,0 +1,41 @@
+task_id,contributor_id,task_type,status,completed_at
+T-101,C-01,label_hard,approved,2026-04-01 00:00
+T-102,c-01 ,label_hard,approved,04/02/2026 09:15
+T-103,C-01,label_hard,approved,2026-04-03T11:00:00
+T-104,C-01,Label_Hard,approved,2026-04-07 16:40
+T-105,C-01,review,approved,2026-04-09 10:00
+T-106,C-01,review,approved,04/10/2026 10:30
+T-107,C-01,transcribe,approved,2026-04-15 00:00
+T-108,C-02,bbox,approved,2026-04-02 08:00
+T-109,C-02,bbox,approved,2026-04-02 08:20
+T-110,C-02,bbox,approved,2026-04-05T13:00:00
+T-111,C-02,qa,approved,2026-04-06 09:00
+T-112,C-02,qa, Approved,2026-04-06 09:30
+T-113,C-02,writing,rejected,2026-04-06 10:00
+T-114,C-02,transcribe,pending,2026-04-08 12:00
+T-115,C-03,writing,approved,2026-04-03 14:00
+T-116,C-03,writing,approved,04/04/2026 14:00
+T-117,C-03,transcribe,approved,2026-04-10 09:00
+T-118,C-03,ner,approved,2026-04-11 09:00
+T-119,C-03,ner,approved,2026-04-12T09:05:00
+T-120,c-04,label_easy,approved,2026-04-02 07:00
+T-121,C-04,label_easy,approved,2026-04-02 07:05
+T-122,C-04 ,label_easy ,approved,2026-04-02 07:10
+T-123,C-04,label_easy,approved,2026-04-02 07:15
+T-124,C-04,label_easy,approved,2026-04-02 07:20
+T-125,C-04,label_easy,approved,2026-04-02 07:25
+T-126,C-04,ner,approved,2026-04-13 18:00
+T-126,C-04,ner,approved,2026-04-13 18:00
+T-127,C-05,writing,approved,2026-04-04 10:00
+T-128,C-05,writing,approved,2026-04-05 10:00
+T-129,C-05,writing,approved,04/06/2026 10:00
+T-130,C-05,audio,approved,2026-04-08 15:00
+T-131,C-05,ranking,approved,2026-04-14 23:59
+T-132,C-06,writing,approved,2026-04-02 12:00
+T-133,C-06,writing,approved,2026-04-03 12:00
+T-134,C-06,writing,approved,2026-04-04 12:00
+T-135,C-06,writing,approved,2026-04-05 12:00
+T-136,C-06,qa,approved,2026-04-05 12:30
+T-137,C-06,writing,approved,2026-03-31 23:50
+T-138,C-07,audio,approved,2026-04-09 08:00
+T-139,C-07,audio,approved,2026-04-09 08:30

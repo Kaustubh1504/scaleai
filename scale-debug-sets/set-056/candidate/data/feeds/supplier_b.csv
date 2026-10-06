@@ -1,0 +1,15 @@
+SKU,Title,Category,Price,Qty,Updated_At,Status
+LT-400,LED shop light 4ft,Lighting,44.00,10,04/03/2026,active
+GD-700,Garden hose 50ft,garden,29.50,11,2026-04-04,active
+pt-311 ,Primer 1qt,PAINT,11.90,0,2026-04-02, discontinued
+PR-050,Promo work gloves,safety,0.00,25,2026-04-03,active
+HM-100,Claw hammer 16oz,tools,23.99,10,2026-03-30,active
+CB-120,Cable ties 100pk,electrical,4.80,60,2026-04-02,
+CB-121,Wire nuts 50pk,Electrical,,30,2026-04-02,active
+fs-601,Drywall anchors,fasteners,6.30,18,2026-04-31,active
+ss-130,Snow shovel,seasonal,27.00,7,2026-04-01,active
+SF-801,Ear defenders,safety ,18.60,12,04/01/2026,active
+DR-201,Drill bit set,tools,16.00,22,2026-04-02T14:00:00,ACTIVE
+GD-702,Watering can,garden,13.70,5,2026-04-01,active
+lt-401,Headlamp,lighting,15.30,0,2026-04-02,active
+PT-312,Paint tray,Paint,abc,9,2026-04-02,active

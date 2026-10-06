@@ -1,0 +1,12 @@
+[
+  {"email": "cara@x.io", "name": "Cara D.", "country": "us", "skills": ["labeling", "qa"], "hours_per_week": 35, "updated_at": "2026-03-05 10:00", "active": true},
+  {"email": "eli@x.io", "name": "Eli Moor", "country": "de", "skills": ["go", "rust"], "hours_per_week": 40, "updated_at": "2026-03-01", "active": true},
+  {"email": "", "name": "No Email", "country": "fr", "skills": [], "hours_per_week": 10, "updated_at": "2026-03-01", "active": true},
+  {"email": "jon@x.io", "name": "Jon Ash", "country": "us", "skills": ["python"], "hours_per_week": 20, "updated_at": "31/02/2026", "active": true},
+  {"email": "mia@x.io", "name": "Mia Novak", "country": "cz", "skills": ["Python"], "hours_per_week": 30, "updated_at": "2026-03-01 08:00", "active": true},
+  {"email": "vic@x.io", "name": "Vic Hale", "country": "us", "skills": ["qa"], "hours_per_week": 0, "updated_at": "2026-02-18", "active": false},
+  {"email": "wes@x.io", "name": "Wes Kim", "country": "kr", "skills": "python; go", "hours_per_week": 22, "updated_at": "2026-02-19 13:00", "active": true},
+  {"email": "RAJ@x.io", "name": "Raj N.", "country": "in", "skills": ["python", "ml"], "hours_per_week": 50, "updated_at": "2026-02-26 09:00", "active": true},
+  {"email": "zoe@x.io", "name": "Zoe Park", "country": "nz", "skills": [], "hours_per_week": 16, "updated_at": "2026-03-02T07:30:00", "active": null},
+  {"email": "xan@x.io", "name": "Xan Ford", "country": "us", "skills": ["sql"], "hours_per_week": 60, "updated_at": "2026-02-21", "active": true}
+]

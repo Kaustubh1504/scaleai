@@ -1,0 +1,12 @@
+[
+  {"id": " Atlas-7B", "display_name": "Atlas 7B"},
+  {"id": "borealis-13b", "display_name": "Borealis 13B"},
+  {"id": "CIRRUS-70B ", "display_name": "Cirrus 70B"},
+  {"id": "delta-3b", "display_name": "Delta 3B"},
+  {"id": "Ember-8x7B", "display_name": "Ember 8x7B"},
+  {"id": "fjord-1b", "display_name": "Fjord 1B"},
+  {"id": "garnet-34b", "display_name": "Garnet 34B"},
+  {"id": "halo-2b", "display_name": "Halo 2B"},
+  {"id": "ion-9b", "display_name": "Ion 9B"},
+  {"id": "juniper-4b", "display_name": "Juniper 4B"}
+]

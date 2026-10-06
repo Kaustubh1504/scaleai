@@ -1,0 +1,12 @@
+[
+  {"category": "reasoning", "weight": 2},
+  {"category": "Coding", "weight": "3"},
+  {"category": "safety", "weight": 1.5},
+  {"category": "summarization", "weight": " 1 "},
+  {"category": "translation", "weight": 1},
+  {"category": "extraction", "weight": 1},
+  {"category": "math", "weight": 2.5},
+  {"category": "dialogue", "weight": 0.5},
+  {"category": "creative", "weight": 0.5},
+  {"category": "tool_use", "weight": 2}
+]

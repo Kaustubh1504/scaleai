@@ -1,0 +1,117 @@
+{
+  "id": "set-025",
+  "title": "Weekly hours split across projects by score and region",
+  "domain": "contributor_assignment",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "multi",
+  "package": "crew",
+  "scenario": "Fill projects in priority order (higher number = more important) with hours from contributors who pass the skill score and region gates, highest score first, splitting each contributor's weekly hours across projects. Test 2 reports utilization and idle contributors.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_allocations",
+      "test_2_capacity_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "crew/allocator.py",
+      "symbol": "candidate_order",
+      "why_correct": "Sorting on negated score and negated remaining hours gives highest score first and, on ties, most remaining hours first, with id ascending last, exactly rule 5. It is called before any hours are taken for the project, so `remaining` is the right snapshot."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Best score taken over the raw strings",
+      "type": "string-vs-int",
+      "file": "crew/loader.py",
+      "function": "best_scores",
+      "old": "        cid: {skill: max(int(s) for s in scores) for skill, scores in skills.items()}",
+      "new": "        cid: {skill: int(max(scores)) for skill, scores in skills.items()}",
+      "symptom": "Test 1: test_all_allocations shows P06 going to C03 (10) instead of C05, then P05 becomes {C09: 10, C11: 5} and P10 gives C05 9 hours. Test 2: C05 utilization 0.36 instead of 0.56, C11 0.5 instead of 0.0, and idle is [] instead of ['C11'].",
+      "why": "max() over strings compares them alphabetically, so '79' beats '100' and C05's audio score becomes 79. C05 drops behind C03 for P06, which shifts hours on P05 and P10.",
+      "unblocks": "test_all_allocations, test_utilization (and exposes B2).",
+      "hints": [
+        "C05 scored 100 in audio. Why is C03 first on P06?",
+        "Look at how a contributor's best attempt is chosen.",
+        "Convert before taking the max: max(int(s) for s in scores)."
+      ],
+      "probes": [
+        "Why were all the other contributors' best scores right?",
+        "Why did this hide the region problem on P03?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Region check reads as `x == y or \"any\"`",
+      "type": "or-precedence",
+      "file": "crew/rules.py",
+      "function": "region_ok",
+      "old": "    return project.region == \"any\" or contributor.region == project.region",
+      "new": "    return contributor.region == project.region or \"any\"",
+      "masked_by": [
+        "B1"
+      ],
+      "symptom": "Only visible after B1 is fixed. Test 1: P03 (EMEA only) goes entirely to C05 (apac) {C05: 20} instead of {C02: 10, C03: 10}; P05 and P06 shift as a result. Test 2: C03 0.75, C05 1.0, C09 0.4 utilization.",
+      "why": "`a == b or \"any\"` is `(a == b) or \"any\"`, and a non-empty string is truthy, so every contributor passes the region gate. C05 (apac, audio 100) takes all 20 hours of the EMEA-only P03.",
+      "unblocks": "test_top_priority_projects, test_all_allocations and test_utilization.",
+      "hints": [
+        "P03 is EMEA-only. Which region is the contributor it went to in?",
+        "Look at the region rule in rules.py and how Python groups `or`.",
+        "region_ok should be project.region == \"any\" or contributor.region == project.region."
+      ],
+      "probes": [
+        "Why was this invisible while B1 was present?",
+        "What does region_ok return here when the regions differ? Is it a bool?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Allocation stops at the first contributor with no hours left",
+      "type": "early-return",
+      "file": "crew/allocator.py",
+      "function": "allocate",
+      "old": "            if remaining[cand.id] == 0:\n                continue",
+      "new": "            if remaining[cand.id] == 0:\n                break",
+      "symptom": "Test 1: P05, P08 and P10 get no hours; unfilled becomes {P04: 10, P05: 15, P08: 10, P09: 8, P10: 12}. Test 2: idle is ['C09', 'C11'] and utilization drops for C03, C04, C05, C09 and C12.",
+      "why": "Rule 5 skips a contributor with no hours left. `break` ends the whole project instead, so any project whose top candidate is used up gets nothing: P08 (C10), P05 (C10) and P10 (C08), even though C04, C03, C09, C12 and C05 still had hours.",
+      "unblocks": "test_all_allocations, test_unfilled, test_utilization and test_idle.",
+      "hints": [
+        "P05 needs 15 hours and gets none, yet C03 and C09 have hours left. Who is first in its candidate order?",
+        "Look at what happens in allocate when a candidate has no hours left.",
+        "That check should `continue`, not `break`."
+      ],
+      "probes": [
+        "Why did P04 come out the same with and without the fix?",
+        "How would filtering out exhausted contributors before the loop change things?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report do?",
+      "a": "It loads contributors, builds best scores from assessments.csv with best_scores, loads projects, calls allocate, then computes used hours, utilization and idle over active contributors with capacity > 0."
+    },
+    {
+      "q": "What does best_scores return and how are blank scores handled?",
+      "a": "A dict contributor_id -> {skill: score}. Rows with a blank score are skipped. The remaining score strings are collected per contributor and skill, then reduced to one int per skill."
+    },
+    {
+      "q": "Where is the region rule applied?",
+      "a": "rules.region_ok, called from is_eligible after the active/capacity check and before the score check. load_projects turns a blank region into 'any'."
+    },
+    {
+      "q": "How does allocate track hours?",
+      "a": "`remaining` starts as each contributor's capacity. For each project in project_order it gets the eligible list, sorts it with candidate_order, and walks it, subtracting the hours given. Leftover need goes into `unfilled`."
+    },
+    {
+      "q": "What does project_order sort by?",
+      "a": "(-priority, id), so higher priority numbers come first and ties go to the lower id."
+    },
+    {
+      "q": "Which contributors appear in utilization?",
+      "a": "Only those with active True and capacity > 0, so C06 (0 hours) and C07 (inactive) are left out."
+    }
+  ]
+}

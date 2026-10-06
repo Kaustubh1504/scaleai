@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_examples"
+    ],
+    "failures": {
+      "tests.test_1_examples.TestExamples.test_1_late_system_turn": "AssertionError: {'sou[52 chars]tant'], 'tokens': 31, 'dropped_pairs': 0, 'tex[150 chars]d|>'} != {'sou[52 chars]tant', 'user', 'assistant'], 'tokens': 48, 'dr[254 chars]d|>'}\nDiff is 666 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_examples"
+    ],
+    "failures": {
+      "tests.test_1_examples.TestExamples.test_2_vendor_b_example": "AssertionError: Tuples differ: (32, 1) != (64, 0)\n\nFirst differing element 0:\n32\n64\n\n- (32, 1)\n+ (64, 0)"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_3_tag_counts": "AssertionError: {'': 3, 'billing': 1, 'chitchat': 1, 'code'[129 chars]': 1} != {'billing': 1, 'chitchat': 1, 'code': 1, 'c[122 chars]': 1}\n- {'': 3,\n-  'billing': 1,\n? ^\n\n+ {'billing': 1,\n? ^\n\n   'chitchat': 1,\n   'code': 1,\n   'cooking': 1,\n   'general': 1,\n   'greeting': 1,\n   'math': 1,\n   'news': 1,\n   'qa': 1,\n   'review': 1,\n   'summarize': 1,\n   'support': 2,\n   'travel': 1}"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_examples",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_examples.TestExamples.test_1_late_system_turn",
+      "tests.test_1_examples.TestExamples.test_2_vendor_b_example",
+      "tests.test_2_report.TestReport.test_3_tag_counts"
+    ]
+  }
+}

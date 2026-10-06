@@ -1,0 +1,122 @@
+{
+  "id": "set-089",
+  "title": "Eval Cup leaderboard with a contest window",
+  "domain": "leaderboard_ranking",
+  "length": "MINI",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "evalboard",
+  "scenario": "Keep each active team's best result per active benchmark inside an end-exclusive contest window, normalise against the benchmark leader into a weighted composite, and rank with an earliest-finisher tie-break. The report counts distinct entrants per benchmark.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_scores",
+      "test_2_leaderboard"
+    ]
+  },
+  "verified": [
+    {
+      "file": "evalboard/loader.py",
+      "symbol": "parse_time",
+      "why_correct": "It tries exactly the three formats the README lists, with month/day order for the slash format, and raises on anything else. The `continue` inside `except` only moves on to the next format."
+    },
+    {
+      "file": "evalboard/scoring.py",
+      "symbol": "normalise",
+      "why_correct": "For a lower-is-better benchmark the leader has the smallest value, so `best / score` puts the leader at 1.0 and every slower team below 1. It looks inverted, but it is exactly spec rule 6."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Submission at the window end counted",
+      "type": "time-window-boundary",
+      "file": "evalboard/loader.py",
+      "function": "in_window",
+      "test": "test_1_scores.TestScores.test_1_mid_table_composites",
+      "old": "    return start <= ts < end",
+      "new": "    return start <= ts <= end",
+      "symptom": "test_1_mid_table_composites fails: orca shows (0.7167, 52.0) instead of (0.7, 48.0). puffin and otter are unchanged and the standings test still passes.",
+      "why": "The window is end-exclusive. With `<=`, orca's S24 (exactly 2026-09-15 00:00, written as 09/15/2026 00:00) counts, so orca's reasoning best rises from 48 to 52 and its composite from 0.7 to 0.7167. It is not enough to change orca's rank.",
+      "unblocks": "test_1_mid_table_composites.",
+      "hints": [
+        "orca's reasoning best is 52. Which submission is that, and when was it made?",
+        "Compare that time with contest.json and the window rule in the README.",
+        "in_window should be `start <= ts < end`."
+      ],
+      "probes": [
+        "Why did the standings test still pass with this bug?",
+        "S35 is exactly at `start`. Why must it stay in?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Tie-break uses first submission time",
+      "type": "wrong-tie-break",
+      "file": "evalboard/scoring.py",
+      "function": "team_bests",
+      "test": "test_2_leaderboard.TestLeaderboard.test_2_final_standings",
+      "old": "    last_seen = {team: max(ts) for team, ts in times.items()}",
+      "new": "    last_seen = {team: min(ts) for team, ts in times.items()}",
+      "symptom": "test_2_final_standings fails: heron is ranked 6th and lynx 7th. Expected lynx then heron (both have composite 0.6667).",
+      "why": "lynx and heron have identical bests and composites (0.6667). The tie goes to whoever made their last submission earlier (lynx, 09-10 vs heron 09-12). `min` gives each team's first submission instead, and heron started earlier (09-02), so the two swap.",
+      "unblocks": "test_2_final_standings.",
+      "hints": [
+        "Which two teams swapped places? Compare their composites.",
+        "The sort key in ranking.py looks right. Where do its time values come from?",
+        "team_bests builds last_seen with min(ts); rule 9 needs max(ts)."
+      ],
+      "probes": [
+        "Why is ranking.py, the file that does the sorting, not where the fix goes?",
+        "Why can't the team id ever decide the order in this data?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Entrant count counts submissions, not teams",
+      "type": "missing-dedupe",
+      "file": "evalboard/report.py",
+      "function": "benchmark_stats",
+      "test": "test_2_leaderboard.TestLeaderboard.test_3_benchmark_stats",
+      "old": "    entrants = defaultdict(set)\n    for sub in submissions:\n        if sub.benchmark in benchmarks:\n            entrants[sub.benchmark].add(sub.team)",
+      "new": "    entrants = defaultdict(list)\n    for sub in submissions:\n        if sub.benchmark in benchmarks:\n            entrants[sub.benchmark].append(sub.team)",
+      "symptom": "test_3_benchmark_stats fails: latency_ms teams is 8 (expected 7) and reasoning teams is 9 (expected 8). coding and safety are right.",
+      "why": "`teams` must count distinct teams. A list keeps one entry per submission, so kelp's two reasoning and two latency submissions are counted twice. coding and safety happen to be right because nobody submitted to them twice.",
+      "unblocks": "test_3_benchmark_stats.",
+      "hints": [
+        "reasoning and latency_ms are one too high; coding and safety are fine. What is different about those two benchmarks?",
+        "Look at how benchmark_stats gathers entrants.",
+        "Collect teams in a set (defaultdict(set) / .add) so each team counts once."
+      ],
+      "probes": [
+        "Narwhal's S07 appears twice in the CSV. Why didn't it inflate the count too?",
+        "Why do coding and safety come out right even with this bug?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does load_submissions filter out?",
+      "a": "Rows with a blank score, rows whose submission id was already seen (the id is added to `seen` before the window check), and rows outside the window according to `in_window`. Team and benchmark ids are trimmed and lower-cased."
+    },
+    {
+      "q": "Where are banned or withdrawn teams removed?",
+      "a": "In `build_leaderboard`: after loading, only submissions whose team maps to status `active` in `load_teams` are kept. A blank status defaults to `active`. Non-active team ids go into `excluded_teams`."
+    },
+    {
+      "q": "What does team_bests return?",
+      "a": "A tuple: a dict team -> {benchmark: best score} using `better()` with the benchmark's direction, and `last_seen`, a dict team -> one datetime built from all of that team's counted submissions on active benchmarks."
+    },
+    {
+      "q": "How is the leader of a benchmark picked?",
+      "a": "`benchmark_leaders` walks every team that has a best on that benchmark and keeps the entry that is `better()` than the current one, so it returns (team, score). Benchmarks nobody entered are left out."
+    },
+    {
+      "q": "Which benchmarks does composite divide by?",
+      "a": "`total_weight` is the sum of the weights of every active benchmark (6 here), whether or not the team entered it. Missing benchmarks add nothing to `weighted`."
+    },
+    {
+      "q": "How does rank_board order rows?",
+      "a": "It sorts by `(-composite, last_seen[team], team)` and then writes positions 1..n into `rank`."
+    }
+  ]
+}

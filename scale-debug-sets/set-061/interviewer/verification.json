@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_signals"
+    ],
+    "failures": {
+      "tests.test_1_signals.TestSignals.test_1_rush_rates": "AssertionError: {'A01': 0, 'A02': 33, 'A03': 50, 'A04': 0, 'A05': [28 chars]': 0} != {'A01': 0.0, 'A02': 33.3, 'A03': 50.0, 'A04': 0.0,[44 chars] 0.0}\n- {'A01': 0,\n+ {'A01': 0.0,\n?         ++\n\n-  'A02': 33,\n+  'A02': 33.3,\n?           ++\n\n-  'A03': 50,\n+  'A03': 50.0,\n?           ++\n\n-  'A04': 0,\n+  'A04': 0.0,\n?         ++\n\n-  'A05': 50,\n+  'A05': 50.0,\n?           ++\n\n-  'A06': 0,\n+  'A06': 0.0,\n?         ++\n\n-  'A07': 0,\n+  'A07': 0.0,\n?         ++\n\n-  'A08': 0}\n+  'A08': 0.0}\n?         ++\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_signals"
+    ],
+    "failures": {
+      "tests.test_1_signals.TestSignals.test_2_shared_answer_counts": "AssertionError: {'A02': 1, 'A04': 2, 'A08': 2} != {'A01': 1, 'A02': 1, 'A04': 4, 'A08': 4}\n- {'A02': 1, 'A04': 2, 'A08': 2}\n?                   ^         ^\n\n+ {'A01': 1, 'A02': 1, 'A04': 4, 'A08': 4}\n?  ++++++++++                 ^         ^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_3_worst_rusher": "AssertionError: 'A05' != 'A03'\n- A05\n?   ^\n+ A03\n?   ^\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_signals",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_signals.TestSignals.test_1_rush_rates",
+      "tests.test_1_signals.TestSignals.test_2_shared_answer_counts",
+      "tests.test_2_report.TestReport.test_3_worst_rusher"
+    ]
+  }
+}

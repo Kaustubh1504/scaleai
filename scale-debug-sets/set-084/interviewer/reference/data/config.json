@@ -1,0 +1,9 @@
+{
+  "model": "embed-small-v2",
+  "batch_size": 6,
+  "page_size": 5,
+  "max_concurrency": 2,
+  "max_retries": 2,
+  "backoff_s": 0.05,
+  "poll_interval_s": 0.01
+}

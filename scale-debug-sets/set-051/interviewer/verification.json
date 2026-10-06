@@ -1,0 +1,62 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_ledger",
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_1_ledger.TestLedger.test_attempts": "AssertionError: {'T01[52 chars] 2, 'T07': 2, 'T08': 0, 'T09': 2, 'T10': 1, 'T11': 1, 'T12': 0} != {'T01[52 chars] 2, 'T07': 1, 'T08': 0, 'T09': 2, 'T10': 1, 'T11': 1, 'T12': 1}\n  {'T01': 2,\n   'T02': 3,\n   'T03': 2,\n   'T04': 2,\n   'T05': 1,\n   'T06': 2,\n-  'T07': 2,\n?         ^\n\n+  'T07': 1,\n?         ^\n\n   'T08': 0,\n   'T09': 2,\n   'T10': 1,\n   'T11': 1,\n-  'T12': 0}\n?         ^\n\n+  'T12': 1}\n?         ^\n",
+      "tests.test_1_ledger.TestLedger.test_claims": "AssertionError: Lists differ: [['20[173 chars], 'T01'], ['2026-06-01 09:22', 'dan', 'review'[661 chars]one]] != [['20[173 chars], 'T02'], ['2026-06-01 09:22', 'dan', 'review'[661 chars]one]]\n\nFirst differing element 3:\n['2026-06-01 09:13', 'bob', 'ingest', 'T01']\n['2026-06-01 09:13', 'bob', 'ingest', 'T02']\n\n  [['2026-06-01 09:00', 'alice', 'ingest', 'T01'],\n   ['2026-06-01 09:00', 'bob', 'ingest', 'T02'],\n   ['2026-06-01 09:01', 'cara', 'review', 'T04'],\n-  ['2026-06-01 09:13', 'bob', 'ingest', 'T01'],\n?                                           ^\n\n+  ['2026-06-01 09:13', 'bob', 'ingest', 'T0",
+      "tests.test_1_ledger.TestLedger.test_rejected": "AssertionError: Lists differ: [['2026-06-01 09:05', 'heartbeat', 'alice', 't01'], ['2026[717 chars]03']] != [['2026-06-01 09:12', 'ack', 'cara', 'T04'], ['2026-06-01 [251 chars]99']]\n\nFirst differing element 0:\n['2026-06-01 09:05', 'heartbeat', 'alice', 't01']\n['2026-06-01 09:12', 'ack', 'cara', 'T04']\n\nFirst list contains 10 additional elements.\nFirst extra element 7:\n['2026-06-01 09:35', 'ack', 'erin', 'T01']\n\n- [['2026-06-01 09:05', 'heartbeat', 'alice', 't01'],\n-  ['2026-06-01 09:12', 'ack', 'cara', 'T04'],\n? ^\n\n+ [['2026-06-01 09:12', 'ack', 'cara', 'T04'],\n? ^\n\n-  ['2026-06-01 09:14', 'h",
+      "tests.test_1_ledger.TestLedger.test_status": "AssertionError: {'T01': 'dead', 'T02': 'dead', 'T03': 'dead', 'T04'[136 chars]ing'} != {'T01': 'done', 'T02': 'dead', 'T03': 'done', 'T04'[136 chars]ing'}\n- {'T01': 'dead',\n?            --\n\n+ {'T01': 'done',\n?           ++\n\n   'T02': 'dead',\n-  'T03': 'dead',\n?            --\n\n+  'T03': 'done',\n?           ++\n\n-  'T04': 'dead',\n?            --\n\n+  'T04': 'done',\n?           ++\n\n-  'T05': 'dead',\n?            --\n\n+  'T05': 'done',\n?           ++\n\n   'T06': 'dead',\n-  'T07': 'dead',\n?            --\n\n+  'T07': 'done',\n?           ++\n\n   'T08': 'pending',\n-  'T09': 'dead',\n?            --\n\n+  'T09'",
+      "tests.test_2_report.TestReport.test_dead_letter": "AssertionError: Lists differ: ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T09'] != ['T02', 'T06']\n\nFirst differing element 0:\n'T01'\n'T02'\n\nFirst list contains 6 additional elements.\nFirst extra element 2:\n'T03'\n\n- ['T01', 'T02', 'T03', 'T04', 'T05', 'T06', 'T07', 'T09']\n+ ['T02', 'T06']",
+      "tests.test_2_report.TestReport.test_extensions": "AssertionError: {} != {'T01': 2, 'T05': 1, 'T07': 1}\n- {}\n+ {'T01': 2, 'T05': 1, 'T07': 1}",
+      "tests.test_2_report.TestReport.test_workers": "AssertionError: {'ali[66 chars]ks': 0, 'lost': 4}, 'cara': {'claims': 3, 'ack[193 chars]: 2}} != {'ali[66 chars]ks': 1, 'lost': 3}, 'cara': {'claims': 3, 'ack[193 chars]: 2}}\n  {'alice': {'acks': 0, 'claims': 2, 'lost': 2},\n-  'bob': {'acks': 0, 'claims': 4, 'lost': 4},\n?                  ^                       ^\n\n+  'bob': {'acks': 1, 'claims': 4, 'lost': 3},\n?                  ^                       ^\n\n-  'cara': {'acks': 0, 'claims': 3, 'lost': 3},\n?                   ^                       ^\n\n+  'cara': {'acks': 1, 'claims': 3, 'lost': 2},\n?                   ^                       ^\n\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_ledger",
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_1_ledger.TestLedger.test_attempts": "AssertionError: {'T01[28 chars]04': 1, 'T05': 1, 'T06': 2, 'T07': 1, 'T08': 0[36 chars]': 1} != {'T01[28 chars]04': 2, 'T05': 1, 'T06': 2, 'T07': 1, 'T08': 0[36 chars]': 1}\n  {'T01': 2,\n   'T02': 3,\n   'T03': 2,\n-  'T04': 1,\n?         ^\n\n+  'T04': 2,\n?         ^\n\n   'T05': 1,\n   'T06': 2,\n   'T07': 1,\n   'T08': 0,\n   'T09': 2,\n   'T10': 1,\n-  'T11': 2,\n?         ^\n\n+  'T11': 1,\n?         ^\n\n   'T12': 1}",
+      "tests.test_1_ledger.TestLedger.test_claims": "AssertionError: Lists differ: [['20[219 chars], 'T05'], ['2026-06-01 09:26', 'erin', 'ingest[615 chars]one]] != [['20[219 chars], 'T04'], ['2026-06-01 09:26', 'erin', 'ingest[615 chars]one]]\n\nFirst differing element 4:\n['2026-06-01 09:22', 'dan', 'review', 'T05']\n['2026-06-01 09:22', 'dan', 'review', 'T04']\n\n  [['2026-06-01 09:00', 'alice', 'ingest', 'T01'],\n   ['2026-06-01 09:00', 'bob', 'ingest', 'T02'],\n   ['2026-06-01 09:01', 'cara', 'review', 'T04'],\n   ['2026-06-01 09:13', 'bob', 'ingest', 'T02'],\n-  ['2026-06-01 09:22', 'dan', 'review', 'T05'],\n?                                         ",
+      "tests.test_1_ledger.TestLedger.test_rejected": "AssertionError: Lists differ: [['2026-06-01 09:20', 'heartbeat', 'alice', 'T01'], ['2026[344 chars]99']] != [['2026-06-01 09:12', 'ack', 'cara', 'T04'], ['2026-06-01 [251 chars]99']]\n\nFirst differing element 0:\n['2026-06-01 09:20', 'heartbeat', 'alice', 'T01']\n['2026-06-01 09:12', 'ack', 'cara', 'T04']\n\nFirst list contains 2 additional elements.\nFirst extra element 7:\n['2026-06-01 10:12', 'ack', 'gina', 'T09']\n\n+ [['2026-06-01 09:12', 'ack', 'cara', 'T04'],\n- [['2026-06-01 09:20', 'heartbeat', 'alice', 'T01'],\n? ^\n\n+  ['2026-06-01 09:20', 'heartbeat', 'alice', 'T01'],\n? ^\n\n   ['2026-06-01 09:2",
+      "tests.test_1_ledger.TestLedger.test_status": "AssertionError: {'T01[60 chars]': 'dead', 'T06': 'dead', 'T07': 'done', 'T08'[73 chars]ing'} != {'T01[60 chars]': 'done', 'T06': 'dead', 'T07': 'done', 'T08'[76 chars]ing'}\n  {'T01': 'done',\n   'T02': 'dead',\n   'T03': 'done',\n   'T04': 'done',\n-  'T05': 'dead',\n?            --\n\n+  'T05': 'done',\n?           ++\n\n   'T06': 'dead',\n   'T07': 'done',\n   'T08': 'pending',\n   'T09': 'done',\n   'T10': 'pending',\n-  'T11': 'dead',\n+  'T11': 'pending',\n   'T12': 'pending'}",
+      "tests.test_2_report.TestReport.test_dead_letter": "AssertionError: Lists differ: ['T02', 'T05', 'T06', 'T11'] != ['T02', 'T06']\n\nFirst differing element 1:\n'T05'\n'T06'\n\nFirst list contains 2 additional elements.\nFirst extra element 2:\n'T06'\n\n- ['T02', 'T05', 'T06', 'T11']\n+ ['T02', 'T06']",
+      "tests.test_2_report.TestReport.test_extensions": "AssertionError: {'T01': 2, 'T07': 1} != {'T01': 2, 'T05': 1, 'T07': 1}\n- {'T01': 2, 'T07': 1}\n+ {'T01': 2, 'T05': 1, 'T07': 1}\n?           ++++++++++\n",
+      "tests.test_2_report.TestReport.test_workers": "AssertionError: {'ali[155 chars]ks': 0, 'lost': 2}, 'erin': {'claims': 3, 'ack[104 chars]: 2}} != {'ali[155 chars]ks': 1, 'lost': 1}, 'erin': {'claims': 3, 'ack[104 chars]: 2}}\n  {'alice': {'acks': 0, 'claims': 2, 'lost': 2},\n   'bob': {'acks': 1, 'claims': 4, 'lost': 3},\n   'cara': {'acks': 1, 'claims': 3, 'lost': 2},\n-  'dan': {'acks': 0, 'claims': 2, 'lost': 2},\n?                  ^                       ^\n\n+  'dan': {'acks': 1, 'claims': 2, 'lost': 1},\n?                  ^                       ^\n\n   'erin': {'acks': 2, 'claims': 3, 'lost': 1},\n   'frank': {'acks': 1, 'claims': 2, 'lost': "
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_ledger",
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_1_ledger.TestLedger.test_attempts": "AssertionError: {'T01': 1, 'T02': 3, 'T03': 2, 'T04': 2, 'T05': 1[66 chars]': 1} != {'T01': 2, 'T02': 3, 'T03': 2, 'T04': 2, 'T05': 1[66 chars]': 1}\n- {'T01': 1,\n?         ^\n\n+ {'T01': 2,\n?         ^\n\n   'T02': 3,\n   'T03': 2,\n   'T04': 2,\n   'T05': 1,\n   'T06': 2,\n   'T07': 1,\n   'T08': 0,\n   'T09': 2,\n-  'T10': 2,\n?         ^\n\n+  'T10': 1,\n?         ^\n\n   'T11': 1,\n   'T12': 1}",
+      "tests.test_1_ledger.TestLedger.test_claims": "AssertionError: Lists differ: [['20[266 chars], 'T02'], ['2026-06-01 09:30', 'bob', 'ingest'[568 chars]one]] != [['20[266 chars], 'T01'], ['2026-06-01 09:30', 'bob', 'ingest'[568 chars]one]]\n\nFirst differing element 5:\n['2026-06-01 09:26', 'erin', 'ingest', 'T02']\n['2026-06-01 09:26', 'erin', 'ingest', 'T01']\n\n  [['2026-06-01 09:00', 'alice', 'ingest', 'T01'],\n   ['2026-06-01 09:00', 'bob', 'ingest', 'T02'],\n   ['2026-06-01 09:01', 'cara', 'review', 'T04'],\n   ['2026-06-01 09:13', 'bob', 'ingest', 'T02'],\n   ['2026-06-01 09:22', 'dan', 'review', 'T04'],\n-  ['2026-06-01 09:26', 'erin', 'ingest'",
+      "tests.test_1_ledger.TestLedger.test_rejected": "AssertionError: Lists differ: [['20[52 chars] 09:23', 'ack', 'bob', 'T02'], ['2026-06-01 09[198 chars]03']] != [['20[52 chars] 09:20', 'heartbeat', 'alice', 'T01'], ['2026-[206 chars]99']]\n\nFirst differing element 1:\n['2026-06-01 09:23', 'ack', 'bob', 'T02']\n['2026-06-01 09:20', 'heartbeat', 'alice', 'T01']\n\n  [['2026-06-01 09:12', 'ack', 'cara', 'T04'],\n+  ['2026-06-01 09:20', 'heartbeat', 'alice', 'T01'],\n   ['2026-06-01 09:23', 'ack', 'bob', 'T02'],\n-  ['2026-06-01 09:35', 'ack', 'erin', 'T01'],\n?                  ^             ---\n\n+  ['2026-06-01 09:25', 'ack', 'alice', 'T01'],\n?         ",
+      "tests.test_1_ledger.TestLedger.test_status": "AssertionError: {'T01[30 chars]': 'dead', 'T04': 'done', 'T05': 'done', 'T06'[103 chars]ing'} != {'T01[30 chars]': 'done', 'T04': 'done', 'T05': 'done', 'T06'[106 chars]ing'}\n  {'T01': 'done',\n   'T02': 'dead',\n-  'T03': 'dead',\n?            --\n\n+  'T03': 'done',\n?           ++\n\n   'T04': 'done',\n   'T05': 'done',\n   'T06': 'dead',\n   'T07': 'done',\n   'T08': 'pending',\n   'T09': 'done',\n-  'T10': 'dead',\n+  'T10': 'pending',\n   'T11': 'pending',\n   'T12': 'pending'}",
+      "tests.test_2_report.TestReport.test_dead_letter": "AssertionError: Lists differ: ['T02', 'T03', 'T06', 'T10'] != ['T02', 'T06']\n\nFirst differing element 1:\n'T03'\n'T06'\n\nFirst list contains 2 additional elements.\nFirst extra element 2:\n'T06'\n\n- ['T02', 'T03', 'T06', 'T10']\n+ ['T02', 'T06']",
+      "tests.test_2_report.TestReport.test_extensions": "AssertionError: {'T01': 3, 'T05': 1, 'T07': 1} != {'T01': 2, 'T05': 1, 'T07': 1}\n- {'T01': 3, 'T05': 1, 'T07': 1}\n?         ^\n\n+ {'T01': 2, 'T05': 1, 'T07': 1}\n?         ^\n",
+      "tests.test_2_report.TestReport.test_workers": "AssertionError: {'ali[22 chars]ks': 1, 'lost': 1}, 'bob': {'claims': 4, 'acks[237 chars]: 2}} != {'ali[22 chars]ks': 0, 'lost': 2}, 'bob': {'claims': 4, 'acks[237 chars]: 2}}\n- {'alice': {'acks': 1, 'claims': 2, 'lost': 1},\n?                    ^                       ^\n\n+ {'alice': {'acks': 0, 'claims': 2, 'lost': 2},\n?                    ^                       ^\n\n   'bob': {'acks': 1, 'claims': 4, 'lost': 3},\n   'cara': {'acks': 1, 'claims': 3, 'lost': 2},\n   'dan': {'acks': 1, 'claims': 2, 'lost': 1},\n-  'erin': {'acks': 0, 'claims': 3, 'lost': 3},\n?                   ^                    "
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_ledger",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_ledger.TestLedger.test_attempts",
+      "tests.test_1_ledger.TestLedger.test_claims",
+      "tests.test_1_ledger.TestLedger.test_rejected",
+      "tests.test_1_ledger.TestLedger.test_status",
+      "tests.test_2_report.TestReport.test_dead_letter",
+      "tests.test_2_report.TestReport.test_extensions",
+      "tests.test_2_report.TestReport.test_workers"
+    ]
+  }
+}

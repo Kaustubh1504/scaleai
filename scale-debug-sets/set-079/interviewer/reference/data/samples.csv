@@ -1,0 +1,22 @@
+sample_id,model,category,prompt
+s01,atlas-7b,reasoning,p-104
+S02,atlas-7b,coding,p-211
+s03,Atlas-7B,safety,p-305
+s04,atlas-7b,summarization,p-402
+s05 ,atlas-7b,coding,p-219
+s06,atlas-7b,Reasoning,p-117
+s07,borealis-13b,reasoning,p-104
+s08,borealis-13b,coding,p-211
+s09,borealis-13b,safety,p-305
+s10,borealis-13b,summarization,p-402
+s11,borealis-13b, coding,p-219
+s12,borealis-13b,safety,p-311
+s13,cirrus-70b,reasoning,p-104
+s14,cirrus-70b,coding,p-211
+s15,cirrus-70b,safety,p-305
+s16,cirrus-70b,summarization,p-402
+s17,CIRRUS-70b,coding,p-219
+s18,cirrus-70b,reasoning,p-117
+s19,atlas-7b,translation,p-501
+s20,cirrus-70b,coding,p-230
+s21,borealis-13b,poetry,p-601

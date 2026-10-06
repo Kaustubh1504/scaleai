@@ -1,0 +1,22 @@
+speaker_id,accent,held_out,region
+S01,us,,Ohio
+s02,uk,,Leeds
+S03,in, ,Pune
+S04,US,,Texas
+S05, uk,,Bristol
+S06,in,,Chennai
+S07,us,,Oregon
+S08,uk,yes,Glasgow
+S09,uk ,Y,Cardiff
+S10,us,,Maine
+S11,uk,,York
+S12,in,,Delhi
+S13,us,,Utah
+S14,uk,,Bath
+S15,au,,Perth
+S16,us ,,Iowa
+S17,in,,Kochi
+S18,au,,Hobart
+S19,us,TRUE,Idaho
+S20,uk,,Hull
+S21,au,,Darwin

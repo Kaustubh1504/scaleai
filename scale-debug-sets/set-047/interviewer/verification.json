@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_earnings"
+    ],
+    "failures": {
+      "tests.test_1_earnings.TestEarnings.test_1_base_earnings": "AssertionError: {'C-01': 860, 'C-02': 295, 'C-03': 1060, 'C-04': 3[39 chars] 220} != {'C-01': 650, 'C-02': 295, 'C-03': 1060, 'C-04': 3[39 chars] 220}\n- {'C-01': 860,\n?          -\n\n+ {'C-01': 650,\n?           +\n\n   'C-02': 295,\n   'C-03': 1060,\n   'C-04': 325,\n   'C-05': 1220,\n   'C-06': 1425,\n   'C-07': 220}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_earnings"
+    ],
+    "failures": {
+      "tests.test_1_earnings.TestEarnings.test_2_bonuses": "AssertionError: {'C-01': 0, 'C-02': 0, 'C-03': 0, 'C-04': 0, 'C-05[22 chars]': 0} != {'C-01': 1725, 'C-02': 2675, 'C-03': 0, 'C-04': 0,[60 chars] 400}\n- {'C-01': 0, 'C-02': 0, 'C-03': 0, 'C-04': 0, 'C-05': 0, 'C-06': 0, 'C-07': 0}\n+ {'C-01': 1725,\n+  'C-02': 2675,\n+  'C-03': 0,\n+  'C-04': 0,\n+  'C-05': 0,\n+  'C-06': 1000,\n+  'C-07': 750,\n+  'C-08': 3000,\n+  'C-09': 400}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_statement"
+    ],
+    "failures": {
+      "tests.test_2_statement.TestStatement.test_3_fees_on_task_only_earners": "AssertionError: {'C-03': (26, 1034), 'C-04': (8, 317), 'C-05': (30, 1190)} != {'C-03': (27, 1033), 'C-04': (8, 317), 'C-05': (31, 1189)}\n- {'C-03': (26, 1034), 'C-04': (8, 317), 'C-05': (30, 1190)}\n?            ^     ^                               ^     -\n\n+ {'C-03': (27, 1033), 'C-04': (8, 317), 'C-05': (31, 1189)}\n?            ^     ^                               ^    +\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_earnings",
+      "test_2_statement"
+    ],
+    "failing_tests": [
+      "tests.test_1_earnings.TestEarnings.test_1_base_earnings",
+      "tests.test_1_earnings.TestEarnings.test_2_bonuses",
+      "tests.test_2_statement.TestStatement.test_3_fees_on_task_only_earners"
+    ]
+  }
+}

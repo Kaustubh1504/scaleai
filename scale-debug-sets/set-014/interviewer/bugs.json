@@ -1,0 +1,193 @@
+{
+  "id": "set-014",
+  "title": "Weighted least-connections balancer replay",
+  "domain": "load_balancer",
+  "length": "FULL",
+  "difficulty": "easy",
+  "format": "one_to_one",
+  "package": "lbsim",
+  "scenario": "Rebuild worker health (up/down/draining) from a probe log, replay requests through zone-affine weighted least-connections routing (ties: higher weight, then id), and report availability, assignments, peak concurrency and per-zone load.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_health",
+      "test_2_routing",
+      "test_3_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "lbsim/router.py",
+      "symbol": "release_finished",
+      "why_correct": "`end > now` keeps only connections that are still open. A connection that ends exactly when a request arrives is closed for that request, as README rule 6 says, so `>` (not `>=`) is right."
+    },
+    {
+      "file": "lbsim/loader.py",
+      "symbol": "parse_time",
+      "why_correct": "It covers exactly the three timestamp formats the README lists, with month/day order for the slash format."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Draining check compares an Enum to a string",
+      "type": "enum-vs-string",
+      "file": "lbsim/health.py",
+      "function": "apply_probes",
+      "test": "test_1_health.TestHealth.test_1_worker_states",
+      "old": "        if worker.state is State.DRAINING:\n",
+      "new": "        if worker.state == \"draining\":\n",
+      "symptom": "test_1_worker_states fails: W-08 is 'down' instead of 'draining'. All other workers match, and routing is unchanged because neither state is eligible.",
+      "why": "worker.state is a State member, and State.DRAINING == \"draining\" is False (a plain Enum never equals its value). The skip never fires, so W-08's three failed probes take it down.",
+      "unblocks": "test_1_worker_states.",
+      "hints": [
+        "W-08 is configured as draining. Why does it end up down?",
+        "Look at the check in apply_probes that is meant to skip draining workers.",
+        "Compare with the enum: `if worker.state is State.DRAINING:`."
+      ],
+      "probes": [
+        "Why didn't routing change, even though W-08's state was different?",
+        "What would make `State.DRAINING == \"draining\"` true, and why might you not want that?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Timeouts counted as passing probes",
+      "type": "counting-wrong-subset",
+      "file": "lbsim/health.py",
+      "function": "availability",
+      "test": "test_1_health.TestHealth.test_2_availability",
+      "old": "            passing = sum(1 for p in recent if not is_failure(p))",
+      "new": "            passing = sum(1 for p in recent if p.result != \"fail\")",
+      "symptom": "test_2_availability fails: W-04 and W-08 show 1.0 instead of 0.0. Their only probe in the window is a timeout.",
+      "why": "Only `fail` is excluded, so `timeout` probes are counted as passing. The spec, and is_failure() which the state machine uses, treat timeouts as failures.",
+      "unblocks": "test_2_availability.",
+      "hints": [
+        "W-04's only probe in the window is a timeout, yet its availability is 1.0.",
+        "Compare how availability decides a probe passed with how apply_probes decides it.",
+        "Use `not is_failure(p)` instead of `p.result != \"fail\"`."
+      ],
+      "probes": [
+        "Why did W-04's state stay up even though its last probe failed?",
+        "W-05 has two passing probes but availability None. Why is that correct?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Weight dropped from the routing tie-break",
+      "type": "wrong-tie-break",
+      "file": "lbsim/router.py",
+      "function": "pick_worker",
+      "test": "test_2_routing.TestRouting.test_3_assignments",
+      "old": "(len(w.active) / w.weight, -w.weight, w.worker_id)",
+      "new": "(len(w.active) / w.weight, w.worker_id)",
+      "symptom": "test_3_assignments fails: R01 goes to W-01 instead of W-04, R02 to W-03, R03 to W-05, and so on. Every move stays inside the same zone, so peak and zone totals don't change.",
+      "why": "When loads are equal (for example all idle), the spec gives the request to the higher-weight worker. Without -w.weight in the key, the lowest id wins, so R01 goes to W-01 instead of W-04 and the following choices shift.",
+      "unblocks": "test_3_assignments.",
+      "hints": [
+        "Every us-east worker is idle when R01 arrives. Which one does README rule 8 pick?",
+        "Look at the sort key in router.pick_worker.",
+        "Add `-w.weight` between the load and the id: `(len(w.active) / w.weight, -w.weight, w.worker_id)`."
+      ],
+      "probes": [
+        "Why did the per-zone totals and peak stay the same even though many assignments moved?",
+        "Why is the weight negated instead of using max()?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Starts counted before ends at the same instant",
+      "type": "time-window-boundary",
+      "file": "lbsim/reports.py",
+      "function": "peak_in_flight",
+      "test": "test_2_routing.TestRouting.test_4_peak_in_flight",
+      "old": "events.sort(key=lambda e: (e[0], e[1]))",
+      "new": "events.sort(key=lambda e: (e[0], -e[1]))",
+      "symptom": "test_4_peak_in_flight fails: 7 instead of 5.",
+      "why": "At equal timestamps the -1 (end) events must come before the +1 (start) events, because a request ending at t does not overlap one starting at t. Sorting by -delta puts starts first and counts back-to-back requests as overlapping.",
+      "unblocks": "test_4_peak_in_flight.",
+      "hints": [
+        "Several requests end at exactly 10:00:03, when new ones start. Should they overlap?",
+        "Look at how peak_in_flight orders events that share a timestamp.",
+        "Sort by (time, delta) so -1 comes before +1: `key=lambda e: (e[0], e[1])`."
+      ],
+      "probes": [
+        "Why did routing itself handle the same boundary correctly?",
+        "Would a plain events.sort() give the right answer here? Why?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "served list shared by every worker",
+      "type": "shared-class-attribute",
+      "file": "lbsim/models.py",
+      "function": "Worker",
+      "test": "test_3_report.TestReport.test_5_zone_served",
+      "old": "class Worker:\n    \"\"\"A backend in the pool. `active` holds the end times of its open connections.\"\"\"\n\n    def __init__(self, worker_id, zone, weight, max_conns, state):\n        self.served = []\n",
+      "new": "class Worker:\n    \"\"\"A backend in the pool. `active` holds the end times of its open connections.\"\"\"\n\n    served = []\n\n    def __init__(self, worker_id, zone, weight, max_conns, state):\n",
+      "symptom": "test_5_zone_served fails: every zone shows a multiple of 19 (e.g. {'ap-south': 171, 'eu-west': 171, 'us-east': 228} in a full-suite run, or 57/57/76 when test_3 runs alone) instead of 6/5/8.",
+      "why": "`served = []` at class level is one list shared by every Worker, and served.append() mutates it in place. Every worker holds every routed request, and the list keeps growing each time build_report runs in the same process, so each zone sums a multiple of 19.",
+      "unblocks": "test_5_zone_served.",
+      "hints": [
+        "Each zone reports a multiple of 19, the total number of routed requests. Why?",
+        "Look at where Worker.served is created.",
+        "Create the list per instance in __init__: `self.served = []`."
+      ],
+      "probes": [
+        "Why does `active` not have the same problem, even though it is also a list?",
+        "Why did the mean durations stay right while served was inflated?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Mean duration uses floor division",
+      "type": "integer-division",
+      "file": "lbsim/reports.py",
+      "function": "zone_summary",
+      "test": "test_3_report.TestReport.test_6_zone_mean_duration",
+      "old": "round(sum(durations[zone]) / len(durations[zone]), 1)",
+      "new": "round(sum(durations[zone]) // len(durations[zone]), 1)",
+      "symptom": "test_6_zone_mean_duration fails: {'ap-south': 1316, 'eu-west': 1060, 'us-east': 1087} instead of 1316.7 / 1060.0 / 1087.5.",
+      "why": "`//` floors the mean to a whole number before rounding, so 7900/6 becomes 1316 and 8700/8 becomes 1087.",
+      "unblocks": "test_6_zone_mean_duration.",
+      "hints": [
+        "ap-south shows 1316 but the durations average 1316.67. Where is the fraction lost?",
+        "Look at the mean in reports.zone_summary.",
+        "Use true division `/` instead of `//`."
+      ],
+      "probes": [
+        "Why did eu-west come out right with this bug?",
+        "Why doesn't round(..., 1) bring the decimal back?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What order does build_report run things in?",
+      "a": "It loads workers (sorted by id), probes (sorted by time) and requests (sorted by arrival, blank durations skipped). `apply_probes` sets every worker's final state, `route` replays the requests against those states, and then the report is built from worker states, `availability`, the assignments, `peak_in_flight` and `zone_summary`."
+    },
+    {
+      "q": "How is a worker's initial state set?",
+      "a": "In `loader.load_workers`, `admin` is trimmed and lower-cased; `draining` gives `State.DRAINING`, anything else `State.UP`. States are members of the `State` enum in models.py, whose values are the strings 'up', 'down' and 'draining'."
+    },
+    {
+      "q": "What does is_failure return?",
+      "a": "True when the probe's (lower-cased) result is `fail` or `timeout`, False otherwise. It is defined in health.py and used by `apply_probes`."
+    },
+    {
+      "q": "How does the router track open connections?",
+      "a": "Each Worker has an `active` list of connection end times. Before each request, `release_finished` keeps only end times later than the arrival time; routing appends `arrived_at + duration_ms` to the chosen worker and its request id to `worker.served`."
+    },
+    {
+      "q": "Which workers can pick_worker choose from?",
+      "a": "Workers whose state is `State.UP` and whose `len(active)` is below `max_conns`. It uses the ones in the request's zone if there are any, otherwise all eligible workers, and takes the min of a key starting with `len(active) / weight`."
+    },
+    {
+      "q": "How does peak_in_flight work?",
+      "a": "It builds a +1 event at arrival and a -1 event at arrival + duration for every routed request, sorts the events, and keeps a running sum, returning the maximum running value."
+    },
+    {
+      "q": "Where do the zone served counts come from?",
+      "a": "`zone_summary` adds `len(worker.served)` for every worker into its zone. The mean durations come separately from the assignments dict and the requests' `duration_ms`."
+    }
+  ]
+}

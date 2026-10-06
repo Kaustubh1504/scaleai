@@ -1,0 +1,29 @@
+item_id,task,label,confidence,sensitive,priority,created_at
+T01,toxicity,clean,0.97,,,2026-06-10 08:00
+t02,toxicity,toxic,0.62,,,2026-06-10 08:05
+T03,Toxicity,self_harm,0.99,,,06/10/2026 08:07
+T04,toxicity,toxic,0,,,2026-06-10T08:09:00
+T05,toxicity,clean,0.85,,,2026-06-10 08:11
+T06,toxicity,toxic,,,,2026-06-10 08:12
+T07,toxicity,clean,91%,,,2026-06-10 08:15
+T08,toxicity,toxic,0.40,yes,,06/10/2026 08:16
+T09,toxicity,clean,0.80,,2,2026-06-10 08:20
+T10,toxicity, Toxic ,0.30,,,2026-06-10 08:22
+P01,pii,email,0.95,,,2026-06-10 08:01
+P02,pii,SSN,0.99,,,2026-06-10 08:03
+P03,PII,phone,0.88,,,2026-06-10T08:06:00
+p04,pii,none,0.93,,,2026-06-10 08:10
+P05,pii,email,70%,,1,2026-06-10 08:13
+P06,pii,phone,, 1,,06/10/2026 08:14
+P07,pii,none,0.90,,,2026-06-10 08:18
+P08,pii,email,0.55,,,2026-06-10 08:21
+C01,caption,ok,0.81,,,2026-06-10 08:02
+C02,caption,ok,0.65,no,,2026-06-10 08:04
+C03,caption,ok,0.50,false,,06/10/2026 08:08
+C04,caption,ok,0.72,,,2026-06-10 08:10
+C05,caption,ok,0.69,,,2026-06-10 08:11
+C06,caption,ok,0.69,N,,2026-06-10T08:19:00
+C07,caption,ok,0.90,Yes,,2026-06-10 08:17
+C08,caption,ok,0.60,,2,2026-06-10 08:20
+C09,Caption,ok,0.69,,,2026-06-10 08:09
+C10,caption,ok,0.75,,,06/10/2026 08:23

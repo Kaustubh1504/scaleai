@@ -1,0 +1,5 @@
+{
+  "max_tokens": 48,
+  "per_message_overhead": 4,
+  "role_aliases": {"human": "user", "gpt": "assistant", "bot": "assistant", "model": "assistant"}
+}

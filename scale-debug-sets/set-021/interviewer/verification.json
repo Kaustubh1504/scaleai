@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_lookups"
+    ],
+    "failures": {
+      "tests.test_1_lookups.TestLookups.test_ocr_lookups": "AssertionError: Lists differ: [('09[140 chars]r', 'hit', 'ocr-v1@1/T01/en-us'), ('09:04:00',[339 chars]jp')] != [('09[140 chars]r', 'miss', 'ocr-v1@1/T01/fr-fr'), ('09:04:00'[340 chars]jp')]\n\nFirst differing element 2:\n('09:02:00', 'T01', 'fr-fr', 'hit', 'ocr-v1@1/T01/en-us')\n('09:02:00', 'T01', 'fr-fr', 'miss', 'ocr-v1@1/T01/fr-fr')\n\nDiff is 928 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_lookups"
+    ],
+    "failures": {
+      "tests.test_1_lookups.TestLookups.test_seg_lookups": "AssertionError: Lists differ: [('09[81 chars]s', 'hit', 'seg-v2@1/T02/en-us'), ('09:03:00',[341 chars]us')] != [('09[81 chars]s', 'miss', 'seg-v2@1/T02/en-us'), ('09:03:00'[341 chars]us')]\n\nFirst differing element 1:\n('09:02:30', 'T02', 'en-us', 'hit', 'seg-v2@1/T02/en-us')\n('09:02:30', 'T02', 'en-us', 'miss', 'seg-v2@1/T02/en-us')\n\nDiff is 654 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_cache_report"
+    ],
+    "failures": {
+      "tests.test_2_cache_report.TestCacheReport.test_last_refresh": "AssertionError: {'ner-v3': '2026-03-02 09:15:30', 'ocr-v1': '2026-03-02 09:12:0[31 chars]:30'} != {'ner-v3': '2026-03-02T09:15:30', 'ocr-v1': '2026-03-02T09:12:0[31 chars]:30'}\n- {'ner-v3': '2026-03-02 09:15:30',\n?                       ^\n\n+ {'ner-v3': '2026-03-02T09:15:30',\n?                       ^\n\n-  'ocr-v1': '2026-03-02 09:12:00',\n?                       ^\n\n+  'ocr-v1': '2026-03-02T09:12:00',\n?                       ^\n\n-  'seg-v2': '2026-03-02 09:14:30'}\n?                       ^\n\n+  'seg-v2': '2026-03-02T09:14:30'}\n?                       ^\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_lookups",
+      "test_2_cache_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_lookups.TestLookups.test_ocr_lookups",
+      "tests.test_1_lookups.TestLookups.test_seg_lookups",
+      "tests.test_2_cache_report.TestCacheReport.test_last_refresh"
+    ]
+  }
+}

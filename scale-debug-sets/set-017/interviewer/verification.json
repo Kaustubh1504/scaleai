@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_team_scores"
+    ],
+    "failures": {
+      "tests.test_1_team_scores.TestTeamScores.test_1_best_scores": "AssertionError: {'T01[14 chars]: 82.89999999999999, 'T03': 82.5, 'T04': 82.5,[86 chars]37.5} != {'T01[14 chars]: 82.9, 'T03': 82.5, 'T04': 82.5, 'T05': 57.0,[60 chars]37.5}\n  {'T01': 85.0,\n-  'T02': 82.89999999999999,\n+  'T02': 82.9,\n   'T03': 82.5,\n   'T04': 82.5,\n-  'T05': 56.99999999999999,\n+  'T05': 57.0,\n   'T08': 83.3,\n   'T09': 81.8,\n   'T10': 73.3,\n   'T11': 76.7,\n   'T12': 37.5}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_team_scores"
+    ],
+    "failures": {
+      "tests.test_1_team_scores.TestTeamScores.test_2_accepted_counts": "AssertionError: {'T01': 2, 'T02': 3, 'T03': 2, 'T04': 3, 'T05': 2, 'T08': 3[36 chars]': 1} != {'T01': 2, 'T02': 2, 'T03': 2, 'T04': 2, 'T05': 2, 'T08': 3[36 chars]': 1}\n  {'T01': 2,\n-  'T02': 3,\n?         ^\n\n+  'T02': 2,\n?         ^\n\n   'T03': 2,\n-  'T04': 3,\n?         ^\n\n+  'T04': 2,\n?         ^\n\n   'T05': 2,\n   'T08': 3,\n-  'T09': 2,\n?         ^\n\n+  'T09': 1,\n?         ^\n\n-  'T10': 2,\n?         ^\n\n+  'T10': 1,\n?         ^\n\n   'T11': 2,\n   'T12': 1}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_leaderboard"
+    ],
+    "failures": {
+      "tests.test_2_leaderboard.TestLeaderboard.test_3_full_leaderboard": "AssertionError: Lists differ: [[1, [34 chars], 'T03'], [5, 'T04'], [6, 'T09'], [7, 'T11'], [31 chars]12']] != [[1, [34 chars], 'T04'], [5, 'T03'], [6, 'T09'], [7, 'T11'], [31 chars]12']]\n\nFirst differing element 3:\n[4, 'T03']\n[4, 'T04']\n\n  [[1, 'T01'],\n   [2, 'T08'],\n   [3, 'T02'],\n-  [4, 'T03'],\n?         ^\n\n+  [4, 'T04'],\n?         ^\n\n-  [5, 'T04'],\n?         ^\n\n+  [5, 'T03'],\n?         ^\n\n   [6, 'T09'],\n   [7, 'T11'],\n   [8, 'T10'],\n   [9, 'T05'],\n   [10, 'T12']]"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_team_scores",
+      "test_2_leaderboard"
+    ],
+    "failing_tests": [
+      "tests.test_1_team_scores.TestTeamScores.test_1_best_scores",
+      "tests.test_1_team_scores.TestTeamScores.test_2_accepted_counts",
+      "tests.test_2_leaderboard.TestLeaderboard.test_3_full_leaderboard"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+contributor_id,region,skills,weekly_hours,status
+E-01,emea,python:8,40,active
+e-02,EMEA,python:7,20,trial
+E-03,emea,python:9,30,paused
+E-04,emea, python:5 ,20,active
+P-01,apac,python:5;sql:9,20,active
+P-02,apac,SQL:8,16,active
+P-03, apac,sql:7,8,Trial
+A-01,amer,spanish:6;math:4,30,active
+A-02,amer,math:8,20,active
+A-03,amer,spanish:9,10, Active
+A-04,amer,spanish:3,40,offboarded
+a-05,amer,math:6;spanish,20,active

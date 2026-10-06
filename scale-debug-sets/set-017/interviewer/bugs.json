@@ -1,0 +1,111 @@
+{
+  "id": "set-017",
+  "title": "Labeling challenge leaderboard: best scores and tie-breaks",
+  "domain": "leaderboard_ranking",
+  "length": "MINI",
+  "difficulty": "easy",
+  "format": "one_to_one",
+  "package": "podium",
+  "scenario": "Score each team's accepted submissions as a 1-decimal percentage, keep the best one, and rank teams highest-first with ties going to the team that reached the score earlier.",
+  "verified": [
+    {
+      "file": "podium/scoring.py",
+      "symbol": "pick_best",
+      "why_correct": "Using min() to find the best looks backwards, but the key negates the score, so the smallest key is the highest score, and ties go to the earliest submitted_at, exactly as rule 2 says."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Percentage rounded before scaling",
+      "type": "float-rounding",
+      "file": "podium/scoring.py",
+      "function": "submission_score",
+      "test": "test_1_team_scores.TestTeamScores.test_1_best_scores",
+      "old": "    return round(100 * sub.correct / sub.total, 1)",
+      "new": "    return round(sub.correct / sub.total, 3) * 100",
+      "symptom": "test_1_best_scores fails: T02 is 82.89999999999999 instead of 82.9 and T05 is 56.99999999999999 instead of 57.0. Every other test passes, including the leaderboard order.",
+      "why": "Rounding the fraction to 3 places and then multiplying by 100 reintroduces binary floating-point error, so 29/35 becomes 82.89999999999999 instead of 82.9. The rounding has to be the last step.",
+      "unblocks": "test_1_best_scores.",
+      "hints": [
+        "Look closely at T02's and T05's scores in the failure output.",
+        "Where is the percentage computed, and in what order are the operations done?",
+        "Scale first and round last: round(100 * correct / total, 1)."
+      ],
+      "probes": [
+        "Why are 82.5 and 85.0 exact even with the old code?",
+        "Why did the leaderboard order not change even though the scores were off?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Accepted count includes rejected submissions",
+      "type": "counting-wrong-subset",
+      "file": "podium/scoring.py",
+      "function": "team_stats",
+      "test": "test_1_team_scores.TestTeamScores.test_2_accepted_counts",
+      "old": "        stats[team_id] = TeamStats(team_id, submission_score(best), best.submitted_at, len(accepted))",
+      "new": "        stats[team_id] = TeamStats(team_id, submission_score(best), best.submitted_at, len(subs))",
+      "symptom": "test_2_accepted_counts fails: T02, T04, T09 and T10 each show one more submission than they should (3, 3, 2, 2 instead of 2, 2, 1, 1).",
+      "why": "`subs` is every submission the team made, including rejected ones, while the spec counts only accepted submissions. The filtered list `accepted` is right there.",
+      "unblocks": "test_2_accepted_counts.",
+      "hints": [
+        "Which teams have a count that is too high? What do their extra rows have in common?",
+        "Look at what is counted when TeamStats is built.",
+        "Use len(accepted), not len(subs)."
+      ],
+      "probes": [
+        "Why didn't this affect T07, whose submissions were all rejected?",
+        "Why are best scores unaffected?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Score ties broken by team id",
+      "type": "wrong-tie-break",
+      "file": "podium/ranking.py",
+      "function": "rank",
+      "test": "test_2_leaderboard.TestLeaderboard.test_3_full_leaderboard",
+      "old": "    ordered = sorted(stats.values(), key=lambda s: (-s.best_score, s.best_at, s.team_id))",
+      "new": "    ordered = sorted(stats.values(), key=lambda s: (-s.best_score, s.team_id))",
+      "symptom": "test_3_full_leaderboard fails: positions 4 and 5 are T03 then T04; T04 should be 4th because it reached 82.5 first. Podium and last place are unchanged.",
+      "why": "Without best_at in the key, tied teams fall through to the team id, so T03 lands above T04 even though T04 reached 82.5 a day earlier. The comment still describes the intended rule.",
+      "unblocks": "test_3_full_leaderboard.",
+      "hints": [
+        "Two teams in the middle of the board are swapped. What do they have in common?",
+        "Look at the sort key in rank() and compare it with leaderboard rules 4 and 5.",
+        "Add s.best_at between the score and the team id."
+      ],
+      "probes": [
+        "When did T03 and T04 each reach their best score, and which submission counts for each?",
+        "Would the old key ever give the right answer for a tie? When?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() return and how is it built?",
+      "a": "It loads teams.json and submissions.csv, calls `scoring.team_stats` to get one `TeamStats` per ranked team, and returns `teams` (best_score and accepted per team id, sorted by id) plus `leaderboard` from `ranking.rank`."
+    },
+    {
+      "q": "Which teams does team_stats skip?",
+      "a": "Teams whose id is not in the registry, teams with `disqualified` True, and teams whose submissions are all non-accepted. Submissions are grouped by normalised team id first."
+    },
+    {
+      "q": "How is a submission marked accepted?",
+      "a": "In `load_submissions`, the status cell is trimmed and lower-cased; blank becomes `\"accepted\"`. `accepted` is True only when that value equals `\"accepted\"`."
+    },
+    {
+      "q": "What is best_at on TeamStats?",
+      "a": "The `submitted_at` of the submission returned by `pick_best` for that team, which is a datetime parsed by `loader.parse_time`."
+    },
+    {
+      "q": "How does parse_flag treat the disqualified values in teams.json?",
+      "a": "Strings are trimmed, lower-cased and checked against {\"true\", \"yes\", \"1\"}; anything else is passed to `bool()`, so `false`/`true` JSON values and numbers keep their truthiness."
+    },
+    {
+      "q": "What does rank() return?",
+      "a": "A list of `(position, team_id)` tuples, positions starting at 1, in the order produced by its `sorted` call. build_report turns each tuple into a two-element list."
+    }
+  ]
+}

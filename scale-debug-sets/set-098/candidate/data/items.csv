@@ -1,0 +1,14 @@
+item_id,queue,min_votes,closes_at
+T01,tox,,
+t02,Tox,,
+T03,tox,,
+T04 ,tox,,
+S01,spam,,
+S02,spam,,2026-03-03 12:00
+S03,spam,3,
+S04,spam,,
+Q01,quality,,
+Q02,quality,,
+q03,quality ,,
+Q04,quality,4,
+Q05,quality,,

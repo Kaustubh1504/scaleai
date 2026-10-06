@@ -1,0 +1,187 @@
+{
+  "id": "set-050",
+  "title": "Median consensus for 1-10 response ratings",
+  "domain": "annotation_consensus",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "ratingpanel",
+  "scenario": "Rushed and superseded submissions are dropped, each item's consensus is a median after a single outlier pass, low-agreement items are escalated and expert adjudications override; the summary reports status counts, escalations and per-category means.",
+  "design": {},
+  "verified": [
+    {
+      "file": "ratingpanel/utils.py",
+      "symbol": "parse_rating",
+      "why_correct": "`int(float(text))` looks like it silently truncates, but the README says ratings are whole numbers sometimes written as `6.0`, so float-then-int is exactly what is needed; blanks and out-of-range values return None."
+    },
+    {
+      "file": "ratingpanel/scoring.py",
+      "symbol": "agreement",
+      "why_correct": "`<= 1` looks like it should be `< 1`, but the spec counts ratings within 1 point inclusive. It divides by the number of remaining ratings and rounds to 3 decimals as required."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Duration read with timedelta.seconds",
+      "type": "timedelta-seconds",
+      "file": "ratingpanel/utils.py",
+      "function": "duration_seconds",
+      "test": "test_1_cleaning.TestCleaning.test_1_rushed_counts",
+      "old": "    return (finished_at - started_at).total_seconds()",
+      "new": "    return (finished_at - started_at).seconds",
+      "symptom": "Test 1 test_1_rushed_counts: ann-07 shows 1 rushed submission ({'ann-07': 1, 'ann-08': 1, 'ann-10': 1} instead of {'ann-08': 1, 'ann-10': 1}). I-09's consensus and status do not change.",
+      "why": "`.seconds` is only the seconds component of the timedelta, ignoring whole days. s-040 was open for 1 day and 12 seconds, so it reads as 12 seconds and is dropped as rushed.",
+      "unblocks": "test_1_rushed_counts",
+      "hints": [
+        "ann-07 is counted as rushed. Find their submissions and compute each duration.",
+        "Look at how a submission's duration is measured.",
+        "Use total_seconds() instead of .seconds."
+      ],
+      "probes": [
+        "Why didn't dropping s-040 change I-09's consensus or status?",
+        "What does timedelta(days=1, seconds=12).seconds return, and why?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Resubmissions deduped by submission id",
+      "type": "missing-dedupe",
+      "file": "ratingpanel/loader.py",
+      "function": "latest_only",
+      "test": "test_1_cleaning.TestCleaning.test_2_resubmitted_item",
+      "old": "        key = (r.item_id, r.annotator_id)",
+      "new": "        key = r.submission_id",
+      "symptom": "Test 1 test_2_resubmitted_item: I-04 has agreement 0.8 instead of 1.0; status 'agreed' and consensus 7 are unchanged.",
+      "why": "Submission ids are unique, so keying on them never collapses anything. ann-01's superseded 5 on I-04 stays alongside their later 7, which drops I-04's agreement to 0.8.",
+      "unblocks": "test_2_resubmitted_item",
+      "hints": [
+        "I-04 has five counted ratings. How many annotators rated it?",
+        "Look at what latest_only uses to recognise the same submission twice.",
+        "Key on (item_id, annotator_id), not submission_id."
+      ],
+      "probes": [
+        "Why did I-04's consensus stay 7 even with the extra rating?",
+        "Which other field of the report would show ann-01's extra rating?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Even-count median uses floor division",
+      "type": "integer-division",
+      "file": "ratingpanel/scoring.py",
+      "function": "median",
+      "test": "test_2_consensus.TestConsensus.test_3_consensus_values",
+      "old": "    return (ordered[mid - 1] + ordered[mid]) / 2",
+      "new": "    return (ordered[mid - 1] + ordered[mid]) // 2",
+      "symptom": "Test 2 test_3_consensus_values: I-06's consensus is 6 instead of 6.5. Every other item matches.",
+      "why": "With integer ratings, `//` floors the mean of the two middle values, so I-06 (6, 6, 7, 7) gets 6 instead of 6.5. Items whose middle pair has an even sum look fine.",
+      "unblocks": "test_3_consensus_values",
+      "hints": [
+        "Only I-06 is off, by exactly 0.5. What is special about its ratings?",
+        "Look at the even-length branch of median().",
+        "Use `/ 2`, not `// 2`."
+      ],
+      "probes": [
+        "Why were I-02, I-04 and I-09 right even though they also have an even number of ratings?",
+        "Why did I-06's status not change?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Outliers removed while iterating the same list",
+      "type": "mutate-while-iterating",
+      "file": "ratingpanel/scoring.py",
+      "function": "drop_outliers",
+      "test": "test_2_consensus.TestConsensus.test_4_outlier_counts",
+      "old": "    for r in list(kept):",
+      "new": "    for r in kept:",
+      "symptom": "Test 2 test_4_outlier_counts: ann-05 is missing ({'ann-03': 1, 'ann-04': 1} instead of also 'ann-05': 1). I-08's consensus is still 8.",
+      "why": "Removing from the list being iterated shifts the next element into the current index, so the loop skips it. On I-08 the 2 and the 1 are adjacent; once the 2 is removed the 1 is never examined.",
+      "unblocks": "test_4_outlier_counts",
+      "hints": [
+        "ann-05's 1 on I-08 is 7 points from the median. Why isn't it an outlier?",
+        "Look at how drop_outliers walks and edits the list.",
+        "Iterate over a copy: `for r in list(kept):`."
+      ],
+      "probes": [
+        "Why did I-07's single outlier still get removed?",
+        "Why did I-08's consensus stay 8 even with the 1 left in?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Category total not reset per category",
+      "type": "state-not-reset",
+      "file": "ratingpanel/reports.py",
+      "function": "category_means",
+      "test": "test_3_summary.TestSummary.test_5_category_means",
+      "old": "    means = {}\n    for cat in sorted(by_cat):\n        total = 0.0\n",
+      "new": "    means = {}\n    total = 0.0\n    for cat in sorted(by_cat):\n",
+      "symptom": "Test 3 test_5_category_means: writing is 18.83 instead of 6.67; coding (5.67) is right.",
+      "why": "The running total is created once, so each category's sum includes every category before it. coding (first) is right, writing includes coding and math.",
+      "unblocks": "test_5_category_means",
+      "hints": [
+        "coding is right but writing is far too high. What comes between them?",
+        "Where is the running total initialised in category_means?",
+        "Move `total = 0.0` inside the `for cat` loop."
+      ],
+      "probes": [
+        "Why is the first category always right with this mistake?",
+        "How would `sum(values) / len(values)` have avoided it?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Enum status compared to a string",
+      "type": "enum-vs-string",
+      "file": "ratingpanel/reports.py",
+      "function": "summarize",
+      "test": "test_3_summary.TestSummary.test_6_escalated_items",
+      "old": "if res.status is Status.ESCALATED",
+      "new": "if res.status == \"escalated\"",
+      "symptom": "Test 3 test_6_escalated_items: escalated is [] instead of ['I-02', 'I-10'], even though status_counts reports 2 escalated items.",
+      "why": "`res.status` is a Status enum member, and a plain Enum never equals its value string, so nothing matches and the list is empty. status_counts works because it uses `.value`.",
+      "unblocks": "test_6_escalated_items",
+      "hints": [
+        "status_counts says 2 escalated, but the escalated list is empty.",
+        "Compare how summarize builds status_counts and escalated.",
+        "Compare with Status.ESCALATED (or res.status.value == 'escalated')."
+      ],
+      "probes": [
+        "Would `class Status(str, Enum)` have made the comparison work? Why?",
+        "Why does no error get raised?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What happens in build_report(), step by step?",
+      "a": "It loads the registry and items, reads ratings (dropping blanks, out-of-range values and unknown annotators), splits off rushed submissions with split_rushed, keeps one submission per key with latest_only, then score_items builds the per-item results and the list of outlier ratings. Counters over the remaining ratings and the outliers feed the annotators table, and summarize builds the summary."
+    },
+    {
+      "q": "What does split_rushed return?",
+      "a": "A list of the submissions whose duration_seconds is at least MIN_SECONDS (20), and a Counter of annotator id → number of submissions under that."
+    },
+    {
+      "q": "How does latest_only choose between two submissions with the same key?",
+      "a": "It keeps the stored one unless the new one's finished_at is greater than or equal to it, so the latest wins and a later row wins a tie. The output is in first-seen key order."
+    },
+    {
+      "q": "In score_items, which check runs first: adjudication or the minimum count?",
+      "a": "Adjudication. An item with adjudicated_rating set is marked ADJUDICATED with that consensus before the MIN_RATINGS (3) check runs."
+    },
+    {
+      "q": "What does drop_outliers compare each rating against?",
+      "a": "The median of all the item's counted ratings, computed once before the loop; ratings more than OUTLIER_GAP (3) away are moved to the outliers list."
+    },
+    {
+      "q": "What type is ItemResult.status, and how does it reach the report?",
+      "a": "It is a `Status` member (a plain Enum). The report's items section and status_counts convert it with `.value`."
+    },
+    {
+      "q": "Which items feed category_means?",
+      "a": "Every item whose consensus is not None, including adjudicated ones, grouped by the item's category from items.csv."
+    }
+  ]
+}

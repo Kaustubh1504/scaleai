@@ -1,0 +1,11 @@
+task,min_s,max_s,required_streams
+pick_place,2,8,camera;joints
+wipe_table,3,12,camera;joints;gripper
+Open_Drawer,1.5,6,camera; joints
+fold_towel,4,20,camera;joints;gripper
+pour_water,3,10,camera;joints;gripper
+stack_blocks,2,15,camera;joints
+insert_peg,1,5,camera;joints;force
+sort_items,5,30,camera;joints
+hang_mug,2,9,camera;joints;gripper
+press_button,0.5,3,camera;joints

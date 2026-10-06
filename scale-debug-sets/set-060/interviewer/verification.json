@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_dataset_fully_read": "AssertionError: Tuples differ: (25, 6) != (27, 6)\n\nFirst differing element 0:\n25\n27\n\n- (25, 6)\n?   ^\n\n+ (27, 6)\n?   ^\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_concurrency_limit": "AssertionError: 6 != 2"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_backoff_between_attempts": "AssertionError: False is not true : gaps between b2 attempts: [0.057, 0.057]"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_results"
+    ],
+    "failures": {
+      "tests.test_2_results.TestResults.test_rejected_batch": "AssertionError: {'status': 'bad_response', 'http_status': 400, 'attem[56 chars]23']} != {'status': 'http_error', 'http_status': 400, 'attempt[54 chars]23']}\n  {'attempts': 1,\n   'http_status': 400,\n   'records': ['faq-20', 'faq-21', 'faq-22', 'faq-23'],\n-  'status': 'bad_response'}\n+  'status': 'http_error'}"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_2_results"
+    ],
+    "failures": {
+      "tests.test_2_results.TestResults.test_dimension_mismatch": "AssertionError: {'status': 'bad_response', 'http_status': 200, 'attem[56 chars]19']} != {'status': 'dim_mismatch', 'http_status': 200, 'attem[56 chars]19']}\n  {'attempts': 1,\n   'http_status': 200,\n   'records': ['faq-16', 'faq-17', 'faq-18', 'faq-19'],\n-  'status': 'bad_response'}\n+  'status': 'dim_mismatch'}"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_commit_outcomes": "AssertionError: {'committed': [], 'failed': ['b6']} != {'committed': ['b1', 'b2', 'b3'], 'failed': ['b6']}\n- {'committed': [], 'failed': ['b6']}\n+ {'committed': ['b1', 'b2', 'b3'], 'failed': ['b6']}\n?                ++++++++++++++++\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_requests",
+      "test_2_results",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_requests.TestRequests.test_backoff_between_attempts",
+      "tests.test_1_requests.TestRequests.test_concurrency_limit",
+      "tests.test_1_requests.TestRequests.test_dataset_fully_read",
+      "tests.test_2_results.TestResults.test_dimension_mismatch",
+      "tests.test_2_results.TestResults.test_rejected_batch",
+      "tests.test_3_report.TestReport.test_commit_outcomes"
+    ]
+  }
+}

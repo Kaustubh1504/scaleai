@@ -1,0 +1,1597 @@
+{
+  "version": 1,
+  "description": "Scale AI backend-practical practice set. kind: api-client (>=60%) | service. status: planned -> built -> verified (tools/verify_problem.py --mark-verified).",
+  "topics": [
+    "file-ingestion",
+    "streaming-large-files",
+    "llm-classification",
+    "llm-enrichment",
+    "llm-batching",
+    "llm-retries-backoff",
+    "llm-output-validation",
+    "llm-caching",
+    "llm-cost-tracking",
+    "async-jobs",
+    "worker-pool",
+    "dead-letter-queue",
+    "rate-limiting",
+    "idempotency",
+    "dedupe",
+    "leases",
+    "task-state-machine",
+    "consensus-quality",
+    "gold-tasks",
+    "load-balancer",
+    "heartbeats-failover",
+    "priority-scheduling",
+    "dependency-scheduling",
+    "caching-proxy-ttl",
+    "leaderboard-ranking",
+    "reservations-holds",
+    "llm-judge-eval",
+    "multi-tenant",
+    "pagination-filtering",
+    "webhooks-retries",
+    "fraud-detection",
+    "payouts",
+    "audit-logging",
+    "durable-persistence",
+    "hitl-routing",
+    "agent-tool-loop",
+    "llm-streaming-sse",
+    "text-chunking",
+    "pii-redaction",
+    "observability",
+    "iou-qa",
+    "preference-pairs",
+    "sft-export",
+    "api-pagination",
+    "api-auth-tokens",
+    "api-rate-limits",
+    "api-error-retries",
+    "messy-json",
+    "cross-endpoint-joins",
+    "data-aggregation",
+    "result-writing",
+    "incremental-sync",
+    "concurrent-fetching"
+  ],
+  "problems": [
+    {
+      "id": "prob-001",
+      "title": "Support Ticket Ingestion & LLM Triage",
+      "kind": "service",
+      "topics": [
+        "file-ingestion",
+        "llm-classification",
+        "llm-retries-backoff",
+        "llm-output-validation"
+      ],
+      "mode": "fastapi",
+      "difficulty": "medium",
+      "status": "verified",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-002",
+      "title": "Lightweight Load Balancer",
+      "kind": "service",
+      "topics": [
+        "load-balancer",
+        "heartbeats-failover",
+        "priority-scheduling"
+      ],
+      "mode": "plain-python",
+      "difficulty": "medium",
+      "status": "verified",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-003",
+      "title": "Idempotent Task Intake with Tenant Rate Limits",
+      "kind": "service",
+      "topics": [
+        "idempotency",
+        "rate-limiting",
+        "multi-tenant",
+        "durable-persistence"
+      ],
+      "mode": "fastapi",
+      "difficulty": "medium",
+      "status": "verified",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-004",
+      "title": "Annotation Task Leasing Service",
+      "kind": "service",
+      "topics": [
+        "leases",
+        "task-state-machine",
+        "consensus-quality"
+      ],
+      "mode": "fastapi",
+      "difficulty": "medium",
+      "status": "verified",
+      "starter": "repo",
+      "planted_bugs": true
+    },
+    {
+      "id": "prob-005",
+      "title": "Webhook Delivery Dispatcher",
+      "kind": "service",
+      "topics": [
+        "webhooks-retries",
+        "durable-persistence",
+        "audit-logging"
+      ],
+      "mode": "plain-python",
+      "difficulty": "medium",
+      "status": "verified",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-006",
+      "title": "Project Throughput Report",
+      "kind": "api-client",
+      "topics": [
+        "api-pagination",
+        "api-auth-tokens",
+        "data-aggregation"
+      ],
+      "mode": "plain-python",
+      "difficulty": "medium",
+      "status": "verified",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-007",
+      "title": "Worker Pool with Failover and DLQ",
+      "kind": "service",
+      "topics": [
+        "worker-pool",
+        "heartbeats-failover",
+        "dead-letter-queue"
+      ],
+      "mode": "plain-python",
+      "difficulty": "medium",
+      "status": "verified",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-008",
+      "title": "Annotator Earnings Calculator",
+      "kind": "api-client",
+      "topics": [
+        "cross-endpoint-joins",
+        "messy-json",
+        "payouts"
+      ],
+      "mode": "plain-python",
+      "difficulty": "medium",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-009",
+      "title": "Resilient Task Exporter",
+      "kind": "api-client",
+      "topics": [
+        "api-error-retries",
+        "api-rate-limits",
+        "result-writing"
+      ],
+      "mode": "plain-python",
+      "difficulty": "medium",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-010",
+      "title": "Document Triage with Confidence Routing",
+      "kind": "service",
+      "topics": [
+        "file-ingestion",
+        "llm-classification",
+        "hitl-routing",
+        "audit-logging"
+      ],
+      "mode": "fastapi",
+      "difficulty": "medium",
+      "status": "verified",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-011",
+      "title": "Gold-Task Accuracy Leaderboard",
+      "kind": "api-client",
+      "topics": [
+        "cross-endpoint-joins",
+        "gold-tasks",
+        "leaderboard-ranking"
+      ],
+      "mode": "plain-python",
+      "difficulty": "medium",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-012",
+      "title": "Seat Holds Without Double-Booking",
+      "kind": "service",
+      "topics": [
+        "reservations-holds",
+        "leases",
+        "idempotency"
+      ],
+      "mode": "fastapi",
+      "difficulty": "medium",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-013",
+      "title": "Review Backlog Digest Endpoint",
+      "kind": "api-client",
+      "topics": [
+        "api-pagination",
+        "messy-json",
+        "pagination-filtering"
+      ],
+      "mode": "fastapi",
+      "difficulty": "medium",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-014",
+      "title": "PII-Safe LLM Enrichment",
+      "kind": "service",
+      "topics": [
+        "pii-redaction",
+        "llm-enrichment",
+        "llm-batching"
+      ],
+      "mode": "fastapi",
+      "difficulty": "medium",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-015",
+      "title": "Incremental Records Sync",
+      "kind": "api-client",
+      "topics": [
+        "incremental-sync",
+        "durable-persistence",
+        "dedupe"
+      ],
+      "mode": "plain-python",
+      "difficulty": "medium",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": true
+    },
+    {
+      "id": "prob-016",
+      "title": "Async Job API with Status Polling",
+      "kind": "service",
+      "topics": [
+        "async-jobs",
+        "worker-pool",
+        "dead-letter-queue",
+        "observability"
+      ],
+      "mode": "fastapi",
+      "difficulty": "medium",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-017",
+      "title": "Consensus Label Auditor",
+      "kind": "api-client",
+      "topics": [
+        "cross-endpoint-joins",
+        "consensus-quality",
+        "messy-json"
+      ],
+      "mode": "plain-python",
+      "difficulty": "medium",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-018",
+      "title": "Preference Pair Collection",
+      "kind": "service",
+      "topics": [
+        "preference-pairs",
+        "leaderboard-ranking",
+        "dedupe"
+      ],
+      "mode": "fastapi",
+      "difficulty": "medium",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-019",
+      "title": "Parallel Submission Crawler",
+      "kind": "api-client",
+      "topics": [
+        "concurrent-fetching",
+        "api-rate-limits",
+        "api-pagination"
+      ],
+      "mode": "plain-python",
+      "difficulty": "medium",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-020",
+      "title": "Caching Proxy for a Flaky Upstream",
+      "kind": "api-client",
+      "topics": [
+        "caching-proxy-ttl",
+        "api-error-retries",
+        "observability"
+      ],
+      "mode": "fastapi",
+      "difficulty": "medium",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-021",
+      "title": "Fraud Signals from Submission Timing",
+      "kind": "api-client",
+      "topics": [
+        "fraud-detection",
+        "api-pagination",
+        "data-aggregation"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-022",
+      "title": "Dependency-Aware Job Scheduler",
+      "kind": "service",
+      "topics": [
+        "dependency-scheduling",
+        "priority-scheduling",
+        "worker-pool"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-023",
+      "title": "IoU QA over the Annotations API",
+      "kind": "api-client",
+      "topics": [
+        "iou-qa",
+        "messy-json",
+        "cross-endpoint-joins"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-024",
+      "title": "LLM-as-Judge Eval Harness",
+      "kind": "service",
+      "topics": [
+        "llm-judge-eval",
+        "llm-caching",
+        "llm-cost-tracking"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-025",
+      "title": "Customer Spend Report with Token Refresh",
+      "kind": "api-client",
+      "topics": [
+        "api-auth-tokens",
+        "cross-endpoint-joins",
+        "result-writing"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": true
+    },
+    {
+      "id": "prob-026",
+      "title": "Multi-Tenant Annotation Projects API",
+      "kind": "service",
+      "topics": [
+        "multi-tenant",
+        "pagination-filtering",
+        "task-state-machine"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": true
+    },
+    {
+      "id": "prob-027",
+      "title": "Rate-Limit-Aware Bulk Fetcher",
+      "kind": "api-client",
+      "topics": [
+        "api-rate-limits",
+        "concurrent-fetching",
+        "observability"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-028",
+      "title": "Annotator Fraud Detector",
+      "kind": "service",
+      "topics": [
+        "fraud-detection",
+        "streaming-large-files",
+        "audit-logging"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-029",
+      "title": "Webhook Relay from a Polled API",
+      "kind": "api-client",
+      "topics": [
+        "incremental-sync",
+        "webhooks-retries",
+        "idempotency"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-030",
+      "title": "LLM Classification of API Records",
+      "kind": "api-client",
+      "topics": [
+        "llm-classification",
+        "api-pagination",
+        "llm-output-validation"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-031",
+      "title": "Resumable Export with Checkpoints",
+      "kind": "api-client",
+      "topics": [
+        "durable-persistence",
+        "api-error-retries",
+        "result-writing",
+        "api-pagination"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-032",
+      "title": "Task Lifecycle Service with Audit Trail",
+      "kind": "service",
+      "topics": [
+        "task-state-machine",
+        "audit-logging",
+        "idempotency"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-033",
+      "title": "Reviewer Calibration Report",
+      "kind": "api-client",
+      "topics": [
+        "consensus-quality",
+        "cross-endpoint-joins",
+        "data-aggregation"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-034",
+      "title": "Consensus Labels with LLM Tiebreak",
+      "kind": "service",
+      "topics": [
+        "consensus-quality",
+        "llm-classification",
+        "hitl-routing"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-035",
+      "title": "Aggregation Endpoint over Two Upstreams",
+      "kind": "api-client",
+      "topics": [
+        "pagination-filtering",
+        "cross-endpoint-joins",
+        "caching-proxy-ttl"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-036",
+      "title": "Event Booking with Waitlist",
+      "kind": "service",
+      "topics": [
+        "reservations-holds",
+        "priority-scheduling",
+        "webhooks-retries"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-037",
+      "title": "Messy Payload Normalizer",
+      "kind": "api-client",
+      "topics": [
+        "messy-json",
+        "llm-output-validation",
+        "dead-letter-queue"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-038",
+      "title": "Model Ranking from an Eval API",
+      "kind": "api-client",
+      "topics": [
+        "preference-pairs",
+        "llm-judge-eval",
+        "api-pagination"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-039",
+      "title": "Tenant Budgets for an LLM Gateway",
+      "kind": "service",
+      "topics": [
+        "multi-tenant",
+        "llm-cost-tracking",
+        "rate-limiting"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-040",
+      "title": "Annotator Quality Dashboard API",
+      "kind": "api-client",
+      "topics": [
+        "gold-tasks",
+        "iou-qa",
+        "pagination-filtering"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-041",
+      "title": "Payout Batches with Idempotent Transfers",
+      "kind": "service",
+      "topics": [
+        "payouts",
+        "idempotency",
+        "webhooks-retries"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": true
+    },
+    {
+      "id": "prob-042",
+      "title": "Streaming Export of a Large Collection",
+      "kind": "api-client",
+      "topics": [
+        "streaming-large-files",
+        "api-pagination",
+        "dedupe"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-043",
+      "title": "Human Review Queue with Leases",
+      "kind": "service",
+      "topics": [
+        "hitl-routing",
+        "leases",
+        "audit-logging"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-044",
+      "title": "Agent with API Tools",
+      "kind": "api-client",
+      "topics": [
+        "agent-tool-loop",
+        "api-error-retries",
+        "messy-json"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-045",
+      "title": "Concurrent Enrichment of API Records",
+      "kind": "api-client",
+      "topics": [
+        "concurrent-fetching",
+        "llm-enrichment",
+        "llm-cost-tracking"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-046",
+      "title": "Cached LLM Classification Service",
+      "kind": "service",
+      "topics": [
+        "llm-caching",
+        "llm-classification",
+        "dedupe"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-047",
+      "title": "Cross-Project SLA Breach Finder",
+      "kind": "api-client",
+      "topics": [
+        "cross-endpoint-joins",
+        "data-aggregation",
+        "api-rate-limits"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-048",
+      "title": "Worker Registry with Health Checks",
+      "kind": "service",
+      "topics": [
+        "load-balancer",
+        "observability",
+        "rate-limiting"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": true
+    },
+    {
+      "id": "prob-049",
+      "title": "SFT Export from the Reviews API",
+      "kind": "api-client",
+      "topics": [
+        "sft-export",
+        "cross-endpoint-joins",
+        "pii-redaction"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-050",
+      "title": "Fraud Review Routing from Upstream Data",
+      "kind": "api-client",
+      "topics": [
+        "fraud-detection",
+        "hitl-routing",
+        "api-auth-tokens"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-051",
+      "title": "Judge Position-Bias Audit",
+      "kind": "service",
+      "topics": [
+        "llm-judge-eval",
+        "llm-retries-backoff",
+        "durable-persistence"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-052",
+      "title": "Webhook Inbox with Signature Verification",
+      "kind": "service",
+      "topics": [
+        "webhooks-retries",
+        "dedupe",
+        "observability"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-053",
+      "title": "Incremental Sync with Deletions",
+      "kind": "api-client",
+      "topics": [
+        "incremental-sync",
+        "messy-json",
+        "durable-persistence"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-054",
+      "title": "Leaderboard Service Backed by an Upstream API",
+      "kind": "api-client",
+      "topics": [
+        "leaderboard-ranking",
+        "caching-proxy-ttl",
+        "multi-tenant"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-055",
+      "title": "Chunked Summarization Pipeline",
+      "kind": "service",
+      "topics": [
+        "text-chunking",
+        "llm-enrichment",
+        "durable-persistence"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-056",
+      "title": "Payout Reconciliation Across Two APIs",
+      "kind": "api-client",
+      "topics": [
+        "payouts",
+        "cross-endpoint-joins",
+        "api-error-retries"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-057",
+      "title": "Task Claim Client with Leases",
+      "kind": "api-client",
+      "topics": [
+        "leases",
+        "api-error-retries",
+        "idempotency"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": true
+    },
+    {
+      "id": "prob-058",
+      "title": "Polled Sync to Webhooks under Rate Limits",
+      "kind": "api-client",
+      "topics": [
+        "incremental-sync",
+        "webhooks-retries",
+        "api-rate-limits"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-059",
+      "title": "Moderation Router for Model Output",
+      "kind": "service",
+      "topics": [
+        "llm-output-validation",
+        "hitl-routing",
+        "pii-redaction"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-060",
+      "title": "Ledger Crawl with Audit Trail",
+      "kind": "api-client",
+      "topics": [
+        "payouts",
+        "audit-logging",
+        "api-pagination"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-061",
+      "title": "Durable Priority Job Queue with DLQ",
+      "kind": "service",
+      "topics": [
+        "priority-scheduling",
+        "dead-letter-queue",
+        "durable-persistence"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-062",
+      "title": "Request-Coalescing Client Cache",
+      "kind": "api-client",
+      "topics": [
+        "caching-proxy-ttl",
+        "dedupe",
+        "concurrent-fetching"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-063",
+      "title": "Preference Fraud Checks from an API",
+      "kind": "api-client",
+      "topics": [
+        "preference-pairs",
+        "fraud-detection",
+        "gold-tasks"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-064",
+      "title": "Large JSONL Validator CLI",
+      "kind": "service",
+      "topics": [
+        "streaming-large-files",
+        "llm-output-validation",
+        "durable-persistence"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": true
+    },
+    {
+      "id": "prob-065",
+      "title": "Streaming Tool-Calling Agent",
+      "kind": "service",
+      "topics": [
+        "agent-tool-loop",
+        "llm-streaming-sse",
+        "text-chunking"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-066",
+      "title": "Batch Router Driven by an API Queue",
+      "kind": "api-client",
+      "topics": [
+        "load-balancer",
+        "api-pagination",
+        "task-state-machine"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-067",
+      "title": "Webhook Delivery Rate Shaping",
+      "kind": "service",
+      "topics": [
+        "webhooks-retries",
+        "rate-limiting",
+        "priority-scheduling"
+      ],
+      "mode": "plain-python",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-068",
+      "title": "IoU QA with LLM Caption Judge",
+      "kind": "api-client",
+      "topics": [
+        "iou-qa",
+        "llm-judge-eval",
+        "hitl-routing"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-069",
+      "title": "Observable API Crawl Jobs",
+      "kind": "api-client",
+      "topics": [
+        "observability",
+        "api-error-retries",
+        "async-jobs",
+        "concurrent-fetching"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-070",
+      "title": "Reservations Against a Partner API",
+      "kind": "api-client",
+      "topics": [
+        "reservations-holds",
+        "idempotency",
+        "api-auth-tokens"
+      ],
+      "mode": "fastapi",
+      "difficulty": "hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-071",
+      "title": "Load Balancer with Dynamic Rebalancing",
+      "kind": "service",
+      "topics": [
+        "load-balancer",
+        "heartbeats-failover",
+        "rate-limiting",
+        "observability"
+      ],
+      "mode": "plain-python",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-072",
+      "title": "Resumable LLM Labeling of API Data on a Budget",
+      "kind": "api-client",
+      "topics": [
+        "llm-classification",
+        "incremental-sync",
+        "llm-cost-tracking",
+        "llm-caching"
+      ],
+      "mode": "plain-python",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-073",
+      "title": "Multi-Tenant Async Job Platform",
+      "kind": "service",
+      "topics": [
+        "async-jobs",
+        "multi-tenant",
+        "rate-limiting",
+        "dead-letter-queue"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-074",
+      "title": "Adaptive Consensus from Live Submissions",
+      "kind": "api-client",
+      "topics": [
+        "consensus-quality",
+        "gold-tasks",
+        "incremental-sync",
+        "priority-scheduling"
+      ],
+      "mode": "plain-python",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-075",
+      "title": "Exactly-Once Webhooks with an Outbox",
+      "kind": "service",
+      "topics": [
+        "webhooks-retries",
+        "durable-persistence",
+        "idempotency",
+        "observability"
+      ],
+      "mode": "plain-python",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": true
+    },
+    {
+      "id": "prob-076",
+      "title": "Parallel Eval Harness over an Eval API",
+      "kind": "api-client",
+      "topics": [
+        "llm-judge-eval",
+        "concurrent-fetching",
+        "durable-persistence",
+        "api-rate-limits"
+      ],
+      "mode": "plain-python",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-077",
+      "title": "Budgeted Agent over Paginated Tools",
+      "kind": "api-client",
+      "topics": [
+        "agent-tool-loop",
+        "llm-cost-tracking",
+        "api-pagination",
+        "durable-persistence"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-078",
+      "title": "Backpressured Ingest from an API Firehose",
+      "kind": "api-client",
+      "topics": [
+        "streaming-large-files",
+        "worker-pool",
+        "llm-enrichment",
+        "incremental-sync"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-079",
+      "title": "Global Rate Limiter for a Client Fleet",
+      "kind": "api-client",
+      "topics": [
+        "api-rate-limits",
+        "multi-tenant",
+        "worker-pool",
+        "concurrent-fetching"
+      ],
+      "mode": "plain-python",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-080",
+      "title": "Fraud Holds on Contributor Payouts",
+      "kind": "api-client",
+      "topics": [
+        "fraud-detection",
+        "payouts",
+        "hitl-routing",
+        "cross-endpoint-joins"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-081",
+      "title": "DAG Scheduler with Leases and Failover",
+      "kind": "service",
+      "topics": [
+        "dependency-scheduling",
+        "leases",
+        "heartbeats-failover",
+        "dead-letter-queue"
+      ],
+      "mode": "plain-python",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-082",
+      "title": "Multi-Source Sync with Partial-Failure Recovery",
+      "kind": "api-client",
+      "topics": [
+        "incremental-sync",
+        "api-error-retries",
+        "api-auth-tokens",
+        "observability"
+      ],
+      "mode": "plain-python",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": true
+    },
+    {
+      "id": "prob-083",
+      "title": "PII Redaction for an API Export",
+      "kind": "api-client",
+      "topics": [
+        "pii-redaction",
+        "streaming-large-files",
+        "llm-batching",
+        "result-writing"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-084",
+      "title": "Durable Ticket Holds",
+      "kind": "service",
+      "topics": [
+        "reservations-holds",
+        "leases",
+        "durable-persistence",
+        "observability"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-085",
+      "title": "SFT Export with Dedupe and Gold Filters",
+      "kind": "api-client",
+      "topics": [
+        "sft-export",
+        "dedupe",
+        "gold-tasks",
+        "api-pagination"
+      ],
+      "mode": "plain-python",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-086",
+      "title": "Multi-Tenant Caching Gateway",
+      "kind": "api-client",
+      "topics": [
+        "caching-proxy-ttl",
+        "multi-tenant",
+        "api-auth-tokens",
+        "rate-limiting"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-087",
+      "title": "Live Leaderboard with Fraud Filtering",
+      "kind": "api-client",
+      "topics": [
+        "leaderboard-ranking",
+        "fraud-detection",
+        "incremental-sync",
+        "pagination-filtering"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-088",
+      "title": "SSE Gateway with Resume and Chunking",
+      "kind": "service",
+      "topics": [
+        "llm-streaming-sse",
+        "text-chunking",
+        "rate-limiting",
+        "observability"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-089",
+      "title": "Preference Ranking with Judge Tiebreaks",
+      "kind": "api-client",
+      "topics": [
+        "preference-pairs",
+        "llm-judge-eval",
+        "consensus-quality",
+        "messy-json"
+      ],
+      "mode": "plain-python",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-090",
+      "title": "Task Lifecycle Mirror of an Upstream API",
+      "kind": "api-client",
+      "topics": [
+        "task-state-machine",
+        "incremental-sync",
+        "audit-logging",
+        "leases"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": true
+    },
+    {
+      "id": "prob-091",
+      "title": "End-to-End Human-in-the-Loop Pipeline",
+      "kind": "service",
+      "topics": [
+        "hitl-routing",
+        "llm-classification",
+        "task-state-machine",
+        "webhooks-retries"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-092",
+      "title": "Distributed Job Scheduler with Failover",
+      "kind": "service",
+      "topics": [
+        "priority-scheduling",
+        "heartbeats-failover",
+        "worker-pool",
+        "durable-persistence"
+      ],
+      "mode": "plain-python",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-093",
+      "title": "Batched Enrichment under Upstream Rate Limits",
+      "kind": "api-client",
+      "topics": [
+        "llm-batching",
+        "api-rate-limits",
+        "llm-output-validation",
+        "dead-letter-queue"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-094",
+      "title": "IoU QA with Gold Tasks and Payouts",
+      "kind": "api-client",
+      "topics": [
+        "iou-qa",
+        "gold-tasks",
+        "payouts",
+        "concurrent-fetching"
+      ],
+      "mode": "plain-python",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-095",
+      "title": "Multi-Tenant Audit Aggregator",
+      "kind": "api-client",
+      "topics": [
+        "audit-logging",
+        "observability",
+        "multi-tenant",
+        "api-pagination"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-096",
+      "title": "Agent with Authenticated Third-Party Tools",
+      "kind": "api-client",
+      "topics": [
+        "agent-tool-loop",
+        "api-auth-tokens",
+        "llm-retries-backoff",
+        "caching-proxy-ttl"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-097",
+      "title": "Priority Load Balancer with Tenant Quotas",
+      "kind": "service",
+      "topics": [
+        "load-balancer",
+        "priority-scheduling",
+        "multi-tenant",
+        "dead-letter-queue"
+      ],
+      "mode": "plain-python",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": true
+    },
+    {
+      "id": "prob-098",
+      "title": "Judge Service over Upstream Samples with SSE",
+      "kind": "api-client",
+      "topics": [
+        "llm-judge-eval",
+        "llm-streaming-sse",
+        "llm-caching",
+        "cross-endpoint-joins"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "skeleton",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-099",
+      "title": "Ingest, Classify, Review, Export via API",
+      "kind": "api-client",
+      "topics": [
+        "llm-classification",
+        "hitl-routing",
+        "sft-export",
+        "result-writing"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    },
+    {
+      "id": "prob-100",
+      "title": "Annotation Platform Capstone Client",
+      "kind": "api-client",
+      "topics": [
+        "task-state-machine",
+        "consensus-quality",
+        "payouts",
+        "messy-json"
+      ],
+      "mode": "fastapi",
+      "difficulty": "very hard",
+      "status": "planned",
+      "starter": "repo",
+      "planted_bugs": false
+    }
+  ]
+}

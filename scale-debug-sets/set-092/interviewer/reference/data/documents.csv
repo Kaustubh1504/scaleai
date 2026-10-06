@@ -1,0 +1,25 @@
+doc_id,collection,text,updated_at
+f01,FAQ,How do I reset my password?,2026-09-01 10:00
+ F02 ,faq,Where can I see my payout history?,09/02/2026 08:30
+f03,faq,How long does task review take?,2026-08-20T12:00:00
+f03,faq ,How long does a task review usually take?,2026-09-03 09:15
+f04,faq,Can I work on more than one project?,2026-09-03 11:00
+f05,faq,   ,2026-09-04 10:00
+f06,faq,What happens if my task is rejected?,09/04/2026 16:45
+f07,faq,How do I contact support?,2026-09-05 08:00
+f08,faq,Which countries are supported?,2026-09-05T14:20:00
+p01,policies,Refunds are issued within 14 days of a return.,2026-06-01 09:00
+p02,Policies,Annotators must complete security training yearly.,2026-06-02 09:00
+P03,policies,Personal data is deleted after 90 days.,06/03/2026 09:00
+p04,policies,Contractors are paid twice a month.,2026-09-06 10:00
+p05,policies,Escalations go to the on-call lead first.,2026-06-05 09:00
+p06,policies,Overtime requires written approval.,2026-06-06 09:00
+p07,policies,Quality audits run every Friday.,2026-09-07 13:30
+x01,products,Image bounding box tool,2026-09-01 10:00
+x02,products,Text span labeling tool,2026-09-01 10:05
+x03,products, Audio transcription tool ,09/01/2026 10:10
+x04,products,Video frame tagging tool with keyframe interpolation,2026-09-01 10:15
+x05,products,LiDAR point cloud segmentation tool,2026-09-01T10:20:00
+X06,products,Legacy survey builder,2026-01-10 10:00
+x07,products,Chat preference ranking tool,2026-09-01 10:25
+x08,products,,2026-09-01 10:30

@@ -1,0 +1,12 @@
+[
+  {"name": "FAQ", "dimensions": 4, "enabled": true},
+  {"name": " policies", "dimensions": 4, "enabled": "yes"},
+  {"name": "changelog", "dimensions": 6, "enabled": "TRUE"},
+  {"name": "Pricing ", "dimensions": 4, "enabled": true},
+  {"name": "legacy", "dimensions": 4, "enabled": "no"},
+  {"name": "drafts", "dimensions": 4, "enabled": false},
+  {"name": "onboarding", "dimensions": 4, "enabled": true},
+  {"name": "archive", "dimensions": 8, "enabled": "false"},
+  {"name": "support", "dimensions": 4, "enabled": "Yes"},
+  {"name": "internal", "dimensions": 4, "enabled": 0}
+]

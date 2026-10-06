@@ -1,0 +1,12 @@
+[
+  {"id": "an-01", "role": "annotator", "active": true},
+  {"id": "AN-02", "role": "annotator", "active": "yes"},
+  {"id": "an-03", "role": "Annotator", "active": true},
+  {"id": "an-04 ", "role": "annotator"},
+  {"id": "rv-01", "role": "reviewer", "active": true},
+  {"id": "rv-02", "role": "reviewer", "active": 1},
+  {"id": "rv-03", "role": " reviewer", "active": "TRUE"},
+  {"id": "rv-04", "role": "reviewer", "active": "no"},
+  {"id": "sr-01", "role": "senior", "active": true},
+  {"id": "Sr-02", "role": "senior", "active": true}
+]

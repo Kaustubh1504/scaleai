@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_outcomes"
+    ],
+    "failures": {
+      "tests.test_1_outcomes.TestOutcomes.test_street_outcomes": "AssertionError: {'img[106 chars]5': 'deleted', 'img-03/B6': 'accepted', 'img-0[39 chars]ted'} != {'img[106 chars]5': 'accepted', 'img-03/B6': 'accepted', 'img-[40 chars]ted'}\n  {'img-01/B1': 'accepted',\n   'img-01/B2': 'accepted',\n   'img-02/B3': 'accepted',\n   'img-02/B4': 'relabeled',\n-  'img-03/B5': 'deleted',\n?                ^ ^^\n\n+  'img-03/B5': 'accepted',\n?                ^^^ ^\n\n   'img-03/B6': 'accepted',\n   'img-04/B7': 'adjusted',\n   'img-09/B15': 'accepted'}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_outcomes"
+    ],
+    "failures": {
+      "tests.test_1_outcomes.TestOutcomes.test_warehouse_outcomes": "AssertionError: {'img-05/B8': 'accepted', 'img-05/B9': 'accepted', 'img-0[118 chars]ted'} != {'img-05/B8': 'adjusted', 'img-05/B9': 'accepted', 'img-0[118 chars]ted'}\n- {'img-05/B8': 'accepted',\n?                 ^^^^\n\n+ {'img-05/B8': 'adjusted',\n?                 ^^^^\n\n   'img-05/B9': 'accepted',\n   'img-06/B10': 'deleted',\n   'img-06/B11': 'adjusted',\n   'img-07/B12': 'accepted',\n   'img-08/B13': 'relabeled',\n   'img-08/B14': 'accepted'}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_out_of_bounds": "AssertionError: Lists differ: [] != [['img-01', None, 'sign'], ['img-09', 'B15', 'car']]\n\nSecond list contains 2 additional elements.\nFirst extra element 0:\n['img-01', None, 'sign']\n\n- []\n+ [['img-01', None, 'sign'], ['img-09', 'B15', 'car']]"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_outcomes",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_outcomes.TestOutcomes.test_street_outcomes",
+      "tests.test_1_outcomes.TestOutcomes.test_warehouse_outcomes",
+      "tests.test_2_report.TestReport.test_out_of_bounds"
+    ]
+  }
+}

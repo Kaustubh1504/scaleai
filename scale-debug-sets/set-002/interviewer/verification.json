@@ -1,0 +1,89 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_annotator_quality",
+      "test_2_consensus",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_1_annotator_quality.TestAnnotatorQuality.test_only_active_annotators_listed": "AssertionError: Lists differ: ['ann[22 chars]3', 'ann-04', 'ann-05', 'ann-06', 'ann-07', 'ann-08', 'ann-09'] != ['ann[22 chars]3', 'ann-04', 'ann-05', 'ann-06', 'ann-07']\n\nFirst list contains 2 additional elements.\nFirst extra element 7:\n'ann-08'\n\n+ ['ann-01', 'ann-02', 'ann-03', 'ann-04', 'ann-05', 'ann-06', 'ann-07']\n- ['ann-01',\n-  'ann-02',\n-  'ann-03',\n-  'ann-04',\n-  'ann-05',\n-  'ann-06',\n-  'ann-07',\n-  'ann-08',\n-  'ann-09']",
+      "tests.test_1_annotator_quality.TestAnnotatorQuality.test_quality_table": "AssertionError: {'ann[457 chars]alse}, 'ann-08': {'accuracy': 1.0, 'gold_answe[89 chars]lse}} != {'ann[457 chars]alse}}\n  {'ann-01': {'accuracy': 1.0, 'blocked': False, 'gold_answered': 2},\n   'ann-02': {'accuracy': 1.0, 'blocked': False, 'gold_answered': 2},\n   'ann-03': {'accuracy': 0.5, 'blocked': False, 'gold_answered': 2},\n   'ann-04': {'accuracy': 0.5, 'blocked': False, 'gold_answered': 2},\n   'ann-05': {'accuracy': 0.0, 'blocked': True, 'gold_answered': 2},\n   'ann-06': {'accuracy': 0.5, 'blocked': False, 'gold_answered': 0},\n-  'ann-07': {'accuracy': 1.0, 'blocked': False, 'gold_answer",
+      "tests.test_2_consensus.TestConsensus.test_full_consensus": "AssertionError: {'T03[208 chars]ce': 0.667, 'votes': 3}, 'T06': {'status': 're[454 chars]: 0}} != {'T03[208 chars]ce': 1.0, 'votes': 2}, 'T06': {'status': 'reso[460 chars]: 0}}\n  {'T03': {'confidence': 0.5, 'label': 'cat', 'status': 'resolved', 'votes': 3},\n   'T04': {'confidence': 1.0, 'label': 'dog', 'status': 'resolved', 'votes': 2},\n+  'T05': {'confidence': 1.0, 'label': 'bird', 'status': 'resolved', 'votes': 2},\n-  'T05': {'confidence': 0.667,\n-          'label': 'bird',\n-          'status': 'resolved',\n-          'votes': 3},\n   'T06': {'confidence': 0.667,\n           'label': 'fish',\n  ",
+      "tests.test_2_consensus.TestConsensus.test_labels": "AssertionError: {'T03[61 chars]'cat', 'T08': 'cat', 'T09': 'fish', 'T10': 'bird', 'T11': None} != {'T03[61 chars]'cat', 'T08': None, 'T09': 'fish', 'T10': 'bird', 'T11': None}\n  {'T03': 'cat',\n   'T04': 'dog',\n   'T05': 'bird',\n   'T06': 'fish',\n   'T07': 'cat',\n-  'T08': 'cat',\n+  'T08': None,\n   'T09': 'fish',\n   'T10': 'bird',\n   'T11': None}",
+      "tests.test_3_summary.TestSummary.test_label_counts": "AssertionError: {'cat': 3, 'dog': 1, 'bird': 2, 'fish': 2} != {'bird': 2, 'cat': 2, 'dog': 1, 'fish': 2}\n- {'bird': 2, 'cat': 3, 'dog': 1, 'fish': 2}\n?                    ^\n\n+ {'bird': 2, 'cat': 2, 'dog': 1, 'fish': 2}\n?                    ^\n",
+      "tests.test_3_summary.TestSummary.test_needs_more_votes": "AssertionError: Lists differ: ['T11'] != ['T08', 'T11']\n\nFirst differing element 0:\n'T11'\n'T08'\n\nSecond list contains 1 additional elements.\nFirst extra element 1:\n'T11'\n\n- ['T11']\n+ ['T08', 'T11']"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_annotator_quality"
+    ],
+    "failures": {
+      "tests.test_1_annotator_quality.TestAnnotatorQuality.test_blocked_annotators": "AssertionError: Lists differ: [] != ['ann-05']\n\nSecond list contains 1 additional elements.\nFirst extra element 0:\n'ann-05'\n\n- []\n+ ['ann-05']",
+      "tests.test_1_annotator_quality.TestAnnotatorQuality.test_quality_table": "AssertionError: {'ann[284 chars]': 0.5, 'gold_answered': 0, 'blocked': False},[129 chars]lse}} != {'ann[284 chars]': 0.0, 'gold_answered': 2, 'blocked': True}, [128 chars]lse}}\n  {'ann-01': {'accuracy': 1.0, 'blocked': False, 'gold_answered': 2},\n   'ann-02': {'accuracy': 1.0, 'blocked': False, 'gold_answered': 2},\n   'ann-03': {'accuracy': 0.5, 'blocked': False, 'gold_answered': 2},\n   'ann-04': {'accuracy': 0.5, 'blocked': False, 'gold_answered': 2},\n-  'ann-05': {'accuracy': 0.5, 'blocked': False, 'gold_answered': 0},\n?                           ^             ^^^^                    ^\n\n+  '"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_annotator_quality",
+      "test_2_consensus"
+    ],
+    "failures": {
+      "tests.test_1_annotator_quality.TestAnnotatorQuality.test_blocked_annotators": "AssertionError: Lists differ: [] != ['ann-05']\n\nSecond list contains 1 additional elements.\nFirst extra element 0:\n'ann-05'\n\n- []\n+ ['ann-05']",
+      "tests.test_1_annotator_quality.TestAnnotatorQuality.test_quality_table": "AssertionError: {'ann[284 chars]': 0.5, 'gold_answered': 2, 'blocked': False},[129 chars]lse}} != {'ann[284 chars]': 0.0, 'gold_answered': 2, 'blocked': True}, [128 chars]lse}}\n  {'ann-01': {'accuracy': 1.0, 'blocked': False, 'gold_answered': 2},\n   'ann-02': {'accuracy': 1.0, 'blocked': False, 'gold_answered': 2},\n   'ann-03': {'accuracy': 0.5, 'blocked': False, 'gold_answered': 2},\n   'ann-04': {'accuracy': 0.5, 'blocked': False, 'gold_answered': 2},\n-  'ann-05': {'accuracy': 0.5, 'blocked': False, 'gold_answered': 2},\n?                           ^             ^^^^\n\n+  'ann-05': {'accuracy':",
+      "tests.test_2_consensus.TestConsensus.test_full_consensus": "AssertionError: {'T03[129 chars]ce': 0.75, 'votes': 3}, 'T05': {'status': 'res[542 chars]: 0}} != {'T03[129 chars]ce': 1.0, 'votes': 2}, 'T05': {'status': 'reso[539 chars]: 0}}\n  {'T03': {'confidence': 0.5, 'label': 'cat', 'status': 'resolved', 'votes': 3},\n-  'T04': {'confidence': 0.75, 'label': 'dog', 'status': 'resolved', 'votes': 3},\n?                         ---                                                 ^\n\n+  'T04': {'confidence': 1.0, 'label': 'dog', 'status': 'resolved', 'votes': 2},\n?                        ++                                                  ^\n\n   'T05': {'confid"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_1_annotator_quality",
+      "test_2_consensus",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_1_annotator_quality.TestAnnotatorQuality.test_blocked_annotators": "AssertionError: Lists differ: ['ann-03', 'ann-04', 'ann-05', 'ann-06'] != ['ann-05']\n\nFirst differing element 0:\n'ann-03'\n'ann-05'\n\nFirst list contains 3 additional elements.\nFirst extra element 1:\n'ann-04'\n\n- ['ann-03', 'ann-04', 'ann-05', 'ann-06']\n+ ['ann-05']",
+      "tests.test_1_annotator_quality.TestAnnotatorQuality.test_quality_table": "AssertionError: {'ann[184 chars]ed': True}, 'ann-04': {'accuracy': 0.5, 'gold_[225 chars]lse}} != {'ann[184 chars]ed': False}, 'ann-04': {'accuracy': 0.5, 'gold[228 chars]lse}}\n  {'ann-01': {'accuracy': 1.0, 'blocked': False, 'gold_answered': 2},\n   'ann-02': {'accuracy': 1.0, 'blocked': False, 'gold_answered': 2},\n-  'ann-03': {'accuracy': 0.5, 'blocked': True, 'gold_answered': 2},\n?                                         ^^^\n\n+  'ann-03': {'accuracy': 0.5, 'blocked': False, 'gold_answered': 2},\n?                                         ^^^^\n\n-  'ann-04': {'accuracy': 0.5, 'blocked': True, '",
+      "tests.test_2_consensus.TestConsensus.test_full_consensus": "AssertionError: {'T03': {'status': 'needs_more_votes', 'label': None, 'confid[694 chars]: 0}} != {'T03': {'status': 'resolved', 'label': 'cat', 'confidence': [658 chars]: 0}}\n+ {'T03': {'confidence': 0.5, 'label': 'cat', 'status': 'resolved', 'votes': 3},\n+  'T04': {'confidence': 1.0, 'label': 'dog', 'status': 'resolved', 'votes': 2},\n- {'T03': {'confidence': None,\n-          'label': None,\n-          'status': 'needs_more_votes',\n-          'votes': 1},\n-  'T04': {'confidence': None,\n-          'label': None,\n-          'status': 'needs_more_votes',\n-          'votes': 1},\n   'T05': {'confide",
+      "tests.test_2_consensus.TestConsensus.test_labels": "AssertionError: {'T03': None, 'T04': None, 'T05': 'bird', 'T06': [67 chars]None} != {'T03': 'cat', 'T04': 'dog', 'T05': 'bird', 'T06'[74 chars]None}\n- {'T03': None,\n-  'T04': None,\n+ {'T03': 'cat',\n+  'T04': 'dog',\n   'T05': 'bird',\n-  'T06': None,\n-  'T07': None,\n+  'T06': 'fish',\n+  'T07': 'cat',\n   'T08': None,\n   'T09': 'fish',\n-  'T10': None,\n+  'T10': 'bird',\n   'T11': None}",
+      "tests.test_3_summary.TestSummary.test_label_counts": "AssertionError: {'bird': 1, 'fish': 1} != {'bird': 2, 'cat': 2, 'dog': 1, 'fish': 2}\n- {'bird': 1, 'fish': 1}\n+ {'bird': 2, 'cat': 2, 'dog': 1, 'fish': 2}",
+      "tests.test_3_summary.TestSummary.test_most_disputed": "AssertionError: 'T05' != 'T03'\n- T05\n?   ^\n+ T03\n?   ^\n",
+      "tests.test_3_summary.TestSummary.test_needs_more_votes": "AssertionError: Lists differ: ['T03', 'T04', 'T06', 'T07', 'T08', 'T10', 'T11'] != ['T08', 'T11']\n\nFirst differing element 0:\n'T03'\n'T08'\n\nFirst list contains 5 additional elements.\nFirst extra element 2:\n'T06'\n\n- ['T03', 'T04', 'T06', 'T07', 'T08', 'T10', 'T11']\n+ ['T08', 'T11']"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_2_consensus",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_2_consensus.TestConsensus.test_full_consensus": "AssertionError: {'T03[31 chars]l': 'dog', 'confidence': 0.5, 'votes': 3}, 'T0[637 chars]: 0}} != {'T03[31 chars]l': 'cat', 'confidence': 0.5, 'votes': 3}, 'T0[637 chars]: 0}}\n- {'T03': {'confidence': 0.5, 'label': 'dog', 'status': 'resolved', 'votes': 3},\n?                                       ^^^\n\n+ {'T03': {'confidence': 0.5, 'label': 'cat', 'status': 'resolved', 'votes': 3},\n?                                       ^^^\n\n   'T04': {'confidence': 1.0, 'label': 'dog', 'status': 'resolved', 'votes': 2},\n   'T05': {'confidence': 1.0, 'label': 'bird', 'status': 'resolved', 'votes': 2},\n   'T06': ",
+      "tests.test_2_consensus.TestConsensus.test_labels": "AssertionError: {'T03': 'dog', 'T04': 'dog', 'T05': 'bird', 'T06':[73 chars]None} != {'T03': 'cat', 'T04': 'dog', 'T05': 'bird', 'T06':[73 chars]None}\n- {'T03': 'dog',\n?          ^^^\n\n+ {'T03': 'cat',\n?          ^^^\n\n   'T04': 'dog',\n   'T05': 'bird',\n   'T06': 'fish',\n-  'T07': 'dog',\n?          ^^^\n\n+  'T07': 'cat',\n?          ^^^\n\n   'T08': None,\n   'T09': 'fish',\n   'T10': 'bird',\n   'T11': None}",
+      "tests.test_3_summary.TestSummary.test_label_counts": "AssertionError: {'dog': 3, 'bird': 2, 'fish': 2} != {'bird': 2, 'cat': 2, 'dog': 1, 'fish': 2}\n- {'bird': 2, 'dog': 3, 'fish': 2}\n?                    ^\n\n+ {'bird': 2, 'cat': 2, 'dog': 1, 'fish': 2}\n?            ++++++++++        ^\n"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_label_counts": "AssertionError: {'cat': 2, 'dog': 1, 'bird': 2, 'fish': 2, None: 2} != {'bird': 2, 'cat': 2, 'dog': 1, 'fish': 2}\n- {None: 2, 'bird': 2, 'cat': 2, 'dog': 1, 'fish': 2}\n?  ---------\n\n+ {'bird': 2, 'cat': 2, 'dog': 1, 'fish': 2}"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_annotator_quality",
+      "test_2_consensus",
+      "test_3_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_annotator_quality.TestAnnotatorQuality.test_blocked_annotators",
+      "tests.test_1_annotator_quality.TestAnnotatorQuality.test_only_active_annotators_listed",
+      "tests.test_1_annotator_quality.TestAnnotatorQuality.test_quality_table",
+      "tests.test_2_consensus.TestConsensus.test_full_consensus",
+      "tests.test_2_consensus.TestConsensus.test_labels",
+      "tests.test_3_summary.TestSummary.test_label_counts",
+      "tests.test_3_summary.TestSummary.test_most_disputed",
+      "tests.test_3_summary.TestSummary.test_needs_more_votes"
+    ]
+  }
+}

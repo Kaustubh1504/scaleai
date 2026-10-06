@@ -1,0 +1,193 @@
+{
+  "id": "set-028",
+  "title": "Async embedding backfill: cache, retries, paginated usage",
+  "domain": "endpoint_client",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "multi",
+  "package": "embedq",
+  "scenario": "An asyncio client embeds deduped documents with two models in turn (semaphore-limited batches, retries with injectable async sleep, (model, text) cache), then pages through a usage ledger whose pages can be short.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_requests",
+      "test_2_documents",
+      "test_3_summary"
+    ]
+  },
+  "verified": [
+    {
+      "file": "embedq/retry.py",
+      "symbol": "wait_time",
+      "why_correct": "`2 ** attempt` with attempt starting at 0 gives backoff, 2×backoff, ... exactly as rule 3 says, and Retry-After takes priority when present."
+    },
+    {
+      "file": "embedq/transport.py",
+      "symbol": "request_json",
+      "why_correct": "It runs the blocking urllib call in a worker thread via asyncio.to_thread and awaits it, which is what lets batches overlap. HTTP error statuses come back as Response objects, not exceptions."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Semaphore created but never acquired",
+      "type": "semaphore-unused",
+      "file": "embedq/client.py",
+      "function": "EmbeddingClient.embed_batch",
+      "old": "        async with self.sem:\n            response = await send_with_retries(\n                lambda: request_json(\"POST\", url, self.headers, payload), self.policy, self.sleep)\n",
+      "new": "        response = await send_with_retries(\n            lambda: request_json(\"POST\", url, self.headers, payload), self.policy, self.sleep)\n",
+      "symptom": "Test 1 test_concurrency_limit: the server saw 5 requests in flight at once (expected at most 2).",
+      "why": "self.sem is built from max_concurrency but nothing acquires it, so gather fires every batch at once and the server sees more than 2 requests in flight.",
+      "unblocks": "test_1 test_concurrency_limit.",
+      "hints": [
+        "What enforces max_concurrency in this client?",
+        "Find where self.sem is used.",
+        "Wrap the send_with_retries call in `async with self.sem:`."
+      ],
+      "probes": [
+        "Why do all the other tests still pass with unlimited concurrency?",
+        "Should the retry sleep happen while holding the semaphore? What are the trade-offs?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Backoff sleep never awaited",
+      "type": "missing-await",
+      "file": "embedq/retry.py",
+      "function": "send_with_retries",
+      "old": "            await sleep(wait_time(response, policy, attempt))\n",
+      "new": "            sleep(wait_time(response, policy, attempt))\n",
+      "symptom": "Test 1 test_backoff_delays: the recorded delays are [] (expected [0.1, 0.2, 1.0]). The retries still happen, and Python warns that a coroutine was never awaited.",
+      "why": "Calling an async function without `await` only creates a coroutine object. It never runs (Python warns 'coroutine was never awaited'), so there is no wait between retries and the recorded delays are empty.",
+      "unblocks": "test_1 test_backoff_delays.",
+      "hints": [
+        "The retries still happen, but no delays are recorded. What does calling an async function return?",
+        "Look at the sleep call in send_with_retries.",
+        "Add `await` before sleep(...)."
+      ],
+      "probes": [
+        "Why didn't this raise an exception?",
+        "What would a real provider do to a client that retries with no delay?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Cache key ignores the model",
+      "type": "cache-key-missing-param",
+      "file": "embedq/cache.py",
+      "function": "VectorCache.key",
+      "old": "        return hashlib.sha1(f\"{model}\\n{text}\".encode()).hexdigest()\n",
+      "new": "        return hashlib.sha1(text.encode()).hexdigest()\n",
+      "symptom": "Test 1: embed-l made 1 request instead of 7, and the delays are only [1.0]. Test 2 test_embed_l: every doc is ok, mostly with dims 4 (embed-s vectors). Test 3: embed-l counts (15, 0), billed tokens 27, only 2 usage pages.",
+      "why": "With the key hashed from text only, every text embed-s already embedded counts as cached for embed-l. embed-l only sends the three texts embed-s failed on and reuses 4-dim embed-s vectors for everything else.",
+      "unblocks": "test_1 request counts, test_2 embed-l rows, test_3 counts and tokens. It also exposes B4.",
+      "hints": [
+        "embed-l made only one request. Why did it think everything else was cached?",
+        "Look at what goes into the cache key.",
+        "Include the model in the hashed key: f\"{model}\\n{text}\"."
+      ],
+      "probes": [
+        "Why did exactly d09, d11 and d12 get 8-dim vectors?",
+        "Name another parameter that belongs in an embedding cache key in real systems."
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "One retry too few",
+      "type": "retry-off-by-one",
+      "file": "embedq/retry.py",
+      "function": "send_with_retries",
+      "old": "    for attempt in range(policy.max_retries + 1):\n",
+      "new": "    for attempt in range(policy.max_retries):\n",
+      "masked_by": [
+        "B3"
+      ],
+      "symptom": "Only visible after B3 is fixed. Test 1: embed-l made 6 requests (expected 7). Test 2: d05/d07/d08 embed-l fail with 503 'transient'. Test 3: embed-l counts (7, 8), billed tokens 71, 2 usage pages. The backoff delays are unchanged.",
+      "why": "range(max_retries) allows max_retries attempts in total, not max_retries retries. The warranty batch needs a third attempt on embed-l, so it ends on 503. The backoff list doesn't change, because the loop still sleeps after the second failure.",
+      "unblocks": "embed-l docs d05/d07/d08, the embed-l counts and tokens, and the third usage page.",
+      "hints": [
+        "How many attempts does README rule 3 allow with max_retries 2?",
+        "Count the iterations of the retry loop.",
+        "Use range(policy.max_retries + 1)."
+      ],
+      "probes": [
+        "Why was this invisible while the cache key ignored the model?",
+        "Why are the recorded backoff delays the same with and without this change?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Final 4xx treated as a success",
+      "type": "ignoring-http-status",
+      "file": "embedq/client.py",
+      "function": "EmbeddingClient.embed_batch",
+      "old": "        if response.status != 200:\n            raise EmbeddingError(response.status)\n",
+      "new": "        if response.status in RETRYABLE:\n            raise EmbeddingError(response.status)\n",
+      "symptom": "Test 2 test_embed_s: d09/d11/d12 show http_status None, reason 'invalid_response' (expected 400 / 'rejected'). The counts in Test 3 are unchanged.",
+      "why": "Only statuses that are still transient after retries raise EmbeddingError. A 400 'input too long' falls through to parse_vectors, which fails on the error body, so the batch is reported as invalid_response with no http_status.",
+      "unblocks": "test_2 test_embed_s.",
+      "hints": [
+        "d09/d11/d12 fail, but with http_status None. What did the server actually return?",
+        "Look at which statuses embed_batch treats as failures.",
+        "Raise EmbeddingError for any status other than 200."
+      ],
+      "probes": [
+        "Why are the document counts in test 3 still right?",
+        "Why is reusing RETRYABLE here tempting, and why is it the wrong set?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Short usage page treated as the last",
+      "type": "pagination-cursor",
+      "file": "embedq/usage.py",
+      "function": "collect_usage",
+      "old": "        if cursor is None:\n",
+      "new": "        if cursor is None or len(page[\"data\"]) < client.config.page_size:\n",
+      "visible_only_in": [
+        "test_3_summary"
+      ],
+      "symptom": "Test 3 only: billed tokens {'embed-s': 0, 'embed-l': 63} (expected 63/90), and only 1 usage page was requested (expected 3).",
+      "why": "The server caps pages at 4 records even though page_size is 5, so the first page is always short. Stopping on a short page drops every later page: the embed-s records are never read.",
+      "unblocks": "test_3 tokens and page count.",
+      "hints": [
+        "Only one usage page was requested. What does the README say about short pages?",
+        "Look at the loop's exit condition in collect_usage.",
+        "Stop only when next_cursor is None."
+      ],
+      "probes": [
+        "Why does embed-s show 0 billed tokens rather than a smaller number?",
+        "If the server didn't cap pages, when would this code still lose data?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does run() do, in order?",
+      "a": "It loads config and documents, creates one EmbeddingClient (with the injected sleep if given), awaits `embed_model` for each model in config order, then awaits `collect_usage`, and builds the per-document rows and the summary from the client's cache, the failure maps and the usage records."
+    },
+    {
+      "q": "How does embed_model decide what to send?",
+      "a": "It takes `unique_texts(docs)`, keeps texts for which `(model, text) not in self.cache`, splits them with `batched(pending, batch_size)`, and gathers `embed_batch` for every batch with `return_exceptions=True`."
+    },
+    {
+      "q": "What does VectorCache.__contains__ expect?",
+      "a": "A `(model, text)` tuple. It computes `self.key(model, text)` and checks the internal dict. `get` and `put` use the same `key` helper."
+    },
+    {
+      "q": "How are exceptions from batches turned into document results?",
+      "a": "In `embed_model`, an EmbeddingError becomes `failed` with its status and a reason of transient/rejected based on RETRYABLE. Any other exception becomes `failed` with `http_status` None and reason `invalid_response`. Every text in that batch gets the same failure dict."
+    },
+    {
+      "q": "How does the mock server behave for the usage endpoint?",
+      "a": "It sorts all usage records by (model, first input text), caps the page at 4 records whatever `limit` is, and returns a base64 offset cursor in `next_cursor`, or null when there is nothing after this page."
+    },
+    {
+      "q": "What does parse_vectors return?",
+      "a": "The `embedding` lists from `body['data']` sorted by each item's `index`. It raises ValueError if `data` is missing or its length differs from the number of inputs."
+    },
+    {
+      "q": "How do the tests observe the retry waits?",
+      "a": "test_1 passes `sleep=record_sleep`, an async function that appends its argument to a list and returns, so no real time passes. The test compares the sorted list."
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_cleaning"
+    ],
+    "failures": {
+      "tests.test_1_cleaning.TestCleaning.test_excluded_rows": "AssertionError: Lists differ: ['I018', 'I022'] != ['I013', 'I018', 'I022', 'I026']\n\nFirst differing element 0:\n'I018'\n'I013'\n\nSecond list contains 2 additional elements.\nFirst extra element 2:\n'I022'\n\n- ['I018', 'I022']\n+ ['I013', 'I018', 'I022', 'I026']"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_cleaning"
+    ],
+    "failures": {
+      "tests.test_1_cleaning.TestCleaning.test_duplicate_rows": "AssertionError: Lists differ: ['I012', 'I016'] != ['I012', 'I030']\n\nFirst differing element 1:\n'I016'\n'I030'\n\n- ['I012', 'I016']\n?             ^^\n\n+ ['I012', 'I030']\n?             ^^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_splits"
+    ],
+    "failures": {
+      "tests.test_2_splits.TestSplits.test_doc_assignment": "AssertionError: {'DOC-01': 'train', 'Doc-08': 'train', 'doc[208 chars]ain'} != {'doc-01': 'train', 'doc-02': 'val', 'doc-0[170 chars]ain'}\n- {'DOC-01': 'train',\n-  'Doc-08': 'train',\n-  'doc-01': 'train',\n? ^\n\n+ {'doc-01': 'train',\n? ^\n\n   'doc-02': 'val',\n   'doc-03': 'val',\n   'doc-04': 'train',\n   'doc-05': 'test',\n   'doc-06': 'val',\n   'doc-07': 'train',\n   'doc-08': 'train',\n   'doc-09': 'test',\n   'doc-10': 'train',\n   'doc-11': 'val',\n   'doc-12': 'train'}"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_splits"
+    ],
+    "failures": {
+      "tests.test_2_splits.TestSplits.test_val_sample": "AssertionError: {'neg[18 chars]I010', 'I031'], 'neutral': ['I008', 'I029'], '[31 chars]07']} != {'neg[18 chars]I010'], 'neutral': ['I008', 'I029'], 'positive[15 chars]06']}\n- {'negative': ['I005', 'I010', 'I031'],\n?                             --------\n\n+ {'negative': ['I005', 'I010'],\n   'neutral': ['I008', 'I029'],\n-  'positive': ['I004', 'I006', 'I007']}\n?                             --------\n\n+  'positive': ['I004', 'I006']}"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_split_report"
+    ],
+    "failures": {
+      "tests.test_3_split_report.TestSplitReport.test_test_split_labels": "AssertionError: {'negative': 27, 'neutral': 24, 'positive': 36} != {'negative': 2, 'neutral': 2, 'positive': 2}\n- {'negative': 27, 'neutral': 24, 'positive': 36}\n?               -              -              ^^\n\n+ {'negative': 2, 'neutral': 2, 'positive': 2}\n?                                           ^\n"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_split_report"
+    ],
+    "failures": {
+      "tests.test_3_split_report.TestSplitReport.test_test_split_avg_tokens": "AssertionError: 18.83 != 4.83"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_cleaning",
+      "test_2_splits",
+      "test_3_split_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_cleaning.TestCleaning.test_duplicate_rows",
+      "tests.test_1_cleaning.TestCleaning.test_excluded_rows",
+      "tests.test_2_splits.TestSplits.test_doc_assignment",
+      "tests.test_2_splits.TestSplits.test_val_sample",
+      "tests.test_3_split_report.TestSplitReport.test_test_split_avg_tokens",
+      "tests.test_3_split_report.TestSplitReport.test_test_split_labels"
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_grading"
+    ],
+    "failures": {
+      "tests.test_1_grading.TestGrading.test_unscored_items": "AssertionError: {'alp[121 chars]}, 'delta': {'errored': [], 'unparsed': ['I05', 'I07', 'I09']}} != {'alp[121 chars]}, 'delta': {'errored': ['I05', 'I09'], 'unparsed': ['I07']}}\n  {'alpha': {'errored': [], 'unparsed': []},\n   'bravo': {'errored': [], 'unparsed': []},\n   'charlie': {'errored': [], 'unparsed': []},\n-  'delta': {'errored': [], 'unparsed': ['I05', 'I07', 'I09']}}\n?                                        -------     -------\n\n+  'delta': {'errored': ['I05', 'I09'], 'unparsed': ['I07']}}\n?                        ++++++++++++\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_weighted_scores": "AssertionError: {'alpha': 0.8, 'bravo': 0.5, 'charlie': 0.5, 'delta': 0.15} != {'alpha': 0.833, 'bravo': 0.556, 'charlie': 0.556, 'delta': 0.167}\n- {'alpha': 0.8, 'bravo': 0.5, 'charlie': 0.5, 'delta': 0.15}\n?                                                          ^\n\n+ {'alpha': 0.833, 'bravo': 0.556, 'charlie': 0.556, 'delta': 0.167}\n?              ++              ++                ++              ^^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_leaderboard": "AssertionError: Lists differ: ['alpha', 'bravo', 'charlie', 'delta'] != ['alpha', 'charlie', 'bravo', 'delta']\n\nFirst differing element 1:\n'bravo'\n'charlie'\n\n- ['alpha', 'bravo', 'charlie', 'delta']\n?          ---------\n\n+ ['alpha', 'charlie', 'bravo', 'delta']\n?                      +++++++++\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_grading",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_grading.TestGrading.test_unscored_items",
+      "tests.test_2_report.TestReport.test_leaderboard",
+      "tests.test_2_report.TestReport.test_weighted_scores"
+    ]
+  }
+}

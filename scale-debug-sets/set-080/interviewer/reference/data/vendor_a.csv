@@ -1,0 +1,12 @@
+﻿email,name,country,skills,hours_per_week,updated_at,active
+ana@x.io,Ana  Ruiz,es,python;sql,30,2026-03-01 09:30,TRUE
+ben@x.io,Ben Ode,ng,java,20,2026-02-11,FALSE
+dev@x.io,Dev Patel,in,python;,40,03/02/2026 14:00,TRUE
+gus@x.io,Gus Berg,se,python,25,2026-02-01,true
+ GUS@x.io ,Gus Berg,SE,Python,35,2026-02-15 08:00,TRUE
+kim@x.io,Kim Lee,kr,sql; excel,15,2026-01-20T10:00:00,Yes
+leo@x.io,Leo Marsh,gb,spark,10,2026-02-02,false
+mailto:Noa@x.io,Noa Levi,il,nlp;python,20,2026-03-03 12:00,TRUE
+,Q Blank,us,python,10,2026-03-01,TRUE
+oli@x.io,Oli Park,ca,,,2026-02-28,TRUE
+pia@x.io,Pia Rossi,it,python; ml,61,2026-02-27,TRUE

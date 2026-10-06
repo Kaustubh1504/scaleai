@@ -1,0 +1,12 @@
+model_version,label,min_confidence
+v1,spam,0.80
+v1,toxic,0.90
+v1, Ads ,0.75
+v1,*,0.85
+V2 ,spam,0.95
+v2,toxic,0.92
+v2,ads,0.75
+v2,*,0.88
+v1,selfharm,0.99
+v2,SelfHarm,0.99
+v3,*,0.70

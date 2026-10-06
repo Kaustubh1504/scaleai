@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_scores"
+    ],
+    "failures": {
+      "tests.test_1_scores.TestScores.test_1_team_scores": "AssertionError: {'emb[18 chars]t': 80.67, 'aurora': 80.17, 'cobalt': 80.17, '[109 chars] 0.0} != {'emb[18 chars]t': 81.17, 'aurora': 80.17, 'cobalt': 80.17, '[109 chars] 0.0}\n  {'aurora': 80.17,\n-  'basalt': 80.67,\n?             ^ ^\n\n+  'basalt': 81.17,\n?             ^ ^\n\n   'cobalt': 80.17,\n   'dynamo': 60.33,\n   'ember': 88.33,\n   'garnet': 18.33,\n   's-hydra': 68.33,\n   's-iris': 72.5,\n   's-jade': 50.0,\n   's-koi': 72.17,\n   's-lumen': 0.0}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_scores"
+    ],
+    "failures": {
+      "tests.test_1_scores.TestScores.test_2_tasks_attempted": "AssertionError: {'ember': 3, 'basalt': 4, 'aurora': 4, 'cob[95 chars]': 0} != {'aurora': 3, 'basalt': 3, 'cobalt': 3, 'dy[95 chars]': 0}\n- {'aurora': 4,\n?            ^\n\n+ {'aurora': 3,\n?            ^\n\n-  'basalt': 4,\n?            ^\n\n+  'basalt': 3,\n?            ^\n\n   'cobalt': 3,\n   'dynamo': 2,\n   'ember': 3,\n   'garnet': 1,\n   's-hydra': 3,\n-  's-iris': 4,\n?            ^\n\n+  's-iris': 3,\n?            ^\n\n   's-jade': 3,\n-  's-koi': 4,\n?           ^\n\n+  's-koi': 3,\n?           ^\n\n   's-lumen': 0}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_leaderboard"
+    ],
+    "failures": {
+      "tests.test_2_leaderboard.TestLeaderboard.test_3_submission_counts": "AssertionError: 30 != 31"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_scores",
+      "test_2_leaderboard"
+    ],
+    "failing_tests": [
+      "tests.test_1_scores.TestScores.test_1_team_scores",
+      "tests.test_1_scores.TestScores.test_2_tasks_attempted",
+      "tests.test_2_leaderboard.TestLeaderboard.test_3_submission_counts"
+    ]
+  }
+}

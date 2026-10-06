@@ -1,0 +1,12 @@
+[
+  {"code": "tools", "name": "Hand & power tools", "active": true},
+  {"code": " Garden", "name": "Garden", "active": true},
+  {"code": "paint", "name": "Paint & finishes", "active": "yes"},
+  {"code": "lighting", "name": "Lighting", "active": true},
+  {"code": "plumbing", "name": "Plumbing", "active": "false"},
+  {"code": "FASTENERS", "name": "Fasteners", "active": 1},
+  {"code": "safety", "name": "Safety gear", "active": "Y"},
+  {"code": "storage", "name": "Storage", "active": 0},
+  {"code": "electrical", "name": "Electrical"},
+  {"code": "seasonal", "name": "Seasonal", "active": "No"}
+]

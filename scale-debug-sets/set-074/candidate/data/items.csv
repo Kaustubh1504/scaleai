@@ -1,0 +1,17 @@
+item_id,rubric,gold_score,category
+G1,v1,3,coding
+I01,v1,,coding
+i02,V2 ,,writing
+G3,v2,2,writing
+I03,v1,,math
+I04,v2,,coding
+G2, v1,4,math
+I05,v1,,writing
+I06,v2,,math
+I07,v1,,coding
+G4,v2, 5,coding
+I08,v2,,writing
+I09,v1,,math
+I10,v2,,coding
+I11,v1,,writing
+I12,v2,,math

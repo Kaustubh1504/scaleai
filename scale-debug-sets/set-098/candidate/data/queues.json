@@ -1,0 +1,9 @@
+{
+  "weights": {"expert": 3, "standard": 2, "trainee": 1},
+  "queues": {
+    "tox": {"labels": ["clean", "toxic", "threat"], "threshold": 0.6, "min_votes": 3},
+    "spam": {"labels": ["ham", "spam", "phishing"], "threshold": 0.7, "min_votes": 2},
+    "quality": {"labels": ["good", "fair", "poor"], "threshold": 0.6, "min_votes": 3}
+  },
+  "aliases": {"ok": "clean", "fine": "clean", "NSFW": "adult", "phish": "phishing"}
+}

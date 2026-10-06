@@ -1,0 +1,19 @@
+pair_id,prompt_id,model_a,model_b,gold
+P01,pr-101,atlas-7b,birch-13b,
+P02,pr-102,birch-13b,cobalt-70b,
+C1,cal-1,atlas-7b,delta-3b,A
+P03,pr-103,atlas-7b,cobalt-70b,
+P04,pr-104,delta-3b,atlas-7b,
+P05,pr-105,Cobalt-70b,delta-3b,
+C2,cal-2,DELTA-3b,cobalt-70b,B
+P06,pr-106,birch-13b,delta-3b,
+P07,pr-107,atlas-7b,birch-13b,
+P08,pr-108,cobalt-70b,atlas-7b,
+C3,cal-3,birch-13b,delta-3b,a
+P09,pr-109,delta-3b,birch-13b,
+P10,pr-110,cobalt-70b,birch-13b,
+P11,pr-111,atlas-7b,delta-3b,
+C4,cal-4,delta-3b,atlas-7b, B
+P12,pr-112,birch-13b,atlas-7b,
+P13,pr-113,delta-3b,cobalt-70b,
+P14,pr-114,cobalt-70b,atlas-7b,

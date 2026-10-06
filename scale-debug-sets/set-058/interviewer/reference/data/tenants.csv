@@ -1,0 +1,12 @@
+tenant_id,name,plan,active,rpm_override
+acorn,Acorn Analytics,free,true,
+Brightpath,Brightpath Learning,PRO,yes,
+kestrel ,Kestrel Maps,pro,TRUE,
+IVORY,Ivory Insurance,Enterprise,true,0
+orbit,Orbit Logistics,enterprise,1,
+delta-labs,Delta Labs,pro,true,
+harbor,Harbor Health, pro ,Y,
+fjord,Fjord Studio,free,true,
+nimbus,Nimbus Retail,pro,false,
+quill,Quill Notes,free,,
+ Sable,Sable Security,pro,true,5

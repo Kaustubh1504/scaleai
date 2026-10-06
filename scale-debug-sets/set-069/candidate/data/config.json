@@ -1,0 +1,8 @@
+{
+  "ttl_s": {"ner": 600, "bbox": 300, "sentiment": 900},
+  "default_ttl_s": 120,
+  "overrides": {
+    "acme": {"sentiment": ["sarcasm"]},
+    "globex": {"pose": ["occluded"]}
+  }
+}

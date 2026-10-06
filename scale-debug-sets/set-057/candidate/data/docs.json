@@ -1,0 +1,42 @@
+[
+  {
+    "doc_id": "D01",
+    "text": "Alice Moreno joined Acme Corp in Denver on March 3."
+  },
+  {
+    "doc_id": "d02",
+    "text": "The Morgan Stanley office in Boston opened in 2019."
+  },
+  {
+    "doc_id": "D03",
+    "text": "Dr. Priya Shah met officials from Nairobi on Friday."
+  },
+  {
+    "doc_id": "D04 ",
+    "text": "Flights from Paris to Lima resume on 12 June."
+  },
+  {
+    "doc_id": "D05",
+    "text": "Globex hired Tom Reyes as CFO."
+  },
+  {
+    "doc_id": "D06",
+    "text": "Rain is expected across Oslo and Bergen."
+  },
+  {
+    "doc_id": "D07",
+    "text": "Hana Kim signed with Initech last May."
+  },
+  {
+    "doc_id": "D08",
+    "text": "No names appear in this sentence."
+  },
+  {
+    "doc_id": "D09",
+    "text": "Shares of Umbrella Health fell in Tokyo trading."
+  },
+  {
+    "doc_id": "d10",
+    "text": "Quarterly numbers were mostly flat."
+  }
+]

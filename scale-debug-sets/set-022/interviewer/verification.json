@@ -1,0 +1,99 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_routing",
+      "test_2_review_queue",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_one_decision_per_prediction": "AssertionError: Lists differ: ['P00[19 chars] 'P003', 'P004', 'P005', 'P006', 'P007', 'P008[133 chars]024'] != ['P00[19 chars] 'P004', 'P005', 'P006', 'P007', 'P008', 'P009[117 chars]024']\n\nFirst differing element 3:\n'P003'\n'P004'\n\nFirst list contains 2 additional elements.\nFirst extra element 24:\n'P023'\n\n  ['P001',\n   'P002',\n-  'P003',\n   'P003',\n   'P004',\n   'P005',\n   'P006',\n   'P007',\n   'P008',\n-  'P009',\n   'P009',\n   'P010',\n   'P011',\n   'P012',\n   'P013',\n   'P014',\n   'P015',\n   'P016',\n   'P017',\n   'P018',\n   'P019',\n   'P020',\n   'P021',\n   'P022',\n   'P023',\n   'P024']",
+      "tests.test_1_routing.TestRouting.test_reasons": "AssertionError: {'P003': 'low_confidence', 'P005': 'flagged', [306 chars]nce'} != {'P005': 'flagged', 'P006': 'no_score', 'P010'[254 chars]nce'}\n- {'P003': 'low_confidence',\n-  'P005': 'flagged',\n? ^\n\n+ {'P005': 'flagged',\n? ^\n\n   'P006': 'no_score',\n-  'P009': 'low_confidence',\n   'P010': 'low_confidence',\n   'P012': 'flagged',\n   'P013': 'low_confidence',\n   'P014': 'no_score',\n   'P015': 'low_confidence',\n   'P016': 'low_confidence',\n   'P018': 'low_confidence',\n   'P019': 'flagged',\n   'P020': 'low_confidence',\n   'P021': 'low_confidence',\n   'P024': 'low_confidence'}",
+      "tests.test_2_review_queue.TestReviewQueue.test_assignments": "AssertionError: {'R01': ['P012', 'P013'], 'R02': ['P005', 'P009', 'P024'], 'R0[81 chars]06']} != {'R01': ['P012', 'P010'], 'R02': ['P005', 'P013', 'P024'], 'R0[81 chars]16']}\n- {'R01': ['P012', 'P013'],\n?                      ^\n\n+ {'R01': ['P012', 'P010'],\n?                      ^\n\n-  'R02': ['P005', 'P009', 'P024'],\n?                     ^^\n\n+  'R02': ['P005', 'P013', 'P024'],\n?                     ^^\n\n   'R03': ['P015'],\n   'R04': [],\n-  'R06': ['P010'],\n?              ^\n\n+  'R06': ['P019'],\n?              ^\n\n-  'R08': ['P019'],\n?             ^^\n\n+  'R08': ['P006'],\n?             ^^\n\n   'R09",
+      "tests.test_2_review_queue.TestReviewQueue.test_backlog": "AssertionError: Lists differ: ['P018', 'P016', 'P021', 'P014', 'P003', 'P020'] != ['P018', 'P021', 'P014', 'P020']\n\nFirst differing element 1:\n'P016'\n'P021'\n\nFirst list contains 2 additional elements.\nFirst extra element 4:\n'P003'\n\n- ['P018', 'P016', 'P021', 'P014', 'P003', 'P020']\n?          --------                --------\n\n+ ['P018', 'P021', 'P014', 'P020']",
+      "tests.test_2_review_queue.TestReviewQueue.test_queue_order": "AssertionError: Lists differ: ['P00[18 chars], 'P009', 'P013', 'P024', 'P010', 'P019', 'P00[46 chars]020'] != ['P00[18 chars], 'P013', 'P024', 'P010', 'P019', 'P006', 'P01[30 chars]020']\n\nFirst differing element 3:\n'P009'\n'P013'\n\nFirst list contains 2 additional elements.\nFirst extra element 13:\n'P003'\n\n  ['P005',\n   'P012',\n   'P018',\n-  'P009',\n   'P013',\n   'P024',\n   'P010',\n   'P019',\n   'P006',\n   'P016',\n   'P015',\n   'P021',\n   'P014',\n-  'P003',\n   'P020']",
+      "tests.test_3_summary.TestSummary.test_backlog_size": "AssertionError: 6 != 4",
+      "tests.test_3_summary.TestSummary.test_by_task_type": "AssertionError: {'int[81 chars]an': 3, 'human_rate': 0.5}, 'spam': {'auto': 3[86 chars]625}} != {'int[81 chars]an': 2, 'human_rate': 0.4}, 'spam': {'auto': 3[86 chars]571}}\n  {'intent': {'auto': 2, 'human': 5, 'human_rate': 0.714},\n-  'sentiment': {'auto': 3, 'human': 3, 'human_rate': 0.5},\n?                                    ^                  ^\n\n+  'sentiment': {'auto': 3, 'human': 2, 'human_rate': 0.4},\n?                                    ^                  ^\n\n   'spam': {'auto': 3, 'human': 2, 'human_rate': 0.4},\n-  'toxicity': {'auto': 3, 'human': 5, 'human_rate': 0.625}}\n?             "
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_routing",
+      "test_2_review_queue",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_reasons": "AssertionError: {'P004': 'low_confidence', 'P005': 'flagged', [332 chars]nce'} != {'P005': 'flagged', 'P006': 'no_score', 'P010'[254 chars]nce'}\n- {'P004': 'low_confidence',\n-  'P005': 'flagged',\n? ^\n\n+ {'P005': 'flagged',\n? ^\n\n   'P006': 'no_score',\n-  'P008': 'low_confidence',\n   'P010': 'low_confidence',\n   'P012': 'flagged',\n   'P013': 'low_confidence',\n   'P014': 'no_score',\n   'P015': 'low_confidence',\n   'P016': 'low_confidence',\n   'P018': 'low_confidence',\n   'P019': 'flagged',\n   'P020': 'low_confidence',\n   'P021': 'low_confidence',\n-  'P023': 'low_confidence',\n   'P024': 'low_confi",
+      "tests.test_1_routing.TestRouting.test_routes": "AssertionError: Lists differ: ['P00[19 chars] 'P007', 'P009', 'P011', 'P017', 'P022'] != ['P00[19 chars] 'P004', 'P007', 'P008', 'P009', 'P011', 'P017[13 chars]023']\n\nFirst differing element 3:\n'P007'\n'P004'\n\nSecond list contains 3 additional elements.\nFirst extra element 8:\n'P017'\n\n- ['P001', 'P002', 'P003', 'P007', 'P009', 'P011', 'P017', 'P022']\n+ ['P001',\n+  'P002',\n+  'P003',\n+  'P004',\n+  'P007',\n+  'P008',\n+  'P009',\n+  'P011',\n+  'P017',\n+  'P022',\n+  'P023']",
+      "tests.test_2_review_queue.TestReviewQueue.test_assignments": "AssertionError: {'R01': ['P012', 'P013'], 'R02': ['P005', 'P023', 'P024'], 'R0[81 chars]06']} != {'R01': ['P012', 'P010'], 'R02': ['P005', 'P013', 'P024'], 'R0[81 chars]16']}\n- {'R01': ['P012', 'P013'],\n?                      ^\n\n+ {'R01': ['P012', 'P010'],\n?                      ^\n\n-  'R02': ['P005', 'P023', 'P024'],\n?                     ^\n\n+  'R02': ['P005', 'P013', 'P024'],\n?                     ^\n\n-  'R03': ['P008'],\n?             ^^\n\n+  'R03': ['P015'],\n?             ^^\n\n   'R04': [],\n-  'R06': ['P010'],\n?              ^\n\n+  'R06': ['P019'],\n?              ^\n\n-  'R08': ['P019'],\n?        ",
+      "tests.test_2_review_queue.TestReviewQueue.test_backlog": "AssertionError: Lists differ: ['P018', 'P016', 'P015', 'P021', 'P014', 'P004', 'P020'] != ['P018', 'P021', 'P014', 'P020']\n\nFirst differing element 1:\n'P016'\n'P021'\n\nFirst list contains 3 additional elements.\nFirst extra element 4:\n'P014'\n\n- ['P018', 'P016', 'P015', 'P021', 'P014', 'P004', 'P020']\n+ ['P018', 'P021', 'P014', 'P020']",
+      "tests.test_2_review_queue.TestReviewQueue.test_queue_order": "AssertionError: Lists differ: ['P00[18 chars], 'P023', 'P013', 'P024', 'P010', 'P019', 'P00[54 chars]020'] != ['P00[18 chars], 'P013', 'P024', 'P010', 'P019', 'P006', 'P01[30 chars]020']\n\nFirst differing element 3:\n'P023'\n'P013'\n\nFirst list contains 3 additional elements.\nFirst extra element 13:\n'P014'\n\n  ['P005',\n   'P012',\n   'P018',\n-  'P023',\n   'P013',\n   'P024',\n   'P010',\n   'P019',\n   'P006',\n   'P016',\n-  'P008',\n   'P015',\n   'P021',\n   'P014',\n-  'P004',\n   'P020']",
+      "tests.test_3_summary.TestSummary.test_backlog_size": "AssertionError: 7 != 4",
+      "tests.test_3_summary.TestSummary.test_by_task_type": "AssertionError: {'int[121 chars]to': 0, 'human': 5, 'human_rate': 1.0}, 'toxic[46 chars]571}} != {'int[121 chars]to': 3, 'human': 2, 'human_rate': 0.4}, 'toxic[46 chars]571}}\n  {'intent': {'auto': 2, 'human': 5, 'human_rate': 0.714},\n   'sentiment': {'auto': 3, 'human': 2, 'human_rate': 0.4},\n-  'spam': {'auto': 0, 'human': 5, 'human_rate': 1.0},\n?                   ^           ^                ^ ^\n\n+  'spam': {'auto': 3, 'human': 2, 'human_rate': 0.4},\n?                   ^           ^                ^ ^\n\n   'toxicity': {'auto': 3, 'human': 4, 'human_rate': 0.571}}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_routing",
+      "test_2_review_queue",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_reasons": "AssertionError: {'P002': 'low_confidence', 'P005': 'flagged', [332 chars]nce'} != {'P005': 'flagged', 'P006': 'no_score', 'P010'[254 chars]nce'}\n- {'P002': 'low_confidence',\n-  'P005': 'flagged',\n? ^\n\n+ {'P005': 'flagged',\n? ^\n\n   'P006': 'no_score',\n   'P010': 'low_confidence',\n-  'P011': 'low_confidence',\n   'P012': 'flagged',\n   'P013': 'low_confidence',\n   'P014': 'no_score',\n   'P015': 'low_confidence',\n   'P016': 'low_confidence',\n   'P018': 'low_confidence',\n   'P019': 'flagged',\n   'P020': 'low_confidence',\n   'P021': 'low_confidence',\n-  'P023': 'low_confidence',\n   'P024': 'low_confi",
+      "tests.test_1_routing.TestRouting.test_routes": "AssertionError: Lists differ: ['P001', 'P003', 'P004', 'P007', 'P008', 'P009', 'P017', 'P022'] != ['P001', 'P002', 'P003', 'P004', 'P007', 'P008', 'P009[29 chars]023']\n\nFirst differing element 1:\n'P003'\n'P002'\n\nSecond list contains 3 additional elements.\nFirst extra element 8:\n'P017'\n\n- ['P001', 'P003', 'P004', 'P007', 'P008', 'P009', 'P017', 'P022']\n+ ['P001',\n+  'P002',\n+  'P003',\n+  'P004',\n+  'P007',\n+  'P008',\n+  'P009',\n+  'P011',\n+  'P017',\n+  'P022',\n+  'P023']",
+      "tests.test_2_review_queue.TestReviewQueue.test_assignments": "AssertionError: {'R01': ['P012', 'P013'], 'R02': ['P005', 'P023', 'P024'], 'R0[81 chars]19']} != {'R01': ['P012', 'P010'], 'R02': ['P005', 'P013', 'P024'], 'R0[81 chars]16']}\n- {'R01': ['P012', 'P013'],\n?                      ^\n\n+ {'R01': ['P012', 'P010'],\n?                      ^\n\n-  'R02': ['P005', 'P023', 'P024'],\n?                     ^\n\n+  'R02': ['P005', 'P013', 'P024'],\n?                     ^\n\n   'R03': ['P015'],\n   'R04': [],\n-  'R06': ['P010'],\n?              ^\n\n+  'R06': ['P019'],\n?              ^\n\n-  'R08': ['P002'],\n?              ^\n\n+  'R08': ['P006'],\n?              ^\n\n   'R09':",
+      "tests.test_2_review_queue.TestReviewQueue.test_backlog": "AssertionError: Lists differ: ['P018', 'P006', 'P016', 'P021', 'P014', 'P011', 'P020'] != ['P018', 'P021', 'P014', 'P020']\n\nFirst differing element 1:\n'P006'\n'P021'\n\nFirst list contains 3 additional elements.\nFirst extra element 4:\n'P014'\n\n- ['P018', 'P006', 'P016', 'P021', 'P014', 'P011', 'P020']\n+ ['P018', 'P021', 'P014', 'P020']",
+      "tests.test_2_review_queue.TestReviewQueue.test_queue_order": "AssertionError: Lists differ: ['P00[18 chars], 'P023', 'P013', 'P024', 'P010', 'P002', 'P01[54 chars]020'] != ['P00[18 chars], 'P013', 'P024', 'P010', 'P019', 'P006', 'P01[30 chars]020']\n\nFirst differing element 3:\n'P023'\n'P013'\n\nFirst list contains 3 additional elements.\nFirst extra element 13:\n'P014'\n\n  ['P005',\n   'P012',\n   'P018',\n-  'P023',\n   'P013',\n   'P024',\n   'P010',\n-  'P002',\n   'P019',\n   'P006',\n   'P016',\n   'P015',\n   'P021',\n   'P014',\n-  'P011',\n   'P020']",
+      "tests.test_3_summary.TestSummary.test_backlog_size": "AssertionError: 7 != 4",
+      "tests.test_3_summary.TestSummary.test_by_task_type": "AssertionError: {'intent': {'auto': 1, 'human': 6, 'human_rate': 0.857}, 'sen[157 chars]714}} != {'intent': {'auto': 2, 'human': 5, 'human_rate': 0.714}, 'sen[157 chars]571}}\nDiff is 751 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_review_queue",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_2_review_queue.TestReviewQueue.test_assignments": "AssertionError: {'R01': [], 'R02': [], 'R03': [], 'R04': [], 'R06'[33 chars]: []} != {'R01': ['P012', 'P010'], 'R02': ['P005', 'P013', [93 chars]16']}\n- {'R01': [],\n-  'R02': [],\n+ {'R01': ['P012', 'P010'],\n+  'R02': ['P005', 'P013', 'P024'],\n-  'R03': [],\n+  'R03': ['P015'],\n?          ++++++\n\n   'R04': [],\n-  'R06': [],\n+  'R06': ['P019'],\n?          ++++++\n\n-  'R08': [],\n+  'R08': ['P006'],\n?          ++++++\n\n   'R09': [],\n-  'R10': []}\n+  'R10': ['P016']}\n?          ++++++\n",
+      "tests.test_2_review_queue.TestReviewQueue.test_backlog": "AssertionError: Lists differ: [] != ['P018', 'P021', 'P014', 'P020']\n\nSecond list contains 4 additional elements.\nFirst extra element 0:\n'P018'\n\n- []\n+ ['P018', 'P021', 'P014', 'P020']",
+      "tests.test_2_review_queue.TestReviewQueue.test_queue_order": "AssertionError: Lists differ: [] != ['P005', 'P012', 'P018', 'P013', 'P024', '[57 chars]020']\n\nSecond list contains 13 additional elements.\nFirst extra element 0:\n'P005'\n\n- []\n+ ['P005',\n+  'P012',\n+  'P018',\n+  'P013',\n+  'P024',\n+  'P010',\n+  'P019',\n+  'P006',\n+  'P016',\n+  'P015',\n+  'P021',\n+  'P014',\n+  'P020']",
+      "tests.test_3_summary.TestSummary.test_backlog_size": "AssertionError: 0 != 4",
+      "tests.test_3_summary.TestSummary.test_busiest_reviewer": "AssertionError: 'R01' != 'R02'\n- R01\n?   ^\n+ R02\n?   ^\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_2_review_queue"
+    ],
+    "failures": {
+      "tests.test_2_review_queue.TestReviewQueue.test_assignments": "AssertionError: {'R01': ['P020', 'P016'], 'R02': ['P014', 'P006', 'P0[90 chars]10']} != {'R01': ['P012', 'P010'], 'R02': ['P005', 'P013', 'P0[90 chars]16']}\n- {'R01': ['P020', 'P016'],\n?              -       ^\n\n+ {'R01': ['P012', 'P010'],\n?             +        ^\n\n-  'R02': ['P014', 'P006', 'P015'],\n+  'R02': ['P005', 'P013', 'P024'],\n-  'R03': ['P024'],\n?             ^^\n\n+  'R03': ['P015'],\n?             ^^\n\n   'R04': [],\n-  'R06': ['P021'],\n?             -\n\n+  'R06': ['P019'],\n?              +\n\n-  'R08': ['P013'],\n?             ^^\n\n+  'R08': ['P006'],\n?             ^^\n\n   'R09': [],\n-  'R10'",
+      "tests.test_2_review_queue.TestReviewQueue.test_backlog": "AssertionError: Lists differ: ['P019', 'P018', 'P005', 'P012'] != ['P018', 'P021', 'P014', 'P020']\n\nFirst differing element 0:\n'P019'\n'P018'\n\n- ['P019', 'P018', 'P005', 'P012']\n+ ['P018', 'P021', 'P014', 'P020']",
+      "tests.test_2_review_queue.TestReviewQueue.test_queue_order": "AssertionError: Lists differ: ['P014', 'P020', 'P006', 'P016', 'P015', 'P02[54 chars]012'] != ['P005', 'P012', 'P018', 'P013', 'P024', 'P01[54 chars]020']\n\nFirst differing element 0:\n'P014'\n'P005'\n\n- ['P014',\n?     ^^\n\n+ ['P005',\n?     ^^\n\n-  'P020',\n?      -\n\n+  'P012',\n?     +\n\n+  'P018',\n+  'P013',\n+  'P024',\n+  'P010',\n+  'P019',\n   'P006',\n   'P016',\n   'P015',\n   'P021',\n-  'P013',\n?      ^\n\n+  'P014',\n?      ^\n\n-  'P024',\n-  'P010',\n-  'P019',\n-  'P018',\n-  'P005',\n-  'P012']\n?     -\n\n+  'P020']\n?      +\n"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_by_task_type": "AssertionError: {'toxicity': {'auto': 0, 'human': 1, 'human[171 chars]0.0}} != {'intent': {'auto': 2, 'human': 5, 'human_r[175 chars]571}}\nDiff is 923 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_routing",
+      "test_2_review_queue",
+      "test_3_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_routing.TestRouting.test_one_decision_per_prediction",
+      "tests.test_1_routing.TestRouting.test_reasons",
+      "tests.test_1_routing.TestRouting.test_routes",
+      "tests.test_2_review_queue.TestReviewQueue.test_assignments",
+      "tests.test_2_review_queue.TestReviewQueue.test_backlog",
+      "tests.test_2_review_queue.TestReviewQueue.test_queue_order",
+      "tests.test_3_summary.TestSummary.test_backlog_size",
+      "tests.test_3_summary.TestSummary.test_busiest_reviewer",
+      "tests.test_3_summary.TestSummary.test_by_task_type"
+    ]
+  }
+}

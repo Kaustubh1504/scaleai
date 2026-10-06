@@ -1,0 +1,5 @@
+{
+  "run_start": "2026-05-04 00:00",
+  "backoff_min": 10,
+  "slots": {"etl": 1, "ops": 1, "Reports": 2, "training": 1}
+}

@@ -1,0 +1,17 @@
+id,name,locale,weekly_hours,rating,active,joined
+C01,Ana Ruiz,en-US,40,4.9,y,2022-01-10
+c02 ,Ben Okafor,en-us,20,4.7,yes,03/02/2021
+C03,Caro Diaz,es-MX,30,4.6,true,2023-05-01
+C04,Dev Patel,en-US,15,4.55,Y,2022-07-19
+C05,Eli Moreno,es-mx,20,0,1,2024-01-15
+C06,Fumi Sato,ja-JP,16,4.2,yes,5 Feb 2023
+C07,Gus Hale,en-US,25,4.0,no,2021-11-11
+C08,Hana Ito,ja-JP,8,3.9,yes,2023-08-08
+C09,Ivan Cruz, es-MX,10,2.5,yes,
+C10,Jo Lindqvist,en-US,30,4.5,yes,2021-06-01
+C11,Kim Tran,en-US,12,,yes,2022-02-02
+C12,Lu Reyes,es-MX,20,3.5,false,2022-10-10
+C13,Mo Haddad,en-US,10,3.8,YES,9 Sep 2020
+C14,Nia Mori,ja-jp,20,4.4,yes,2022-12-12
+C15,Omar Shah,en-US,40,4.1,yes,03/03/2023
+C16,Pia Soto,es-MX,25,2.8,yes,2023-04-04

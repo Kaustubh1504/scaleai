@@ -1,0 +1,52 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_bookings",
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_1_bookings.TestBookings.test_by_customer": "AssertionError: {'C01[18 chars]['A2'], 'C06': ['B2'], 'C08': ['C1'], 'C11': [[22 chars]A4']} != {'C01[18 chars]['A2', 'A6'], 'C03': ['B1'], 'C05': ['B3'], 'C[58 chars]A4']}\n  {'C01': ['A1'],\n-  'C02': ['A2'],\n+  'C02': ['A2', 'A6'],\n?              ++++++\n\n+  'C03': ['B1'],\n+  'C05': ['B3'],\n   'C06': ['B2'],\n   'C08': ['C1'],\n   'C11': ['C2'],\n   'C12': ['A3', 'A4']}",
+      "tests.test_1_bookings.TestBookings.test_sold_seats": "AssertionError: {'A1'[44 chars]2', 'B2': 'C06', 'C1': 'C08', 'C2': 'C11'} != {'A1'[44 chars]2', 'A6': 'C02', 'B1': 'C03', 'B2': 'C06', 'B3[30 chars]C11'}\n  {'A1': 'C01',\n   'A2': 'C02',\n   'A3': 'C12',\n   'A4': 'C12',\n+  'A6': 'C02',\n+  'B1': 'C03',\n   'B2': 'C06',\n+  'B3': 'C05',\n   'C1': 'C08',\n   'C2': 'C11'}",
+      "tests.test_2_report.TestReport.test_occupancy": "AssertionError: 35.0 != 50.0",
+      "tests.test_2_report.TestReport.test_rejections": "AssertionError: {'no_hold': 6, 'seat_held': 1, 'sold': 1, 'unknown_seat': 1} != {'no_hold': 3, 'seat_held': 1, 'sold': 1, 'unknown_seat': 1}\n- {'no_hold': 6, 'seat_held': 1, 'sold': 1, 'unknown_seat': 1}\n?             ^\n\n+ {'no_hold': 3, 'seat_held': 1, 'sold': 1, 'unknown_seat': 1}\n?             ^\n",
+      "tests.test_2_report.TestReport.test_revenue": "AssertionError: 436.0 != 627.0"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_bookings",
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_1_bookings.TestBookings.test_by_customer": "AssertionError: {'C01[45 chars], 'C06': ['B2'], 'C08': ['C1'], 'C11': ['C2'],[16 chars]A4']} != {'C01[45 chars], 'C05': ['B3'], 'C06': ['B2'], 'C08': ['C1'],[31 chars]A4']}\n  {'C01': ['A1'],\n   'C02': ['A2', 'A6'],\n   'C03': ['B1'],\n+  'C05': ['B3'],\n   'C06': ['B2'],\n   'C08': ['C1'],\n   'C11': ['C2'],\n   'C12': ['A3', 'A4']}",
+      "tests.test_1_bookings.TestBookings.test_sold_seats": "AssertionError: {'A1'[62 chars]B1': 'C03', 'B2': 'C06', 'C1': 'C08', 'C2': 'C11'} != {'A1'[62 chars]B1': 'C03', 'B2': 'C06', 'B3': 'C05', 'C1': 'C08', 'C2': 'C11'}\n  {'A1': 'C01',\n   'A2': 'C02',\n   'A3': 'C12',\n   'A4': 'C12',\n   'A6': 'C02',\n   'B1': 'C03',\n   'B2': 'C06',\n+  'B3': 'C05',\n   'C1': 'C08',\n   'C2': 'C11'}",
+      "tests.test_2_report.TestReport.test_occupancy": "AssertionError: 45.0 != 50.0",
+      "tests.test_2_report.TestReport.test_rejections": "AssertionError: {'no_hold': 4, 'seat_held': 1, 'sold': 1, 'unknown_seat': 1} != {'no_hold': 3, 'seat_held': 1, 'sold': 1, 'unknown_seat': 1}\n- {'no_hold': 4, 'seat_held': 1, 'sold': 1, 'unknown_seat': 1}\n?             ^\n\n+ {'no_hold': 3, 'seat_held': 1, 'sold': 1, 'unknown_seat': 1}\n?             ^\n",
+      "tests.test_2_report.TestReport.test_revenue": "AssertionError: 571.5 != 627.0"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_bookings",
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_1_bookings.TestBookings.test_by_customer": "AssertionError: {'C01[64 chars]06': ['B2'], 'C08': ['C1'], 'C10': ['C2'], 'C12': ['A3', 'A4']} != {'C01[64 chars]06': ['B2'], 'C08': ['C1'], 'C11': ['C2'], 'C12': ['A3', 'A4']}\n  {'C01': ['A1'],\n   'C02': ['A2', 'A6'],\n   'C03': ['B1'],\n   'C05': ['B3'],\n   'C06': ['B2'],\n   'C08': ['C1'],\n-  'C10': ['C2'],\n?     ^\n\n+  'C11': ['C2'],\n?     ^\n\n   'C12': ['A3', 'A4']}",
+      "tests.test_1_bookings.TestBookings.test_sold_seats": "AssertionError: {'A1'[62 chars]B1': 'C03', 'B2': 'C06', 'B3': 'C05', 'C1': 'C08', 'C2': 'C10'} != {'A1'[62 chars]B1': 'C03', 'B2': 'C06', 'B3': 'C05', 'C1': 'C08', 'C2': 'C11'}\n  {'A1': 'C01',\n   'A2': 'C02',\n   'A3': 'C12',\n   'A4': 'C12',\n   'A6': 'C02',\n   'B1': 'C03',\n   'B2': 'C06',\n   'B3': 'C05',\n   'C1': 'C08',\n-  'C2': 'C10'}\n?           ^\n\n+  'C2': 'C11'}\n?           ^\n",
+      "tests.test_2_report.TestReport.test_rejections": "AssertionError: {'no_hold': 3, 'seat_held': 2, 'sold': 1, 'unknown_seat': 1} != {'no_hold': 3, 'seat_held': 1, 'sold': 1, 'unknown_seat': 1}\n- {'no_hold': 3, 'seat_held': 2, 'sold': 1, 'unknown_seat': 1}\n?                             ^\n\n+ {'no_hold': 3, 'seat_held': 1, 'sold': 1, 'unknown_seat': 1}\n?                             ^\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_bookings",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_bookings.TestBookings.test_by_customer",
+      "tests.test_1_bookings.TestBookings.test_sold_seats",
+      "tests.test_2_report.TestReport.test_occupancy",
+      "tests.test_2_report.TestReport.test_rejections",
+      "tests.test_2_report.TestReport.test_revenue"
+    ]
+  }
+}

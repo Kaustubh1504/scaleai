@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_tasks"
+    ],
+    "failures": {
+      "tests.test_1_tasks.TestTasks.test_vote_counts": "AssertionError: {'C-0[32 chars]04': 5, 'C-05': 5, 'C-06': 2, 'C-07': 4, 'E-01[110 chars]': 2} != {'C-0[32 chars]04': 4, 'C-05': 5, 'C-06': 2, 'C-07': 4, 'E-01[110 chars]': 2}\n  {'C-01': 4,\n   'C-02': 4,\n   'C-03': 3,\n-  'C-04': 5,\n?          ^\n\n+  'C-04': 4,\n?          ^\n\n   'C-05': 5,\n   'C-06': 2,\n   'C-07': 4,\n   'E-01': 2,\n   'E-02': 3,\n   'E-03': 3,\n   'E-04': 1,\n   'E-05': 3,\n-  'E-06': 4,\n?          ^\n\n+  'E-06': 3,\n?          ^\n\n   'R-01': 4,\n   'R-02': 5,\n   'R-03': 5,\n   'R-04': 5,\n   'R-05': 2}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_tasks"
+    ],
+    "failures": {
+      "tests.test_1_tasks.TestTasks.test_statuses": "AssertionError: {'C-0[36 chars]3': 'pending', 'C-04': 'escalated', 'C-05': 'a[244 chars]ing'} != {'C-0[36 chars]3': 'escalated', 'C-04': 'escalated', 'C-05': [250 chars]ing'}\n  {'C-01': 'agreed',\n   'C-02': 'agreed',\n-  'C-03': 'pending',\n+  'C-03': 'escalated',\n   'C-04': 'escalated',\n   'C-05': 'agreed',\n   'C-06': 'pending',\n   'C-07': 'agreed',\n-  'E-01': 'pending',\n+  'E-01': 'escalated',\n   'E-02': 'agreed',\n   'E-03': 'agreed',\n   'E-04': 'pending',\n   'E-05': 'agreed',\n   'E-06': 'escalated',\n-  'R-01': 'pending',\n+  'R-01': 'escalated',\n   'R-02': 'agreed',\n   'R-03': 'agreed',\n   'R-"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_agreement"
+    ],
+    "failures": {
+      "tests.test_2_agreement.TestAgreement.test_agreement_rates": "AssertionError: {'a01[308 chars]ks': 5, 'agreement': 0.8, 'skips': 1}, 'a07': [164 chars]: 0}} != {'a01[308 chars]ks': 4, 'agreement': 1.0, 'skips': 1}, 'a07': [162 chars]: 0}}\n  {'a01': {'agreed_tasks': 6, 'agreement': 1.0, 'skips': 0},\n   'a02': {'agreed_tasks': 5, 'agreement': 0.8, 'skips': 1},\n   'a03': {'agreed_tasks': 5, 'agreement': 0.8, 'skips': 0},\n   'a04': {'agreed_tasks': 3, 'agreement': 0.667, 'skips': 0},\n   'a05': {'agreed_tasks': 4, 'agreement': 0.75, 'skips': 0},\n-  'a06': {'agreed_tasks': 5, 'agreement': 0.8, 'skips': 1},\n?                          ^                --\n\n+  'a0"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_agreement"
+    ],
+    "failures": {
+      "tests.test_2_agreement.TestAgreement.test_low_and_unscored_annotators": "AssertionError: {'agreed_tasks': 4, 'agreement': None, 'skips': 0} != {'agreed_tasks': 4, 'agreement': 0.0, 'skips': 0}\n- {'agreed_tasks': 4, 'agreement': None, 'skips': 0}\n?                                  ^^^^\n\n+ {'agreed_tasks': 4, 'agreement': 0.0, 'skips': 0}\n?                                  ^^^\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_labels_by_project": "AssertionError: {'chat': {'negative': 7, 'neutral': 4, 'positive': 13}, 'email'[101 chars] 15}} != {'chat': {'negative': 1, 'positive': 3}, 'email': {'negative': [84 chars]: 1}}\n- {'chat': {'negative': 7, 'neutral': 4, 'positive': 13},\n?                       ^ --------------             -\n\n+ {'chat': {'negative': 1, 'positive': 3},\n?                       ^\n\n-  'email': {'negative': 8, 'neutral': 5, 'positive': 14},\n?                        ^             ^               -\n\n+  'email': {'negative': 1, 'neutral': 1, 'positive': 1},\n?                        ^             ^\n\n-  'reviews': {'negat"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_team_summary": "AssertionError: {} != {'east': {'members': ['a07', 'a08', 'a10'][175 chars]: 0}}\n- {}\n+ {'east': {'members': ['a07', 'a08', 'a10'], 'votes': 13},\n+  'north': {'members': ['a01', 'a02', 'a03'], 'votes': 23},\n+  'south': {'members': ['a04', 'a05', 'a06'], 'votes': 20},\n+  'west': {'members': ['a12', 'a13'], 'votes': 0}}"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_tasks",
+      "test_2_agreement",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_tasks.TestTasks.test_statuses",
+      "tests.test_1_tasks.TestTasks.test_vote_counts",
+      "tests.test_2_agreement.TestAgreement.test_agreement_rates",
+      "tests.test_2_agreement.TestAgreement.test_low_and_unscored_annotators",
+      "tests.test_3_report.TestReport.test_labels_by_project",
+      "tests.test_3_report.TestReport.test_team_summary"
+    ]
+  }
+}

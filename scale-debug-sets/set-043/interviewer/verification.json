@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_ledger"
+    ],
+    "failures": {
+      "tests.test_1_ledger.TestLedgerOutcomes.test_hold_expiry": "AssertionError: {'E04[35 chars]ok', 'E07': 'ok', 'E35': 'ok', 'E36': 'ok'} != {'E04[35 chars]ok', 'E07': 'ok', 'E35': 'expired', 'E36': 'nothing_to_cancel'}\n  {'E04': 'ok',\n   'E05': 'expired',\n   'E06': 'ok',\n   'E07': 'ok',\n-  'E35': 'ok',\n-  'E36': 'ok'}\n+  'E35': 'expired',\n+  'E36': 'nothing_to_cancel'}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_ledger"
+    ],
+    "failures": {
+      "tests.test_1_ledger.TestLedgerOutcomes.test_rejection_reasons": "AssertionError: {'E03[44 chars]7': 'unknown_session', 'E18': 'unknown_session[67 chars]ull'} != {'E03[44 chars]7': 'full', 'E18': 'unknown_session', 'E20': '[56 chars]ull'}\n  {'E03': 'full',\n   'E09': 'full',\n   'E15': 'full',\n-  'E17': 'unknown_session',\n+  'E17': 'full',\n   'E18': 'unknown_session',\n   'E20': 'duplicate',\n   'E22': 'no_hold',\n   'E24': 'closed',\n   'E34': 'full'}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_attendee_seats": "AssertionError: {'ana[44 chars] 1, 'dev@lab.io': 3, 'eli@lab.io': 1, 'fay@lab[54 chars]': 3} != {'ana[44 chars] 1, 'eli@lab.io': 1, 'fay@lab.io': 2, 'hana@la[37 chars]': 3}\n  {'ana@lab.io': 5,\n   'ben@lab.io': 2,\n   'cara@lab.io': 1,\n-  'dev@lab.io': 3,\n   'eli@lab.io': 1,\n   'fay@lab.io': 2,\n   'hana@lab.io': 2,\n   'kim@lab.io': 3,\n   'mo@lab.io': 3}"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_ledger",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_ledger.TestLedgerOutcomes.test_hold_expiry",
+      "tests.test_1_ledger.TestLedgerOutcomes.test_rejection_reasons",
+      "tests.test_2_report.TestReport.test_attendee_seats"
+    ]
+  }
+}

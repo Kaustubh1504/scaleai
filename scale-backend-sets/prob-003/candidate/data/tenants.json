@@ -1,0 +1,11 @@
+{
+  "plans": {
+    "free": {"burst": 5, "refill_per_s": 1.0},
+    "pro": {"burst": 20, "refill_per_s": 10.0}
+  },
+  "tenants": {
+    "acme": {"plan": "pro"},
+    "globex": {"plan": "free"},
+    "initech": {"plan": "free"}
+  }
+}

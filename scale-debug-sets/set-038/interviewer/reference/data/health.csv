@@ -1,0 +1,13 @@
+backend_id,at,healthy
+api-2,900,false
+api-3,1000,no
+API-3,1100,0
+api-2,1150,OK
+st-1,1200,up
+api-2,1300,False
+bt-1,1400,yes
+api-3,2600,TRUE
+api-2,2700,true
+st-2,2800, ok
+bt-3,3000,1
+api-1,3100,y

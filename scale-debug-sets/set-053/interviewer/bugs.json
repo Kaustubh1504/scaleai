@@ -1,0 +1,111 @@
+{
+  "id": "set-053",
+  "title": "Pre-label review QA: survival of model boxes after human review",
+  "domain": "bbox_qa",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "prelabelqa",
+  "scenario": "Compare reviewer-corrected boxes (xyxy) with model pre-labels (COCO xywh) by box id: accepted at IoU >= 0.9 on continuous coordinates, otherwise adjusted, relabeled or deleted. Test 2 lists added and out-of-bounds boxes.",
+  "verified": [
+    {
+      "file": "prelabelqa/geometry.py",
+      "symbol": "is_out_of_bounds",
+      "why_correct": "Strict comparisons are right for continuous coordinates: a box with x_max == width (img-05/B9 ends at 800) sits exactly on the edge and is inside, as the README says. `>=` would wrongly flag it."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Zero coordinate treated as blank",
+      "type": "falsy-zero",
+      "file": "prelabelqa/loader.py",
+      "function": "load_reviews",
+      "test": "test_1_outcomes.TestOutcomes.test_street_outcomes",
+      "old": "            if any(c is None for c in coords):",
+      "new": "            if not all(coords):",
+      "symptom": "Test 1 test_street_outcomes: img-03/B5 is 'deleted' instead of 'accepted'. Everything else matches.",
+      "why": "all() treats 0.0 as false, so a review box touching the left edge (x_min = 0) is dropped as if a coordinate were blank. Its pre-label then has no reviewed box and shows as deleted.",
+      "unblocks": "test_street_outcomes.",
+      "hints": [
+        "img-03/B5 shows deleted, but reviews.csv has a row for it. What is special about that row?",
+        "Look at how load_reviews decides a row has a blank coordinate.",
+        "`not all(coords)` is true for 0.0; use any(c is None for c in coords)."
+      ],
+      "probes": [
+        "Why does parse_coord return None for blanks instead of 0.0, and why does that matter here?",
+        "Which other values would `all()` treat as missing?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Pixel-inclusive +1 on continuous coordinates",
+      "type": "iou-inclusive-exclusive",
+      "file": "prelabelqa/geometry.py",
+      "function": "span",
+      "test": "test_1_outcomes.TestOutcomes.test_warehouse_outcomes",
+      "old": "    return hi - lo\n",
+      "new": "    return hi - lo + 1\n",
+      "symptom": "Test 1 test_warehouse_outcomes: img-05/B8 is 'accepted' instead of 'adjusted'. Every other outcome is unchanged.",
+      "why": "The README defines continuous coordinates, so width is x_max \u2212 x_min. Adding 1 to every span inflates both the areas and the intersection, which pushes IoU toward 1. For the narrow B8 pallet that moves IoU from 0.897 to 0.902, over the 0.9 line.",
+      "unblocks": "test_warehouse_outcomes.",
+      "hints": [
+        "img-05/B8 is accepted. Work out its IoU by hand from the data.",
+        "Check how widths and heights are computed in geometry.py against the README's geometry section.",
+        "span() returns hi - lo + 1; it should be hi - lo."
+      ],
+      "probes": [
+        "Why did only one box change category when every IoU moved?",
+        "Does the +1 make IoU larger or smaller for overlapping boxes, and why?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Clipping mutates the reviewer's original boxes",
+      "type": "aliasing-shallow-copy",
+      "file": "prelabelqa/geometry.py",
+      "function": "clip_to_image",
+      "test": "test_2_report.TestReport.test_out_of_bounds",
+      "old": "    clipped = copy.deepcopy(boxes)",
+      "new": "    clipped = copy.copy(boxes)",
+      "symptom": "Test 2 test_out_of_bounds: [] instead of [['img-01', None, 'sign'], ['img-09', 'B15', 'car']]. Outcomes and added counts are unaffected.",
+      "why": "copy.copy of a list makes a new list holding the same Box objects, so clipping changes the original reviewed boxes in place. By the time the out-of-bounds check reads the originals they've already been clipped, so nothing is out of bounds.",
+      "unblocks": "test_out_of_bounds.",
+      "hints": [
+        "out_of_bounds is empty, but img-09/B15 clearly goes past x = 640 in reviews.csv. What does the box look like when the check runs?",
+        "evaluate() keeps `revs` for the check and `clipped` for IoU. Are they really different boxes?",
+        "clip_to_image uses copy.copy(boxes); it needs copy.deepcopy(boxes)."
+      ],
+      "probes": [
+        "Why didn't any outcome change even though the boxes were mutated?",
+        "What other fix (in clip_to_image's loop) would work without deepcopy?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "How are pre-labels converted to corner coordinates?",
+      "a": "`from_xywh` reads `[x, y, w, h]` as floats and builds `Box(x1=x, y1=y, x2=x + w, y2=y + h)`."
+    },
+    {
+      "q": "What does evaluate() do per image?",
+      "a": "For each image id in sorted order it clips that image's pre-labels and reviewed boxes with `clip_to_image`, maps reviewed boxes by box id (only ids that exist among the pre-labels), classifies every pre-label, counts the rest as added, and then runs `is_out_of_bounds` over the image's reviewed boxes from `rev_by_image`."
+    },
+    {
+      "q": "Which rows does load_reviews skip?",
+      "a": "It parses the four coordinates with `parse_coord` (blank \u2192 None, otherwise float) and skips a row when its coordinate check fails. All kept rows become Box objects with normalised image, box id and label."
+    },
+    {
+      "q": "How is IoU computed?",
+      "a": "`iou` takes the overlap span on each axis (floored at 0), multiplies them for the intersection, and divides by area(a) + area(b) \u2212 intersection. Both overlap and area use `span(lo, hi)`."
+    },
+    {
+      "q": "What is in the report's outcomes dict?",
+      "a": "It groups the per-pre-label outcomes by the image's dataset (`street`, `warehouse`), with keys like `img-05/B8` and values `accepted`, `adjusted`, `relabeled` or `deleted`."
+    },
+    {
+      "q": "What does clip_to_image return?",
+      "a": "A list of boxes with x values clamped into [0, width] and y values into [0, height]. It copies the input list first and then sets the coordinates on the boxes in that copy."
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+conv_id,source,tags
+c01,chat-widget,billing
+C02,email,
+c03,chat-widget,shipping; returns
+c04,phone-transcript, PII 
+c05,chat-widget,Returns
+c06,email,
+c07,chat-widget,coding
+c08,forum,coding;billing ;
+c09,chat-widget,
+c10,email,shipping
+c11,forum,legal

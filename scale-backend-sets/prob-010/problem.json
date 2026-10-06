@@ -1,0 +1,17 @@
+{
+  "id": "prob-010",
+  "title": "Document Triage with Confidence Routing",
+  "topics": [
+    "file-ingestion",
+    "llm-classification",
+    "hitl-routing",
+    "audit-logging"
+  ],
+  "mode": "fastapi",
+  "difficulty": "medium",
+  "starter": "repo",
+  "planted_bugs": false,
+  "package": "app",
+  "variant_of": "reported real problem: file upload -> JSON -> LLM classification -> persist (the ingestion and classification service already exists in the starter repo)",
+  "kind": "service"
+}

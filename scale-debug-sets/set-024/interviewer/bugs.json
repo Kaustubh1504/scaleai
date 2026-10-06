@@ -1,0 +1,193 @@
+{
+  "id": "set-024",
+  "title": "Leak-free train/val/test split of labeled feedback",
+  "domain": "dataset_split",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "splitkit",
+  "scenario": "Clean a labeled feedback export (blank labels, withdrawn consent, excluded tags, whitespace/case duplicates), split by document using pinned test docs plus an MD5 bucket, draw a capped per-label validation sample, and report per-split stats. Test 3 checks the test-split report.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_cleaning",
+      "test_2_splits",
+      "test_3_split_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "splitkit/splitter.py",
+      "symbol": "split_for",
+      "why_correct": "The `< 70` / `< 85` boundaries look like they could be off by one, but buckets 0-69 are exactly 70 values for train, 70-84 are 15 for val and 85-99 are 15 for test, as rule 5 says. Pinned docs are checked first."
+    },
+    {
+      "file": "splitkit/utils.py",
+      "symbol": "parse_date",
+      "why_correct": "It handles exactly the three README formats, with month/day/year for the slash format, and returns a date so comparisons across formats work."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Any non-blank consent string counts as consent",
+      "type": "bool-from-string",
+      "file": "splitkit/utils.py",
+      "function": "parse_bool",
+      "test": "test_1_cleaning.TestCleaning.test_excluded_rows",
+      "old": "    return text in {\"y\", \"yes\", \"true\", \"1\"}",
+      "new": "    return bool(text)",
+      "symptom": "test_excluded_rows fails: excluded is ['I018', 'I022'] instead of ['I013', 'I018', 'I022', 'I026']; the withdrawn-consent rows are kept.",
+      "why": "bool() of any non-empty string is True, so 'no' (I013) and 'false' (I026) read as consent given, and those rows stay in train.",
+      "unblocks": "test_excluded_rows",
+      "hints": [
+        "I013 and I026 are missing from excluded. Look at their consent column.",
+        "How is the consent text turned into a boolean?",
+        "parse_bool returns bool(text); it should return text in {\"y\", \"yes\", \"true\", \"1\"}."
+      ],
+      "probes": [
+        "Why did I018 and I022 stay excluded?",
+        "Why did blank consent (I003) still behave correctly?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Duplicate tie on created date not broken by item id",
+      "type": "wrong-tie-break",
+      "file": "splitkit/dedupe.py",
+      "function": "pick_keeper",
+      "test": "test_1_cleaning.TestCleaning.test_duplicate_rows",
+      "old": "    return min(group, key=lambda it: (it.created, it.item_id))",
+      "new": "    return min(group, key=lambda it: it.created)",
+      "symptom": "test_duplicate_rows fails: duplicate is ['I012', 'I016'] instead of ['I012', 'I030'].",
+      "why": "I030 and I016 share created = 2026-01-15. Without item_id in the key, min() returns the first in file order (I030), so I016 is dropped instead of I030.",
+      "unblocks": "test_duplicate_rows",
+      "hints": [
+        "The duplicate list has I016 where I030 was expected. Compare the two rows.",
+        "Both rows have the same date once parsed. What decides which one is kept?",
+        "pick_keeper's key should be (it.created, it.item_id)."
+      ],
+      "probes": [
+        "Why was the I012/I025 pair unaffected?",
+        "Why does it matter that the date strings are in different formats here?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "doc_id not lower-cased",
+      "type": "id-normalization",
+      "file": "splitkit/loader.py",
+      "function": "load_items",
+      "test": "test_2_splits.TestSplits.test_doc_assignment",
+      "old": "                doc_id=clean(row[\"doc_id\"]).lower(),",
+      "new": "                doc_id=clean(row[\"doc_id\"]),",
+      "symptom": "test_doc_assignment fails: doc_splits has extra keys 'DOC-01' and 'Doc-08' (both train) next to the normal doc ids.",
+      "why": "'DOC-01' and 'Doc-08' become documents of their own, with their own MD5 buckets. Their rows are no longer tied to doc-01/doc-08, which is exactly how group leakage happens; here they happen to hash into train too.",
+      "unblocks": "test_doc_assignment",
+      "hints": [
+        "doc_splits has two extra keys. Where do they come from in items.csv?",
+        "Look at how doc ids are cleaned when items are loaded.",
+        "load_items needs clean(row['doc_id']).lower()."
+      ],
+      "probes": [
+        "Nothing leaked into val or test with this data. Why is it still a real problem?",
+        "Why does the bucket change when only the case of the id changes?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Validation sample takes cap + 1 per label",
+      "type": "off-by-one",
+      "file": "splitkit/sampler.py",
+      "function": "val_sample",
+      "test": "test_2_splits.TestSplits.test_val_sample",
+      "old": "        if len(bucket) < cap:",
+      "new": "        if len(bucket) <= cap:",
+      "symptom": "test_val_sample fails: negative gets ['I005', 'I010', 'I031'] and positive ['I004', 'I006', 'I007'], three each instead of two. neutral is unchanged.",
+      "why": "With `<=` a label still accepts an item when it already has `cap` items, so negative and positive get three each. neutral only has two val rows, so it looks right.",
+      "unblocks": "test_val_sample",
+      "hints": [
+        "Count the ids per label in val_sample and compare with val_cap_per_label.",
+        "Look at the check that decides whether another item fits.",
+        "val_sample should use len(bucket) < cap."
+      ],
+      "probes": [
+        "Why did neutral come out right?",
+        "How would you write this with a slice instead of a counter check?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Label tally shares a default dict",
+      "type": "mutable-default",
+      "file": "splitkit/stats.py",
+      "function": "tally",
+      "test": "test_3_split_report.TestSplitReport.test_test_split_labels",
+      "old": "def tally(labels, counts=None):",
+      "new": "def tally(labels, counts={}):",
+      "symptom": "test_test_split_labels fails: the test split's labels come out as large accumulated counts (e.g. {'negative': 27, 'neutral': 24, 'positive': 36} in a full run) instead of 2/2/2. The exact numbers depend on how many reports were built earlier in the process.",
+      "why": "The `{}` default is created once and reused by every call, so the test split's counts include everything tallied before (train, val and earlier report builds). The `is None` check never fires.",
+      "unblocks": "test_test_split_labels",
+      "hints": [
+        "The test split has 6 rows, but its label counts add up to far more.",
+        "Look at the helper that counts labels. What happens to its dict between calls?",
+        "tally's default must be None, not {}."
+      ],
+      "probes": [
+        "Why did the numbers change depending on how many tests ran before?",
+        "Why didn't the `if counts is None` line protect against this?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Token total not reset per split",
+      "type": "state-not-reset",
+      "file": "splitkit/reports.py",
+      "function": "split_stats",
+      "test": "test_3_split_report.TestSplitReport.test_test_split_avg_tokens",
+      "old": "    for split in SPLITS:\n        members = by_split[split]\n        tokens = 0\n",
+      "new": "    tokens = 0\n    for split in SPLITS:\n        members = by_split[split]\n",
+      "symptom": "test_test_split_avg_tokens fails: 18.83 instead of 4.83.",
+      "why": "The running token total starts once, before the loop, so each split's average includes the words of every split before it. test, computed last, divides the whole dataset's words by its own 6 rows.",
+      "unblocks": "test_test_split_avg_tokens",
+      "hints": [
+        "An average of almost 19 words for six short comments? Count a few by hand.",
+        "Where does the token total for a split start from?",
+        "Move tokens = 0 inside the for-split loop."
+      ],
+      "probes": [
+        "Which split's avg_tokens was still right, and why?",
+        "Would summing with sum(it.tokens for it in members) have avoided this?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report do, in order?",
+      "a": "load_config and load_items, then clean_items (unlabeled, then excluded, else usable), dedupe on the usable rows, assign by document, val_sample on the val rows and split_stats over train, val and test in that order."
+    },
+    {
+      "q": "How does dedupe group rows?",
+      "a": "text_key lower-cases the text and joins its whitespace-split words with single spaces. Rows with the same key form a group, pick_keeper chooses one per group, and the others' ids are returned sorted as duplicates."
+    },
+    {
+      "q": "How is a document's split decided?",
+      "a": "assign calls split_for once per doc id (cached in doc_splits). split_for returns test for pinned docs, otherwise uses bucket_for, which is md5 of the doc id as an integer mod 100."
+    },
+    {
+      "q": "What does load_config return?",
+      "a": "A dict with pinned_test_docs and exclude_tags as sets (parsed with split_list from ';'-separated strings) and val_cap_per_label as an int."
+    },
+    {
+      "q": "What is Item.tokens?",
+      "a": "A property: the number of whitespace-separated words in the cleaned text."
+    },
+    {
+      "q": "How are label counts per split built?",
+      "a": "split_stats calls stats.tally with a generator of labels for each split's members, then sorts the resulting dict by label."
+    },
+    {
+      "q": "Which rows does val_sample see?",
+      "a": "Only by_split['val']. It sorts them by item_id and appends ids to a per-label list while the list is under the cap."
+    }
+  ]
+}

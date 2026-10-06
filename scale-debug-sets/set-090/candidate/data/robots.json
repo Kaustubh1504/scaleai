@@ -1,0 +1,12 @@
+[
+  {"id": "r-01", "model": "UR5e", "camera_hz": 10, "camera_offset_ms": 0, "joint_offset_ms": 0, "calibrated_at": "2026-09-20 08:00"},
+  {"id": "R-02", "model": "Franka", "camera_hz": 10, "camera_offset_ms": 0, "joint_offset_ms": 40, "calibrated_at": "09/15/2026"},
+  {"id": "r-03", "model": "xArm7", "camera_hz": 10, "calibrated_at": "2026-09-25T09:00:00"},
+  {"id": "r-04", "model": "UR5e", "camera_hz": 15, "camera_offset_ms": null, "joint_offset_ms": null, "calibrated_at": "2026-09-10 10:00"},
+  {"id": " r-05", "model": "Franka", "camera_hz": 10, "calibrated_at": "10/03/2026"},
+  {"id": "r-06", "model": "xArm7", "camera_hz": 30, "calibrated_at": "2026-08-30 12:00"},
+  {"id": "r-07", "model": "UR10", "camera_hz": 10, "calibrated_at": "2026-09-01 07:30"},
+  {"id": "r-08", "model": "Franka", "camera_hz": 15, "joint_offset_ms": 12, "camera_offset_ms": 12, "calibrated_at": "09/28/2026 16:00"},
+  {"id": "r-09", "model": "UR5e", "camera_hz": 10, "calibrated_at": "2026-09-05 09:00"},
+  {"id": "r-10", "model": "xArm7", "camera_hz": 20, "calibrated_at": "2026-09-18T11:00:00"}
+]

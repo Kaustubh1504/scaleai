@@ -1,0 +1,186 @@
+{
+  "id": "set-054",
+  "title": "Two-level review flow: four-eyes state machine",
+  "domain": "review_state_machine",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "reviewflow",
+  "scenario": "Replay claim/pass/request_changes/reject/resubmit events through a two-level review state machine with conflict-of-interest rules, then report history, the waiting queue (higher priority first), reviewer stats and cycle times. Test 3 is the summary.",
+  "verified": [
+    {
+      "file": "reviewflow/loader.py",
+      "symbol": "parse_time",
+      "why_correct": "It tries exactly the three formats in the README, month/day for the slash form, and raises on anything else rather than guessing."
+    },
+    {
+      "file": "reviewflow/machine.py",
+      "symbol": "check_claim",
+      "why_correct": "Authors can never claim, and the level-1 reviewer is only blocked at level 2. Both raise ConflictOfInterest, which is a subclass of AssignmentError, so the handler has to catch it first."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Broad except clause catches conflicts first",
+      "type": "exception-order",
+      "file": "reviewflow/machine.py",
+      "function": "ReviewMachine.handle",
+      "test": "test_1_transitions.TestTransitions.test_rejection_reasons",
+      "old": "        except ConflictOfInterest:\n            self.rejected.append((event, \"conflict_of_interest\"))\n        except AssignmentError:\n            self.rejected.append((event, \"not_assignee\"))\n",
+      "new": "        except AssignmentError:\n            self.rejected.append((event, \"not_assignee\"))\n        except ConflictOfInterest:\n            self.rejected.append((event, \"conflict_of_interest\"))\n",
+      "symptom": "Test 1 test_rejection_reasons: the three conflict_of_interest entries (rae on T1, cho on T3, eli on T8) show 'not_assignee'. The refused events themselves are right.",
+      "why": "ConflictOfInterest subclasses AssignmentError, and Python uses the first except clause that matches. With the parent clause first, every conflict is labelled not_assignee and the conflict branch can never run.",
+      "unblocks": "test_rejection_reasons.",
+      "hints": [
+        "The right events are refused, only the reason is off. Which exception does a conflict raise?",
+        "Look at the class hierarchy in models.py and the order of the except clauses in handle().",
+        "Put `except ConflictOfInterest` before `except AssignmentError`."
+      ],
+      "probes": [
+        "Why are the other reasons (unknown_task, invalid_transition) unaffected?",
+        "How could the hierarchy be designed so the clause order matters less?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "History list shared by every task",
+      "type": "shared-class-attribute",
+      "file": "reviewflow/models.py",
+      "function": "Task.__init__",
+      "test": "test_2_tasks.TestTasks.test_history",
+      "old": "    decided_at = None\n\n    def __init__(self, task_id, author, priority, submitted_at):\n        self.task_id = task_id\n        self.author = author\n        self.priority = priority\n        self.submitted_at = submitted_at\n        self.entered_at = submitted_at\n        self.history = []\n",
+      "new": "    decided_at = None\n    history = []\n\n    def __init__(self, task_id, author, priority, submitted_at):\n        self.task_id = task_id\n        self.author = author\n        self.priority = priority\n        self.submitted_at = submitted_at\n        self.entered_at = submitted_at\n",
+      "symptom": "Test 2 test_history: T1's history is one long list beginning 'submitted', 'submitted', 'submitted', ... (88 entries in a full run) instead of 5 states. Every task returns that same list.",
+      "why": "`history = []` on the class is a single list. append() mutates it through every instance, unlike `self.state = ...`, which creates a per-instance attribute. So all tasks share one ever-growing history.",
+      "unblocks": "test_history.",
+      "hints": [
+        "Every task's history is the same long list. Where does each task get its list?",
+        "Look at the class-level attributes on Task and which of them are mutated rather than reassigned.",
+        "Create the list per instance: self.history = [] in __init__ (and drop the class attribute)."
+      ],
+      "probes": [
+        "Why are state, revision and l1_reviewer safe as class-level defaults when history isn't?",
+        "Why didn't states or cycle times change?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "reverse=True also reverses the tie-breaks",
+      "type": "wrong-tie-break",
+      "file": "reviewflow/backlog.py",
+      "function": "waiting_queue",
+      "test": "test_2_tasks.TestTasks.test_waiting_queue",
+      "old": "    waiting.sort(key=lambda t: (-t.priority, t.entered_at, t.task_id))",
+      "new": "    waiting.sort(key=lambda t: (t.priority, t.entered_at, t.task_id), reverse=True)",
+      "symptom": "Test 2 test_waiting_queue: the priority-2 tasks come out T7, T12, T11 instead of T11, T12, T7. T2 is still first and T10 still last.",
+      "why": "reverse=True flips the whole key, so among equal priorities the most recently queued task comes first instead of the one that has waited longest.",
+      "unblocks": "test_waiting_queue.",
+      "hints": [
+        "T2 and T10 are in the right places. Look at the three priority-2 tasks.",
+        "Check the sort key and direction in waiting_queue against the README's queue rule.",
+        "Negate priority and drop reverse=True: key=lambda t: (-t.priority, t.entered_at, t.task_id)."
+      ],
+      "probes": [
+        "Why does negating just the priority fix it?",
+        "Why should T7 (submitted earliest) come after T11 and T12?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Actor names only trimmed",
+      "type": "id-normalization",
+      "file": "reviewflow/loader.py",
+      "function": "load_events",
+      "test": "test_2_tasks.TestTasks.test_reviewer_stats",
+      "old": "                actor=norm_person(row[\"actor\"]),",
+      "new": "                actor=clean(row[\"actor\"]),",
+      "symptom": "Test 2 test_reviewer_stats: the table has both 'Dana' {passed 1, changes 1} and 'dana' {passed 1} instead of one 'dana' {passed 2, changes 1}.",
+      "why": "Authors are lower-cased but actors are only trimmed, so 'Dana' and 'dana' count as two reviewers. Each spelling is used consistently within a task, so the state machine still works and only the stats split.",
+      "unblocks": "test_reviewer_stats.",
+      "hints": [
+        "There's a 'Dana' and a 'dana' in the reviewer table. Should there be?",
+        "Compare how people are normalised in load_tasks and load_events.",
+        "Use norm_person(row[\"actor\"]) for the actor."
+      ],
+      "probes": [
+        "Which data would turn this into a real security problem for the four-eyes rule?",
+        "Why did the state machine still accept all of Dana's actions on T3?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "timedelta.seconds drops whole days",
+      "type": "timedelta-seconds",
+      "file": "reviewflow/metrics.py",
+      "function": "cycle_hours",
+      "test": "test_3_report.TestReport.test_cycle_hours",
+      "old": "            out[task.task_id] = round(elapsed.total_seconds() / 3600, 1)",
+      "new": "            out[task.task_id] = round(elapsed.seconds / 3600, 1)",
+      "symptom": "Test 3 test_cycle_hours: T3 is 0.5 instead of 24.5. Every other task matches.",
+      "why": "`timedelta.seconds` is only the seconds part after removing whole days (0\u201386399). T3's 24.5 hours becomes 0.5.",
+      "unblocks": "test_cycle_hours.",
+      "hints": [
+        "Only T3 is off, and it's the only cycle longer than a day.",
+        "Look at how elapsed time is turned into hours in metrics.py.",
+        "Use elapsed.total_seconds() instead of elapsed.seconds."
+      ],
+      "probes": [
+        "What are timedelta's three stored components?",
+        "Why did T8 (23.7 h) still come out right?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Enum state compared to a string",
+      "type": "enum-vs-string",
+      "file": "reviewflow/reports.py",
+      "function": "summarize",
+      "test": "test_3_report.TestReport.test_approval_rate",
+      "old": "    approved = sum(1 for t in tasks if t.state is State.APPROVED)",
+      "new": "    approved = sum(1 for t in tasks if t.state == \"approved\")",
+      "symptom": "Test 3 test_approval_rate: `0.0 != 0.571`. by_state still shows 4 approved.",
+      "why": "State is a plain Enum, so State.APPROVED == 'approved' is False. No task counts as approved and the rate becomes 0.0, while by_state (which uses .value) is still right.",
+      "unblocks": "test_approval_rate.",
+      "hints": [
+        "by_state says 4 approved, yet approval_rate is 0.0.",
+        "Compare how by_state and approved read the state in summarize().",
+        "Compare with State.APPROVED (or use t.state.value == 'approved')."
+      ],
+      "probes": [
+        "Would making State subclass str change this? What are the trade-offs?",
+        "Why didn't the rejected count have the same problem?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "How does build_report run the replay?",
+      "a": "It loads tasks.csv into Task objects, builds a ReviewMachine, calls `machine.handle(event)` for every event in file order, and then builds each report section from the machine's tasks (sorted by task number), `accepted` events and `rejected` (event, reason) pairs."
+    },
+    {
+      "q": "What does ReviewMachine.apply do with an event?",
+      "a": "It looks up the task (UnknownTask if missing), finds a method named `_<action>` (InvalidTransition if there is none), calls it, and appends the event to `accepted` if nothing raised. handle() wraps apply() and maps the raised exception class to a reason string."
+    },
+    {
+      "q": "What exception classes exist and how are they related?",
+      "a": "In models.py: ReviewError is the base; UnknownTask, InvalidTransition and AssignmentError subclass it; ConflictOfInterest subclasses AssignmentError."
+    },
+    {
+      "q": "Where is a task's history recorded?",
+      "a": "Task.__init__ starts it with State.SUBMITTED, and Task.move appends each new state (and also sets state, entered_at, and decided_at for approved/rejected). The report converts each entry with `.value`."
+    },
+    {
+      "q": "Which timestamp does the waiting queue use?",
+      "a": "`entered_at`, which Task.move updates on every transition. A resubmitted task's entered_at is therefore its resubmit time, not its original submitted_at."
+    },
+    {
+      "q": "How are reviewer stats counted?",
+      "a": "reviewer_stats walks the accepted events: a `claim` makes sure the actor has an entry, and pass/request_changes/reject increment passed/changes/rejected for that actor. Resubmits aren't counted."
+    },
+    {
+      "q": "What does cycle_hours measure?",
+      "a": "For tasks whose state is in DECIDED, the difference decided_at \u2212 submitted_at (both datetimes) converted to hours and rounded to 1 decimal."
+    }
+  ]
+}

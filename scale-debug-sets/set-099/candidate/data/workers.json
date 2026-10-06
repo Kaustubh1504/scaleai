@@ -1,0 +1,13 @@
+[
+  {"id": "w01", "types": ["ocr"], "active": true},
+  {"id": "w02", "types": ["ocr", "Review"], "active": true},
+  {"id": "W03", "types": ["audio"], "active": true},
+  {"id": "w04", "types": ["audio", "ocr"]},
+  {"id": "w05", "types": ["review"], "active": true},
+  {"id": "w06", "types": ["ocr"], "active": false},
+  {"id": "w07", "types": ["review", "audio"], "active": true},
+  {"id": "w08", "types": [" ocr"], "active": true},
+  {"id": "w09", "types": ["audio"], "active": true},
+  {"id": "w10", "types": ["review"], "active": true},
+  {"id": "w11", "types": ["ocr", "audio", "review"]}
+]

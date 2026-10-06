@@ -1,0 +1,9 @@
+{
+  "default": 0.8,
+  "task_types": {
+    "Toxicity": 0.9,
+    "sentiment ": "0.75",
+    "spam": 0
+  },
+  "always_human_flags": "pii; Self_Harm"
+}

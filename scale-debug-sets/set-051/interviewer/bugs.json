@@ -1,0 +1,117 @@
+{
+  "id": "set-051",
+  "title": "Lease book: heartbeats, expiry and dead-lettering",
+  "domain": "task_queue_leases",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "multi",
+  "package": "leasebook",
+  "scenario": "Replay a day of claim/heartbeat/ack events against per-queue tasks with ten-minute leases that heartbeats can extend twice. Test 2 summarises workers, dead letters and extensions.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_ledger",
+      "test_2_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "leasebook/ledger.py",
+      "symbol": "next_pending",
+      "why_correct": "It uses min() on (priority, created_at, id). That looks backwards to anyone who reads 'priority' as 'bigger wins', but the README says 1 is the most urgent, so the smallest number has to come first."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Event task ids only trimmed, not upper-cased",
+      "type": "id-normalization",
+      "file": "leasebook/loader.py",
+      "function": "load_events",
+      "old": "                task_id=norm_task(row[\"task\"]),",
+      "new": "                task_id=clean(row[\"task\"]),",
+      "symptom": "Tests 1 and 2: every heartbeat is rejected (the rejected list starts with alice's 09:05 heartbeat on 't01', and ids keep their lower case), and lower-case acks like dan's 't04' at 09:31 are rejected too. Status shows eight dead tasks (T01, T03, T04, T05, T07, T09 among them), `extensions` is {} and bob's 09:13 claim gets T01 instead of T02.",
+      "why": "Leases are keyed by the upper-cased ids from tasks.csv, but event ids are only trimmed. Every heartbeat and ack written as `t04`/` t02` fails the holder lookup and is rejected, so those leases expire instead of being extended or finished.",
+      "unblocks": "Most of Test 1 (claims, status, rejected list) and the Test 2 worker table. It also exposes B3.",
+      "hints": [
+        "Look at the rejected list: dan's ack of T04 at 09:31 is rejected, yet dan claimed T04 at 09:22. Look at how that row is written in events.csv.",
+        "Compare how task ids are normalised in load_tasks and in load_events.",
+        "load_events uses clean(row[\"task\"]); it needs norm_task(row[\"task\"])."
+      ],
+      "probes": [
+        "Why were every one of the heartbeats rejected, but only some of the acks?",
+        "Why did fixing this change which task bob's 10:20 claim received?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Reap removes leases from the list it is looping over",
+      "type": "mutate-while-iterating",
+      "file": "leasebook/ledger.py",
+      "function": "Ledger.reap",
+      "old": "        for lease in list(self.active):",
+      "new": "        for lease in self.active:",
+      "symptom": "Tests 1 and 2: cara's 09:12 ack of T04 is accepted (it is missing from the rejected list), so dan's 09:22 claim gets T05 instead of T04. T05 and T11 end up dead, T04 shows 1 attempt, `extensions` loses T05 and dan shows 0 acks / 2 lost.",
+      "why": "Removing an item from a list while iterating it shifts the next item into the slot the loop has already visited, so the lease right after each expired one is skipped. At 09:12 bob's T02 expires and cara's T04, which also expired, survives, so her ack is accepted.",
+      "unblocks": "Test 1 claims/status/rejected and the Test 2 worker table.",
+      "hints": [
+        "cara's 09:12 ack of T04 should be rejected: her lease ended at 09:11. Why does the ledger still think she holds it?",
+        "Look at what happens in reap() when two leases expire at the same moment.",
+        "reap() removes from self.active while looping over it; loop over list(self.active) instead."
+      ],
+      "probes": [
+        "Why does it matter that bob's and cara's leases are next to each other in self.active?",
+        "Would the skipped lease ever be reaped? When, and why is that still too late?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Third heartbeat accepted",
+      "type": "off-by-one",
+      "file": "leasebook/ledger.py",
+      "function": "Ledger.heartbeat",
+      "old": "        if lease is None or lease.extensions >= MAX_EXTENSIONS:",
+      "new": "        if lease is None or lease.extensions > MAX_EXTENSIONS:",
+      "masked_by": [
+        "B1"
+      ],
+      "symptom": "Only visible after B1 is fixed. Tests 1 and 2: alice's third heartbeat at 09:20 is accepted, `extensions` shows T01: 3, and her 09:25 ack goes through. erin's 09:26 claim then gets T02 instead of T01, T03 and T10 end up dead, and alice shows 1 ack / 1 lost.",
+      "why": "The README allows a heartbeat only while the lease has been extended fewer than 2 times. `>` lets a third extension through, so alice's T01 lease runs to 09:30 and her 09:25 ack is accepted.",
+      "unblocks": "Test 1 and Test 2 fully pass.",
+      "hints": [
+        "alice sent three heartbeats for T01. How many should have been accepted?",
+        "Look at the extension limit check in heartbeat().",
+        "`lease.extensions > MAX_EXTENSIONS` should be `>=`."
+      ],
+      "probes": [
+        "Why couldn't you see this while event task ids weren't upper-cased?",
+        "The comment says 'up to MAX_EXTENSIONS times'. What test would pin the boundary down?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() do, step by step?",
+      "a": "`run()` loads tasks.csv and events.csv, creates a `Ledger`, calls `ledger.handle(event)` for each event in file order, then calls `ledger.reap(CLOSE_OF_DAY)` (2026-06-01 12:00). `build_report` then turns the ledger's lists and counters into the report dict."
+    },
+    {
+      "q": "What is in Ledger.active and what order is it in?",
+      "a": "A list of `Lease` objects for leases currently held, appended in the order they were claimed. `ack` and `reap` remove entries from it; `holding()` scans it for a lease matching both task id and worker."
+    },
+    {
+      "q": "When is a lease considered expired?",
+      "a": "`reap(now)` treats a lease as expired when `lease.expires_at <= now`. `_expire` then sets the task to dead if `attempts >= max_attempts`, otherwise pending, and adds one to `lost` for the lease's worker."
+    },
+    {
+      "q": "How are the id and name columns normalised by the loader?",
+      "a": "`norm_task` trims and upper-cases, `norm_name` trims and lower-cases, and `clean` only trims (and turns None into an empty string). `load_tasks` and `load_events` each choose one of these per column."
+    },
+    {
+      "q": "What does a heartbeat change when it is accepted?",
+      "a": "It sets `lease.expires_at` to the heartbeat time plus `LEASE_LENGTH` (10 minutes) and adds one to both `lease.extensions` and `task.extensions`. A rejected heartbeat appends to `ledger.rejected` and changes nothing else."
+    },
+    {
+      "q": "Where does the workers table come from?",
+      "a": "`worker_table` takes every worker that appears in `ledger.claims`. `claims` counts their claims with a non-null task, `acks` comes from the `acks` Counter (incremented in `ack`), and `lost` from the `lost` Counter (incremented in `_expire`)."
+    }
+  ]
+}

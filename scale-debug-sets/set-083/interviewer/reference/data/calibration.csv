@@ -1,0 +1,17 @@
+judgement_id,pair_id,labeler_id,left_model,rating,submitted_at
+c001,C1,lab-01,atlas-7b,2,2026-03-30 09:00
+c002,C2,lab-01,cobalt-70b,3,2026-03-30 09:05
+c003,C1,lab-02,delta-3b,5,2026-03-30 09:10
+c004,C3,lab-02,birch-13b,2,2026-03-30 09:15
+c005,C2,lab-03,delta-3b,6,2026-03-30 09:20
+c006,C4,lab-03,atlas-7b,3,03/30/2026 09:25
+c007,c3,lab-04,delta-3b,5,2026-03-30 09:30
+c008,C4,lab-04,delta-3b,6,2026-03-30 09:35
+c009,C1,lab-05,atlas-7b,5,2026-03-30 10:00
+c010,C2,lab-05,cobalt-70b,5,2026-03-30 10:05
+c011,C3,lab-05,birch-13b,3,2026-03-30 10:10
+c012,C1,LAB-09,delta-3b,6,2026-03-31 08:00
+c013,C2,lab-09,delta-3b,3,2026-03-31 08:05
+c014,c3,lab-09,birch-13b,1,2026-03-31T08:10:00
+c015,C4,lab-09,atlas-7b,5,2026-03-31 08:15
+c016,C2,lab-09,cobalt-70b,2,03/31/2026 08:30

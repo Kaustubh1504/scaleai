@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_render"
+    ],
+    "failures": {
+      "tests.test_1_render.TestRender.test_assistant_spans": "AssertionError: Lists differ: [[105, 109], [160, 164]] != [[106, 110], [161, 165]]\n\nFirst differing element 0:\n[105, 109]\n[106, 110]\n\n- [[105, 109], [160, 164]]\n?     ^    -      ^    ^\n\n+ [[106, 110], [161, 165]]\n?     ^  +        ^    ^\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_render"
+    ],
+    "failures": {
+      "tests.test_1_render.TestRender.test_truncation": "AssertionError: {'c07': (20, 0), 'c09': (32, 0), 'c13': (26, 0)} != {'c07': (20, 2), 'c09': (32, 0), 'c13': (26, 2)}\n- {'c07': (20, 0), 'c09': (32, 0), 'c13': (26, 0)}\n?              ^                               ^\n\n+ {'c07': (20, 2), 'c09': (32, 0), 'c13': (26, 2)}\n?              ^                               ^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_assistant_turns": "AssertionError: 0 != 13"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_render",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_render.TestRender.test_assistant_spans",
+      "tests.test_1_render.TestRender.test_truncation",
+      "tests.test_2_report.TestReport.test_assistant_turns"
+    ]
+  }
+}

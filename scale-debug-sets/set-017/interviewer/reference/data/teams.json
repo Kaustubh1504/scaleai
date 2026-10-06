@@ -1,0 +1,17 @@
+{
+  "teams": [
+    {"team_id": "T01", "name": "Orca", "disqualified": false},
+    {"team_id": "t02", "name": "Heron", "disqualified": false},
+    {"team_id": "T03 ", "name": "Lynx"},
+    {"team_id": "T04", "name": "Kestrel", "disqualified": "no"},
+    {"team_id": "T05", "name": "Marten", "disqualified": 0},
+    {"team_id": "T06", "name": "Osprey", "disqualified": true},
+    {"team_id": "T07", "name": "Puffin", "disqualified": false},
+    {"team_id": "T08", "name": " Quokka", "disqualified": false},
+    {"team_id": "T09", "name": "Raven", "disqualified": "false"},
+    {"team_id": "T10", "name": "Shrike", "disqualified": false},
+    {"team_id": "T11", "name": "Tern", "disqualified": "No"},
+    {"team_id": "T12", "name": "Vole", "disqualified": "false"},
+    {"team_id": "T13", "name": "Wren", "disqualified": "YES"}
+  ]
+}

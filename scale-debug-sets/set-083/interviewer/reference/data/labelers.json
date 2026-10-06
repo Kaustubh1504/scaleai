@@ -1,0 +1,52 @@
+[
+ {
+  "id": "lab-01",
+  "name": "Ines Duarte",
+  "active": true
+ },
+ {
+  "id": "lab-02",
+  "name": "Tomasz Wrobel",
+  "active": "yes"
+ },
+ {
+  "id": "LAB-03",
+  "name": "Ama Mensah",
+  "active": true
+ },
+ {
+  "id": "lab-04",
+  "name": "Rafael Ortiz",
+  "active": 1
+ },
+ {
+  "id": "lab-05",
+  "name": "Yuki Sato",
+  "active": true
+ },
+ {
+  "id": "lab-06",
+  "name": "Noor Haddad",
+  "active": "TRUE"
+ },
+ {
+  "id": "lab-07",
+  "name": "Sven Larsen",
+  "active": true
+ },
+ {
+  "id": "lab-08",
+  "name": "Mei Lin",
+  "active": "y"
+ },
+ {
+  "id": " lab-09",
+  "name": "Olu Bakare",
+  "active": true
+ },
+ {
+  "id": "lab-10",
+  "name": "Clara Weiss",
+  "active": "no"
+ }
+]

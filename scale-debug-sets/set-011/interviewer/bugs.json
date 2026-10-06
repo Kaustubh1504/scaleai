@@ -1,0 +1,122 @@
+{
+  "id": "set-011",
+  "title": "Pairwise preference win rates and Elo leaderboard",
+  "domain": "rlhf_preferences",
+  "length": "MINI",
+  "difficulty": "easy",
+  "format": "one_to_one",
+  "package": "prefrank",
+  "scenario": "Turn pairwise human preference judgements (a / b / tie / draw / both_bad) into per-model win rates, sequential Elo ratings and a leaderboard of models with at least 4 games.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_ratings",
+      "test_2_leaderboard"
+    ]
+  },
+  "verified": [
+    {
+      "file": "prefrank/elo.py",
+      "symbol": "expected_score",
+      "why_correct": "The `(opponent - rating)` order looks reversed, but it is exactly the spec's 1 / (1 + 10^((R_B - R_A)/400)): a higher own rating makes the exponent negative and the expected score larger."
+    },
+    {
+      "file": "prefrank/loader.py",
+      "symbol": "parse_rated_at",
+      "why_correct": "It covers exactly the three timestamp formats the README lists, with month/day order for the slash format."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "both_bad counted as a tie",
+      "type": "or-precedence",
+      "file": "prefrank/winrates.py",
+      "function": "win_table",
+      "test": "test_1_ratings.TestRatings.test_1_win_rates",
+      "old": "        elif c.winner == \"tie\" or c.winner == \"draw\":",
+      "new": "        elif c.winner == \"tie\" or \"draw\":",
+      "symptom": "test_1_win_rates fails: ties are too high for every model that played a both_bad game (atlas 4 instead of 3, borealis 3 instead of 1, cirrus 3 instead of 1, ember 2 instead of 1), so win rates rise (cirrus 0.85, borealis 0.278, ember 0.5). delta-3b is unchanged.",
+      "why": "`c.winner == \"tie\" or \"draw\"` parses as `(c.winner == \"tie\") or \"draw\"`, and the non-empty string is always truthy. Every row that is not a/b, including both_bad, lands in the tie branch.",
+      "unblocks": "test_1_win_rates.",
+      "hints": [
+        "Cirrus has one tie in the data but the table shows more. Which rows are being counted as ties?",
+        "Look at the branch in winrates.py that handles tie and draw.",
+        "`c.winner == \"tie\" or \"draw\"` is always true. Use `c.winner == \"tie\" or c.winner == \"draw\"` (or `in (\"tie\", \"draw\")`)."
+      ],
+      "probes": [
+        "Why didn't the Elo ratings change even though both_bad rows were treated as ties here?",
+        "How does Python group `x == \"tie\" or \"draw\"`, and what does the `or` return?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Ratings rounded to whole numbers on every update",
+      "type": "float-rounding",
+      "file": "prefrank/elo.py",
+      "function": "update",
+      "test": "test_1_ratings.TestRatings.test_2_elo_ratings",
+      "old": "    return ra + delta, rb - delta",
+      "new": "    return round(ra + delta), round(rb - delta)",
+      "symptom": "test_2_elo_ratings fails: every rating is a whole number (atlas 969, cirrus 1094, ember 1000) and borealis has drifted to 951 instead of 949.3.",
+      "why": "The spec keeps full precision during the updates and rounds only in the report. Rounding to integers after every game throws away the fractional part each step, and the error builds up across the sequence.",
+      "unblocks": "test_2_elo_ratings.",
+      "hints": [
+        "Every Elo value is a whole number. Where could the decimals be lost?",
+        "Compare README rule 6 with how update() returns the new ratings.",
+        "update() rounds both ratings. Return `ra + delta, rb - delta` and leave rounding to the report."
+      ],
+      "probes": [
+        "Why is the answer not just the correct ratings rounded to the nearest integer?",
+        "Why did the leaderboard order survive this rounding?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Model with exactly 4 games left off the leaderboard",
+      "type": "off-by-one",
+      "file": "prefrank/reports.py",
+      "function": "leaderboard",
+      "test": "test_2_leaderboard.TestLeaderboard.test_3_leaderboard",
+      "old": "stats.games >= MIN_GAMES]",
+      "new": "stats.games > MIN_GAMES]",
+      "symptom": "test_3_leaderboard fails: the leaderboard is ['cirrus-70b', 'atlas-7b', 'borealis-13b']; ember-8x7b (exactly 4 games) is missing.",
+      "why": "The spec says at least 4 games. `>` needs 5 or more, so ember-8x7b, which has exactly 4, is dropped.",
+      "unblocks": "test_3_leaderboard.",
+      "hints": [
+        "Which model is missing from the leaderboard, and how many games did it play?",
+        "Look at the eligibility filter in reports.leaderboard.",
+        "`stats.games > MIN_GAMES` should be `>= MIN_GAMES`."
+      ],
+      "probes": [
+        "What data would you add to make sure a boundary like this is always exercised?",
+        "delta-3b is also missing. Why is that one correct?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() do, step by step?",
+      "a": "It loads the registry from models.json (`load_models`), then `load_comparisons` reads the CSV, keeps rows with a recognised winner between registered models, and sorts them by `rated_at`. `win_table` builds games/wins/ties per model, `elo_ratings` replays the games for Elo, and `leaderboard` filters and sorts the models."
+    },
+    {
+      "q": "What does load_models return?",
+      "a": "A dict mapping the normalised (trimmed, lower-cased) model id to its display name. Only the keys are used for registry checks."
+    },
+    {
+      "q": "Which rows does load_comparisons drop?",
+      "a": "Rows whose normalised `winner` is not in `OUTCOMES` (a, b, tie, draw, both_bad), which includes blanks, and rows where either model id is not a registry key. The rest are returned sorted by `rated_at`; Python's sort is stable, so equal times keep file order."
+    },
+    {
+      "q": "How does elo_ratings treat both_bad games?",
+      "a": "It skips any comparison whose winner is not a key of `SCORE_FOR_A`, and both_bad is not a key. All other games call `update()` with the score for model_a."
+    },
+    {
+      "q": "Where is win_rate computed and how is it rounded?",
+      "a": "It is a property on `ModelStats` in models.py: (wins + 0.5 \u00d7 ties) / games, rounded to 3 decimals, and 0.0 when games is 0."
+    },
+    {
+      "q": "Which models appear in the report's models section?",
+      "a": "Every registry model whose `games` is non-zero, in registry order. The leaderboard is computed separately from the same table and ratings."
+    }
+  ]
+}

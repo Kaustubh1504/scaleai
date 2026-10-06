@@ -1,0 +1,12 @@
+[
+  {"id": "P01", "name": "Search relevance", "priority": 9, "seats": 3, "hours_per_seat": 10, "locale": "", "courses": ["core-101"]},
+  {"id": "P02", "name": "Chat safety", "priority": 7, "seats": 2, "hours_per_seat": 15, "locale": "en-US", "courses": ["core-101", "safety-201"]},
+  {"id": "p03", "name": "Ads review", "priority": 7, "seats": 2, "hours_per_seat": 5, "locale": "", "courses": []},
+  {"id": "P04", "name": "Paused pilot", "priority": 8, "seats": 0, "hours_per_seat": 10, "locale": "", "courses": ["core-101"]},
+  {"id": "P05", "name": "Spanish QA", "priority": 5, "seats": 2, "hours_per_seat": 10, "locale": "es-MX", "courses": ["Core-101 "]},
+  {"id": "P06", "name": "Japanese OCR", "priority": 4, "seats": 2, "hours_per_seat": 8, "locale": "ja-jp", "courses": []},
+  {"id": "P07", "name": "Code eval", "priority": 6, "seats": 2, "hours_per_seat": 12, "locale": "", "courses": ["code-301"]},
+  {"id": "P08", "name": "Medical NER", "priority": 3, "seats": 2, "hours_per_seat": 10, "locale": "en-US", "courses": ["pii-110", "core-101"]},
+  {"id": "P09", "name": "Spanish chat", "priority": 2, "seats": 1, "hours_per_seat": 5, "locale": " es-MX", "courses": [""]},
+  {"id": "P10", "name": "Audio transcription", "priority": 1, "seats": 3, "hours_per_seat": 6, "locale": "", "courses": ["audio-120"]}
+]

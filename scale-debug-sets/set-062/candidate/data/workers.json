@@ -1,0 +1,18 @@
+{
+  "pool": "inference-replay-0504",
+  "workers": [
+    {"id": "cen-1", "zone": "central", "weight": 2, "max_inflight": 3, "state": "healthy"},
+    {"id": "CEN-2", "zone": "Central", "weight": "1", "state": "healthy"},
+    {"id": "cen-3", "zone": "central", "weight": 1, "max_inflight": 2, "state": " Healthy"},
+    {"id": "cen-4", "zone": "central", "weight": 2, "max_inflight": 2, "state": "draining"},
+    {"id": "east-1", "zone": "EAST", "weight": 2, "max_inflight": 3, "state": "healthy"},
+    {"id": "East-2 ", "zone": "east", "weight": 2.0, "max_inflight": 3, "state": "degraded"},
+    {"id": "east-3", "zone": "east", "weight": 1, "max_inflight": 2},
+    {"id": "west-1", "zone": "west", "weight": 1, "max_inflight": 2, "state": "healthy"},
+    {"id": "west-2", "zone": " west", "weight": 1, "max_inflight": 1, "state": "HEALTHY"},
+    {"id": "west-3", "zone": "west", "weight": 3, "max_inflight": 4, "state": "down"},
+    {"id": "north-1", "zone": "north", "weight": 1, "max_inflight": 1, "state": "healthy"},
+    {"id": "north-2", "zone": "north", "weight": 1, "max_inflight": 0, "state": "healthy"},
+    {"id": "north-3", "zone": "North", "weight": 2, "max_inflight": 2, "state": "down"}
+  ]
+}

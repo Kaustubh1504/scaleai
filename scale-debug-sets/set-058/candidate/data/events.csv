@@ -1,0 +1,41 @@
+tenant_id,ts,endpoint,units
+acorn,2026-05-01T09:00:00Z,/v1/embed,200
+Acorn,2026-05-01 09:00:20,/v1/embed,150
+acorn ,2026-05-01T09:00:40Z,/v1/embed,100
+brightpath,2026-05-01T11:00:00Z,/v1/complete,100
+BRIGHTPATH,2026-05-01T11:00:05Z,/v1/complete,100
+brightpath,1777633210,/v1/complete,100
+brightpath,2026-05-01 11:00:15,/v1/complete,100
+brightpath,2026-05-02T11:00:30Z,/v1/complete,100
+kestrel,2026-05-01T10:00:00Z,/v1/route,50
+kestrel,2026-05-01T10:00:20Z,/v1/route,50
+kestrel,2026-05-01 10:00:10,/v1/route,50
+Kestrel,2026-05-01T10:01:00Z,/v1/route,50
+kestrel,2026-05-01T10:01:05Z,/v1/route,50
+ivory,2026-05-01T08:00:00Z,/v1/score,400
+ivory,2026-05-01T12:30:00Z,/v1/score,400
+Ivory,2026-05-02 08:00:00,/v1/score,400
+orbit,2026-05-01T14:00:00Z,/v1/complete,300
+orbit,2026-05-01T14:00:10Z,/v1/complete,300
+orbit,2026-05-01T14:00:20Z,/v1/complete,300
+ORBIT,2026-05-01 14:00:30,/v1/complete,300
+orbit,2026-05-01T14:00:40Z,/v1/complete,300
+orbit,2026-05-01T14:00:50Z,/v1/complete,300
+delta-labs,2026-05-01T09:15:00Z,/v1/embed,350
+delta-labs,2026-05-01T13:15:00Z,/v1/embed,350
+Delta-Labs,2026-05-02 09:15:00,/v1/embed,350
+delta-labs,2026-05-02T13:15:00Z,/v1/embed,350
+harbor,2026-05-01T07:45:00Z,/v1/transcribe,800
+harbor,2026-05-01 16:20:00,/v1/transcribe,803
+harbor,2026-05-02T07:45:00Z,/v1/transcribe,600
+fjord,2026-05-01T10:30:00Z,/v1/embed,90
+fjord,2026-05-02T10:30:00Z,/v1/embed,90
+nimbus,2026-05-01T10:00:00Z,/v1/complete,500
+nimbus,2026-05-01T10:00:01Z,/v1/complete,500
+quill,2026-05-01T18:00:00Z,/v1/complete,40
+sable,2026-05-01T15:00:00Z,/v1/scan,20
+sable,2026-05-01T15:00:05Z,/v1/scan,20
+SABLE,2026-05-01T15:00:10Z,/v1/scan,20
+sable,2026-05-01 15:00:15,/v1/scan,20
+sable,2026-05-01T15:00:20Z,/v1/scan,20
+zeta,2026-05-01T15:00:00Z,/v1/scan,20

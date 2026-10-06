@@ -1,0 +1,17 @@
+episode_id,robot,operator,task,recorded_at,tags,success
+EP-01,arm-a,alice,pick,2026-06-01 09:00,grasp;pick,true
+ep-02,arm-a,Bob ,pick,06/01/2026 09:20,,false
+EP-03,ARM-B,alice,place,2026-06-01T10:05:00,place,yes
+EP-04,arm-b,carol,place,2026-06-01 10:40,place,true
+EP-05,arm-a,carol,pick,2026-06-02 08:15,pick;regrasp,true
+EP-06,arm-c,bob,pour,2026-06-02 09:00,pour,true
+Ep-07,arm-c,alice,pour,06/02/2026 09:30, ,No
+EP-08,arm-a,dave,pick,2026-06-02 11:00,Pick,TRUE
+EP-09,arm-b,dave,wipe,2026-06-03 08:00,wipe;slow,
+EP-10,arm-b,bob,wipe,2026-06-03T08:45:00,wipe,y
+EP-11,arm-c,ALICE,pick,2026-06-03 09:10,grasp ; pick,False
+EP-12,arm-a,carol,place,2026-06-03 13:00,place;regrasp,true
+EP-13,arm-c,dave,pour,06/04/2026 08:30,pour,false
+EP-14,arm-a,alice,wipe,2026-06-04 09:00,wipe,true
+EP-15,arm-b,bob,pick,2026-06-04 10:00,grasp,yes
+EP-16, arm-b ,dave,place,2026-06-04 11:30,,1

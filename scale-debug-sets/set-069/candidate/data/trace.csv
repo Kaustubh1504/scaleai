@@ -1,0 +1,19 @@
+request_id,ts,client,project,locale
+N1,2026-06-01 09:00:00,c1,ner,en
+S1,2026-06-01T09:00:30,ACME ,sentiment,en
+B1,2026-06-01 09:01:00,c1,bbox,en
+B2,06/01/2026 09:02:00,c4,bbox,fr
+S2,2026-06-01 09:02:00,c2,Sentiment,
+B3,2026-06-01 09:03:00,c2,bbox,EN
+N2,2026-06-01 09:04:00,c2,ner,
+B4,2026-06-01T09:05:00,c4,bbox, FR
+S3,2026-06-01 09:05:00,acme,sentiment,en
+S4,06/01/2026 09:06:00,c3,sentiment,en
+B5,2026-06-01 09:07:00,c1,bbox,
+S5,2026-06-01 09:09:00,acme,sentiment,en
+N3,2026-06-01 09:10:00,c1,ner,en
+x1,2026-06-01 09:11:00,globex,pose,en
+N4,06/01/2026 09:15:00,c3,NER,en
+S6,2026-06-01 09:16:00,c2,sentiment,en
+X2,2026-06-01 09:18:00,c2,intent,en
+N5,2026-06-01T09:25:00,c1,ner,en

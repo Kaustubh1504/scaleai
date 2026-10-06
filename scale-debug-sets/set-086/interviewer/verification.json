@@ -1,0 +1,99 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_health",
+      "test_2_routing",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_1_health.TestHealth.test_backends_in_rotation": "AssertionError: Lists differ: ['b01', 'b02', 'b03', 'b04', 'b05'] != ['b01', 'b02', 'b03', 'b04']\n\nFirst list contains 1 additional elements.\nFirst extra element 4:\n'b05'\n\n- ['b01', 'b02', 'b03', 'b04', 'b05']\n?                            -------\n\n+ ['b01', 'b02', 'b03', 'b04']",
+      "tests.test_1_health.TestHealth.test_final_state": "AssertionError: {'b01[19 chars]: 'healthy', 'b03': 'healthy', 'b04': 'healthy', 'b05': 'down'} != {'b01[19 chars]: 'healthy', 'b03': 'healthy', 'b04': 'healthy'}\n+ {'b01': 'healthy', 'b02': 'healthy', 'b03': 'healthy', 'b04': 'healthy'}\n- {'b01': 'healthy',\n-  'b02': 'healthy',\n-  'b03': 'healthy',\n-  'b04': 'healthy',\n-  'b05': 'down'}",
+      "tests.test_1_health.TestHealth.test_transitions": "AssertionError: Lists differ: [[9500, 'b05', 'down'], [21000, 'b03', 'down'], [32000, 'b03', 'healthy']] != [[21000, 'b03', 'down'], [32000, 'b03', 'healthy']]\n\nFirst differing element 0:\n[9500, 'b05', 'down']\n[21000, 'b03', 'down']\n\nFirst list contains 1 additional elements.\nFirst extra element 2:\n[32000, 'b03', 'healthy']\n\n- [[9500, 'b05', 'down'], [21000, 'b03', 'down'], [32000, 'b03', 'healthy']]\n?   ^^       ^            ------------------------\n\n+ [[21000, 'b03', 'down'], [32000, 'b03', 'healthy']]\n?   ^^^       ^\n",
+      "tests.test_2_routing.TestRouting.test_assignments": "AssertionError: {'R01[29 chars]: 'b05', 'R04': 'b03', 'R05': 'b01', 'R06': 'b[335 chars]b01'} != {'R01[29 chars]: 'b03', 'R04': 'b01', 'R05': 'b04', 'R06': 'b[335 chars]b04'}\n  {'R01': 'b01',\n   'R02': 'b02',\n-  'R03': 'b05',\n?            ^\n\n+  'R03': 'b03',\n?            ^\n\n-  'R04': 'b03',\n?            ^\n\n+  'R04': 'b01',\n?            ^\n\n-  'R05': 'b01',\n?            ^\n\n+  'R05': 'b04',\n?            ^\n\n   'R06': 'b01',\n-  'R07': 'b05',\n?            ^\n\n+  'R07': 'b01',\n?            ^\n\n-  'R08': 'b04',\n?            ^\n\n+  'R08': 'b02',\n?            ^\n\n   'R09': 'b02',\n-  'R10': 'b02',\n?         ",
+      "tests.test_2_routing.TestRouting.test_opening_requests": "AssertionError: {'R01': 'b01', 'R02': 'b02', 'R03': 'b05', 'R04': 'b03', 'R05': 'b01'} != {'R01': 'b01', 'R02': 'b02', 'R03': 'b03', 'R04': 'b01', 'R05': 'b04'}\n- {'R01': 'b01', 'R02': 'b02', 'R03': 'b05', 'R04': 'b03', 'R05': 'b01'}\n?                                        ^             ^             ^\n\n+ {'R01': 'b01', 'R02': 'b02', 'R03': 'b03', 'R04': 'b01', 'R05': 'b04'}\n?                                        ^             ^             ^\n",
+      "tests.test_2_routing.TestRouting.test_sessions": "AssertionError: {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b01', 'erin': 'b02'} != {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b04', 'erin': 'b02'}\n- {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b01', 'erin': 'b02'}\n?                                                           ^\n\n+ {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b04', 'erin': 'b02'}\n?                                                           ^\n",
+      "tests.test_3_report.TestReport.test_failovers_and_rejections": "AssertionError: Tuples differ: (2, []) != (1, [])\n\nFirst differing element 0:\n2\n1\n\n- (2, [])\n?  ^\n\n+ (1, [])\n?  ^\n",
+      "tests.test_3_report.TestReport.test_median_latency": "AssertionError: {'b01': 350, 'b02': 250, 'b03': 200, 'b04': 250, 'b05': 500} != {'b01': 300, 'b02': 300, 'b03': 2500, 'b04': 350}\n- {'b01': 350, 'b02': 250, 'b03': 200, 'b04': 250, 'b05': 500}\n?          ^          ^^                      ^  ------------\n\n+ {'b01': 300, 'b02': 300, 'b03': 2500, 'b04': 350}\n?          ^          ^^           +           ^\n",
+      "tests.test_3_report.TestReport.test_request_counts": "AssertionError: {'b01': 14, 'b02': 8, 'b03': 2, 'b04': 2, 'b05': 4} != {'b01': 14, 'b02': 10, 'b03': 1, 'b04': 5}\n- {'b01': 14, 'b02': 8, 'b03': 2, 'b04': 2, 'b05': 4}\n?                    ^         ^         ------ ----\n\n+ {'b01': 14, 'b02': 10, 'b03': 1, 'b04': 5}\n?                    ^^         ^\n",
+      "tests.test_3_report.TestReport.test_zones": "AssertionError: {'east': 22, 'west': 8} != {'east': 24, 'west': 6}\n- {'east': 22, 'west': 8}\n?           ^          ^\n\n+ {'east': 24, 'west': 6}\n?           ^          ^\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_health",
+      "test_2_routing",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_1_health.TestHealth.test_transitions": "AssertionError: Lists differ: [[14000, 'b02', 'down'], [18000, 'b02', 'he[54 chars]hy']] != [[21000, 'b03', 'down'], [32000, 'b03', 'healthy']]\n\nFirst differing element 0:\n[14000, 'b02', 'down']\n[21000, 'b03', 'down']\n\nFirst list contains 2 additional elements.\nFirst extra element 2:\n[21000, 'b03', 'down']\n\n+ [[21000, 'b03', 'down'], [32000, 'b03', 'healthy']]\n- [[14000, 'b02', 'down'],\n-  [18000, 'b02', 'healthy'],\n-  [21000, 'b03', 'down'],\n-  [32000, 'b03', 'healthy']]",
+      "tests.test_2_routing.TestRouting.test_assignments": "AssertionError: {'R01[239 chars]: 'b01', 'R19': 'b04', 'R20': 'b03', 'R21': 'b[125 chars]b04'} != {'R01[239 chars]: 'b02', 'R19': 'b04', 'R20': 'b01', 'R21': 'b[125 chars]b04'}\n  {'R01': 'b01',\n   'R02': 'b02',\n   'R03': 'b03',\n   'R04': 'b01',\n   'R05': 'b04',\n   'R06': 'b01',\n   'R07': 'b01',\n   'R08': 'b02',\n   'R09': 'b02',\n   'R10': 'b01',\n   'R11': 'b02',\n   'R12': 'b01',\n   'R13': 'b01',\n   'R14': 'b04',\n   'R15': 'b01',\n   'R16': 'b02',\n   'R17': 'b04',\n-  'R18': 'b01',\n?            ^\n\n+  'R18': 'b02',\n?            ^\n\n   'R19': 'b04',\n-  'R20': 'b03',\n?            ^\n\n+  'R20': 'b01',\n?",
+      "tests.test_2_routing.TestRouting.test_sessions": "AssertionError: {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b04', 'erin': 'b01'} != {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b04', 'erin': 'b02'}\n- {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b04', 'erin': 'b01'}\n?                                                                          ^\n\n+ {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b04', 'erin': 'b02'}\n?                                                                          ^\n",
+      "tests.test_3_report.TestReport.test_failovers_and_rejections": "AssertionError: Tuples differ: (2, []) != (1, [])\n\nFirst differing element 0:\n2\n1\n\n- (2, [])\n?  ^\n\n+ (1, [])\n?  ^\n",
+      "tests.test_3_report.TestReport.test_median_latency": "AssertionError: {'b01': 300, 'b02': 300, 'b03': 200, 'b04': 300} != {'b01': 300, 'b02': 300, 'b03': 2500, 'b04': 350}\n- {'b01': 300, 'b02': 300, 'b03': 200, 'b04': 300}\n?                                              ^\n\n+ {'b01': 300, 'b02': 300, 'b03': 2500, 'b04': 350}\n?                                  +            ^\n",
+      "tests.test_3_report.TestReport.test_request_counts": "AssertionError: {'b01': 15, 'b02': 7, 'b03': 2, 'b04': 6} != {'b01': 14, 'b02': 10, 'b03': 1, 'b04': 5}\n- {'b01': 15, 'b02': 7, 'b03': 2, 'b04': 6}\n?          ^         ^         ^         ^\n\n+ {'b01': 14, 'b02': 10, 'b03': 1, 'b04': 5}\n?          ^         ^^         ^         ^\n",
+      "tests.test_3_report.TestReport.test_zones": "AssertionError: {'east': 22, 'west': 8} != {'east': 24, 'west': 6}\n- {'east': 22, 'west': 8}\n?           ^          ^\n\n+ {'east': 24, 'west': 6}\n?           ^          ^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_routing",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_2_routing.TestRouting.test_assignments": "AssertionError: {'R01[85 chars]: 'b02', 'R08': 'b01', 'R09': 'b02', 'R10': 'b[279 chars]b01'} != {'R01[85 chars]: 'b01', 'R08': 'b02', 'R09': 'b02', 'R10': 'b[279 chars]b04'}\n  {'R01': 'b01',\n   'R02': 'b02',\n   'R03': 'b03',\n   'R04': 'b01',\n   'R05': 'b04',\n   'R06': 'b01',\n-  'R07': 'b02',\n?            ^\n\n+  'R07': 'b01',\n?            ^\n\n-  'R08': 'b01',\n?            ^\n\n+  'R08': 'b02',\n?            ^\n\n   'R09': 'b02',\n   'R10': 'b01',\n-  'R11': 'b04',\n?            ^\n\n+  'R11': 'b02',\n?            ^\n\n-  'R12': 'b02',\n?            ^\n\n+  'R12': 'b01',\n?            ^\n\n   'R13': 'b01',\n-  'R14'",
+      "tests.test_2_routing.TestRouting.test_sessions": "AssertionError: {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b01', 'erin': 'b04'} != {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b04', 'erin': 'b02'}\n- {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b01', 'erin': 'b04'}\n?                                                           ^              ^\n\n+ {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b04', 'erin': 'b02'}\n?                                                           ^              ^\n",
+      "tests.test_3_report.TestReport.test_failovers_and_rejections": "AssertionError: Tuples differ: (7, []) != (1, [])\n\nFirst differing element 0:\n7\n1\n\n- (7, [])\n?  ^\n\n+ (1, [])\n?  ^\n",
+      "tests.test_3_report.TestReport.test_median_latency": "AssertionError: {'b01': 250, 'b02': 300, 'b03': 400, 'b04': 250} != {'b01': 300, 'b02': 300, 'b03': 2500, 'b04': 350}\n- {'b01': 250, 'b02': 300, 'b03': 400, 'b04': 250}\n?         ^^                      ^           ^\n\n+ {'b01': 300, 'b02': 300, 'b03': 2500, 'b04': 350}\n?         ^^                      ^^           ^\n",
+      "tests.test_3_report.TestReport.test_request_counts": "AssertionError: {'b01': 14, 'b02': 9, 'b03': 3, 'b04': 4} != {'b01': 14, 'b02': 10, 'b03': 1, 'b04': 5}\n- {'b01': 14, 'b02': 9, 'b03': 3, 'b04': 4}\n?                    ^         ^         ^\n\n+ {'b01': 14, 'b02': 10, 'b03': 1, 'b04': 5}\n?                    ^^         ^         ^\n",
+      "tests.test_3_report.TestReport.test_zones": "AssertionError: {'east': 23, 'west': 7} != {'east': 24, 'west': 6}\n- {'east': 23, 'west': 7}\n?           ^          ^\n\n+ {'east': 24, 'west': 6}\n?           ^          ^\n"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_routing",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_2_routing.TestRouting.test_assignments": "AssertionError: {'R01[85 chars]: 'b03', 'R08': 'b01', 'R09': 'b02', 'R10': 'b[279 chars]b04'} != {'R01[85 chars]: 'b01', 'R08': 'b02', 'R09': 'b02', 'R10': 'b[279 chars]b04'}\n  {'R01': 'b01',\n   'R02': 'b02',\n   'R03': 'b03',\n   'R04': 'b01',\n   'R05': 'b04',\n   'R06': 'b01',\n-  'R07': 'b03',\n?            ^\n\n+  'R07': 'b01',\n?            ^\n\n-  'R08': 'b01',\n?            ^\n\n+  'R08': 'b02',\n?            ^\n\n   'R09': 'b02',\n-  'R10': 'b02',\n?            ^\n\n+  'R10': 'b01',\n?            ^\n\n-  'R11': 'b01',\n?            ^\n\n+  'R11': 'b02',\n?            ^\n\n-  'R12': 'b03',\n?            ^\n\n+  'R12':",
+      "tests.test_2_routing.TestRouting.test_sessions": "AssertionError: {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b04', 'erin': 'b01'} != {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b04', 'erin': 'b02'}\n- {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b04', 'erin': 'b01'}\n?                                                                          ^\n\n+ {'alice': 'b01', 'bob': 'b02', 'carol': 'b01', 'dave': 'b04', 'erin': 'b02'}\n?                                                                          ^\n",
+      "tests.test_3_report.TestReport.test_median_latency": "AssertionError: {'b01': 250, 'b02': 300, 'b03': 400, 'b04': 350} != {'b01': 300, 'b02': 300, 'b03': 2500, 'b04': 350}\n- {'b01': 250, 'b02': 300, 'b03': 400, 'b04': 350}\n?         ^^                      ^\n\n+ {'b01': 300, 'b02': 300, 'b03': 2500, 'b04': 350}\n?         ^^                      ^^\n",
+      "tests.test_3_report.TestReport.test_request_counts": "AssertionError: {'b01': 13, 'b02': 8, 'b03': 4, 'b04': 5} != {'b01': 14, 'b02': 10, 'b03': 1, 'b04': 5}\n- {'b01': 13, 'b02': 8, 'b03': 4, 'b04': 5}\n?          ^         ^         ^\n\n+ {'b01': 14, 'b02': 10, 'b03': 1, 'b04': 5}\n?          ^         ^^         ^\n",
+      "tests.test_3_report.TestReport.test_zones": "AssertionError: {'east': 21, 'west': 9} != {'east': 24, 'west': 6}\n- {'east': 21, 'west': 9}\n?           ^          ^\n\n+ {'east': 24, 'west': 6}\n?           ^          ^\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_median_latency": "AssertionError: {'b01': 320, 'b02': 300, 'b03': 2500, 'b04': 350} != {'b01': 300, 'b02': 300, 'b03': 2500, 'b04': 350}\n- {'b01': 320, 'b02': 300, 'b03': 2500, 'b04': 350}\n?          ^\n\n+ {'b01': 300, 'b02': 300, 'b03': 2500, 'b04': 350}\n?          ^\n"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_zones": "AssertionError: {'a': 24, 'e': 30, 's': 30, 't': 30, 'w': 6} != {'east': 24, 'west': 6}\n- {'a': 24, 'e': 30, 's': 30, 't': 30, 'w': 6}\n+ {'east': 24, 'west': 6}"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_health",
+      "test_2_routing",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_health.TestHealth.test_backends_in_rotation",
+      "tests.test_1_health.TestHealth.test_final_state",
+      "tests.test_1_health.TestHealth.test_transitions",
+      "tests.test_2_routing.TestRouting.test_assignments",
+      "tests.test_2_routing.TestRouting.test_opening_requests",
+      "tests.test_2_routing.TestRouting.test_sessions",
+      "tests.test_3_report.TestReport.test_failovers_and_rejections",
+      "tests.test_3_report.TestReport.test_median_latency",
+      "tests.test_3_report.TestReport.test_request_counts",
+      "tests.test_3_report.TestReport.test_zones"
+    ]
+  }
+}

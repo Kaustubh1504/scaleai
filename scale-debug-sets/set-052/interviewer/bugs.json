@@ -1,0 +1,186 @@
+{
+  "id": "set-052",
+  "title": "Async embedding indexer: concurrency cap, retries, paginated usage",
+  "domain": "endpoint_client",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "embedindex",
+  "scenario": "Batch help-centre documents per collection, embed them concurrently under a semaphore with retries, normalise vectors per collection, then total tokens from the paginated usage API. Test 3 is the run summary.",
+  "verified": [
+    {
+      "file": "embedindex/retry.py",
+      "symbol": "wait_time",
+      "why_correct": "Retry-After wins when present, otherwise backoff \u00d7 2**attempt with attempt starting at 0, exactly as the README says. `2 ** attempt` without parentheses is fine because ** binds tighter than *."
+    },
+    {
+      "file": "embedindex/indexer.py",
+      "symbol": "make_batches",
+      "why_correct": "groupby is only safe on sorted input, and it is sorted by collection first. sorted() is stable, so documents keep their file order inside each collection, and numbering starts at 01 per collection."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Fresh semaphore per request",
+      "type": "semaphore-unused",
+      "file": "embedindex/client.py",
+      "function": "EmbeddingClient.embed_batch",
+      "test": "test_1_requests.TestRequests.test_concurrency_limit",
+      "old": "        async with self.limit:",
+      "new": "        async with asyncio.Semaphore(self.config.max_concurrency):",
+      "symptom": "Test 1 test_concurrency_limit: `7 not less than or equal to 2`. The server saw all seven batches in flight at once.",
+      "why": "Each call creates its own semaphore and is the only task that ever acquires it, so nothing is limited. The shared `self.limit` built in __init__ is never used.",
+      "unblocks": "test_concurrency_limit.",
+      "hints": [
+        "The server saw more simultaneous requests than max_concurrency allows. What is supposed to stop that?",
+        "Look at the `async with` in embed_batch: which semaphore does each task acquire?",
+        "Use the shared `self.limit` instead of creating asyncio.Semaphore(...) inside the call."
+      ],
+      "probes": [
+        "Why does a semaphore only limit concurrency if every task shares the same instance?",
+        "Why didn't attempts or vectors change when the limit was missing?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Backoff sleep never awaited",
+      "type": "missing-await",
+      "file": "embedindex/retry.py",
+      "function": "send_with_retries",
+      "test": "test_1_requests.TestRequests.test_backoff_waits",
+      "old": "        await sleep(wait_time(response, policy, attempt))",
+      "new": "        sleep(wait_time(response, policy, attempt))",
+      "symptom": "Test 1 test_backoff_waits: the recorded waits are [] instead of [0.01, 0.05, 0.05, 0.1, 0.1]. Retries still happen (attempt counts are right), and Python warns 'coroutine ... was never awaited'.",
+      "why": "Calling an async function without await only creates a coroutine object; it never runs. So retries go out immediately and the recorded waits are empty (Python prints 'coroutine was never awaited').",
+      "unblocks": "test_backoff_waits.",
+      "hints": [
+        "The retries happened, but no waits were recorded. Did the client ever wait?",
+        "Look at how send_with_retries calls sleep. What does calling an async def return?",
+        "Add `await` before sleep(wait_time(...))."
+      ],
+      "probes": [
+        "Why did every other test still pass when no wait happened?",
+        "Where in the test output could you have spotted this without reading the code?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Only 5xx treated as failure",
+      "type": "ignoring-http-status",
+      "file": "embedindex/client.py",
+      "function": "EmbeddingClient.embed_batch",
+      "test": "test_2_batches.TestBatches.test_batch_outcomes",
+      "old": "        if response.status != 200:\n            result.status = \"failed\"",
+      "new": "        if response.status >= 500:\n            result.status = \"failed\"",
+      "symptom": "Test 2 test_batch_outcomes: kb-02 shows ('ok', 422, 1) instead of ('failed', 422, 1).",
+      "why": "The README says any final status other than 200 fails the batch. The 422 validation error is below 500, so it falls through to parsing; the error body has no `data`, so the batch is reported ok with zero vectors.",
+      "unblocks": "test_batch_outcomes.",
+      "hints": [
+        "kb-02 got HTTP 422 but its status says ok. What decides ok vs failed?",
+        "Look at the status check right after the retries in embed_batch.",
+        "`response.status >= 500` should be `response.status != 200`."
+      ],
+      "probes": [
+        "Why didn't the summary's embedded count change?",
+        "Which statuses can reach that check at all, given the retry loop?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Collection options merged into shared defaults",
+      "type": "async-shared-state",
+      "file": "embedindex/client.py",
+      "function": "EmbeddingClient.embed_batch",
+      "test": "test_2_batches.TestBatches.test_vectors",
+      "old": "        options = dict(self.defaults)",
+      "new": "        options = self.defaults",
+      "symptom": "Test 2 test_vectors: the kb vectors come back unit-length (k01 is [0.4838, 0.1478, 0.0672, 0.86] instead of the raw [36.0, 11.0, 5.0, 64.0]). faq and policies vectors are unchanged.",
+      "why": "Every task updates the same `self.defaults` dict before its first await. By the time any response comes back, the dict holds the last-started batch's options (policies: normalize true), so kb vectors are normalised although kb says normalize false.",
+      "unblocks": "test_vectors.",
+      "hints": [
+        "Only the kb vectors differ, and they look normalised. What does kb's config say?",
+        "Follow `options` in embed_batch: is it a fresh dict per call, and when is `normalize` read compared with when it was set?",
+        "Copy the defaults: options = dict(self.defaults)."
+      ],
+      "probes": [
+        "Why is the result deterministic even though the tasks run concurrently?",
+        "Would this still happen if max_concurrency were 1? Why or why not?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "First usage page dropped",
+      "type": "pagination-cursor",
+      "file": "embedindex/indexer.py",
+      "function": "fetch_usage",
+      "test": "test_3_report.TestReport.test_total_tokens",
+      "old": "    records = list(page[\"data\"])",
+      "new": "    records = []",
+      "symptom": "Test 3 test_total_tokens: a total such as 31 instead of 63. The exact shortfall depends on which batches finished first, since those records sit on the first page.",
+      "why": "The first page is fetched before the loop, but its records are thrown away; only the pages reached by following next_cursor are kept.",
+      "unblocks": "test_total_tokens.",
+      "hints": [
+        "Three usage pages were requested, but the token total is short. Which records were counted?",
+        "Look at what fetch_usage does with the very first page.",
+        "Start with records = list(page[\"data\"])."
+      ],
+      "probes": [
+        "Why does the shortfall vary from run to run?",
+        "How would you restructure the loop so the first page can't be forgotten?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Shared default dict in tally",
+      "type": "mutable-default",
+      "file": "embedindex/reports.py",
+      "function": "tally",
+      "test": "test_3_report.TestReport.test_by_collection",
+      "old": "def tally(results, counts=None):\n    counts = {} if counts is None else counts\n",
+      "new": "def tally(results, counts={}):\n",
+      "symptom": "Test 3 test_by_collection: every collection shows the same dict, e.g. {'docs': 54, 'embedded': 36} in a full-suite run. The numbers keep growing with each build_report call in the process, so running test_3 alone gives {'docs': 18, 'embedded': 12} for every collection.",
+      "why": "A default `{}` is created once when the function is defined, so every call that doesn't pass counts adds into the same dict. Every collection ends up pointing at one dict holding the running total.",
+      "unblocks": "test_by_collection.",
+      "hints": [
+        "Every collection shows the same numbers. Are they really separate dicts?",
+        "Look at tally's signature.",
+        "Use counts=None and create a new dict inside the function."
+      ],
+      "probes": [
+        "Why are the numbers even bigger than the whole run's totals?",
+        "If you ran test_3 on its own, would the numbers be the same? Why?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report do end to end?",
+      "a": "It loads config.json and documents.csv, then runs `run_index` with asyncio.run. run_index builds batches with `make_batches`, starts `client.embed_batch` for all of them under one asyncio.gather, then calls `fetch_usage`. build_report turns the BatchResults into `batches`, `vectors` and `summary`."
+    },
+    {
+      "q": "How does send_with_retries count attempts?",
+      "a": "It loops: sends a request, returns `(response, attempt + 1)` if the status isn't in RETRYABLE or attempt has reached max_retries, otherwise sleeps for `wait_time(...)` via the injected sleep and increments attempt."
+    },
+    {
+      "q": "Where does the client limit concurrency?",
+      "a": "`EmbeddingClient.__init__` creates `self.limit = asyncio.Semaphore(config.max_concurrency)`. The HTTP call in embed_batch is wrapped in an `async with` block around send_with_retries."
+    },
+    {
+      "q": "How are options per collection built?",
+      "a": "In embed_batch, `options` starts from the client's `defaults` (copied from config.defaults in __init__) and is updated with `config.options_for(batch.collection)`. `options.get('normalize')` is checked when each vector is processed, after the response arrives."
+    },
+    {
+      "q": "What does parse_vectors return for an error body?",
+      "a": "It reads `body['data']` when the body is a dict, defaulting to an empty list, sorts the items by `index` and returns their embeddings. For an error body without `data` it returns []."
+    },
+    {
+      "q": "How does the mock server paginate usage?",
+      "a": "GET /v1/usage returns `{\"data\": rows, \"next_cursor\": ...}` where rows are `limit` records from an offset encoded in the cursor; next_cursor is null when there are no more. One usage record is added per 200 embeddings response, in completion order."
+    },
+    {
+      "q": "What does tally compute?",
+      "a": "For the results passed in, it adds `len(r.doc_ids)` to `docs` and `len(r.vectors)` to `embedded` in a counts dict and returns it. summarize calls it once per collection with that collection's results."
+    }
+  ]
+}

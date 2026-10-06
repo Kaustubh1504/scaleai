@@ -1,0 +1,11 @@
+backend_id,pool,zone,weight,max_conns,enabled
+b01,api,east,3,2,yes
+B02,api,East,2,2,Yes
+b03,api,west,1,1,y
+b04, api ,west,1,2,true
+b05,api,west,2,2,false
+s01,static,east,1,10,yes
+s02,static,west,1,10,yes
+s03,admin,east,1,4,yes
+s04,static,east,1,10,no
+s05,admin,west,1,4,

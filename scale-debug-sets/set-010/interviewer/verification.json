@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_throttle"
+    ],
+    "failures": {
+      "tests.test_1_throttle.TestThrottle.test_retry_after": "AssertionError: {'R07': 35000, 'R11': 52000, 'R17': 55000, 'R22': 1} != {'R07': 35.0, 'R11': 52.0, 'R17': 55.0, 'R22': 0.001}\n- {'R07': 35000, 'R11': 52000, 'R17': 55000, 'R22': 1}\n?           ^^            ^^            ^^\n\n+ {'R07': 35.0, 'R11': 52.0, 'R17': 55.0, 'R22': 0.001}\n?           ^            ^            ^          ++++\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_throttle"
+    ],
+    "failures": {
+      "tests.test_1_throttle.TestThrottle.test_throttled_requests": "AssertionError: Lists differ: ['R03', 'R07', 'R11', 'R17', 'R18', 'R21', 'R22'] != ['R07', 'R11', 'R17', 'R18', 'R21', 'R22']\n\nFirst differing element 0:\n'R03'\n'R07'\n\nFirst list contains 1 additional elements.\nFirst extra element 6:\n'R22'\n\n- ['R03', 'R07', 'R11', 'R17', 'R18', 'R21', 'R22']\n?  -------\n\n+ ['R07', 'R11', 'R17', 'R18', 'R21', 'R22']"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_usage"
+    ],
+    "failures": {
+      "tests.test_2_usage.TestUsage.test_by_endpoint": "AssertionError: {'acme': {'chat': 50000, 'embed': 62300}, 'globex': {'chat'[310 chars]000}} != {'acme': {'chat': 150000, 'embed': 62300}, 'globex': {'chat[314 chars]000}}\n- {'acme': {'chat': 50000, 'embed': 62300},\n+ {'acme': {'chat': 150000, 'embed': 62300},\n?                   +\n\n-  'globex': {'chat': 400000, 'embed': 140000},\n?                     ^                ^\n\n+  'globex': {'chat': 900000, 'embed': 340000},\n?                     ^                ^\n\n-  'hooli': {'chat': 500000, 'embed': 300000},\n?                    ^\n\n+  'hooli': {'chat': 1200000, 'embed': 300000},\n?                 "
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_3_invoices"
+    ],
+    "failures": {
+      "tests.test_3_invoices.TestInvoices.test_discounts": "AssertionError: {'acm[88 chars], 'tyrell': 0.0, 'umbrella': 15.95, 'wayne': 0.0, 'wonka': 0.0} != {'acm[88 chars], 'tyrell': 0.0, 'umbrella': 0.0, 'wayne': 0.0, 'wonka': 0.0}\n  {'acme': 0.0,\n   'globex': 35.9,\n   'hooli': 21.2,\n   'initech': 0.0,\n   'soylent': 14.95,\n   'stark': 10.95,\n   'tyrell': 0.0,\n-  'umbrella': 15.95,\n?              ^^ ^^\n\n+  'umbrella': 0.0,\n?              ^ ^\n\n   'wayne': 0.0,\n   'wonka': 0.0}"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_invoices"
+    ],
+    "failures": {
+      "tests.test_3_invoices.TestInvoices.test_overage": "AssertionError: {'acme': 4.8, 'globex': 60.0, 'hooli': 125.0, 'ini[98 chars] 0.0} != {'acme': 5.2, 'globex': 60.0, 'hooli': 125.0, 'ini[98 chars] 0.0}\n- {'acme': 4.8,\n?          ^ ^\n\n+ {'acme': 5.2,\n?          ^ ^\n\n   'globex': 60.0,\n   'hooli': 125.0,\n   'initech': 0.0,\n   'soylent': 0.0,\n   'stark': 24.0,\n   'tyrell': 2.0,\n   'umbrella': 20.0,\n   'wayne': 4.0,\n   'wonka': 0.0}"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_invoices"
+    ],
+    "failures": {
+      "tests.test_3_invoices.TestInvoices.test_top_tenants": "AssertionError: Lists differ: ['initech', 'wayne', 'wonka'] != ['hooli', 'globex', 'umbrella']\n\nFirst differing element 0:\n'initech'\n'hooli'\n\n- ['initech', 'wayne', 'wonka']\n+ ['hooli', 'globex', 'umbrella']"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_throttle",
+      "test_2_usage",
+      "test_3_invoices"
+    ],
+    "failing_tests": [
+      "tests.test_1_throttle.TestThrottle.test_retry_after",
+      "tests.test_1_throttle.TestThrottle.test_throttled_requests",
+      "tests.test_2_usage.TestUsage.test_by_endpoint",
+      "tests.test_3_invoices.TestInvoices.test_discounts",
+      "tests.test_3_invoices.TestInvoices.test_overage",
+      "tests.test_3_invoices.TestInvoices.test_top_tenants"
+    ]
+  }
+}

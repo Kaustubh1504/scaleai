@@ -1,0 +1,95 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_streams"
+    ],
+    "failures": {
+      "tests.test_1_streams.TestStreams.test_camera_stats": "AssertionError: {'EP-[515 chars]es': 8, 'duration_ms': 350, 'max_gap_ms': 100}[246 chars] 40}} != {'EP-[515 chars]es': 7, 'duration_ms': 350, 'max_gap_ms': 100}[246 chars] 40}}\n  {'EP-01': {'duration_ms': 700, 'frames': 8, 'max_gap_ms': 100},\n   'EP-02': {'duration_ms': 700, 'frames': 8, 'max_gap_ms': 100},\n   'EP-03': {'duration_ms': 450, 'frames': 10, 'max_gap_ms': 50},\n   'EP-04': {'duration_ms': 600, 'frames': 7, 'max_gap_ms': 100},\n   'EP-05': {'duration_ms': 500, 'frames': 6, 'max_gap_ms': 100},\n   'EP-06': {'duration_ms': 400, 'frames': 5, 'max_gap_ms': 100},\n   'EP-07': {'duration_ms':"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_validity",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_2_validity.TestValidity.test_rejection_reasons": "AssertionError: {'EP-03': 'robot_unavailable', 'EP-04': 'robot_[158 chars]ble'} != {'EP-04': 'robot_unavailable', 'EP-06': 'too_sh[98 chars]ble'}\n- {'EP-03': 'robot_unavailable',\n?       ^\n\n+ {'EP-04': 'robot_unavailable',\n?       ^\n\n-  'EP-04': 'robot_unavailable',\n   'EP-06': 'too_short',\n   'EP-08': 'frame_gap',\n   'EP-10': 'missing_stream',\n   'EP-11': 'desync',\n-  'EP-12': 'robot_unavailable',\n?                              ^\n\n+  'EP-12': 'robot_unavailable'}\n?                              ^\n\n-  'EP-13': 'robot_unavailable'}",
+      "tests.test_2_validity.TestValidity.test_valid_episodes": "AssertionError: Lists differ: ['EP-01', 'EP-02', 'EP-05', 'EP-07', 'EP-09', 'EP-14'] != ['EP-01', 'EP-02', 'EP-03', 'EP-05', 'EP-07', 'EP-09', 'EP-13', 'EP-14']\n\nFirst differing element 2:\n'EP-05'\n'EP-03'\n\nSecond list contains 2 additional elements.\nFirst extra element 6:\n'EP-13'\n\n- ['EP-01', 'EP-02', 'EP-05', 'EP-07', 'EP-09', 'EP-14']\n+ ['EP-01', 'EP-02', 'EP-03', 'EP-05', 'EP-07', 'EP-09', 'EP-13', 'EP-14']\n?                    +++++++++                           +++++++++\n",
+      "tests.test_3_report.TestReport.test_invalid_reasons": "AssertionError: {'des[22 chars]1, 'missing_stream': 1, 'robot_unavailable': 4, 'too_short': 1} != {'des[22 chars]1, 'missing_stream': 1, 'robot_unavailable': 2, 'too_short': 1}\n  {'desync': 1,\n   'frame_gap': 1,\n   'missing_stream': 1,\n-  'robot_unavailable': 4,\n?                       ^\n\n+  'robot_unavailable': 2,\n?                       ^\n\n   'too_short': 1}",
+      "tests.test_3_report.TestReport.test_sync_and_duration": "AssertionError: Tuples differ: (0.955, 3.2) != (0.967, 4.4)\n\nFirst differing element 0:\n0.955\n0.967\n\n- (0.955, 3.2)\n+ (0.967, 4.4)",
+      "tests.test_3_report.TestReport.test_totals": "AssertionError: Tuples differ: (14, 6) != (14, 8)\n\nFirst differing element 1:\n6\n8\n\n- (14, 6)\n?      ^\n\n+ (14, 8)\n?      ^\n",
+      "tests.test_3_report.TestReport.test_valid_by_day": "AssertionError: {'2026-04-02': 1, '2026-04-03': 3, '2026-04-04': 1, '2026-04-05': 1} != {'2026-04-02': 2, '2026-04-03': 3, '2026-04-04': 1, '2026-04-05': 2}\n- {'2026-04-02': 1, '2026-04-03': 3, '2026-04-04': 1, '2026-04-05': 1}\n?                ^                                                  ^\n\n+ {'2026-04-02': 2, '2026-04-03': 3, '2026-04-04': 1, '2026-04-05': 2}\n?                ^                                                  ^\n",
+      "tests.test_3_report.TestReport.test_valid_by_task": "AssertionError: {'pick': 2, 'place': 2, 'stack': 2} != {'pick': 3, 'place': 3, 'stack': 2}\n- {'pick': 2, 'place': 2, 'stack': 2}\n?          ^           ^\n\n+ {'pick': 3, 'place': 3, 'stack': 2}\n?          ^           ^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_validity",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_2_validity.TestValidity.test_rejection_reasons": "AssertionError: {'EP-01': 'frame_gap', 'EP-02': 'frame_gap', 'E[277 chars]gap'} != {'EP-04': 'robot_unavailable', 'EP-06': 'too_sh[98 chars]ble'}\n- {'EP-01': 'frame_gap',\n-  'EP-02': 'frame_gap',\n-  'EP-03': 'frame_gap',\n-  'EP-04': 'robot_unavailable',\n? ^\n\n+ {'EP-04': 'robot_unavailable',\n? ^\n\n-  'EP-05': 'frame_gap',\n   'EP-06': 'too_short',\n-  'EP-07': 'frame_gap',\n   'EP-08': 'frame_gap',\n-  'EP-09': 'frame_gap',\n   'EP-10': 'missing_stream',\n-  'EP-11': 'frame_gap',\n+  'EP-11': 'desync',\n-  'EP-12': 'robot_unavailable',\n?                              ^\n\n+  'EP-12': 'robot_unavailable'}\n?",
+      "tests.test_2_validity.TestValidity.test_valid_episodes": "AssertionError: Lists differ: [] != ['EP-01', 'EP-02', 'EP-03', 'EP-05', 'EP-07', 'EP-09', 'EP-13', 'EP-14']\n\nSecond list contains 8 additional elements.\nFirst extra element 0:\n'EP-01'\n\n- []\n+ ['EP-01', 'EP-02', 'EP-03', 'EP-05', 'EP-07', 'EP-09', 'EP-13', 'EP-14']",
+      "tests.test_3_report.TestReport.test_invalid_reasons": "AssertionError: {'frame_gap': 10, 'missing_stream': 1, 'rob[30 chars]': 1} != {'desync': 1, 'frame_gap': 1, 'missing_stre[42 chars]': 1}\n- {'frame_gap': 10, 'missing_stream': 1, 'robot_unavailable': 2, 'too_short': 1}\n+ {'desync': 1,\n+  'frame_gap': 1,\n+  'missing_stream': 1,\n+  'robot_unavailable': 2,\n+  'too_short': 1}",
+      "tests.test_3_report.TestReport.test_sync_and_duration": "AssertionError: Tuples differ: (None, 0.0) != (0.967, 4.4)\n\nFirst differing element 0:\nNone\n0.967\n\n- (None, 0.0)\n+ (0.967, 4.4)",
+      "tests.test_3_report.TestReport.test_totals": "AssertionError: Tuples differ: (14, 0) != (14, 8)\n\nFirst differing element 1:\n0\n8\n\n- (14, 0)\n?      ^\n\n+ (14, 8)\n?      ^\n",
+      "tests.test_3_report.TestReport.test_valid_by_day": "AssertionError: {} != {'2026-04-02': 2, '2026-04-03': 3, '2026-04-04': 1, '2026-04-05': 2}\n- {}\n+ {'2026-04-02': 2, '2026-04-03': 3, '2026-04-04': 1, '2026-04-05': 2}",
+      "tests.test_3_report.TestReport.test_valid_by_task": "AssertionError: {} != {'pick': 3, 'place': 3, 'stack': 2}\n- {}\n+ {'pick': 3, 'place': 3, 'stack': 2}"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_validity",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_2_validity.TestValidity.test_rejection_reasons": "AssertionError: {'EP-[48 chars]'EP-07': 'desync', 'EP-08': 'frame_gap', 'EP-1[65 chars]ble'} != {'EP-[48 chars]'EP-08': 'frame_gap', 'EP-10': 'missing_stream[46 chars]ble'}\n  {'EP-04': 'robot_unavailable',\n   'EP-06': 'too_short',\n-  'EP-07': 'desync',\n   'EP-08': 'frame_gap',\n   'EP-10': 'missing_stream',\n   'EP-11': 'desync',\n   'EP-12': 'robot_unavailable'}",
+      "tests.test_2_validity.TestValidity.test_valid_episodes": "AssertionError: Lists differ: ['EP-01', 'EP-02', 'EP-03', 'EP-05', 'EP-09', 'EP-13', 'EP-14'] != ['EP-01', 'EP-02', 'EP-03', 'EP-05', 'EP-07', 'EP-09', 'EP-13', 'EP-14']\n\nFirst differing element 4:\n'EP-09'\n'EP-07'\n\nSecond list contains 1 additional elements.\nFirst extra element 7:\n'EP-14'\n\n- ['EP-01', 'EP-02', 'EP-03', 'EP-05', 'EP-09', 'EP-13', 'EP-14']\n+ ['EP-01', 'EP-02', 'EP-03', 'EP-05', 'EP-07', 'EP-09', 'EP-13', 'EP-14']\n?                                      +++++++++\n",
+      "tests.test_3_report.TestReport.test_invalid_reasons": "AssertionError: {'desync': 2, 'frame_gap': 1, 'missing_stream': 1, '[33 chars]': 1} != {'desync': 1, 'frame_gap': 1, 'missing_stream': 1, '[33 chars]': 1}\n- {'desync': 2,\n?            ^\n\n+ {'desync': 1,\n?            ^\n\n   'frame_gap': 1,\n   'missing_stream': 1,\n   'robot_unavailable': 2,\n   'too_short': 1}",
+      "tests.test_3_report.TestReport.test_sync_and_duration": "AssertionError: Tuples differ: (0.962, 3.7) != (0.967, 4.4)\n\nFirst differing element 0:\n0.962\n0.967\n\n- (0.962, 3.7)\n?      ^  ^ ^\n\n+ (0.967, 4.4)\n?      ^  ^ ^\n",
+      "tests.test_3_report.TestReport.test_totals": "AssertionError: Tuples differ: (14, 7) != (14, 8)\n\nFirst differing element 1:\n7\n8\n\n- (14, 7)\n?      ^\n\n+ (14, 8)\n?      ^\n",
+      "tests.test_3_report.TestReport.test_valid_by_day": "AssertionError: {'2026-04-02': 2, '2026-04-03': 2, '2026-04-04': 1, '2026-04-05': 2} != {'2026-04-02': 2, '2026-04-03': 3, '2026-04-04': 1, '2026-04-05': 2}\n- {'2026-04-02': 2, '2026-04-03': 2, '2026-04-04': 1, '2026-04-05': 2}\n?                                 ^\n\n+ {'2026-04-02': 2, '2026-04-03': 3, '2026-04-04': 1, '2026-04-05': 2}\n?                                 ^\n",
+      "tests.test_3_report.TestReport.test_valid_by_task": "AssertionError: {'pick': 2, 'place': 3, 'stack': 2} != {'pick': 3, 'place': 3, 'stack': 2}\n- {'pick': 2, 'place': 3, 'stack': 2}\n?          ^\n\n+ {'pick': 3, 'place': 3, 'stack': 2}\n?          ^\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_2_validity",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_2_validity.TestValidity.test_rejection_reasons": "AssertionError: {'EP-[26 chars]'EP-05': 'too_short', 'EP-06': 'too_short', 'E[90 chars]ble'} != {'EP-[26 chars]'EP-06': 'too_short', 'EP-08': 'frame_gap', 'E[68 chars]ble'}\n  {'EP-04': 'robot_unavailable',\n-  'EP-05': 'too_short',\n   'EP-06': 'too_short',\n   'EP-08': 'frame_gap',\n   'EP-10': 'missing_stream',\n   'EP-11': 'desync',\n   'EP-12': 'robot_unavailable'}",
+      "tests.test_2_validity.TestValidity.test_valid_episodes": "AssertionError: Lists differ: ['EP-01', 'EP-02', 'EP-03', 'EP-07', 'EP-09', 'EP-13', 'EP-14'] != ['EP-01', 'EP-02', 'EP-03', 'EP-05', 'EP-07', 'EP-09', 'EP-13', 'EP-14']\n\nFirst differing element 3:\n'EP-07'\n'EP-05'\n\nSecond list contains 1 additional elements.\nFirst extra element 7:\n'EP-14'\n\n- ['EP-01', 'EP-02', 'EP-03', 'EP-07', 'EP-09', 'EP-13', 'EP-14']\n+ ['EP-01', 'EP-02', 'EP-03', 'EP-05', 'EP-07', 'EP-09', 'EP-13', 'EP-14']\n?                             +++++++++\n",
+      "tests.test_3_report.TestReport.test_invalid_reasons": "AssertionError: {'des[22 chars]1, 'missing_stream': 1, 'robot_unavailable': 2, 'too_short': 2} != {'des[22 chars]1, 'missing_stream': 1, 'robot_unavailable': 2, 'too_short': 1}\n  {'desync': 1,\n   'frame_gap': 1,\n   'missing_stream': 1,\n   'robot_unavailable': 2,\n-  'too_short': 2}\n?               ^\n\n+  'too_short': 1}\n?               ^\n",
+      "tests.test_3_report.TestReport.test_sync_and_duration": "AssertionError: Tuples differ: (0.962, 3.9) != (0.967, 4.4)\n\nFirst differing element 0:\n0.962\n0.967\n\n- (0.962, 3.9)\n?      ^  ^ ^\n\n+ (0.967, 4.4)\n?      ^  ^ ^\n",
+      "tests.test_3_report.TestReport.test_totals": "AssertionError: Tuples differ: (14, 7) != (14, 8)\n\nFirst differing element 1:\n7\n8\n\n- (14, 7)\n?      ^\n\n+ (14, 8)\n?      ^\n",
+      "tests.test_3_report.TestReport.test_valid_by_day": "AssertionError: {'2026-04-02': 2, '2026-04-03': 2, '2026-04-04': 1, '2026-04-05': 2} != {'2026-04-02': 2, '2026-04-03': 3, '2026-04-04': 1, '2026-04-05': 2}\n- {'2026-04-02': 2, '2026-04-03': 2, '2026-04-04': 1, '2026-04-05': 2}\n?                                 ^\n\n+ {'2026-04-02': 2, '2026-04-03': 3, '2026-04-04': 1, '2026-04-05': 2}\n?                                 ^\n",
+      "tests.test_3_report.TestReport.test_valid_by_task": "AssertionError: {'pick': 3, 'place': 3, 'stack': 1} != {'pick': 3, 'place': 3, 'stack': 2}\n- {'pick': 3, 'place': 3, 'stack': 1}\n?                                  ^\n\n+ {'pick': 3, 'place': 3, 'stack': 2}\n?                                  ^\n"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_invalid_reasons": "AssertionError: {'_': 5, 'a': 9, 'b': 4, 'c': 1, 'd': 1, 'e[120 chars]': 1} != {'desync': 1, 'frame_gap': 1, 'missing_stre[42 chars]': 1}\n+ {'desync': 1,\n+  'frame_gap': 1,\n+  'missing_stream': 1,\n+  'robot_unavailable': 2,\n+  'too_short': 1}\n- {'_': 5,\n-  'a': 9,\n-  'b': 4,\n-  'c': 1,\n-  'd': 1,\n-  'e': 5,\n-  'f': 1,\n-  'g': 2,\n-  'h': 1,\n-  'i': 4,\n-  'l': 4,\n-  'm': 3,\n-  'n': 4,\n-  'o': 7,\n-  'p': 1,\n-  'r': 5,\n-  's': 5,\n-  't': 5,\n-  'u': 2,\n-  'v': 2,\n-  'y': 1}"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_streams",
+      "test_2_validity",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_streams.TestStreams.test_camera_stats",
+      "tests.test_2_validity.TestValidity.test_rejection_reasons",
+      "tests.test_2_validity.TestValidity.test_valid_episodes",
+      "tests.test_3_report.TestReport.test_invalid_reasons",
+      "tests.test_3_report.TestReport.test_sync_and_duration",
+      "tests.test_3_report.TestReport.test_totals",
+      "tests.test_3_report.TestReport.test_valid_by_day",
+      "tests.test_3_report.TestReport.test_valid_by_task"
+    ]
+  }
+}

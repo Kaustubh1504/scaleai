@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_routing"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_1_thresholds_for_v2_items": "AssertionError: {'P-03': 0.8, 'P-04': 0.8, 'P-06': 0.9, 'P-08': 0.85[49 chars] 0.8} != {'P-03': 0.95, 'P-04': 0.95, 'P-06': 0.92, 'P-08': 0[55 chars]0.95}\n- {'P-03': 0.8,\n?            ^\n\n+ {'P-03': 0.95,\n?            ^^\n\n-  'P-04': 0.8,\n?            ^\n\n+  'P-04': 0.95,\n?            ^^\n\n-  'P-06': 0.9,\n+  'P-06': 0.92,\n?             +\n\n-  'P-08': 0.85,\n?             ^\n\n+  'P-08': 0.88,\n?             ^\n\n-  'P-11': 0.8,\n?            ^\n\n+  'P-11': 0.95,\n?            ^^\n\n   'P-16': 0.75,\n-  'P-18': 0.9,\n+  'P-18': 0.92,\n?             +\n\n-  'P-24': 0.8}\n?            ^\n\n+  'P-24': 0.95}\n?            "
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_routing"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_2_decisions": "AssertionError: {'P-0[98 chars]7': 'human', 'P-08': 'auto', 'P-09': 'auto', '[245 chars]man'} != {'P-0[98 chars]7': 'auto', 'P-08': 'auto', 'P-09': 'auto', 'P[244 chars]man'}\n  {'P-01': 'auto',\n   'P-02': 'human',\n   'P-03': 'auto',\n   'P-04': 'human',\n   'P-05': 'auto',\n   'P-06': 'auto',\n-  'P-07': 'human',\n?           ^ ^^^\n\n+  'P-07': 'auto',\n?           ^ ^^\n\n   'P-08': 'auto',\n   'P-09': 'auto',\n   'P-10': 'human',\n   'P-11': 'human',\n   'P-12': 'auto',\n   'P-13': 'human',\n   'P-14': 'human',\n   'P-15': 'human',\n   'P-16': 'human',\n   'P-17': 'human',\n   'P-18': 'human',\n   'P-19': 'huma"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_assignment"
+    ],
+    "failures": {
+      "tests.test_2_assignment.TestAssignment.test_3_english_reviewers": "AssertionError: {'r-01': ['P-14', 'P-04'], 'r-03': ['P-26'], 'r-06': ['P-15', 'P-02']} != {'r-01': ['P-02', 'P-04'], 'r-03': ['P-26'], 'r-06': ['P-11', 'P-14']}\n- {'r-01': ['P-14', 'P-04'], 'r-03': ['P-26'], 'r-06': ['P-15', 'P-02']}\n?              ^^                                           ^      ^^\n\n+ {'r-01': ['P-02', 'P-04'], 'r-03': ['P-26'], 'r-06': ['P-11', 'P-14']}\n?              ^^                                           ^      ^^\n"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_assignment"
+    ],
+    "failures": {
+      "tests.test_2_assignment.TestAssignment.test_4_german_reviewers": "AssertionError: {'r-05': ['P-10', 'P-16', 'P-18'], 'r-07': ['P-17']} != {'r-05': ['P-10', 'P-16', 'P-17'], 'r-07': []}\n- {'r-05': ['P-10', 'P-16', 'P-18'], 'r-07': ['P-17']}\n?                               ^             ------\n\n+ {'r-05': ['P-10', 'P-16', 'P-17'], 'r-07': []}\n?                               ^\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_5_reviewer_mix": "AssertionError: {'r-01': {'a': 3, 'h': 1, 'm': 3, 'p': 2, 's': 2}, '[275 chars]: 1}} != {'r-01': {'ham': 1, 'spam': 2}, 'r-03': {'ok': 1, 't[110 chars]: 1}}\nDiff is 664 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_6_exported_timestamps": "AssertionError: '2026-03-01 16:45:00' != '2026-03-01T16:45:00'\n- 2026-03-01 16:45:00\n?           ^\n+ 2026-03-01T16:45:00\n?           ^\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_routing",
+      "test_2_assignment",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_routing.TestRouting.test_1_thresholds_for_v2_items",
+      "tests.test_1_routing.TestRouting.test_2_decisions",
+      "tests.test_2_assignment.TestAssignment.test_3_english_reviewers",
+      "tests.test_2_assignment.TestAssignment.test_4_german_reviewers",
+      "tests.test_3_report.TestReport.test_5_reviewer_mix",
+      "tests.test_3_report.TestReport.test_6_exported_timestamps"
+    ]
+  }
+}

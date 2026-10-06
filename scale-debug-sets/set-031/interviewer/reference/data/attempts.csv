@@ -1,0 +1,36 @@
+model,item_id,attempt,status,output,latency_ms
+atlas-7b,Q01,1,ok,Answer: A,812
+atlas-7b,Q02,1,timeout,,30000
+atlas-7b,q02,2,ok,"Answer: B... wait, recheck. Answer: C",1450
+Atlas-7B,Q03,1,OK,B,640
+atlas-7b,Q04,1,ok,Answer: (A),902
+atlas-7b,Q04,2,error,,15
+atlas-7b,Q05,1,error,,12
+atlas-7b,Q05,2,ERROR,rate limited,9
+atlas-7b,Q06,1,ok,I think the answer is B,1103
+atlas-7b , Q07,1,ok,answer: d,777
+atlas-7b,Q08,1,ok,Answer: C,850
+atlas-7b,Q08,2,timed_out,,30000
+atlas-7b,Q09,1,ok,(A).,500
+atlas-7b,Q10,1,ok,Answer: C,690
+atlas-7b,q11,1,500,,20
+atlas-7b,Q11,2,Success,Answer: A,1210
+atlas-7b,Q12,1,ok,Answer=C,733
+boreal-13b,Q01,1,ok,Answer: B,1320
+boreal-13b,Q02,1,ok, C ,1100
+boreal-13b,Q03,1,error,,18
+boreal-13b,Q03,2,,,21
+boreal-13b,Q03,3,Timeout,,30000
+BOREAL-13B,Q04,1,ok,Answer: D,1288
+boreal-13b,Q05,1,ok,Final answer: (A),1500
+boreal-13b,Q06,2,ok,Answer: D,1410
+boreal-13b,Q06,1,ok,Answer: B,1390
+boreal-13b,Q07,1,timeout,,30000
+boreal-13b,Q07,2,ok,Answer: D,1250
+boreal-13b,q08,1,ok,Answer: maybe C or B,1602
+boreal-13b,Q09,1,error ,upstream 502,31
+boreal-13b,Q10,1,ok,B.,980
+boreal-13b,Q11,1,ok,Answer: A,1190
+boreal-13b,Q11,2,error,upstream 502,25
+boreal-13b,Q12,1,ok,"Answer: B
+Answer: C",1333

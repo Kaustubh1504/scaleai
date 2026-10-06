@@ -1,0 +1,41 @@
+doc_id,annotator,start,end,label
+D01,ann-a,0,11,PER
+d01,ann-a,19,33,org
+D02,ann-a,13,30,location
+D02,ann-a,37,42,gpe
+D02,ann-a, 46,57,date
+D03,Ann-A,4,17,person
+D03,ann-a,40,50,ORG
+D03,ann-a,54,59,loc
+D99,ann-a,0,5,PER
+D07,ann-a,0,12,PER
+d07,ANN-A,0,12,Person
+D07,ann-a,25,38 ,company
+D07,ann-a,52,58,LOC
+ D01, ann-b,0,11,person
+D03,ann-b,4,18,org
+D03,ann-b,40,50,org
+D05,ann-b,0,11,PER
+D05,ann-b,22,27,company
+D05,ann-b,47,59,place
+d06,ANN-B, 13,24,per
+D11,ann-b,16,21,MISC
+D06,ann-b,64,70,ORG
+D08,ann-b,0,18,ORG
+D09,ann-b,0,11,PER
+D09,ann-b,0,10,per
+D11,ann-c,,21,event
+D09,ann-b,53,58,LOC
+D02,ann-c,38,42,LOC
+D02,ann-c,48,57,DATE
+D04,ann-c,9,22,ORG
+D04 ,ann-c,44,53,PERSON
+D06,ann-c,3,12,DATE
+D06,ann-c,30,45,ORG
+D10,ann-d,0,13,person
+D10,ann-d,38,49,org
+D12,ann-d,23,40,ORG
+D12,ann-d,56,,LOC
+D08,ann-d,40,200,LOC
+D09,ann-d,10,10,PER
+D10,ann-d,6,7,PER

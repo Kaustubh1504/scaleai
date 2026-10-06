@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_judgments"
+    ],
+    "failures": {
+      "tests.test_1_judgments.TestJudgments.test_parse_failures": "AssertionError: Lists differ: ['j10', 'j15', 'j32', 'j34'] != ['j10', 'j15', 'j32', 'j34', 'line-21']\n\nSecond list contains 1 additional elements.\nFirst extra element 4:\n'line-21'\n\n- ['j10', 'j15', 'j32', 'j34']\n+ ['j10', 'j15', 'j32', 'j34', 'line-21']\n?                            +++++++++++\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_leaderboard"
+    ],
+    "failures": {
+      "tests.test_2_leaderboard.TestLeaderboard.test_leaderboard": "AssertionError: {'atlas-7b': 0.678, 'borealis-13b': 0.68, 'cirrus-70b': 0.775} != {'atlas-7b': 0.679, 'borealis-13b': 0.681, 'cirrus-70b': 0.776}\n- {'atlas-7b': 0.678, 'borealis-13b': 0.68, 'cirrus-70b': 0.775}\n?                  ^                                          ^\n\n+ {'atlas-7b': 0.679, 'borealis-13b': 0.681, 'cirrus-70b': 0.776}\n?                  ^                      +                    ^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_leaderboard"
+    ],
+    "failures": {
+      "tests.test_2_leaderboard.TestLeaderboard.test_categories": "AssertionError: {'atlas-7b': {'n': 12, 'mean': 0.706}, 'bor[223 chars]656}} != {'coding': {'n': 6, 'mean': 0.669}, 'reason[101 chars]656}}\nDiff is 769 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_judgments",
+      "test_2_leaderboard"
+    ],
+    "failing_tests": [
+      "tests.test_1_judgments.TestJudgments.test_parse_failures",
+      "tests.test_2_leaderboard.TestLeaderboard.test_categories",
+      "tests.test_2_leaderboard.TestLeaderboard.test_leaderboard"
+    ]
+  }
+}

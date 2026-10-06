@@ -1,0 +1,186 @@
+{
+  "id": "set-070",
+  "title": "Confidence routing to human review: flags, worklist urgency, run summary",
+  "domain": "hitl_routing",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "hitlroute",
+  "scenario": "Route model predictions to auto-accept or human review by sensitivity, label policy and confidence threshold, assign review items to skilled reviewers with capacity, order worklists by urgency (priority 1 = most urgent), and summarise the run.",
+  "verified": [
+    {
+      "file": "hitlroute/assign.py",
+      "symbol": "assign_reviewers",
+      "why_correct": "It walks review items in item id order, filters to active reviewers with the skill and spare capacity (`load < capacity`), and picks min by (load, reviewer_id). That is exactly the README rule, and loads are shared across tasks as specified. The three toxicity items in the backlog are real: r01, r02 and r05 are full by then."
+    },
+    {
+      "file": "hitlroute/loader.py",
+      "symbol": "parse_confidence",
+      "why_correct": "Blank becomes None, '91%' becomes 0.91, and '0' becomes 0.0. `if not text` tests the string before conversion, so a zero confidence is not lost here."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Zero confidence treated as missing",
+      "type": "falsy-zero",
+      "file": "hitlroute/router.py",
+      "function": "route",
+      "test": "test_1_routing.TestRouting.test_toxicity_review_reasons",
+      "old": "    if pred.confidence is None:",
+      "new": "    if not pred.confidence:",
+      "symptom": "Test 1 test_toxicity_review_reasons: T04 (confidence 0) has reason no_confidence instead of low_confidence. Its decision is still human_review.",
+      "why": "`not 0.0` is True, so T04's genuine confidence of 0 is reported as no_confidence. The README says 0 is a real confidence, which makes T04 low_confidence.",
+      "unblocks": "test_toxicity_review_reasons.",
+      "hints": [
+        "T04's confidence column is 0, not blank. What reason does it get?",
+        "parse_confidence is VERIFIED. Look at how router.route tests for a missing confidence.",
+        "Use `if pred.confidence is None:`."
+      ],
+      "probes": [
+        "Why did T04's decision and its place in r02's worklist not change?",
+        "Where else in the code is a None confidence handled, and does it use the safe form?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Sensitive flag parsed with bool()",
+      "type": "bool-from-string",
+      "file": "hitlroute/loader.py",
+      "function": "load_predictions",
+      "test": "test_1_routing.TestRouting.test_caption_review_reasons",
+      "old": "                sensitive=parse_flag(row[\"sensitive\"]),",
+      "new": "                sensitive=bool(clean(row[\"sensitive\"])),",
+      "symptom": "Test 1 test_caption_review_reasons: C02 ('no'), C03 ('false') and C06 ('N') have reason sensitive instead of low_confidence. Decisions are unchanged.",
+      "why": "bool() of any non-empty string is True, so 'no', 'false' and 'N' all count as sensitive. C02, C03 and C06 get reason sensitive instead of low_confidence. Their decision is review either way, so only the reason changes.",
+      "unblocks": "test_caption_review_reasons.",
+      "hints": [
+        "C02 is marked 'no' in the sensitive column but is routed as sensitive.",
+        "Look at how the sensitive column is turned into a bool in the loader.",
+        "Use parse_flag(row['sensitive']) instead of bool(clean(...))."
+      ],
+      "probes": [
+        "Why did no item flip from auto_accept to human_review?",
+        "Which data row would have made this bug change a decision?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Priority sorted as if higher is more urgent",
+      "type": "sort-direction",
+      "file": "hitlroute/worklist.py",
+      "function": "urgency",
+      "test": "test_2_worklists.TestWorklists.test_mixed_priority_worklists",
+      "old": "    return (pred.priority, confidence)",
+      "new": "    return (-pred.priority, confidence)",
+      "symptom": "Test 2 test_mixed_priority_worklists: r01 is ['P08', 'P02', 'T06', 'P05'] instead of ['T06', 'P05', 'P08', 'P02'], and r05 is ['C03', 'C08'] instead of ['C08', 'C03'].",
+      "why": "This project uses priority 1 = most urgent, so the sort key must be the priority ascending. Negating it puts priority 2/3 items first in mixed worklists (r01, r05).",
+      "unblocks": "test_mixed_priority_worklists.",
+      "hints": [
+        "In r01's list, the priority-2 PII items come before T06 and P05, which are priority 1.",
+        "Check the urgency key against the README's priority convention.",
+        "Return (pred.priority, confidence), with no negation."
+      ],
+      "probes": [
+        "Why were r02, r03, r06 and r07 unaffected?",
+        "The comment says 'priority 1 is the most urgent'. Why didn't the code match it?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Equal-urgency tie broken by item id",
+      "type": "wrong-tie-break",
+      "file": "hitlroute/worklist.py",
+      "function": "build_worklists",
+      "test": "test_2_worklists.TestWorklists.test_equal_confidence_worklist",
+      "old": "        items.sort(key=lambda i: i.prediction.created_at)  # oldest first among equals (sort is stable)",
+      "new": "        items.sort(key=lambda i: i.prediction.item_id)  # oldest first among equals (sort is stable)",
+      "symptom": "Test 2 test_equal_confidence_worklist: r10 is ['C06', 'C09'] instead of ['C09', 'C06'].",
+      "why": "The two-pass stable sort means the first pass decides the order of items with equal urgency. Sorting that pass by item_id instead of created_at puts C06 (08:19) before C09 (08:09), although both are priority 3 with confidence 0.69.",
+      "unblocks": "test_equal_confidence_worklist.",
+      "hints": [
+        "C09 and C06 have the same priority and confidence. Which one is older?",
+        "Look at the first sort pass in build_worklists. What does it sort by?",
+        "Sort the first pass by i.prediction.created_at, not item_id."
+      ],
+      "probes": [
+        "Why does the order of the two sort calls matter?",
+        "Why did no other worklist change?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Decision compared with a plain string",
+      "type": "enum-vs-string",
+      "file": "hitlroute/reports.py",
+      "function": "summarize",
+      "test": "test_3_report.TestReport.test_auto_accept_rate",
+      "old": "    auto = Counter(r.prediction.task for r in routed if r.decision is Decision.AUTO_ACCEPT)",
+      "new": "    auto = Counter(r.prediction.task for r in routed if r.decision == \"auto_accept\")",
+      "symptom": "Test 3 test_auto_accept_rate: every rate is 0.0 ({'caption': 0.0, 'pii': 0.0, 'toxicity': 0.0}) instead of 0.3 / 0.375 / 0.3.",
+      "why": "Decision is a plain Enum, so Decision.AUTO_ACCEPT never equals the string 'auto_accept'. Nothing is counted and every rate is 0.0.",
+      "unblocks": "test_auto_accept_rate.",
+      "hints": [
+        "Every auto_accept_rate is 0.0, yet routing shows 9 auto-accepted items.",
+        "Look at how summarize decides which items were auto-accepted.",
+        "Compare with the enum: r.decision is Decision.AUTO_ACCEPT (or r.decision.value == 'auto_accept')."
+      ],
+      "probes": [
+        "Why does routing in the report still print 'auto_accept'?",
+        "Would `class Decision(str, Enum)` have hidden this? Is that a good fix?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Mean confidence over all items",
+      "type": "counting-wrong-subset",
+      "file": "hitlroute/reports.py",
+      "function": "summarize",
+      "test": "test_3_report.TestReport.test_mean_review_confidence",
+      "old": "    scored = [r.prediction.confidence for r in review if r.prediction.confidence is not None]",
+      "new": "    scored = [r.prediction.confidence for r in routed if r.prediction.confidence is not None]",
+      "symptom": "Test 3 test_mean_review_confidence: 0.721 instead of 0.644.",
+      "why": "The mean should cover review items only, but iterating over `routed` also includes the nine confident auto-accepted predictions, which pulls the mean up.",
+      "unblocks": "test_mean_review_confidence.",
+      "hints": [
+        "mean_review_confidence is higher than the review items alone could give.",
+        "Check which collection the scored list is built from.",
+        "Build scored from `review`, not `routed`."
+      ],
+      "probes": [
+        "Why is review_load right although it is built in the same function?",
+        "Why must None be filtered out rather than counted as 0?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() do, in order?",
+      "a": "It loads policies, reviewers and predictions (the loader fills a blank priority from the task policy), routes every prediction with router.route_all, assigns review items with assign_reviewers (which sets item.reviewer and returns the backlog), builds worklists and calls summarize."
+    },
+    {
+      "q": "How does router.route pick a reason?",
+      "a": "It returns at the first matching check: sensitive, label in policy.always_review, missing confidence, confidence below policy.threshold, and otherwise auto_accept with reason 'confident'. Each result is a Routed object holding a Decision enum member."
+    },
+    {
+      "q": "What does parse_flag accept?",
+      "a": "It trims and lower-cases the value and returns True only for 'yes', 'y', 'true' or '1'."
+    },
+    {
+      "q": "How are worklists ordered?",
+      "a": "build_worklists groups assigned items by reviewer, then runs two stable sorts: first with a lambda key on one prediction field, then with urgency(), which returns a (priority, confidence) tuple where a missing confidence becomes -1.0."
+    },
+    {
+      "q": "Which reviewers can take toxicity items?",
+      "a": "In reviewers.json: r01 (capacity 4, also pii), r02 (capacity 3) and r05 (capacity 2, also caption). r09 also has the skill but is inactive."
+    },
+    {
+      "q": "What is Decision?",
+      "a": "A plain Enum in models.py with members AUTO_ACCEPT = 'auto_accept' and HUMAN_REVIEW = 'human_review'. The report's routing section prints decision.value."
+    },
+    {
+      "q": "How is mean_review_confidence computed?",
+      "a": "summarize builds a list of confidences, skipping None, averages it and rounds to 3 decimals. It returns None if the list is empty."
+    }
+  ]
+}

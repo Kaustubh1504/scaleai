@@ -1,0 +1,11 @@
+{
+  "request": "GET /v1/projects/prj_01",
+  "status": 401,
+  "headers": {
+    "date": "Wed, 01 May 2024 08:06:40 GMT",
+    "www-authenticate": "Bearer error=\"token_expired\""
+  },
+  "body": {
+    "error": "token_expired"
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "id": "set-001",
+  "title": "Contributor staffing by priority with course gates",
+  "domain": "contributor_assignment",
+  "length": "MINI",
+  "difficulty": "easy",
+  "format": "multi",
+  "package": "staffing",
+  "scenario": "Assign contributors to projects in priority order (1 = most important). Some projects require a completed course. Each contributor works on one project; best-rated eligible people are picked first.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_assignment",
+      "test_2_staffing_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "staffing/rules.py",
+      "symbol": "rank_candidates",
+      "why_correct": "Negating the rating is how you sort highest-first while keeping the joined date and id ascending. It looks just like the broken project sort, but here 'larger is better' really is the rule."
+    },
+    {
+      "file": "staffing/loader.py",
+      "symbol": "parse_date",
+      "why_correct": "It tries the three formats the README lists. %m/%d/%Y is month-first, which is what the spec says."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Projects processed least-important first",
+      "type": "sort-direction",
+      "file": "staffing/assigner.py",
+      "function": "project_order",
+      "old": "    return sorted(projects, key=lambda p: (p.priority, p.id))",
+      "new": "    return sorted(projects, key=lambda p: (-p.priority, p.id))",
+      "symptom": "Test 1: P02 (priority 1) comes back empty. The lowest-priority projects are staffed first (P08 gets C01, P09 gets C03 and C10), so the course-gated P01-P03 run out of eligible people. Test 2 open seats point at P01-P03.",
+      "why": "Priority 1 is the most important, so the sort has to be ascending. Negating the key makes the largest number come first. The comment 'most important first' describes the goal, not what the code does.",
+      "unblocks": "Test 1 (priority order). Some Test 2 values also recover.",
+      "hints": [
+        "Look at which projects got staffed first. Does that match the README?",
+        "Check how assigner.py orders the projects.",
+        "project_order negates priority. Priority 1 must come first, so sort ascending: key=(p.priority, p.id)."
+      ],
+      "probes": [
+        "If the data's convention changed to 'higher number = more important', what would you change, and would the tie-break on id still be right?",
+        "rank_candidates also negates a field. Why is it correct there and not here?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Course requirement checked against skills",
+      "type": "wrong-field",
+      "file": "staffing/rules.py",
+      "function": "is_eligible",
+      "old": "    if project.required_course and project.required_course not in contributor.completed_courses:",
+      "new": "    if project.required_course and project.required_course not in contributor.skills:",
+      "symptom": "Test 2: the course-gated projects P01, P02 and P03 get 0 people each. Test 1 also shows them as empty, and the people they should have had end up on later projects.",
+      "why": "The course check looks the course id up in contributor.skills, which never holds course ids. Every course-gated project therefore rejects everyone.",
+      "unblocks": "Test 2 course-gated check, but only partly: B3 shows up next.",
+      "hints": [
+        "Which projects come back empty? What do they have in common?",
+        "Look at the eligibility rules in rules.py.",
+        "is_eligible compares required_course against contributor.skills. It should compare against contributor.completed_courses."
+      ],
+      "probes": [
+        "Why didn't this raise an error, even though a course id is never a skill?",
+        "After the fix, why do C03, C07 and C10 still miss out? (This leads to B3.)"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Completed course ids not upper-cased",
+      "type": "id-normalization",
+      "file": "staffing/loader.py",
+      "function": "load_contributors",
+      "old": "                completed_courses={c.upper() for c in _split(row[\"completed_courses\"])},",
+      "new": "                completed_courses=set(_split(row[\"completed_courses\"])),",
+      "masked_by": [
+        "B2"
+      ],
+      "symptom": "Only visible once B2 is fixed. P01 gets C09 instead of C15, P02 gets C14 instead of C07, and P03 gets only C03 (C10 is missing). Everyone who typed the course in lower case is skipped. Test 2: P03 has 1 open seat and the bench comes back empty.",
+      "why": "Project course ids are upper-cased, but the contributor's completed courses are kept as typed. 'ml-101' is not equal to 'ML-101', so the membership test fails for those contributors.",
+      "unblocks": "Tests 1 and 2 fully.",
+      "hints": [
+        "Compare the people who still miss out with the ones who get in. Look at how their courses are spelled in the CSV.",
+        "Compare how loader.py cleans project course ids with how it cleans contributor course ids.",
+        "load_contributors stores completed_courses without .upper(). Use {c.upper() for c in _split(...)}."
+      ],
+      "probes": [
+        "Why was this invisible until the skills/courses mix-up was fixed?",
+        "Where else in the loader could the same case mismatch happen, and why doesn't it?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What happens end to end when build_report() runs?",
+      "a": "`staffing/reports.py:build_report` loads `contributors.csv` and `projects.csv` through `loader.load_contributors` / `loader.load_projects`, passes both lists to `assigner.assign`, then derives `open_seats` and `bench` from the assignments. `main.py` just prints the resulting dict as JSON."
+    },
+    {
+      "q": "Where is the order in which projects get staffed decided?",
+      "a": "In `assigner.project_order`. `assign()` iterates over its result one project at a time. A project with `headcount <= 0` gets an empty list and is skipped. Otherwise it builds the pool of eligible, not-yet-taken contributors and takes the first `headcount` of `rank_candidates(pool)`."
+    },
+    {
+      "q": "How does assign() stop a contributor being put on two projects?",
+      "a": "It keeps a `taken` set of contributor ids. The pool for each project excludes ids already in `taken`, and the chosen ids are added to it right after each project is staffed."
+    },
+    {
+      "q": "What does loader._split return for a blank cell like an empty completed_courses?",
+      "a": "An empty list. The cell is stripped, split on `;`, each part is stripped, and empty parts are dropped. So a blank cell becomes `[]`, and `\" ML-101\"` becomes `[\"ML-101\"]`."
+    },
+    {
+      "q": "What does rank_candidates sort by, and where does a contributor without a joined date go?",
+      "a": "Rating descending, then `joined` ascending, then id ascending. A missing `joined` is replaced with `date.max`, so at equal rating that person sorts after everyone who has a date."
+    },
+    {
+      "q": "What does a blank rating turn into?",
+      "a": "`0.0`. The loader does `float(_clean(row[\"rating\"]) or 0)`, so an empty string falls back to 0."
+    },
+    {
+      "q": "Who ends up on the bench?",
+      "a": "`reports.bench` lists contributors with `available == True` whose id doesn't appear in any project's assignment list, sorted by id. Unavailable contributors are never on the bench."
+    }
+  ]
+}

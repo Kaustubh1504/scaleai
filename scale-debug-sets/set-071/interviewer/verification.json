@@ -1,0 +1,53 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_statements",
+      "test_2_payouts"
+    ],
+    "failures": {
+      "tests.test_1_statements.TestStatements.test_adjustments": "AssertionError: {'C01': (0, 0), 'C02': (0, 0), 'C03': (0, 0), 'C04[95 chars], 0)} != {'C01': (1500, 0), 'C02': (0, 410), 'C03': (500, 0[115 chars], 0)}\n- {'C01': (0, 0),\n+ {'C01': (1500, 0),\n?          +++\n\n-  'C02': (0, 0),\n+  'C02': (0, 410),\n?             ++\n\n-  'C03': (0, 0),\n+  'C03': (500, 0),\n?          ++\n\n-  'C04': (0, 0),\n+  'C04': (0, 1250),\n?             +++\n\n   'C06': (0, 0),\n-  'C07': (0, 0),\n?          ^\n\n+  'C07': (725, 0),\n?          ^^^\n\n-  'C08': (0, 0),\n?             ^\n\n+  'C08': (0, 75),\n?             ^^\n\n-  'C09': (0, 0),\n+  'C09': (0, 300),\n?             ++\n\n-  'C10': (0",
+      "tests.test_1_statements.TestStatements.test_unmatched_adjustments": "AssertionError: 10 != 1",
+      "tests.test_2_payouts.TestPayouts.test_paid_and_held": "AssertionError: Lists differ: ['C01', 'C06'] != ['C01', 'C06', 'C10', 'C12']\n\nSecond list contains 2 additional elements.\nFirst extra element 2:\n'C10'\n\n- ['C01', 'C06']\n+ ['C01', 'C06', 'C10', 'C12']",
+      "tests.test_2_payouts.TestPayouts.test_settlement": "AssertionError: {'C01': (2298, 2298, 0), 'C02': (1555, 0, 1555), '[179 chars]656)} != {'C01': (3798, 3798, 0), 'C02': (1145, 0, 1145), '[179 chars], 0)}\n- {'C01': (2298, 2298, 0),\n?          ^^    ^^\n\n+ {'C01': (3798, 3798, 0),\n?          ^^    ^^\n\n-  'C02': (1555, 0, 1555),\n?           ^^       ^^\n\n+  'C02': (1145, 0, 1145),\n?           ^^       ^^\n\n-  'C03': (750, 0, 750),\n?          ^       ^\n\n+  'C03': (1250, 0, 1250),\n?          ^^       ^^\n\n-  'C04': (1588, 0, 1588),\n?          ^^^      ^^^\n\n+  'C04': (338, 0, 338),\n?          ^^      ^^\n\n   'C06': (2636, 2636, 0),\n-  'C07': (750, 0, 750",
+      "tests.test_2_payouts.TestPayouts.test_total_paid": "AssertionError: 4934 != 12165"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_statements",
+      "test_2_payouts"
+    ],
+    "failures": {
+      "tests.test_1_statements.TestStatements.test_adjustments": "AssertionError: {'C01[17 chars]2': (1500, 410), 'C03': (2000, 410), 'C04': (2[132 chars]035)} != {'C01[17 chars]2': (0, 410), 'C03': (500, 0), 'C04': (0, 1250[97 chars], 0)}\n  {'C01': (1500, 0),\n-  'C02': (1500, 410),\n?          ---\n\n+  'C02': (0, 410),\n-  'C03': (2000, 410),\n?          ^^    --\n\n+  'C03': (500, 0),\n?          ^\n\n-  'C04': (2000, 1660),\n?          ---    ^^\n\n+  'C04': (0, 1250),\n?              ^^\n\n-  'C06': (2000, 1660),\n?          ---   ---\n\n+  'C06': (0, 0),\n-  'C07': (2725, 1660),\n?          -     ---\n\n+  'C07': (725, 0),\n-  'C08': (2725, 1735),\n-  'C09': (2725, 2035),\n-  '",
+      "tests.test_2_payouts.TestPayouts.test_paid_and_held": "AssertionError: Lists differ: ['C01', 'C02', 'C03', 'C04', 'C06', 'C07', 'C08', 'C09', 'C10', 'C12'] != ['C01', 'C06', 'C10', 'C12']\n\nFirst differing element 1:\n'C02'\n'C06'\n\nFirst list contains 6 additional elements.\nFirst extra element 4:\n'C06'\n\n- ['C01', 'C02', 'C03', 'C04', 'C06', 'C07', 'C08', 'C09', 'C10', 'C12']\n+ ['C01', 'C06', 'C10', 'C12']",
+      "tests.test_2_payouts.TestPayouts.test_settlement": "AssertionError: {'C01': (6588, 6588, 0), 'C02': (5435, 5435, 0), '[185 chars], 0)} != {'C01': (3798, 3798, 0), 'C02': (1145, 0, 1145), '[179 chars], 0)}\n- {'C01': (6588, 6588, 0),\n?          ^^^   ^^^\n\n+ {'C01': (3798, 3798, 0),\n?          ^^^   ^^^\n\n-  'C02': (5435, 5435, 0),\n+  'C02': (1145, 0, 1145),\n-  'C03': (5130, 5130, 0),\n?           --   ---\n\n+  'C03': (1250, 0, 1250),\n?          ++       +++\n\n-  'C04': (4718, 4718, 0),\n+  'C04': (338, 0, 338),\n-  'C06': (5766, 5766, 0),\n?          ^^    ^^\n\n+  'C06': (2636, 2636, 0),\n?          ^ +   ^ +\n\n-  'C07': (4605, 4605, 0),\n-  'C08': (4356, 4",
+      "tests.test_2_payouts.TestPayouts.test_total_paid": "AssertionError: 54024 != 12165"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_statements",
+      "test_2_payouts"
+    ],
+    "failures": {
+      "tests.test_1_statements.TestStatements.test_lines_and_earned": "AssertionError: {'C01': (4, 2658), 'C02': (3, 1755), 'C03': (1, 75[123 chars]656)} != {'C01': (3, 2298), 'C02': (2, 1205), 'C03': (1, 75[120 chars]656)}\n- {'C01': (4, 2658),\n?          ^   ^^\n\n+ {'C01': (3, 2298),\n?          ^   ^^\n\n-  'C02': (3, 1755),\n?          ^   ^^\n\n+  'C02': (2, 1205),\n?          ^   ^^\n\n   'C03': (1, 750),\n-  'C04': (3, 2358),\n?          ^   ^^\n\n+  'C04': (2, 2088),\n?          ^   ^^\n\n   'C06': (3, 1436),\n-  'C07': (3, 1635),\n?          ^  ^^^\n\n+  'C07': (1, 750),\n?          ^  ^ +\n\n-  'C08': (3, 1434),\n+  'C08': (1, 576),\n   'C09': (2, 1155),\n-  'C10': (2, 175),\n?    ",
+      "tests.test_2_payouts.TestPayouts.test_paid_and_held": "AssertionError: Lists differ: ['C01', 'C06', 'C07', 'C10', 'C12'] != ['C01', 'C06', 'C10', 'C12']\n\nFirst differing element 2:\n'C07'\n'C10'\n\nFirst list contains 1 additional elements.\nFirst extra element 4:\n'C12'\n\n- ['C01', 'C06', 'C07', 'C10', 'C12']\n?                -------\n\n+ ['C01', 'C06', 'C10', 'C12']",
+      "tests.test_2_payouts.TestPayouts.test_settlement": "AssertionError: {'C01': (4158, 4158, 0), 'C02': (1695, 0, 1695), '[181 chars], 0)} != {'C01': (3798, 3798, 0), 'C02': (1145, 0, 1145), '[179 chars], 0)}\n- {'C01': (4158, 4158, 0),\n?          ^^^   ^^^\n\n+ {'C01': (3798, 3798, 0),\n?          ^^^   ^^^\n\n-  'C02': (1695, 0, 1695),\n?           ^^       ^^\n\n+  'C02': (1145, 0, 1145),\n?           ^^       ^^\n\n   'C03': (1250, 0, 1250),\n-  'C04': (608, 0, 608),\n?          ^^      ^^\n\n+  'C04': (338, 0, 338),\n?          ^^      ^^\n\n   'C06': (2636, 2636, 0),\n-  'C07': (2360, 2360, 0),\n-  'C08': (1359, 0, 1359),\n?     ^     ^ -      ^ -\n\n+  'C07': (1475",
+      "tests.test_2_payouts.TestPayouts.test_total_paid": "AssertionError: 14985 != 12165"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_statements",
+      "test_2_payouts"
+    ],
+    "failing_tests": [
+      "tests.test_1_statements.TestStatements.test_adjustments",
+      "tests.test_1_statements.TestStatements.test_lines_and_earned",
+      "tests.test_1_statements.TestStatements.test_unmatched_adjustments",
+      "tests.test_2_payouts.TestPayouts.test_paid_and_held",
+      "tests.test_2_payouts.TestPayouts.test_settlement",
+      "tests.test_2_payouts.TestPayouts.test_total_paid"
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+item_id,doc_id,text,label,tags,consent,created
+I001,doc-01,great labeling guide,positive,,yes,2026-01-05
+I002,DOC-01,the tool keeps crashing,Negative,ui,y,2026-01-06
+I003,doc-01,it is fine i guess,neutral,,,01/07/2026
+I004,doc-02,fast and accurate,positive,,yes,2026-01-05
+I005,doc-02,slow review queue,negative,,yes,2026-01-08
+I006,doc-02,works as expected,positive,,true,2026-01-09
+i007,doc-02,love the keyboard shortcuts,positive,ui,yes,10 Jan 2026
+I008,doc-03,average experience overall,neutral,,yes,2026-01-11
+I009,doc-03,no opinion,,,yes,2026-01-11
+I010,doc-03,not worth the time,negative,,yes,2026-01-12
+I030,doc-10,clear instructions,positive,,yes,2026-01-15
+I011,doc-04,pay is fair for the work,positive,,yes,2026-01-05
+I012,doc-07,too many popups,negative,ui,yes,2026-01-03
+I013,doc-07,please delete my answers,negative,,no,2026-01-04
+I014, doc-04,hard to find the submit button,negative,ui,yes,01/06/2026
+I015,doc-04,okay overall,neutral,,yes,2026-01-07
+I016,doc-12,Clear  instructions,positive,,Yes,15 Jan 2026
+I017,Doc-08,support answered quickly,positive,,yes,2026-01-08
+I018,doc-08,my phone number is in this text,neutral,pii,yes,2026-01-09
+I019,doc-05,the new layout is much better,positive,,yes,2026-01-10
+I020,doc-05,crashes when I zoom in,negative,,yes,2026-01-10
+I021,doc-05,does the job,neutral,,yes,01/11/2026
+I022,doc-05,contact me at this address,positive,PII;ui,yes,2026-01-11
+I023,doc-09,best project i have worked on,positive,,yes,2026-01-12
+I024,doc-09,guidelines changed twice this week,negative,,1,2026-01-12
+I025,doc-08,Too many  popups,negative,,yes,2026-01-02
+I026,doc-12,withdraw my data,neutral,,false,2026-01-13
+I027,doc-09,neutral about the change,neutral,,yes,13 Jan 2026
+I028,doc-06,quick payouts,positive,,yes,2026-01-14
+I029,doc-06,it depends on the task,neutral,,yes,2026-01-14
+I031,doc-11,instructions are vague,negative,,yes,2026-01-16
+I032,doc-11,too strict on edge cases,negative,,yes,2026-01-16
+I033,doc-11,friendly reviewers,positive,,yes,2026-01-17
+I034,doc-12,unclear,  ,,yes,2026-01-17
+I035,doc-10,the queue is never empty,neutral,,yes,2026-01-18
+I036,doc-07,i would recommend it,positive,,yes,2026-01-18
+I037,doc-12,more task variety please,neutral,,yes,2026-01-19

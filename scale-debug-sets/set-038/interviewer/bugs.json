@@ -1,0 +1,184 @@
+{
+  "id": "set-038",
+  "title": "Load balancer replay: health probes, weighted least-connections",
+  "domain": "load_balancer",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "multi",
+  "package": "lbsim",
+  "scenario": "Replays a request log through a weighted least-connections balancer with connection caps, disabled backends, sticky clients and health probes (down after 2 consecutive failures), then reports per-backend load and pool totals.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_routing",
+      "test_2_backends",
+      "test_3_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "lbsim/balancer.py",
+      "symbol": "pick",
+      "why_correct": "Checking the sticky id before `if not options` looks out of order, but the loop over an empty list simply does nothing, and the sticky backend is only honoured if it is in the candidate list (enabled, healthy, below its cap). The key (load, -weight, id) is exactly the README order: lowest load, then higher weight, then id."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Health strings read with bool()",
+      "type": "bool-from-string",
+      "file": "lbsim/loader.py",
+      "function": "load_probes",
+      "old": "healthy=parse_bool(row[\"healthy\"]),",
+      "new": "healthy=bool(row[\"healthy\"].strip()),",
+      "symptom": "Test 1 test_api_routes: R14 and R19 go to api-3 instead of api-1, although api-3 failed two probes. Test 2: api-1 served 4 (want 6), api-3 served 5 (want 3), api-3 peak 2; busy_ms shifts by 650. Test 3 utilization: api-1 0.22, api-3 0.201.",
+      "why": "bool() of any non-empty string is True, so 'false', 'no' and '0' probes all count as healthy. api-3 never goes down after its two failed probes, and keeps taking traffic.",
+      "unblocks": "Test 1 api routes (R14, R19), Test 2 api-1/api-3 counts, Test 3 utilization. Exposes B3.",
+      "hints": [
+        "api-3 failed probes at 1000 and 1100 ms. Is it still getting traffic after that?",
+        "Print the probes load_probes returns. What is healthy for the 'no' row?",
+        "Use parse_bool(row[\"healthy\"])."
+      ],
+      "probes": [
+        "Why doesn't the same mistake break `enabled`?",
+        "Which of the probe strings in health.csv would bool() get right?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Load ratio uses floor division",
+      "type": "integer-division",
+      "file": "lbsim/balancer.py",
+      "function": "load_of",
+      "old": "    return len(backend.active) / backend.weight",
+      "new": "    return len(backend.active) // backend.weight",
+      "symptom": "Fails all three files widely. Test 1: R02 goes to api-1, R03 to api-2, R04 to api-3 ..., and every batch request lands on bt-1. Test 2: api-1 served 9, bt-3 served 0 (bt-3 disappears from peak/busy). Test 3 utilization changes and bt-3 is missing.",
+      "why": "1 // 2 is 0, so a weight-2 backend with one connection looks idle and ties with empty backends; the higher-weight tie-break then sends it more traffic. bt-1 (weight 3) takes every batch request.",
+      "unblocks": "Most of Test 1 api and batch routes, Test 2 served/busy, Test 3 utilization.",
+      "hints": [
+        "R02 arrives while api-1 has one connection and api-2 has none. Why does api-1 win?",
+        "Compute load_of for api-1 with one open connection.",
+        "Use true division: len(backend.active) / backend.weight."
+      ],
+      "probes": [
+        "Why does bt-3 end up serving nothing?",
+        "If weights could be 0, what would you do in load_of?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Failure count not reset by a healthy probe",
+      "type": "state-not-reset",
+      "file": "lbsim/health.py",
+      "function": "apply_probe",
+      "old": "        backend.fails = 0\n        backend.healthy = True",
+      "new": "        backend.healthy = True",
+      "masked_by": [
+        "B1"
+      ],
+      "symptom": "Only visible once B1 is fixed. Test 1: R18 is rejected (None) instead of going to api-2. Test 2: api-2 served 4 / peak 1 / busy 1400. Test 3: totals (25, 2, 0.074) and by_pool api 13.",
+      "why": "api-2 goes fail (900), ok (1150), fail (1300). Without the reset the second failure is counted as consecutive, so api-2 goes down at 1300 and R18 is rejected. While B1 is present no probe ever fails, so the counter never moves and this is invisible.",
+      "unblocks": "Test 1 R18, Test 2 api-2, Test 3 totals.",
+      "hints": [
+        "Look at api-2's probes in health.csv. Should it be down at 1500 ms?",
+        "What does a healthy probe do to backend.fails?",
+        "Set backend.fails = 0 in the healthy branch."
+      ],
+      "probes": [
+        "Why couldn't you see this until the probe parsing was fixed?",
+        "Which test would you add to pin down 'consecutive'?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Connections ending exactly at arrival kept open",
+      "type": "time-window-boundary",
+      "file": "lbsim/balancer.py",
+      "function": "release_finished",
+      "old": "if end > now_ms]",
+      "new": "if end >= now_ms]",
+      "symptom": "Test 1: R15 goes to st-2, R16 is rejected and R27 gets st-1; R09/R10/R22/R26 shift and R19 is rejected. Test 2: api-1 served 7, api-3 served 1. Test 3: totals (25, 2, 0.074), by_pool api 13, utilization changes.",
+      "why": "The README closes connections whose end is <= t. Keeping end == t open makes st-1 (busy until exactly 2000) look full when R15 and R16 arrive at 2000, and does the same to api backends at 600, 700 and 1600.",
+      "unblocks": "Test 1 static and api routes, Test 2, Test 3 totals.",
+      "hints": [
+        "R05 holds st-1 from 350 to 2000. R15 arrives at 2000. Is st-1 free?",
+        "Look at which connections release_finished keeps.",
+        "Keep only connections with end > now_ms."
+      ],
+      "probes": [
+        "Why does R27 get routed when this is wrong, and rejected when it is right?",
+        "How would you represent a connection so this boundary is explicit?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Zero-length requests given the default duration",
+      "type": "falsy-zero",
+      "file": "lbsim/loader.py",
+      "function": "load_requests",
+      "old": "duration_ms=parse_ms(row[\"duration\"], DEFAULT_DURATION_MS),",
+      "new": "duration_ms=parse_ms(row[\"duration\"]) or DEFAULT_DURATION_MS,",
+      "symptom": "Test 1 test_batch_routes: R07 goes to bt-1 and R11 to bt-3 (swapped), and R24/R25 swap too. Test 2 busy_ms: bt-1 3000, bt-3 650. Test 3 utilization bt-1 0.244, bt-3 0.159.",
+      "why": "parse_ms returns 0 for '0', and `or` replaces it with 100. R06 then holds bt-1 until 500 instead of closing at 400, so R11 and R07 swap backends; R24 and R25 change too.",
+      "unblocks": "Test 1 batch routes, Test 2 bt-1/bt-3 busy_ms, Test 3 utilization.",
+      "hints": [
+        "R06 has duration 0. How long does the simulation think it lasts?",
+        "Look at how load_requests applies the default duration.",
+        "Pass the default into parse_ms instead of using `or`."
+      ],
+      "probes": [
+        "Where else in the loader would `or` with a default be dangerous?",
+        "Why does R11 move to bt-3 with this mistake in place?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "by_pool counts rejected requests",
+      "type": "counting-wrong-subset",
+      "file": "lbsim/reports.py",
+      "function": "summarize",
+      "old": "Counter(r.pool for r in routed)",
+      "new": "Counter(r.pool for r in requests)",
+      "visible_only_in": [
+        "test_3_report"
+      ],
+      "symptom": "Test 3 test_by_pool only: static is 6 instead of 5 (the rejected R27 is counted). routed is still 26.",
+      "why": "The README counts routed requests per pool. Counting all requests includes the rejected R27, so static shows 6 instead of 5.",
+      "unblocks": "Test 3 test_by_pool.",
+      "hints": [
+        "Add up by_pool and compare it with routed.",
+        "Which list does the Counter iterate?",
+        "Count over routed, not requests."
+      ],
+      "probes": [
+        "Why does no test in Test 1 or Test 2 notice?",
+        "What invariant check would catch this immediately?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does simulate.run do for each request?",
+      "a": "In arrival order it calls release_finished, advances the ProbeFeed to the request's arrival time, builds the candidate list for the request's pool, and calls pick with the client's sticky backend id for that pool. The chosen backend gets the connection via assign() and becomes sticky; if pick returns None the route is None."
+    },
+    {
+      "q": "How are open connections stored?",
+      "a": "Each Backend has `active`, a list of connection end times in ms. assign() appends arrival + duration and updates served, busy_ms and peak; release_finished filters the list against the current time."
+    },
+    {
+      "q": "How does a probe change a backend?",
+      "a": "health.apply_probe: a healthy probe sets healthy True; a failed one increments backend.fails and marks the backend unhealthy once fails reaches FAILS_TO_DOWN (2). ProbeFeed.advance applies probes in time order up to the current time."
+    },
+    {
+      "q": "What does parse_ms accept?",
+      "a": "Plain integers ('1200'), an 'ms' suffix, or an 's' suffix with a decimal ('1.65s' -> 1650). Blank or missing text returns the `default` argument (None unless given)."
+    },
+    {
+      "q": "Where does the request order come from?",
+      "a": "load_requests sorts the parsed rows by arrival_ms with Python's stable sort, so equal arrivals keep their file order (R15 before R16 at 2000, R24 before R25 at 3200)."
+    },
+    {
+      "q": "How is utilization computed?",
+      "a": "reports.summarize takes window = latest connection end minus earliest arrival (4100 ms with this data) and, for each backend with served > 0, busy_ms / (window * max_conns), rounded to 3 decimals."
+    }
+  ]
+}

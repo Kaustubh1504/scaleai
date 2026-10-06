@@ -1,0 +1,7 @@
+{
+  "tasks": {
+    "toxicity": {"threshold": 0.85, "priority": 1, "always_review": ["self_harm"]},
+    "PII": {"threshold": 0.9, "priority": 2, "always_review": ["SSN"]},
+    "caption": {"threshold": 0.7, "priority": 3}
+  }
+}

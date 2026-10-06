@@ -1,0 +1,5 @@
+{
+  "vendor_a": {"file": "vendor_a.csv", "priority": 2},
+  "Vendor_B": {"file": "vendor_b.csv", "priority": "1"},
+  "vendor_c": {"file": "vendor_c.json", "priority": 3}
+}

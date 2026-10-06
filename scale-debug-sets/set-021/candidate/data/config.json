@@ -1,0 +1,7 @@
+{
+  "default_ttl_seconds": 300,
+  "ttl_seconds": {
+    "OCR-v1": 600,
+    "seg-v2 ": "120"
+  }
+}

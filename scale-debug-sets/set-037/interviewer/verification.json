@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_scoring"
+    ],
+    "failures": {
+      "tests.test_1_scoring.TestScoring.test_velocity_window": "AssertionError: {'T00[35 chars]low'), 'T006': ([], 'allow'), 'T028': ([], 'allow')} != {'T00[35 chars]low'), 'T006': (['velocity'], 'review'), 'T028': ([], 'allow')}\n  {'T002': ([], 'allow'),\n   'T003': ([], 'allow'),\n-  'T006': ([], 'allow'),\n+  'T006': (['velocity'], 'review'),\n   'T028': ([], 'allow')}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_scoring"
+    ],
+    "failures": {
+      "tests.test_1_scoring.TestScoring.test_unknown_currency": "AssertionError: {'T00[17 chars], 'T023': (['foreign'], 'allow')} != {'T00[17 chars], 'T011': (['unknown_currency:ZAR'], 'review')[28 chars]ow')}\n- {'T009': ([], 'allow'), 'T023': (['foreign'], 'allow')}\n+ {'T009': ([], 'allow'),\n+  'T011': (['unknown_currency:ZAR'], 'review'),\n+  'T023': (['foreign'], 'allow')}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_rejected_rows": "AssertionError: Lists differ: [{'tx[21 chars]n': 'unparseable'}, {'txn_id': 'T021', 'reason[148 chars]le'}] != [{'tx[21 chars]n': 'missing:card_id'}, {'txn_id': 'T021', 're[158 chars]nt'}]\n\nFirst differing element 0:\n{'txn_id': 'T015', 'reason': 'unparseable'}\n{'txn_id': 'T015', 'reason': 'missing:card_id'}\n\n- [{'reason': 'unparseable', 'txn_id': 'T015'},\n?              ^ ^  ^^^^^^\n\n+ [{'reason': 'missing:card_id', 'txn_id': 'T015'},\n?              ^^^^^ ^^^  ^^^^\n\n-  {'reason': 'unparseable', 'txn_id': 'T021'},\n?                ^^^^^^^^^\n\n+  {'reason': 'missing:amount', 'txn_id': 'T021'},\n?  "
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_scoring",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_scoring.TestScoring.test_unknown_currency",
+      "tests.test_1_scoring.TestScoring.test_velocity_window",
+      "tests.test_2_report.TestReport.test_rejected_rows"
+    ]
+  }
+}

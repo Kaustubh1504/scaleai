@@ -1,0 +1,181 @@
+{
+  "id": "set-058",
+  "title": "Tenant rate limits and usage invoices",
+  "domain": "rate_limit_billing",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "meterbill",
+  "scenario": "A month of API events is replayed through a per-tenant sliding-minute limiter (overrides, suspension via override 0, unlimited enterprise), then allowed units are invoiced with included units, round-up overage and credits. Test 3 is the finance statement.",
+  "verified": [
+    {
+      "file": "meterbill/utils.py",
+      "symbol": "parse_ts",
+      "why_correct": "Treating an all-digit string as epoch seconds and calling fromtimestamp looks like a timezone trap, but it passes tz=timezone.utc, and the two text formats get tzinfo=UTC too, so every timestamp is aware UTC and they compare and subtract consistently (1777633210 is 2026-05-01 11:00:10 UTC)."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Enterprise check compares the Plan enum to a string",
+      "type": "enum-vs-string",
+      "file": "meterbill/limiter.py",
+      "function": "limit_for",
+      "test": "test_1_limits.TestLimits.test_enterprise_not_throttled",
+      "old": "    if tenant.plan is Plan.ENTERPRISE:",
+      "new": "    if tenant.plan == Plan.ENTERPRISE.value:",
+      "symptom": "test_1_limits.test_enterprise_not_throttled: orbit has ['2026-05-01 14:00:40', '2026-05-01 14:00:50'] throttled instead of []. Its invoice is unchanged (flat enterprise fee).",
+      "why": "tenant.plan is a Plan member, and a plain Enum member never equals its value string ('enterprise'), so the enterprise branch never runs and orbit falls through to the plan's advisory rpm of 4.",
+      "unblocks": "test_enterprise_not_throttled.",
+      "hints": [
+        "orbit is enterprise, so why is it throttled at all?",
+        "Check what type tenant.plan is when limit_for compares it.",
+        "Compare enum to enum: tenant.plan is Plan.ENTERPRISE (drop .value)."
+      ],
+      "probes": [
+        "Would this comparison have worked if Plan subclassed str?",
+        "Why didn't orbit's invoice change even though two requests were throttled?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Request exactly 60 s old still counted in the window",
+      "type": "time-window-boundary",
+      "file": "meterbill/limiter.py",
+      "function": "apply_limit",
+      "test": "test_1_limits.TestLimits.test_window_boundary",
+      "old": "        while window and (ev.ts - window[0]).total_seconds() >= WINDOW_S:",
+      "new": "        while window and (ev.ts - window[0]).total_seconds() > WINDOW_S:",
+      "symptom": "test_1_limits.test_window_boundary: kestrel's throttled list is ['2026-05-01 10:01:00'] instead of ['2026-05-01 10:01:05'].",
+      "why": "The window is (ts - 60s, ts], so a request exactly 60 s earlier must be evicted. With `>` it stays, kestrel's 10:01:00 request sees 3 in the window and is throttled; that frees a slot, so 10:01:05 is allowed instead.",
+      "unblocks": "test_window_boundary.",
+      "hints": [
+        "kestrel's throttled time is 10:01:00. How far is that from its first request?",
+        "Look at the eviction condition in apply_limit.",
+        "Evict when the age is >= WINDOW_S."
+      ],
+      "probes": [
+        "Why did the 10:01:05 request flip from throttled to allowed?",
+        "Why is kestrel's invoice unchanged?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "rpm_override 0 collapsed to None",
+      "type": "falsy-zero",
+      "file": "meterbill/loader.py",
+      "function": "load_tenants",
+      "test": "test_1_limits.TestLimits.test_suspended_tenant",
+      "old": "                rpm_override=parse_int(row[\"rpm_override\"]),",
+      "new": "                rpm_override=parse_int(row[\"rpm_override\"]) or None,",
+      "symptom": "test_1_limits.test_suspended_tenant: ivory's throttled list is [] instead of all three of its requests.",
+      "why": "`or None` turns the real override 0 into 'no override', so suspended ivory is treated as an ordinary enterprise tenant with no limit.",
+      "unblocks": "test_suspended_tenant.",
+      "hints": [
+        "ivory should be suspended. What does tenants.csv say, and what does the Tenant object hold?",
+        "Follow rpm_override from the CSV into limit_for.",
+        "Drop the `or None`; parse_int already returns None for blank."
+      ],
+      "probes": [
+        "Why does limit_for test `is not None` rather than truthiness?",
+        "Why didn't sable (override 5) notice anything?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Credit keys trimmed but not lower-cased",
+      "type": "id-normalization",
+      "file": "meterbill/loader.py",
+      "function": "load_credits",
+      "test": "test_2_invoices.TestInvoices.test_credit_applied",
+      "old": "    return {norm_id(k): int(v) for k, v in raw.items()}",
+      "new": "    return {clean(k): int(v) for k, v in raw.items()}",
+      "symptom": "test_2_invoices.test_credit_applied: delta-labs shows credit_cents 0 and amount_cents 3000 (expected 1500 / 1500).",
+      "why": "credits.json has ' Delta-Labs '. clean() strips it to 'Delta-Labs', which doesn't match the tenant id 'delta-labs', so credits.get falls back to 0.",
+      "unblocks": "test_credit_applied.",
+      "hints": [
+        "delta-labs has a credit in credits.json. Why is credit_cents 0?",
+        "Compare how tenant ids and credit keys are normalised.",
+        "Use norm_id(k) for the credit keys."
+      ],
+      "probes": [
+        "Why did harbor's and orbit's credits still apply?",
+        "Where else could a silent .get(..., 0) fallback hide a lookup mismatch?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Overage part-cents floored instead of rounded up",
+      "type": "integer-division",
+      "file": "meterbill/billing.py",
+      "function": "overage_cents",
+      "test": "test_2_invoices.TestInvoices.test_overage_part_cents",
+      "old": "    return -(-overage * terms.price_per_1k_cents // 1000)",
+      "new": "    return overage * terms.price_per_1k_cents // 1000",
+      "symptom": "test_2_invoices.test_overage_part_cents: harbor shows gross_cents 3200 and amount_cents 3000 (expected 3201 / 3001).",
+      "why": "harbor's overage is 1203 units x 250 / 1000 = 300.75 cents. Floor division gives 300, but the spec rounds part-cents up to 301. The double negation is how the reference gets a ceiling from //.",
+      "unblocks": "test_overage_part_cents.",
+      "hints": [
+        "harbor is one cent short. Work its overage out by hand.",
+        "Look at how overage_cents turns a fractional cent into an integer.",
+        "Use ceiling division: -(-overage * price // 1000)."
+      ],
+      "probes": [
+        "Why did delta-labs come out right?",
+        "Why does -(-a // b) give a ceiling?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Top tenants sorted quietest first",
+      "type": "sort-direction",
+      "file": "meterbill/reports.py",
+      "function": "build_report",
+      "test": "test_3_statement.TestStatement.test_top_tenants",
+      "old": "    top = sorted(requests, key=lambda t: (-requests[t], t))[:TOP_N]",
+      "new": "    top = sorted(requests, key=lambda t: (requests[t], t))[:TOP_N]",
+      "symptom": "test_3_statement.test_top_tenants: [['quill', 1], ['fjord', 2], ['acorn', 3]] instead of [['orbit', 6], ['brightpath', 5], ['kestrel', 5]].",
+      "why": "Without the minus the sort is ascending by request count, so the slice takes the three quietest tenants, despite the 'busiest first' comment.",
+      "unblocks": "test_top_tenants.",
+      "hints": [
+        "top_tenants lists quill with 1 request. Does that match 'most requests first'?",
+        "Look at the sort key for top.",
+        "Negate the count: key=lambda t: (-requests[t], t)."
+      ],
+      "probes": [
+        "Why not just add reverse=True to the original key?",
+        "Why does nimbus never appear here, even though it sent requests?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report do, in order?",
+      "a": "Loads plans, tenants, credits and events (events only for known active tenants), groups events by tenant, then for each active tenant (sorted) calls apply_limit with limit_for's result and builds an invoice from the allowed events. The statement is built from all loaded events and the invoices."
+    },
+    {
+      "q": "What does limit_for return?",
+      "a": "The tenant's rpm_override if it isn't None; otherwise None for the plan checked in its second `if`; otherwise plans[tenant.plan].rpm. None means apply_limit allows everything."
+    },
+    {
+      "q": "How does apply_limit maintain its window?",
+      "a": "It sorts the tenant's events by ts and keeps a deque of timestamps of allowed requests. Before each event it pops timestamps from the left while the condition in its while-loop holds, then allows the event if limit is None or the deque is shorter than limit. Only allowed requests are appended."
+    },
+    {
+      "q": "What type is Tenant.plan and how is it parsed?",
+      "a": "It is a `Plan` member (a plain `Enum` with values 'free', 'pro', 'enterprise'), built with `Plan(norm_id(row['plan']))` in load_tenants. Invoices output `tenant.plan.value`."
+    },
+    {
+      "q": "How are timestamps parsed?",
+      "a": "`parse_ts` treats an all-digit string as epoch seconds via fromtimestamp(..., tz=UTC), otherwise tries '%Y-%m-%dT%H:%M:%SZ' then '%Y-%m-%d %H:%M:%S' and attaches UTC."
+    },
+    {
+      "q": "How is a tenant's credit looked up?",
+      "a": "load_credits builds a dict from credits.json, transforming each key in its comprehension; build_report then calls credits.get(tenant_id, 0) with the normalised tenant id."
+    },
+    {
+      "q": "What does top_tenants count?",
+      "a": "A Counter of tenant_id over every loaded event, so allowed and throttled requests both count, but ignored events (unknown or inactive tenants) don't. It is sorted with a key over the count and tenant id and sliced to TOP_N = 3."
+    }
+  ]
+}

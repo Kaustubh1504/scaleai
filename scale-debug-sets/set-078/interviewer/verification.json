@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_lifecycle"
+    ],
+    "failures": {
+      "tests.test_1_lifecycle.TestLifecycle.test_final_states": "AssertionError: {'T-0[186 chars]0': 'submitted', 'T-11': 'submitted', 'T-12': [45 chars]ued'} != {'T-0[186 chars]0': 'in_review', 'T-11': 'submitted', 'T-12': [45 chars]ued'}\n  {'T-01': 'approved',\n   'T-02': 'approved',\n   'T-03': 'approved',\n   'T-04': 'submitted',\n   'T-05': 'submitted',\n   'T-06': 'submitted',\n   'T-07': 'submitted',\n   'T-08': 'submitted',\n   'T-09': 'submitted',\n-  'T-10': 'submitted',\n+  'T-10': 'in_review',\n   'T-11': 'submitted',\n   'T-12': 'in_review',\n   'T-13': 'labeling',\n   'T-14': 'queued'}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_lifecycle"
+    ],
+    "failures": {
+      "tests.test_1_lifecycle.TestLifecycle.test_violations": "AssertionError: Lists differ: [{'line': 8, 'task': 'T-01', 'action': 'approve', '[696 chars]ed'}] != [{'line': 18, 'task': 'T-03', 'action': 'resolve', [614 chars]ed'}]\n\nFirst differing element 0:\n{'line': 8, 'task': 'T-01', 'action': 'approve', 'reason': 'invalid transition'}\n{'line': 18, 'task': 'T-03', 'action': 'resolve', 'reason': 'actor not allowed'}\n\nFirst list contains 1 additional elements.\nFirst extra element 8:\n{'line': 33, 'task': 'T-12', 'action': 'claim_review', 'reason': 'actor not allowed'}\n\n- [{'action': 'approve',\n-   'line': 8,\n-   'reason': 'invalid transition',\n-   'task':"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_reviewers"
+    ],
+    "failures": {
+      "tests.test_2_reviewers.TestReviewers.test_reviewer_decisions": "AssertionError: {'rv-[80 chars]ed': 1, 'rejected': 0}, 'rv-03': {'claims': 3,[134 chars]: 0}} != {'rv-[80 chars]ed': 0, 'rejected': 1}, 'rv-03': {'claims': 3,[134 chars]: 0}}\n  {'rv-01': {'approved': 2, 'claims': 3, 'rejected': 0},\n-  'rv-02': {'approved': 1, 'claims': 3, 'rejected': 0},\n?                        ^                           ^\n\n+  'rv-02': {'approved': 0, 'claims': 3, 'rejected': 1},\n?                        ^                           ^\n\n-  'rv-03': {'approved': 2, 'claims': 3, 'rejected': 0},\n?                        ^                           ^\n\n+  'rv-03': {'approved': 0, '"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_reviewers"
+    ],
+    "failures": {
+      "tests.test_2_reviewers.TestReviewers.test_review_minutes": "AssertionError: {'rv-01': 31.0, 'rv-02': 31.0, 'rv-03': 31.0} != {'rv-01': 37.5, 'rv-02': 30.0, 'rv-03': 25.0}\n- {'rv-01': 31.0, 'rv-02': 31.0, 'rv-03': 31.0}\n?            ^ ^            ^             ^^\n\n+ {'rv-01': 37.5, 'rv-02': 30.0, 'rv-03': 25.0}\n?            ^ ^            ^             ^^\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_queue": "AssertionError: Lists differ: ['T-07', 'T-08', 'T-09', 'T-04', 'T-05', 'T-11'] != ['T-08', 'T-09', 'T-04', 'T-05', 'T-11']\n\nFirst differing element 0:\n'T-07'\n'T-08'\n\nFirst list contains 1 additional elements.\nFirst extra element 5:\n'T-11'\n\n- ['T-07', 'T-08', 'T-09', 'T-04', 'T-05', 'T-11']\n?  --------\n\n+ ['T-08', 'T-09', 'T-04', 'T-05', 'T-11']"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_cycle_hours": "AssertionError: {'T-01': 3.0, 'T-02': 3.0, 'T-03': 20.0} != {'T-01': 3.0, 'T-02': 27.0, 'T-03': 20.0}\n- {'T-01': 3.0, 'T-02': 3.0, 'T-03': 20.0}\n?                       ^\n\n+ {'T-01': 3.0, 'T-02': 27.0, 'T-03': 20.0}\n?                       ^^\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_lifecycle",
+      "test_2_reviewers",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_lifecycle.TestLifecycle.test_final_states",
+      "tests.test_1_lifecycle.TestLifecycle.test_violations",
+      "tests.test_2_reviewers.TestReviewers.test_review_minutes",
+      "tests.test_2_reviewers.TestReviewers.test_reviewer_decisions",
+      "tests.test_3_report.TestReport.test_cycle_hours",
+      "tests.test_3_report.TestReport.test_queue"
+    ]
+  }
+}

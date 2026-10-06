@@ -1,0 +1,111 @@
+{
+  "id": "set-037",
+  "title": "Card fraud screen: velocity, unknown currencies, rejects",
+  "domain": "fraud_detection",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "fraudlens",
+  "scenario": "A one-day batch fraud screen: transactions are converted to USD, scored by velocity / foreign-use / daily-limit rules, and given allow/review/block actions; unreadable rows are rejected with a reason.",
+  "verified": [
+    {
+      "file": "fraudlens/money.py",
+      "symbol": "parse_amount",
+      "why_correct": "Stripping every comma looks like it could break decimal commas, but the README says commas are thousands separators. '1,050.00' -> 1050.0 and '12,000' -> 12000.0 are both right; '12.5O' still raises ValueError, which is what makes T024 unparseable."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Velocity window drops the transaction exactly 10 minutes old",
+      "type": "time-window-boundary",
+      "file": "fraudlens/rules.py",
+      "function": "velocity_hit",
+      "test": "test_1_scoring.TestScoring.test_velocity_window",
+      "old": "    while state.recent and ts - state.recent[0] > VELOCITY_WINDOW:",
+      "new": "    while state.recent and ts - state.recent[0] >= VELOCITY_WINDOW:",
+      "symptom": "Test 1 test_velocity_window: T006 comes out ([], \"allow\") instead of ([\"velocity\"], \"review\"). The c03 burst (all within 5 minutes) is still flagged.",
+      "why": "T002 is at 09:00:00 and T006 at 09:10:00, exactly 10 minutes apart. The README keeps that inside the window, but >= evicts T002 before counting, so T006 sees only 2 transactions.",
+      "unblocks": "Test 1 test_velocity_window.",
+      "hints": [
+        "How far apart are T002 and T006?",
+        "Look at the eviction condition in velocity_hit.",
+        "Evict only entries strictly older than the window: use >."
+      ],
+      "probes": [
+        "Why does c03's burst still get flagged with the change in place?",
+        "What would happen if the deque were not reset per card?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Unknown-currency transactions silently skipped",
+      "type": "swallowed-exception",
+      "file": "fraudlens/engine.py",
+      "function": "score_all",
+      "test": "test_1_scoring.TestScoring.test_unknown_currency",
+      "old": "        except UnknownCurrencyError as exc:\n            decisions[txn.txn_id] = Decision(txn.txn_id, txn.card_id, None, UNKNOWN_CURRENCY_SCORE,\n                                             [f\"unknown_currency:{exc.currency}\"], \"review\")",
+      "new": "        except UnknownCurrencyError:",
+      "symptom": "Test 1 test_unknown_currency: card c05 has no decision for T011 at all (only T009 and T023). The summary still says 25 loaded, so a transaction silently has no decision.",
+      "why": "The handler catches UnknownCurrencyError and just continues, so T011 (ZAR) never gets a decision. The README wants it sent to review with an unknown_currency flag. Nothing else changes because the exception is raised before any card state is updated.",
+      "unblocks": "Test 1 test_unknown_currency.",
+      "hints": [
+        "T011 was loaded (summary says 25 loaded). Where did its decision go?",
+        "Follow what score_all does when evaluate raises.",
+        "In the except block, record a review Decision with the unknown_currency:<code> flag before continuing."
+      ],
+      "probes": [
+        "Why isn't total_usd affected by this?",
+        "If to_usd were called after velocity_hit in evaluate, what else would this exception path get wrong?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "ValueError handler catches missing fields first",
+      "type": "exception-order",
+      "file": "fraudlens/loader.py",
+      "function": "load_transactions",
+      "test": "test_2_report.TestReport.test_rejected_rows",
+      "old": "            except MissingFieldError as exc:\n                rejected.append({\"txn_id\": txn_id, \"reason\": f\"missing:{exc.field}\"})\n            except ValueError:\n                rejected.append({\"txn_id\": txn_id, \"reason\": \"unparseable\"})",
+      "new": "            except ValueError:\n                rejected.append({\"txn_id\": txn_id, \"reason\": \"unparseable\"})\n            except MissingFieldError as exc:\n                rejected.append({\"txn_id\": txn_id, \"reason\": f\"missing:{exc.field}\"})",
+      "symptom": "Test 2 test_rejected_rows: T015, T021 and T029 have reason \"unparseable\" instead of missing:card_id / missing:amount. The rejected count (5) is unchanged.",
+      "why": "MissingFieldError subclasses ValueError, and except clauses are tried top to bottom. With ValueError first, every missing field is reported as unparseable and the MissingFieldError branch can never run.",
+      "unblocks": "Test 2 test_rejected_rows.",
+      "hints": [
+        "T015 has no card_id. Why is its reason unparseable?",
+        "Look at the class hierarchy of MissingFieldError and the order of the except clauses.",
+        "Put the MissingFieldError handler before the ValueError handler."
+      ],
+      "probes": [
+        "Why is the rejected count right even though the reasons were not?",
+        "How else could you avoid this, without relying on clause order?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report do?",
+      "a": "It loads transactions.csv (getting loaded transactions sorted by timestamp plus a rejected list), cards.json and rates.json, then calls engine.score_all to get one Decision per scored transaction. It returns decisions, rejected and a summary."
+    },
+    {
+      "q": "How does load_transactions decide a row is rejected?",
+      "a": "It calls parse_row for each CSV row. parse_row raises MissingFieldError (a ValueError subclass carrying .field) for the first blank required field, and parse_amount/parse_timestamp raise plain ValueError for text they can't parse. load_transactions catches these and appends {txn_id, reason}."
+    },
+    {
+      "q": "How is velocity tracked?",
+      "a": "Each card has a CardState with a deque `recent` of timestamps. velocity_hit removes timestamps from the left that are too old compared with the current transaction, appends the current timestamp, and returns True if 3 or more remain."
+    },
+    {
+      "q": "Where does currency conversion happen and what if a rate is missing?",
+      "a": "evaluate calls money.to_usd first. to_usd looks the code up in the rates dict, raises UnknownCurrencyError(currency) if it is absent, and otherwise returns amount * rate rounded to 2 decimals."
+    },
+    {
+      "q": "Where is the daily limit checked?",
+      "a": "In rules.evaluate: it adds the USD amount to state.spend_by_day[txn.ts.date()] and adds the over_limit flag if the running total is above the card's daily_limit_usd."
+    },
+    {
+      "q": "Which cards have notable data?",
+      "a": "c02 has three transactions between 09:00 and 09:10; c03 has three foreign (FR) transactions within 5 minutes; c04 crosses its 1000 USD limit with its third transaction; c05 has a ZAR transaction, and ZAR is not in rates.json."
+    }
+  ]
+}

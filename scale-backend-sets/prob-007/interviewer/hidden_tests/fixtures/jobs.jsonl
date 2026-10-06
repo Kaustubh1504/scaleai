@@ -1,0 +1,16 @@
+{"id": "resize-001", "payload": {"id": "resize-001", "kind": "resize"}}
+{"id": "resize-002", "payload": {"id": "resize-002", "kind": "resize"}}
+{"id": "transcode-001", "payload": {"id": "transcode-001", "kind": "transcode"}}
+{"id": "flaky-001", "payload": {"id": "flaky-001", "kind": "upload", "fail_times": 2}}
+{"id": "poison-001", "payload": {"id": "poison-001", "kind": "transcode", "crash": true}}
+{"id": "broken-001", "payload": {"id": "broken-001", "kind": "resize", "fail": true}}
+{"id": "thumb-001"}
+not json at all
+{"id": 17, "payload": {"id": 17}}
+{"id": "", "payload": {}}
+["thumb-002", {"kind": "thumb"}]
+
+{"id": "resize-001", "payload": {"id": "resize-001", "kind": "resize"}}
+{"id": "resize-002", "payload": {"id": "resize-002", "kind": "crop"}}
+{"id": "export-001", "payload": {"id": "export-001", "kind": "export"}}
+{"id": "thumb-003", "payload": {"id": "thumb-003", "kind": "thumb"}}

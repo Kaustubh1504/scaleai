@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_responses"
+    ],
+    "failures": {
+      "tests.test_1_responses.TestResponses.test_sku2_quotes": "AssertionError: {'r03[23 chars]': ('hit', 40.0), 'r05': ('miss', 34.5), 'r19'[34 chars]3.2)} != {'r03[23 chars]': ('miss', 34.5), 'r05': ('hit', 34.5), 'r19'[34 chars]3.2)}\n  {'r03': ('miss', 40.0),\n-  'r04': ('hit', 40.0),\n-  'r05': ('miss', 34.5),\n?     ^\n\n+  'r04': ('miss', 34.5),\n?     ^\n\n+  'r05': ('hit', 34.5),\n   'r19': ('miss', 43.2),\n   'r20': ('hit', 43.2)}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_responses"
+    ],
+    "failures": {
+      "tests.test_1_responses.TestResponses.test_sku1_quotes": "AssertionError: {'r01[24 chars]: ('hit', 90.0), 'r17': ('miss', 90.0), 'r18': ('hit', 90.0)} != {'r01[24 chars]: ('hit', 100.0), 'r17': ('miss', 90.0), 'r18': ('hit', 100.0)}\n  {'r01': ('miss', 90.0),\n-  'r02': ('hit', 90.0),\n?                 ^\n\n+  'r02': ('hit', 100.0),\n?                 ^^\n\n   'r17': ('miss', 90.0),\n-  'r18': ('hit', 90.0)}\n?                 ^\n\n+  'r18': ('hit', 100.0)}\n?                 ^^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_summary"
+    ],
+    "failures": {
+      "tests.test_2_summary.TestSummary.test_traffic_span": "AssertionError: Tuples differ: (1.5, 17.33) != (25.5, 1.02)\n\nFirst differing element 0:\n1.5\n25.5\n\n- (1.5, 17.33)\n+ (25.5, 1.02)"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_responses",
+      "test_2_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_responses.TestResponses.test_sku1_quotes",
+      "tests.test_1_responses.TestResponses.test_sku2_quotes",
+      "tests.test_2_summary.TestSummary.test_traffic_span"
+    ]
+  }
+}

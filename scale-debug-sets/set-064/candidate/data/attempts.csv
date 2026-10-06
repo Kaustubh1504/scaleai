@@ -1,0 +1,16 @@
+job_id,attempt,outcome
+etl-1,1,ok
+etl-2,1,OK
+etl-3,1,ok
+etl-4,1,ok
+ops-1,1,ok
+ops-2,1,ok
+ops-3,1,fail
+ops-3,2,ok
+rpt-1,1,ok
+rpt-3,1, ok
+trn-1,1,fail
+TRN-1,2,fail
+trn-1,3,ok
+trn-2,1,ok
+trn-3,1,ok

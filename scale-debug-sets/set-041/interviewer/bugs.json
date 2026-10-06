@@ -1,0 +1,124 @@
+{
+  "id": "set-041",
+  "title": "Sprint leaderboard with export duplicates and team standings",
+  "domain": "leaderboard_ranking",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "multi",
+  "package": "ladder",
+  "scenario": "Build an individual sprint leaderboard (best points per task, fewer attempts wins ties, competition ranking) from a messy submission export with duplicate rows, banned and unknown contributors, then rank teams by their two best members.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_leaderboard",
+      "test_2_teams"
+    ]
+  },
+  "verified": [
+    {
+      "file": "ladder/scoring.py",
+      "symbol": "assign_ranks",
+      "why_correct": "`rank = i + 1` looks like it should be `rank += 1`, but standard competition ranking (1, 2, 2, 4) means a new rank is the row's 1-based position, not the previous rank plus one. Rows only share a rank when both score and attempts match, exactly as rule 7 says."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Loop stops at the first banned contributor",
+      "type": "early-return",
+      "file": "ladder/scoring.py",
+      "function": "eligible",
+      "old": "        if person is None or person.banned:\n            continue",
+      "new": "        if person is None or person.banned:\n            break",
+      "symptom": "Test 1: only 10 contributors ranked, c-01 leads with 21 and c-02 drops to 14, c-03 to 9, c-04 to 12. Test 2: submissions_counted 17 instead of 27, leader c-01, and every team score is low (Falcons 35, Herons 17), so the team order changes too.",
+      "why": "`break` ends the whole loop at the first submission from a banned or unknown contributor (S020, Eli), so every later submission in the file is dropped instead of just that one row.",
+      "unblocks": "Most of Test 1 and Test 2; it also exposes B2.",
+      "hints": [
+        "submissions_counted is far below the number of graded rows. Which rows are the last ones that still count?",
+        "Look at how eligible() handles a submission from a banned contributor.",
+        "eligible() uses `break` for banned/unknown contributors; it should be `continue`."
+      ],
+      "probes": [
+        "Why did the out-of-season row S011 not cut the list short, even though it is skipped too?",
+        "Why did the duplicate-row problem stay invisible until this was fixed?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Export duplicates never removed",
+      "type": "missing-dedupe",
+      "file": "ladder/loader.py",
+      "function": "load_submissions",
+      "old": "    return first_per_id(graded)",
+      "new": "    return graded",
+      "masked_by": [
+        "B1"
+      ],
+      "symptom": "Only visible after B1 is fixed. Test 1 test_full_rows: c-12, c-02 and c-03 show 4 attempts instead of 3, and c-02 drops to rank 3 instead of sharing rank 2 with c-01 (scores and order are unchanged). Test 2 test_summary: submissions_counted 30 instead of 27.",
+      "why": "first_per_id is defined but load_submissions returns the raw list, so repeated export rows (s021, S023 , S022) are counted again. Best-per-task scores don't move, but attempts do, which changes the tie-break and the ranks.",
+      "unblocks": "Test 1 attempts/order and the Test 2 summary count.",
+      "hints": [
+        "Scores look right, but c-02, c-03 and c-12 have one attempt too many. Look for their rows in submissions.csv.",
+        "The README says rows with the same submission id are the same submission. Where does the loader handle that?",
+        "load_submissions returns `graded`; it should return `first_per_id(graded)`."
+      ],
+      "probes": [
+        "Why didn't the duplicates change anyone's score?",
+        "Why does the dedupe need to run after the ids are upper-cased and trimmed?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Team ties ordered reverse-alphabetically",
+      "type": "wrong-tie-break",
+      "file": "ladder/teams.py",
+      "function": "team_standings",
+      "old": "    table.sort(key=lambda t: (-t[\"score\"], t[\"team\"]))",
+      "new": "    table.sort(key=lambda t: (t[\"score\"], t[\"team\"]), reverse=True)",
+      "visible_only_in": [
+        "test_2_teams"
+      ],
+      "symptom": "Test 2 test_team_order only: ['Falcons', 'Otters', 'Herons', 'Lynx'] instead of ['Falcons', 'Herons', 'Otters', 'Lynx']. Scores and Test 1 are unaffected.",
+      "why": "Reversing the whole tuple sorts scores high-first correctly but also flips the name tie-break, so Otters (37) lands ahead of Herons (37).",
+      "unblocks": "Test 2 team order.",
+      "hints": [
+        "Herons and Otters have the same score. Which should be first by rule 10?",
+        "Look at how team_standings sorts the table.",
+        "Sort by `(-t[\"score\"], t[\"team\"])` without reverse=True."
+      ],
+      "probes": [
+        "Why did reverse=True still get Falcons and Lynx in the right places?",
+        "How else could you sort descending on one key and ascending on another if the key weren't numeric?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() do, step by step?",
+      "a": "It loads the roster (`load_contributors`) and the graded submissions (`load_submissions`), calls `scoring.leaderboard`, which filters with `eligible`, takes best points per task, counts attempts, sorts and ranks, and then calls `team_standings` on the ranked rows. The summary is built from the counted submissions, the rows and the team table."
+    },
+    {
+      "q": "Which submission rows does load_submissions drop?",
+      "a": "Rows whose `points` cell is blank after trimming are skipped. Every other row becomes a `Submission` with upper-cased submission and task ids, a lower-cased contributor id, int points and a parsed timestamp. The returned list is what the function's final `return` line gives back."
+    },
+    {
+      "q": "What does first_per_id return?",
+      "a": "A new list in the original order, keeping only the first submission seen for each `Submission.id`. Later ones with the same id are skipped."
+    },
+    {
+      "q": "How are attempts counted in leaderboard()?",
+      "a": "After `eligible` filters the submissions, every remaining submission adds 1 to its contributor's `attempts`. The same filtered list is returned as the second value and its length becomes `submissions_counted`."
+    },
+    {
+      "q": "What is the sort key for leaderboard rows?",
+      "a": "`(-score, attempts, contributor_id)`, ascending. The sorted rows then go to `assign_ranks`, which compares `(score, attempts)` with the previous row."
+    },
+    {
+      "q": "How is a team's score built?",
+      "a": "`team_standings` maps each non-banned roster contributor with a non-blank team to their leaderboard score (0 if absent), then sums the top `TOP_MEMBERS` (2) scores per team. `members` is how many contributors were collected for the team."
+    },
+    {
+      "q": "What does the season window look like in code?",
+      "a": "`in_season` in scoring.py returns `SEASON_START <= when < SEASON_END`, with the start 2026-04-01 00:00 and the end 2026-04-15 00:00."
+    }
+  ]
+}

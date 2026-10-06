@@ -1,0 +1,11 @@
+project_id,skill,min_score,hours_needed,priority,region
+P01,text,70,30,3,any
+P02,Image,75,20,5,
+P03,audio,80,20,4,EMEA
+P04,text,85,10,2,amer
+p05,image,60,15,1,any
+P06,audio,70,10,2,any
+P07,text,90,0,4,any
+P08,image,95,10,3,apac
+P09,audio,85,8,1,amer
+P10,text,60,12,0,any

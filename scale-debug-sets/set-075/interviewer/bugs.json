@@ -1,0 +1,126 @@
+{
+  "id": "set-075",
+  "title": "Lease broker replay with checkpoint snapshot",
+  "domain": "task_queue_leases",
+  "length": "MINI",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "leasebox",
+  "scenario": "Replay a millisecond event log (poll/heartbeat/ack/fail) through a lease broker with boundary-inclusive expiry, then report final task states, a checkpoint snapshot, rejection codes and hand-out wait times.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_replay",
+      "test_2_summary"
+    ]
+  },
+  "verified": [
+    {
+      "file": "leasebox/broker.py",
+      "symbol": "lease_expired",
+      "why_correct": "`>=` looks like it expires leases one tick early, but rule 2 says a lease expiring at or before the event time has expired. W3's heartbeat at exactly 70 s on a lease expiring at 70 s must be rejected."
+    },
+    {
+      "file": "leasebox/broker.py",
+      "symbol": "next_task",
+      "why_correct": "min() over (priority, enqueued_ms, id) looks like it might pick the least important task, but priority 1 is the most urgent, so the smallest tuple is the right one. It also filters out tasks enqueued after now (T06 before 60 s)."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Checkpoint snapshot is a shallow copy",
+      "type": "aliasing-shallow-copy",
+      "file": "leasebox/replay.py",
+      "function": "snapshot",
+      "test": "test_1_replay.TestReplay.test_checkpoint",
+      "old": "    return copy.deepcopy(tasks)",
+      "new": "    return dict(tasks)",
+      "symptom": "Test 1 test_checkpoint: the checkpoint view equals the final view: T02 shows dead instead of leased by W4, T08/T09 done instead of ready, T10 done instead of leased by W2, T11 leased by W1 instead of ready.",
+      "why": "dict(tasks) copies the mapping but keeps the same Task objects, which the broker keeps mutating after the checkpoint. The snapshot ends up showing the final state.",
+      "unblocks": "test_checkpoint.",
+      "hints": [
+        "The checkpoint view is identical to the final view. Was it ever different?",
+        "Look at what snapshot() actually copies.",
+        "Copy the Task objects too: copy.deepcopy(tasks)."
+      ],
+      "probes": [
+        "Why does a new dict not protect the snapshot?",
+        "Would copy.copy(tasks) have been enough? Why not?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Base exception matched first",
+      "type": "exception-order",
+      "file": "leasebox/broker.py",
+      "function": "rejection_code",
+      "test": "test_2_summary.TestSummary.test_rejections",
+      "old": "REJECTION_CODES = [(LeaseExpired, \"expired\"), (NotOwner, \"not_owner\"), (LeaseError, \"invalid\")]",
+      "new": "REJECTION_CODES = [(LeaseError, \"invalid\"), (LeaseExpired, \"expired\"), (NotOwner, \"not_owner\")]",
+      "symptom": "Test 2 test_rejections: {'expired': 0, 'not_owner': 0, 'invalid': 7} instead of {'expired': 4, 'not_owner': 2, 'invalid': 1}.",
+      "why": "rejection_code returns the first class that isinstance() matches. LeaseExpired and NotOwner both subclass LeaseError, so with the base class first every rejection becomes 'invalid'.",
+      "unblocks": "test_rejections.",
+      "hints": [
+        "Every rejection is 'invalid', but only one event names a task that does not exist.",
+        "How does rejection_code pick a code, and how are the exception classes related?",
+        "Put the subclasses before LeaseError in REJECTION_CODES."
+      ],
+      "probes": [
+        "Where else in Python does handler order matter in the same way?",
+        "The comment says 'most specific first'. What should that have told you?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "max wait reported in milliseconds",
+      "type": "ms-vs-s",
+      "file": "leasebox/reports.py",
+      "function": "wait_stats",
+      "test": "test_2_summary.TestSummary.test_wait_stats",
+      "old": "        \"max_s\": round(max(waits) / 1000, 1),",
+      "new": "        \"max_s\": round(max(waits), 1),",
+      "symptom": "Test 2 test_wait_stats: max_s is 230000 instead of 230.0; mean_s is correct at 48.8.",
+      "why": "Waits are differences of epoch milliseconds. mean_s divides by 1000 but max_s does not, so it reports 230000 instead of 230.0.",
+      "unblocks": "test_wait_stats.",
+      "hints": [
+        "mean_s looks right but max_s is 1000 times too big.",
+        "Compare how the two wait figures are converted.",
+        "Divide max(waits) by 1000 as well."
+      ],
+      "probes": [
+        "Which task has the 230 s wait, and why is it so long?",
+        "Why is T06's wait 0 even though it was enqueued after the replay started?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does replay() do with each event?",
+      "a": "If the event is the first one after the checkpoint, it reaps at checkpoint_ms and stores snapshot(broker.tasks). Then it reaps at the event time and calls poll/heartbeat/ack/fail on the Broker. Any LeaseError is converted with rejection_code() and counted in a Counter."
+    },
+    {
+      "q": "How does the Broker decide who owns a task in _owned()?",
+      "a": "Unknown task id raises LeaseError. If task.owner equals the worker the task is returned. If the worker is in task.past_owners it raises LeaseExpired, otherwise NotOwner."
+    },
+    {
+      "q": "What happens in _release()?",
+      "a": "It drops the worker from holding, appends the owner to past_owners, clears owner and expires_ms, and sets state to 'dead' if attempts >= max_attempts, else 'ready'. Both reap() and fail() use it."
+    },
+    {
+      "q": "How are the exception classes related?",
+      "a": "LeaseExpired and NotOwner are both subclasses of LeaseError, defined in models.py."
+    },
+    {
+      "q": "What units are times stored in?",
+      "a": "Everything is epoch milliseconds: loader.to_epoch_ms converts enqueued_at and the checkpoint, events carry at_ms, and lease_ms is lease_seconds * 1000."
+    },
+    {
+      "q": "Where is the checkpoint view built?",
+      "a": "replay() returns the checkpoint mapping from snapshot(); build_report passes it to task_view(), the same function used for the final view."
+    },
+    {
+      "q": "Which events are dropped before replay?",
+      "a": "load_events skips rows whose normalised worker id is not in the active set from load_workers, then sorts the rest by at_ms (a stable sort, so ties keep file order)."
+    }
+  ]
+}

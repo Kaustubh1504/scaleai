@@ -1,0 +1,14 @@
+{
+  "request": "GET /v1/projects/prj_01/tasks?limit=3&cursor=eyJyIjogInRhc2tzIiwgImsiOiBbInRza18wMDI3IiwgInRza18wMDI3Il19",
+  "status": 429,
+  "headers": {
+    "date": "Wed, 01 May 2024 08:00:00 GMT",
+    "x-ratelimit-limit": "4",
+    "x-ratelimit-remaining": "0",
+    "x-ratelimit-reset": "1714550410",
+    "retry-after": "Wed, 01 May 2024 08:00:10 GMT"
+  },
+  "body": {
+    "error": "rate_limited"
+  }
+}

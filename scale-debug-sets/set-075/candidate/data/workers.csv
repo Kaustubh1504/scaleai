@@ -1,0 +1,11 @@
+worker_id,active,pool
+W1,yes,east
+w2,Y,east
+W3 ,true,west
+W4,1,west
+W5,no,west
+W6,false,east
+W7,,east
+W8,yes,spare
+W10,y,spare
+W11,0,spare

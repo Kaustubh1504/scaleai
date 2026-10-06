@@ -1,0 +1,13 @@
+[
+  {"project": "ner", "locale": "en", "version": 1, "published_at": "2026-05-20", "labels": ["PERSON", "ORG", "LOC"]},
+  {"project": "NER", "locale": "en", "version": 2, "published_at": "2026-06-01 09:08:00", "labels": ["PERSON", "ORG", "LOC", "DATE"]},
+  {"project": "ner", "locale": "de", "version": 1, "published_at": "05/22/2026 12:00:00", "labels": ["PERSON", "ORG", "ORT"]},
+  {"project": "bbox", "locale": "en", "version": 1, "published_at": "2026-05-01", "labels": ["car", "truck", " pedestrian"]},
+  {"project": "bbox", "locale": "FR", "version": 1, "published_at": "2026-05-03T10:00:00", "labels": ["voiture", "camion", "piéton"]},
+  {"project": "bbox", "locale": "en", "version": 2, "published_at": "2026-06-01 09:30:00", "labels": ["car", "truck", "pedestrian", "cyclist"]},
+  {"project": "sentiment", "locale": "en", "version": 1, "published_at": "2026-04-01", "labels": ["positive", "negative"]},
+  {"project": "sentiment", "locale": "en", "version": 3, "published_at": "2026-05-15", "labels": ["positive", "negative", "neutral"]},
+  {"project": "sentiment", "locale": "", "version": 2, "published_at": "2026-04-20", "labels": ["positive", "negative", "mixed"]},
+  {"project": "sentiment", "locale": "fr", "version": 1, "published_at": "2026-05-15", "labels": ["positif", "négatif", "neutre"]},
+  {"project": "intent", "locale": "en", "version": 1, "published_at": "2026-07-01", "labels": ["buy", "browse"]}
+]

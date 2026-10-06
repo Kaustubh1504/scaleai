@@ -1,0 +1,99 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_limits",
+      "test_2_usage",
+      "test_3_invoices"
+    ],
+    "failures": {
+      "tests.test_1_limits.TestLimits.test_throttled_requests": "AssertionError: {'t-acme': ['a04', 'a05', 'a06'], 't-bolt': [], 't-cove'[153 chars]: []} != {'t-acme': ['a05'], 't-bolt': [], 't-cove': ['c03'], 't-[118 chars]: []}\n- {'t-acme': ['a04', 'a05', 'a06'],\n+ {'t-acme': ['a05'],\n   't-bolt': [],\n-  't-cove': ['c03', 'c04'],\n?                  -------\n\n+  't-cove': ['c03'],\n   't-dune': [],\n   't-echo': ['e01', 'e02'],\n-  't-fern': ['f04', 'f05', 'f06'],\n?                         -------\n\n+  't-fern': ['f04', 'f05'],\n-  't-gale': ['g05', 'g06'],\n?                  -------\n\n+  't-gale': ['g05'],\n   't-hive': [],\n   't-iris': [],\n   't-jade': []}",
+      "tests.test_2_usage.TestUsage.test_allowed_and_throttled_counts": "AssertionError: {'t-acme': (3, 3), 't-bolt': (7, 0), 't-cove': (2, 2)[122 chars], 0)} != {'t-acme': (5, 1), 't-bolt': (7, 0), 't-cove': (3, 1)[122 chars], 0)}\n- {'t-acme': (3, 3),\n?             ^  ^\n\n+ {'t-acme': (5, 1),\n?             ^  ^\n\n   't-bolt': (7, 0),\n-  't-cove': (2, 2),\n?             ^  ^\n\n+  't-cove': (3, 1),\n?             ^  ^\n\n   't-dune': (4, 0),\n   't-echo': (0, 2),\n-  't-fern': (3, 3),\n?             ^  ^\n\n+  't-fern': (4, 2),\n?             ^  ^\n\n-  't-gale': (4, 2),\n?             ^  ^\n\n+  't-gale': (5, 1),\n?             ^  ^\n\n   't-hive': (2, 0),\n   't-iris': (1, 0),\n   't-ja",
+      "tests.test_2_usage.TestUsage.test_billable_tokens": "AssertionError: {'t-acme': 1200, 't-bolt': 14700, 't-cove': 1700, 't-[100 chars]6000} != {'t-acme': 1800, 't-bolt': 14700, 't-cove': 1700, 't-[101 chars]6000}\n- {'t-acme': 1200,\n?             ^\n\n+ {'t-acme': 1800,\n?             ^\n\n   't-bolt': 14700,\n   't-cove': 1700,\n   't-dune': 30000,\n   't-echo': 0,\n-  't-fern': 1800,\n?            ^^\n\n+  't-fern': 2400,\n?            ^^\n\n-  't-gale': 8000,\n?            ^^\n\n+  't-gale': 16700,\n?            ^^^\n\n   't-hive': 500,\n   't-iris': 1000,\n   't-jade': 6000}",
+      "tests.test_2_usage.TestUsage.test_by_endpoint": "AssertionError: {'t-a[14 chars]at': 2, '/v1/embed': 1}, 't-bolt': {'/v1/chat'[252 chars]: 1}} != {'t-a[14 chars]at': 3, '/v1/embed': 2}, 't-bolt': {'/v1/chat'[284 chars]: 1}}\n- {'t-acme': {'/v1/chat': 2, '/v1/embed': 1},\n?                         ^               ^\n\n+ {'t-acme': {'/v1/chat': 3, '/v1/embed': 2},\n?                         ^               ^\n\n   't-bolt': {'/v1/chat': 5, '/v1/embed': 2},\n-  't-cove': {'/v1/chat': 2},\n+  't-cove': {'/v1/chat': 2, '/v1/embed': 1},\n?                          ++++++++++++++++\n\n   't-dune': {'/v1/chat': 3, '/v1/embed': 1},\n   't-echo': {},\n-  't-fern': ",
+      "tests.test_3_invoices.TestInvoices.test_invoice_amounts": "AssertionError: {'t-acme': '0.08', 't-bolt': '2.43', 't-cove': '0.28', [120 chars].25'} != {'t-acme': '0.32', 't-bolt': '2.43', 't-cove': '0.28', [120 chars].25'}\n- {'t-acme': '0.08',\n?               ^^\n\n+ {'t-acme': '0.32',\n?               ^^\n\n   't-bolt': '2.43',\n   't-cove': '0.28',\n   't-dune': '1.50',\n   't-echo': '0.00',\n-  't-fern': '0.32',\n?               ^^\n\n+  't-fern': '0.56',\n?               ^^\n\n-  't-gale': '0.75',\n?             ^ ^^\n\n+  't-gale': '2.93',\n?             ^ ^^\n\n   't-hive': '0.00',\n   't-iris': '0.00',\n   't-jade': '0.25'}",
+      "tests.test_3_invoices.TestInvoices.test_overage_tokens": "AssertionError: {'t-acme': 200, 't-bolt': 9700, 't-cove': 700, 't-du[92 chars]1000} != {'t-acme': 800, 't-bolt': 9700, 't-cove': 700, 't-du[94 chars]1000}\n- {'t-acme': 200,\n?            ^\n\n+ {'t-acme': 800,\n?            ^\n\n   't-bolt': 9700,\n   't-cove': 700,\n   't-dune': 10000,\n   't-echo': 0,\n-  't-fern': 800,\n?            ^\n\n+  't-fern': 1400,\n?            ^^\n\n-  't-gale': 3000,\n?            ^^\n\n+  't-gale': 11700,\n?            ^^^\n\n   't-hive': 0,\n   't-iris': 0,\n   't-jade': 1000}",
+      "tests.test_3_invoices.TestInvoices.test_total_and_top_tenants": "AssertionError: '5.61' != '8.27'\n- 5.61\n+ 8.27\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_limits",
+      "test_2_usage",
+      "test_3_invoices"
+    ],
+    "failures": {
+      "tests.test_1_limits.TestLimits.test_throttled_requests": "AssertionError: {'t-acme': ['a04'], 't-bolt': [], 't-cove': ['c03'], 't-[118 chars]: []} != {'t-acme': ['a05'], 't-bolt': [], 't-cove': ['c03'], 't-[118 chars]: []}\n- {'t-acme': ['a04'],\n?                ^\n\n+ {'t-acme': ['a05'],\n?                ^\n\n   't-bolt': [],\n   't-cove': ['c03'],\n   't-dune': [],\n   't-echo': ['e01', 'e02'],\n   't-fern': ['f04', 'f05'],\n   't-gale': ['g05'],\n   't-hive': [],\n   't-iris': [],\n   't-jade': []}",
+      "tests.test_2_usage.TestUsage.test_billable_tokens": "AssertionError: {'t-acme': 1900, 't-bolt': 14700, 't-cove': 1700, 't-[101 chars]6000} != {'t-acme': 1800, 't-bolt': 14700, 't-cove': 1700, 't-[101 chars]6000}\n- {'t-acme': 1900,\n?             ^\n\n+ {'t-acme': 1800,\n?             ^\n\n   't-bolt': 14700,\n   't-cove': 1700,\n   't-dune': 30000,\n   't-echo': 0,\n   't-fern': 2400,\n   't-gale': 16700,\n   't-hive': 500,\n   't-iris': 1000,\n   't-jade': 6000}",
+      "tests.test_3_invoices.TestInvoices.test_invoice_amounts": "AssertionError: {'t-acme': '0.36', 't-bolt': '2.43', 't-cove': '0.28', '[119 chars].25'} != {'t-acme': '0.32', 't-bolt': '2.43', 't-cove': '0.28', '[119 chars].25'}\n- {'t-acme': '0.36',\n?                ^\n\n+ {'t-acme': '0.32',\n?                ^\n\n   't-bolt': '2.43',\n   't-cove': '0.28',\n   't-dune': '1.50',\n   't-echo': '0.00',\n   't-fern': '0.56',\n   't-gale': '2.93',\n   't-hive': '0.00',\n   't-iris': '0.00',\n   't-jade': '0.25'}",
+      "tests.test_3_invoices.TestInvoices.test_overage_tokens": "AssertionError: {'t-acme': 900, 't-bolt': 9700, 't-cove': 700, 't-du[94 chars]1000} != {'t-acme': 800, 't-bolt': 9700, 't-cove': 700, 't-du[94 chars]1000}\n- {'t-acme': 900,\n?            ^\n\n+ {'t-acme': 800,\n?            ^\n\n   't-bolt': 9700,\n   't-cove': 700,\n   't-dune': 10000,\n   't-echo': 0,\n   't-fern': 1400,\n   't-gale': 11700,\n   't-hive': 0,\n   't-iris': 0,\n   't-jade': 1000}",
+      "tests.test_3_invoices.TestInvoices.test_total_and_top_tenants": "AssertionError: '8.31' != '8.27'\n- 8.31\n+ 8.27\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_limits",
+      "test_2_usage",
+      "test_3_invoices"
+    ],
+    "failures": {
+      "tests.test_1_limits.TestLimits.test_effective_limits": "AssertionError: {'t-a[54 chars]ho': 5, 't-fern': 3, 't-gale': 4, 't-hive': 10[22 chars]': 5} != {'t-a[54 chars]ho': 0, 't-fern': 3, 't-gale': 4, 't-hive': 10[22 chars]': 5}\n  {'t-acme': 3,\n   't-bolt': 5,\n   't-cove': 2,\n   't-dune': 10,\n-  't-echo': 5,\n?            ^\n\n+  't-echo': 0,\n?            ^\n\n   't-fern': 3,\n   't-gale': 4,\n   't-hive': 10,\n   't-iris': 3,\n   't-jade': 5}",
+      "tests.test_1_limits.TestLimits.test_throttled_requests": "AssertionError: {'t-a[68 chars]o': [], 't-fern': ['f04', 'f05'], 't-gale': ['[43 chars]: []} != {'t-a[68 chars]o': ['e01', 'e02'], 't-fern': ['f04', 'f05'], [55 chars]: []}\n  {'t-acme': ['a05'],\n   't-bolt': [],\n   't-cove': ['c03'],\n   't-dune': [],\n-  't-echo': [],\n+  't-echo': ['e01', 'e02'],\n   't-fern': ['f04', 'f05'],\n   't-gale': ['g05'],\n   't-hive': [],\n   't-iris': [],\n   't-jade': []}",
+      "tests.test_2_usage.TestUsage.test_allowed_and_throttled_counts": "AssertionError: {'t-a[74 chars]o': (2, 0), 't-fern': (4, 2), 't-gale': (5, 1)[50 chars], 0)} != {'t-a[74 chars]o': (0, 2), 't-fern': (4, 2), 't-gale': (5, 1)[50 chars], 0)}\n  {'t-acme': (5, 1),\n   't-bolt': (7, 0),\n   't-cove': (3, 1),\n   't-dune': (4, 0),\n-  't-echo': (2, 0),\n?              ---\n\n+  't-echo': (0, 2),\n?             +++\n\n   't-fern': (4, 2),\n   't-gale': (5, 1),\n   't-hive': (2, 0),\n   't-iris': (1, 0),\n   't-jade': (1, 0)}",
+      "tests.test_2_usage.TestUsage.test_billable_tokens": "AssertionError: {'t-a[67 chars]ho': 7000, 't-fern': 2400, 't-gale': 16700, 't[39 chars]6000} != {'t-a[67 chars]ho': 0, 't-fern': 2400, 't-gale': 16700, 't-hi[36 chars]6000}\n  {'t-acme': 1800,\n   't-bolt': 14700,\n   't-cove': 1700,\n   't-dune': 30000,\n-  't-echo': 7000,\n?            ---\n\n+  't-echo': 0,\n   't-fern': 2400,\n   't-gale': 16700,\n   't-hive': 500,\n   't-iris': 1000,\n   't-jade': 6000}",
+      "tests.test_2_usage.TestUsage.test_by_endpoint": "AssertionError: {'t-a[174 chars]o': {'/v1/chat': 2}, 't-fern': {'/v1/embed': 4[137 chars]: 1}} != {'t-a[174 chars]o': {}, 't-fern': {'/v1/embed': 4}, 't-gale': [124 chars]: 1}}\n  {'t-acme': {'/v1/chat': 3, '/v1/embed': 2},\n   't-bolt': {'/v1/chat': 5, '/v1/embed': 2},\n   't-cove': {'/v1/chat': 2, '/v1/embed': 1},\n   't-dune': {'/v1/chat': 3, '/v1/embed': 1},\n-  't-echo': {'/v1/chat': 2},\n+  't-echo': {},\n   't-fern': {'/v1/embed': 4},\n   't-gale': {'/v1/chat': 4, '/v1/embed': 1},\n   't-hive': {'/v1/chat': 1, '/v1/embed': 1},\n   't-iris': {'/v1/chat': 1},\n   't-jade': {'/v1/chat': 1}}",
+      "tests.test_3_invoices.TestInvoices.test_invoice_amounts": "AssertionError: {'t-a[76 chars]: '0.50', 't-fern': '0.56', 't-gale': '2.93', [48 chars].25'} != {'t-a[76 chars]: '0.00', 't-fern': '0.56', 't-gale': '2.93', [48 chars].25'}\n  {'t-acme': '0.32',\n   't-bolt': '2.43',\n   't-cove': '0.28',\n   't-dune': '1.50',\n-  't-echo': '0.50',\n?               ^\n\n+  't-echo': '0.00',\n?               ^\n\n   't-fern': '0.56',\n   't-gale': '2.93',\n   't-hive': '0.00',\n   't-iris': '0.00',\n   't-jade': '0.25'}",
+      "tests.test_3_invoices.TestInvoices.test_overage_tokens": "AssertionError: {'t-a[64 chars]ho': 2000, 't-fern': 1400, 't-gale': 11700, 't[34 chars]1000} != {'t-a[64 chars]ho': 0, 't-fern': 1400, 't-gale': 11700, 't-hi[31 chars]1000}\n  {'t-acme': 800,\n   't-bolt': 9700,\n   't-cove': 700,\n   't-dune': 10000,\n-  't-echo': 2000,\n?            ---\n\n+  't-echo': 0,\n   't-fern': 1400,\n   't-gale': 11700,\n   't-hive': 0,\n   't-iris': 0,\n   't-jade': 1000}",
+      "tests.test_3_invoices.TestInvoices.test_total_and_top_tenants": "AssertionError: '8.77' != '8.27'\n- 8.77\n?   ^\n+ 8.27\n?   ^\n"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_1_limits",
+      "test_2_usage",
+      "test_3_invoices"
+    ],
+    "failures": {
+      "tests.test_1_limits.TestLimits.test_throttled_requests": "AssertionError: {'t-a[21 chars]t': ['b06', 'b07'], 't-cove': ['c03'], 't-dune[114 chars]: []} != {'t-a[21 chars]t': [], 't-cove': ['c03'], 't-dune': [], 't-ec[102 chars]: []}\n  {'t-acme': ['a05'],\n-  't-bolt': ['b06', 'b07'],\n+  't-bolt': [],\n   't-cove': ['c03'],\n   't-dune': [],\n   't-echo': ['e01', 'e02'],\n   't-fern': ['f04', 'f05'],\n   't-gale': ['g05'],\n   't-hive': [],\n   't-iris': [],\n   't-jade': []}",
+      "tests.test_2_usage.TestUsage.test_allowed_and_throttled_counts": "AssertionError: {'t-a[20 chars]t': (5, 2), 't-cove': (3, 1), 't-dune': (4, 0)[104 chars], 0)} != {'t-a[20 chars]t': (7, 0), 't-cove': (3, 1), 't-dune': (4, 0)[104 chars], 0)}\n  {'t-acme': (5, 1),\n-  't-bolt': (5, 2),\n?             ^  ^\n\n+  't-bolt': (7, 0),\n?             ^  ^\n\n   't-cove': (3, 1),\n   't-dune': (4, 0),\n   't-echo': (0, 2),\n   't-fern': (4, 2),\n   't-gale': (5, 1),\n   't-hive': (2, 0),\n   't-iris': (1, 0),\n   't-jade': (1, 0)}",
+      "tests.test_2_usage.TestUsage.test_billable_tokens": "AssertionError: {'t-a[18 chars]t': 10000, 't-cove': 1700, 't-dune': 30000, 't[85 chars]6000} != {'t-a[18 chars]t': 14700, 't-cove': 1700, 't-dune': 30000, 't[85 chars]6000}\n  {'t-acme': 1800,\n-  't-bolt': 10000,\n?             ^^\n\n+  't-bolt': 14700,\n?             ^^\n\n   't-cove': 1700,\n   't-dune': 30000,\n   't-echo': 0,\n   't-fern': 2400,\n   't-gale': 16700,\n   't-hive': 500,\n   't-iris': 1000,\n   't-jade': 6000}",
+      "tests.test_2_usage.TestUsage.test_by_endpoint": "AssertionError: {'t-a[57 chars]at': 4, '/v1/embed': 1}, 't-cove': {'/v1/chat'[241 chars]: 1}} != {'t-a[57 chars]at': 5, '/v1/embed': 2}, 't-cove': {'/v1/chat'[241 chars]: 1}}\n  {'t-acme': {'/v1/chat': 3, '/v1/embed': 2},\n-  't-bolt': {'/v1/chat': 4, '/v1/embed': 1},\n?                         ^               ^\n\n+  't-bolt': {'/v1/chat': 5, '/v1/embed': 2},\n?                         ^               ^\n\n   't-cove': {'/v1/chat': 2, '/v1/embed': 1},\n   't-dune': {'/v1/chat': 3, '/v1/embed': 1},\n   't-echo': {},\n   't-fern': {'/v1/embed': 4},\n   't-gale': {'/v1/chat': 4, '/v1/embed': 1},\n   't-hive'",
+      "tests.test_3_invoices.TestInvoices.test_invoice_amounts": "AssertionError: {'t-a[20 chars]t': '1.25', 't-cove': '0.28', 't-dune': '1.50'[104 chars].25'} != {'t-a[20 chars]t': '2.43', 't-cove': '0.28', 't-dune': '1.50'[104 chars].25'}\n  {'t-acme': '0.32',\n-  't-bolt': '1.25',\n?             ^ ^^\n\n+  't-bolt': '2.43',\n?             ^ ^^\n\n   't-cove': '0.28',\n   't-dune': '1.50',\n   't-echo': '0.00',\n   't-fern': '0.56',\n   't-gale': '2.93',\n   't-hive': '0.00',\n   't-iris': '0.00',\n   't-jade': '0.25'}",
+      "tests.test_3_invoices.TestInvoices.test_overage_tokens": "AssertionError: {'t-a[16 chars]lt': 5000, 't-cove': 700, 't-dune': 10000, 't-[79 chars]1000} != {'t-a[16 chars]lt': 9700, 't-cove': 700, 't-dune': 10000, 't-[79 chars]1000}\n  {'t-acme': 800,\n-  't-bolt': 5000,\n?            ^^\n\n+  't-bolt': 9700,\n?            ^^\n\n   't-cove': 700,\n   't-dune': 10000,\n   't-echo': 0,\n   't-fern': 1400,\n   't-gale': 11700,\n   't-hive': 0,\n   't-iris': 0,\n   't-jade': 1000}",
+      "tests.test_3_invoices.TestInvoices.test_total_and_top_tenants": "AssertionError: '7.09' != '8.27'\n- 7.09\n+ 8.27\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_2_usage"
+    ],
+    "failures": {
+      "tests.test_2_usage.TestUsage.test_by_endpoint": "AssertionError: {'t-a[14 chars]at': 40, '/v1/embed': 24}, 't-bolt': {'/v1/cha[380 chars] 24}} != {'t-a[14 chars]at': 3, '/v1/embed': 2}, 't-bolt': {'/v1/chat'[284 chars]: 1}}\n- {'t-acme': {'/v1/chat': 40, '/v1/embed': 24},\n?                         ^^                -\n\n+ {'t-acme': {'/v1/chat': 3, '/v1/embed': 2},\n?                         ^\n\n-  't-bolt': {'/v1/chat': 40, '/v1/embed': 24},\n?                         ^^                -\n\n+  't-bolt': {'/v1/chat': 5, '/v1/embed': 2},\n?                         ^\n\n-  't-cove': {'/v1/chat': 40, '/v1/embed': 24},\n?                         ^^         "
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_invoices"
+    ],
+    "failures": {
+      "tests.test_3_invoices.TestInvoices.test_invoice_amounts": "AssertionError: {'t-a[23 chars] '2.42', 't-cove': '0.28', 't-dune': '1.50', '[101 chars].25'} != {'t-a[23 chars] '2.43', 't-cove': '0.28', 't-dune': '1.50', '[101 chars].25'}\n  {'t-acme': '0.32',\n-  't-bolt': '2.42',\n?                ^\n\n+  't-bolt': '2.43',\n?                ^\n\n   't-cove': '0.28',\n   't-dune': '1.50',\n   't-echo': '0.00',\n   't-fern': '0.56',\n-  't-gale': '2.92',\n?                ^\n\n+  't-gale': '2.93',\n?                ^\n\n   't-hive': '0.00',\n   't-iris': '0.00',\n   't-jade': '0.25'}",
+      "tests.test_3_invoices.TestInvoices.test_total_and_top_tenants": "AssertionError: '8.25' != '8.27'\n- 8.25\n?    ^\n+ 8.27\n?    ^\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_limits",
+      "test_2_usage",
+      "test_3_invoices"
+    ],
+    "failing_tests": [
+      "tests.test_1_limits.TestLimits.test_effective_limits",
+      "tests.test_1_limits.TestLimits.test_throttled_requests",
+      "tests.test_2_usage.TestUsage.test_allowed_and_throttled_counts",
+      "tests.test_2_usage.TestUsage.test_billable_tokens",
+      "tests.test_2_usage.TestUsage.test_by_endpoint",
+      "tests.test_3_invoices.TestInvoices.test_invoice_amounts",
+      "tests.test_3_invoices.TestInvoices.test_overage_tokens",
+      "tests.test_3_invoices.TestInvoices.test_total_and_top_tenants"
+    ]
+  }
+}

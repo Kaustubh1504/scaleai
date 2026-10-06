@@ -1,0 +1,10 @@
+{
+  "model": "vision-tagger-3",
+  "max_concurrency": 2,
+  "max_retries": 2,
+  "max_polls": 6,
+  "poll_interval_s": 0,
+  "page_size": 3,
+  "review_threshold": 0.7,
+  "price_per_1k_tokens": 0.02
+}

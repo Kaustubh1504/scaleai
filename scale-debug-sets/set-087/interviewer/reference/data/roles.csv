@@ -1,0 +1,13 @@
+alias,role
+human,user
+user,user
+Prompter,user
+ gpt,assistant
+bot,assistant
+model,assistant
+assistant,Assistant
+system,system
+sys,system
+instruction ,system
+tool,tool
+function,tool

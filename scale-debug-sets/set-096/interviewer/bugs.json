@@ -1,0 +1,186 @@
+{
+  "id": "set-096",
+  "title": "Group-aware dataset splits with pins and dedupe",
+  "domain": "dataset_split",
+  "length": "FULL",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "holdout",
+  "scenario": "Three text datasets are cleaned (blocked licenses, incomplete rows, quality floor), deduped by normalised text, then whole source documents are assigned to train/val/test by largest deficit against floor-based targets, with per-dataset pins and fraction overrides merged onto shared defaults.",
+  "verified": [
+    {
+      "file": "holdout/allocator.py",
+      "symbol": "compute_targets",
+      "why_correct": "The `//` looks like an integer-division slip, but rule 6 asks for floor(n x pct / 100) with whole-number percentages, so multiplying first and floor-dividing by 100 is exact. Train takes the remainder, so the targets always add up to n."
+    },
+    {
+      "file": "holdout/textnorm.py",
+      "symbol": "fingerprint",
+      "why_correct": "Stripping every non-word, non-space character looks aggressive, but rule 4 says duplicates match ignoring case, punctuation and runs of whitespace. Lower-casing, removing punctuation and re-joining on single spaces is exactly that."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Blocked samples removed while iterating",
+      "type": "mutate-while-iterating",
+      "file": "holdout/filters.py",
+      "function": "drop_blocked",
+      "test": "test_1_cleaning.TestCleaning.test_drop_reasons",
+      "old": "    for sample in list(samples):\n",
+      "new": "    for sample in samples:\n",
+      "symptom": "Test 1 test_drop_reasons: TX-08 is reported as 'incomplete' instead of 'blocked_source'. Kept counts, duplicates and every split stay correct, because TX-08 is dropped either way.",
+      "why": "drop_blocked removes items from the list it is iterating over. After TX-07 is removed, the iterator steps past TX-08 (also from the proprietary tox-d04), so TX-08 survives this stage and is caught later by the blank-text rule, with the wrong reason.",
+      "unblocks": "test_1_cleaning.TestCleaning.test_drop_reasons",
+      "hints": [
+        "TX-08's source is proprietary. Why wasn't that the reason it was dropped?",
+        "Look at how drop_blocked walks the list while it removes from it.",
+        "`for sample in samples:` mutates the list being iterated; iterate over a copy: `for sample in list(samples):`."
+      ],
+      "probes": [
+        "Why did only TX-08 get the wrong reason, when IN-05, IN-14 and TX-16 were also blocked?",
+        "Why didn't kept counts or split assignments change at all?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Duplicate original chosen by id before date",
+      "type": "wrong-tie-break",
+      "file": "holdout/dedupe.py",
+      "function": "pick_original",
+      "test": "test_1_cleaning.TestCleaning.test_duplicates",
+      "old": "    return min(copies, key=lambda s: (s.created, s.sample_id))",
+      "new": "    return min(copies, key=lambda s: (s.sample_id, s.created))",
+      "symptom": "Test 1 test_duplicates: intent reports IN-11 as a duplicate of IN-03; the original should be IN-11 (created 01/02/2026, earlier than IN-03). Toxicity and summaries come out right.",
+      "why": "pick_original's key is (sample_id, created), so the lowest id wins and the date only breaks ties. The spec makes the earliest date primary and the id the tie-break.",
+      "unblocks": "test_1_cleaning.TestCleaning.test_duplicates",
+      "hints": [
+        "Compare the created dates of IN-03 and IN-11.",
+        "Look at how dedupe chooses which copy to keep.",
+        "pick_original's key has its fields swapped: use (s.created, s.sample_id)."
+      ],
+      "probes": [
+        "Why did the toxicity and summaries pairs come out right even with this key?",
+        "Why does choosing the other copy not move any document between splits?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Deficit ties broken alphabetically",
+      "type": "wrong-tie-break",
+      "file": "holdout/allocator.py",
+      "function": "choose_split",
+      "test": "test_2_assignment.TestAssignment.test_intent_groups",
+      "old": "    return max(SPLITS, key=lambda split: deficit[split])",
+      "new": "    return max(SPLITS, key=lambda split: (deficit[split], split))",
+      "symptom": "Test 2 test_intent_groups: in-d04 goes to val, in-d05 to train, in-d06 to val and in-d07 to train; expected train/val/train/val. Toxicity and summaries are unaffected.",
+      "why": "choose_split's key is (deficit, split name), so on equal deficits the alphabetically largest name ('val') wins over 'train'. The spec prefers train, then val, then test. Intent is the only dataset that reaches a train/val tie (deficit 3 and 3 when in-d04 is placed), and the change ripples through the rest of the assignment.",
+      "unblocks": "test_2_assignment.TestAssignment.test_intent_groups",
+      "hints": [
+        "Work through intent's assignment by hand: what are the deficits when in-d04 is placed?",
+        "Look at how choose_split breaks ties between splits.",
+        "`max(SPLITS, key=lambda split: (deficit[split], split))` prefers 'val' over 'train'; use `key=lambda split: deficit[split]` so the first split in SPLITS order wins."
+      ],
+      "probes": [
+        "Why does a val/test tie or a train/test tie still come out right with this key?",
+        "Why does one tie change four documents' splits?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Pin keys trimmed but not lower-cased",
+      "type": "id-normalization",
+      "file": "holdout/config.py",
+      "function": "load_datasets",
+      "test": "test_2_assignment.TestAssignment.test_toxicity_groups",
+      "old": "            pins={textnorm.norm_doc(doc): textnorm.clean(split).lower()",
+      "new": "            pins={textnorm.clean(doc): textnorm.clean(split).lower()",
+      "symptom": "Test 2 test_toxicity_groups: tox-d05 lands in val instead of its pinned test split, and tox-d02, tox-d03 and tox-d06 shift as a result. The intent pin still works.",
+      "why": "Pin keys are only trimmed, so the toxicity pin is stored under 'TOX-D05' while sample document ids are lower-cased to 'tox-d05'. The lookup misses and the document is allocated like any other.",
+      "unblocks": "test_2_assignment.TestAssignment.test_toxicity_groups",
+      "hints": [
+        "Look at how the toxicity pin is written in datasets.json.",
+        "Compare how pin keys and sample doc ids are normalised.",
+        "load_datasets builds pin keys with textnorm.clean(doc); use textnorm.norm_doc(doc)."
+      ],
+      "probes": [
+        "Why did the intent pin keep working?",
+        "How would you change the code so an unmatched pin is noticed instead of silently ignored?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Shallow copy of defaults leaks fractions",
+      "type": "aliasing-shallow-copy",
+      "file": "holdout/config.py",
+      "function": "merge",
+      "test": "test_3_report.TestReport.test_targets",
+      "old": "    merged = copy.deepcopy(defaults)",
+      "new": "    merged = copy.copy(defaults)",
+      "symptom": "Test 3 test_targets: summaries gets train 7 / val 2 / test 3 instead of 8 / 2 / 2. Intent and toxicity targets are right.",
+      "why": "copy.copy makes a shallow copy, so every merged config shares the defaults' nested `fractions` dict. When toxicity merges its own test: 30, it writes into the shared defaults, and summaries (processed later, with no override) inherits 30%.",
+      "unblocks": "test_3_report.TestReport.test_targets",
+      "hints": [
+        "Summaries has no fraction override. Where could a 30% test share come from?",
+        "Look at how merge copies the defaults before applying a dataset's keys.",
+        "copy.copy(defaults) shares the nested fractions dict; use copy.deepcopy(defaults)."
+      ],
+      "probes": [
+        "Why were intent's targets unaffected even though it uses the same defaults?",
+        "Would `{**defaults}` have fixed it? Why or why not?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "groupby over unsorted labels",
+      "type": "groupby-misuse",
+      "file": "holdout/reports.py",
+      "function": "label_totals",
+      "test": "test_3_report.TestReport.test_label_totals",
+      "old": "    ordered = sorted(samples, key=lambda s: s.label)",
+      "new": "    ordered = list(samples)",
+      "symptom": "Test 3 test_label_totals: every dataset's counts are too small, e.g. intent gives book_flight 1, refund 2, cancel 1, greet 1 instead of 4/4/2/5.",
+      "why": "itertools.groupby only groups consecutive equal keys. Without sorting by label first, each label appears in several runs, and the dict comprehension keeps only the length of the last run for each label.",
+      "unblocks": "test_3_report.TestReport.test_label_totals",
+      "hints": [
+        "The totals don't even add up to `kept`. What would produce numbers that small?",
+        "Look at how label_totals groups samples.",
+        "groupby needs sorted input: `ordered = sorted(samples, key=lambda s: s.label)`."
+      ],
+      "probes": [
+        "Why does the dict end up with the last run's length rather than the first?",
+        "What simpler standard-library tool would avoid this whole class of mistake?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does dataset_report do, step by step?",
+      "a": "It loads the dataset's CSV, runs `filters.apply_filters` (blocked source, then incomplete, then low quality), runs `dedupe.dedupe` on what is left, computes targets with `allocator.compute_targets(len(kept), config.fractions)`, then calls `allocator.allocate(kept, targets, config.pins)` and builds the report dict."
+    },
+    {
+      "q": "How are a dataset's settings built from datasets.json?",
+      "a": "`config.load_datasets` iterates `raw['datasets']` in file order and calls `merge(raw['defaults'], overrides)` for each. `merge` copies the defaults, updates `fractions` key by key, and sets every other key directly. The result is turned into a `DatasetConfig`, with percentages cast to int and pins built as a dict comprehension."
+    },
+    {
+      "q": "How does drop_blocked decide a sample is blocked?",
+      "a": "It looks up `sample.doc` in the sources registry from `loader.load_sources`. If the doc is missing, or its lower-cased license is in `config.blocked_licenses`, the sample id is recorded as `blocked_source` in the shared `dropped` dict and the sample is removed from the list."
+    },
+    {
+      "q": "What does allocate return and in what order are documents placed?",
+      "a": "It returns `(assignment, sizes)`: doc id → split (sorted by doc id) and samples per split. Pinned docs present in the data are placed first, in sorted id order; then the rest come from `order_groups`, which sorts by size descending and then doc id, and each goes to `choose_split(sizes, targets)`."
+    },
+    {
+      "q": "What does choose_split compute?",
+      "a": "A deficit per split, `targets[split] - sizes[split]`, over the `SPLITS` tuple ('train', 'val', 'test'), and returns the result of `max` over SPLITS with a key built from that deficit."
+    },
+    {
+      "q": "What is in the duplicates dict and what is kept?",
+      "a": "`dedupe` buckets samples by `fingerprint(text)`, picks one per bucket with `pick_original`, and maps every other sample id in the bucket to the chosen id. The kept list preserves the input order of the chosen samples."
+    },
+    {
+      "q": "How is label_totals computed?",
+      "a": "It builds an `ordered` list from the kept samples and runs `itertools.groupby` over it keyed on `label`, mapping each label to the length of its group in a dict comprehension."
+    }
+  ]
+}

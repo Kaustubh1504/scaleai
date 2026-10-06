@@ -1,0 +1,16 @@
+{
+  "id": "prob-002",
+  "title": "Lightweight Load Balancer",
+  "topics": [
+    "load-balancer",
+    "heartbeats-failover",
+    "priority-scheduling"
+  ],
+  "mode": "plain-python",
+  "difficulty": "medium",
+  "starter": "repo",
+  "planted_bugs": false,
+  "package": "lb",
+  "variant_of": "reported real problem: clone a starter repo and implement a lightweight load balancer (worker states, priority queue, dynamic joining, heartbeats, failover)",
+  "kind": "service"
+}

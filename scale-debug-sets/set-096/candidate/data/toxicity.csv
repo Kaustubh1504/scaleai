@@ -1,0 +1,26 @@
+sample_id,doc_id,label,text,quality,created
+TX-01,tox-d01,safe,Thanks for the quick reply,0.9,2026-02-01
+TX-02,TOX-D02,toxic,You are an idiot,0.8,02/01/2026
+TX-03,tox-d01,borderline,That take is pretty dumb,0.7,2026-02-02
+TX-04,tox-d03,safe,"Great write-up, very helpful",0.95,2 Feb 2026
+TX-05,tox-d05,Toxic,"Get lost, loser",0.85,2026-02-02
+TX-06,tox-d02,safe,I disagree but respect the point,0.6,2026-02-03
+TX-07,tox-d04,toxic,Nobody wants you here,0.9,2026-02-03
+TX-08,tox-d04,safe,,0.9,2026-02-03
+TX-09,tox-d01,safe,Have a nice day!,0.88,2026-02-04
+TX-10,tox-d02,borderline,"Ugh, this again?",0.55,02/04/2026
+TX-11, tox-d05,safe,Welcome to the forum,0.9,2026-02-04
+TX-12,tox-d06,toxic,Shut up already,0.75,2026-02-05
+TX-13,tox-d01,safe,have a nice day,0.9,2026-02-05
+TX-14,tox-d02,toxic,What a moron,0.45,2026-02-05
+TX-15,tox-d03,borderline,Not the smartest idea,0.65,5 Feb 2026
+tx-16,tox-d08,safe,Nice photo,0.9,2026-02-06
+TX-17,tox-d02,toxic,Go away troll,0.8,2026-02-06
+TX-18,tox-d06,safe,Thanks everyone,,2026-02-06
+TX-19,tox-d01,toxic,"Worst comment ever, moron",0.7,02/07/2026
+TX-20,tox-d03,safe,Good luck with the launch,0.9,2026-02-07
+TX-21,tox-d05,borderline,"Meh, whatever you say",0.6,2026-02-07
+TX-22,tox-d07,SAFE,Appreciate the help,0.9,2026-02-08
+TX-23,tox-d02,safe,Fair enough,0.7,2026-02-08
+TX-24,tox-d09,toxic,You people are pathetic,0.8,8 Feb 2026
+TX-25,tox-d01,borderline,Kind of a lazy answer,0.75,2026-02-09

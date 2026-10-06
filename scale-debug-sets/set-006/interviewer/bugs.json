@@ -1,0 +1,196 @@
+{
+  "id": "set-006",
+  "title": "Review queue replay with rework escalation",
+  "domain": "review_state_machine",
+  "length": "FULL",
+  "difficulty": "easy",
+  "format": "multi",
+  "package": "reviewflow",
+  "scenario": "Replay an out-of-order event log through a claim/submit/approve/reject state machine with rework escalation at 3 rejections, then report per-person tables and queue-health numbers.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_lifecycle",
+      "test_2_people",
+      "test_3_summary"
+    ]
+  },
+  "verified": [
+    {
+      "file": "reviewflow/transitions.py",
+      "symbol": "reject",
+      "why_correct": "`rework >= MAX_REWORK` looks like it should be `>`, but the spec escalates when the rework count *reaches* 3, i.e. on the third rejection. T04 is rejected exactly three times and must end escalated."
+    },
+    {
+      "file": "reviewflow/loader.py",
+      "symbol": "parse_when",
+      "why_correct": "It tries exactly the three formats the README lists, with month/day order for the slash format, and raises on anything else."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "History list shared by every task",
+      "type": "shared-class-attribute",
+      "file": "reviewflow/models.py",
+      "function": "TaskRecord.__init__",
+      "old": "    closed_at = None\n\n    def __init__(self, task_id, queue, created_at):\n        self.task_id = task_id\n        self.queue = queue\n        self.created_at = created_at\n        self.history = []",
+      "new": "    closed_at = None\n    history = []\n\n    def __init__(self, task_id, queue, created_at):\n        self.task_id = task_id\n        self.queue = queue\n        self.created_at = created_at",
+      "symptom": "Test 1 test_transition_counts: every task reports 34 transitions (the total number of applied events) instead of 3, 6, 3, 9, ... Nothing else changes.",
+      "why": "`history = []` at class level is a single list object shared by every TaskRecord. `task.history.append(...)` mutates that one list, so every task sees every applied event. The scalar class defaults (state, rework) are safe only because they are reassigned, never mutated.",
+      "unblocks": "test_1_lifecycle.test_transition_counts.",
+      "hints": [
+        "Every task reports the same number of transitions. What would make that happen?",
+        "Look at where TaskRecord's history list is created.",
+        "`history = []` is a class attribute; create it in __init__ as `self.history = []`."
+      ],
+      "probes": [
+        "Why are `state = State.QUEUED` and `rework = 0` safe as class attributes when `history = []` is not?",
+        "What does `task.rework += 1` do to the class attribute, and why?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Same-time events ordered by id string",
+      "type": "string-vs-int",
+      "file": "reviewflow/loader.py",
+      "function": "load_events",
+      "old": "    events.sort(key=lambda ev: (ev.at, ev.seq))",
+      "new": "    events.sort(key=lambda ev: (ev.at, ev.event_id))",
+      "symptom": "Test 1: T05 ends 'claimed' instead of 'submitted' with 1 transition, and E12 heads the invalid list. Test 2: ann-02 has 3 submissions instead of 4. Test 3: state_counts shows claimed 2 / submitted 1.",
+      "why": "Event ids are strings, and `\"E12\" < \"E8\"` lexicographically. E8 (claim) and E12 (submit) on T05 share a timestamp, so the submit is replayed first against a queued task and rejected.",
+      "unblocks": "T05 in test_1_lifecycle, and the invalid list.",
+      "hints": [
+        "T05 ends up claimed and E12 is listed as invalid. Look at E8 and E12 in events.csv.",
+        "How are events with the same timestamp ordered?",
+        "Sort by `(ev.at, ev.seq)`; seq is the integer event number."
+      ],
+      "probes": [
+        "Why did other same-timestamp pairs (E33/E36, E34/E40) not change anything?",
+        "Would zero-padding the ids in the data have hidden this? Why is that not a real fix?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Review state compared to a string",
+      "type": "enum-vs-string",
+      "file": "reviewflow/transitions.py",
+      "function": "_reviewable",
+      "old": "    if task.state is not State.SUBMITTED:",
+      "new": "    if task.state != \"submitted\":",
+      "symptom": "Every approve and reject is invalid. Test 1: all reviewed tasks stay 'submitted', T04 never escalates, the invalid list has 21 ids. Test 2: reviewer and annotator approval counts are all 0. Test 3: first_pass_rate and avg_cycle_hours are None, submitted = 8.",
+      "why": "`State` is a plain Enum, so `State.SUBMITTED != \"submitted\"` is always True. Every approve and reject is treated as invalid and no task ever leaves `submitted`.",
+      "unblocks": "Most of test_1 and test_2, and exposes B5 and B6 in test_3.",
+      "hints": [
+        "No task is ever approved or rejected. Which check do both actions share?",
+        "Look at how `_reviewable` compares the task's state.",
+        "Compare against the enum: `task.state is not State.SUBMITTED`."
+      ],
+      "probes": [
+        "Would this comparison have worked if State subclassed `str`?",
+        "Why did avg_cycle_hours come out as None rather than a wrong number?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Any role can review",
+      "type": "or-precedence",
+      "file": "reviewflow/models.py",
+      "function": "Member.can_review",
+      "old": "        return self.role == \"reviewer\" or self.role == \"lead\"",
+      "new": "        return self.role == \"reviewer\" or \"lead\"",
+      "symptom": "Test 1: E13 is invalid instead of E11 (ann-01's approval of T03 is accepted). Test 2: annotators ann-01..ann-05 appear in the reviewers table and rev-02 has 1 approval instead of 2. Test 3: avg_cycle_hours 24.2 instead of 24.5.",
+      "why": "`a == b or \"lead\"` parses as `(a == b) or \"lead\"`, which is the truthy string \"lead\" for every non-reviewer. Annotators pass the review check, so ann-01's approval of T03 (E11) is applied.",
+      "unblocks": "test_2_people.test_reviewer_table, and T03's numbers elsewhere.",
+      "hints": [
+        "Annotators appear in the reviewers table. Who decides who can review?",
+        "Look at Member.can_review.",
+        "Write `self.role == \"reviewer\" or self.role == \"lead\"` (or `in (\"reviewer\", \"lead\")`)."
+      ],
+      "probes": [
+        "What value does the buggy expression return for an annotator?",
+        "Why did E13 become invalid once E11 was accepted?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Cycle time ignores whole days",
+      "type": "timedelta-seconds",
+      "file": "reviewflow/metrics.py",
+      "function": "cycle_hours",
+      "old": "    return (task.closed_at - task.created_at).total_seconds() / 3600",
+      "new": "    return (task.closed_at - task.created_at).seconds / 3600",
+      "masked_by": [
+        "B3"
+      ],
+      "symptom": "Only visible once B3 is fixed. Test 3 test_avg_cycle_hours: 5.3 instead of 24.5.",
+      "why": "`timedelta.seconds` is only the seconds part after whole days are removed. T02 (50 h) counts as 2 h and T08 (54 h) as 6 h.",
+      "unblocks": "test_3_summary.test_avg_cycle_hours.",
+      "hints": [
+        "Which approved tasks took more than a day? Do their cycle times look right?",
+        "Look at how cycle_hours turns a timedelta into hours.",
+        "Use `.total_seconds()` instead of `.seconds`."
+      ],
+      "probes": [
+        "Why was this invisible while approvals were failing?",
+        "What is `timedelta(days=2, hours=2).seconds`?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "First-pass count taken over all tasks",
+      "type": "counting-wrong-subset",
+      "file": "reviewflow/reports.py",
+      "function": "summarize",
+      "old": "    first_pass = [t for t in approved if t.rework == 0]",
+      "new": "    first_pass = [t for t in tasks.values() if t.rework == 0]",
+      "masked_by": [
+        "B3"
+      ],
+      "visible_only_in": [
+        "test_3_summary"
+      ],
+      "symptom": "Only visible once B3 is fixed, and only in Test 3: first_pass_rate is 2.0 instead of 0.8.",
+      "why": "The numerator counts every task with no rework, including queued and claimed ones, while the denominator is approved tasks only, so the rate goes above 1.",
+      "unblocks": "test_3_summary.test_first_pass_rate.",
+      "hints": [
+        "A rate of 2.0 is impossible. Which side of the division is too big?",
+        "Look at which collection first_pass is built from.",
+        "Filter `approved`, not `tasks.values()`."
+      ],
+      "probes": [
+        "Why did this only show up after the review check was fixed?",
+        "Why did Tests 1 and 2 never notice it?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() do, step by step?",
+      "a": "It loads members.json, tasks.csv and events.csv through loader.py, calls `engine.replay` to apply the events to the TaskRecords in place, then builds the task table, the invalid list, `metrics.reviewer_table`, `metrics.annotator_table` and `reports.summarize`."
+    },
+    {
+      "q": "How does replay decide an event is invalid?",
+      "a": "It looks up the task, the actor and the handler for the action. If any is missing, or the actor is inactive, the event id goes to `invalid`. Otherwise it calls the handler from `transitions.HANDLERS`; a False return also marks it invalid. Applied events are appended to `task.history` and to the `applied` list."
+    },
+    {
+      "q": "What is Event.seq and where is it set?",
+      "a": "An integer parsed from the event id with the leading `E` stripped (`E12` becomes 12). It is set in `loader.load_events`, which also sorts the events before returning them."
+    },
+    {
+      "q": "Which attributes does TaskRecord set in __init__ and which come from the class?",
+      "a": "Look at `models.TaskRecord`: the class body declares defaults for state, rework, assignee, submitter and closed_at (and any other class-level names), and `__init__` assigns task_id, queue, created_at plus whatever else it sets on `self`."
+    },
+    {
+      "q": "What does Member.can_review return?",
+      "a": "It is a property that returns the result of an expression over `self.role`. `transitions._reviewable` wraps it in `bool()` and `metrics.reviewer_table` uses it to choose which members get a row."
+    },
+    {
+      "q": "How is the annotator `approved` count computed?",
+      "a": "`annotator_table` walks the tasks and, for each task in the APPROVED state, adds one to the row of `task.submitter`, which `transitions.submit` sets to the actor of the last applied submit."
+    },
+    {
+      "q": "What are the units of cycle_hours?",
+      "a": "It subtracts `created_at` from `closed_at` (both datetimes from parse_when) and divides a seconds value by 3600. `summarize` averages it over approved tasks and rounds to 2 decimals."
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_metrics"
+    ],
+    "failures": {
+      "tests.test_1_metrics.TestMetrics.test_1_frame_counts": "AssertionError: {'EP01': 32, 'EP02': 41, 'EP03': 25, 'EP04': 18, 'E[88 chars]: 28} != {'EP01': 30, 'EP02': 41, 'EP03': 25, 'EP04': 18, 'E[88 chars]: 28}\n- {'EP01': 32,\n?           ^\n\n+ {'EP01': 30,\n?           ^\n\n   'EP02': 41,\n   'EP03': 25,\n   'EP04': 18,\n   'EP05': 15,\n   'EP06': 35,\n-  'EP07': 32,\n?           ^\n\n+  'EP07': 31,\n?           ^\n\n   'EP08': 30,\n   'EP09': 40,\n   'EP10': 51,\n   'EP11': 21,\n   'EP12': 28}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_metrics"
+    ],
+    "failures": {
+      "tests.test_1_metrics.TestMetrics.test_2_durations": "AssertionError: {'EP01': 2, 'EP02': 4, 'EP03': 2, 'EP04': 1, 'EP05'[76 chars]': 2} != {'EP01': 2.9, 'EP02': 4.0, 'EP03': 2.44, 'EP04': 1.[104 chars]2.67}\n- {'EP01': 2,\n+ {'EP01': 2.9,\n?           ++\n\n-  'EP02': 4,\n+  'EP02': 4.0,\n?           ++\n\n-  'EP03': 2,\n+  'EP03': 2.44,\n?           +++\n\n-  'EP04': 1,\n+  'EP04': 1.7,\n?           ++\n\n-  'EP05': 1,\n+  'EP05': 1.4,\n?           ++\n\n-  'EP06': 3,\n+  'EP06': 3.45,\n?           +++\n\n-  'EP07': 3,\n+  'EP07': 3.0,\n?           ++\n\n-  'EP08': 3,\n+  'EP08': 3.06,\n?           +++\n\n-  'EP09': 3,\n+  'EP09': 3.9,\n?           ++\n\n-  'EP10': 5,\n+  'EP10': 5"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_metrics"
+    ],
+    "failures": {
+      "tests.test_1_metrics.TestMetrics.test_3_sync_rates": "AssertionError: {'EP01': 1.0, 'EP02': 0.951, 'EP03': 1.0, 'EP04': 1.0, 'EP05': [94 chars] 1.0} != {'EP01': 1.0, 'EP02': 1.0, 'EP03': 1.0, 'EP04': 1.0, 'EP05': 1.[90 chars] 1.0}\n  {'EP01': 1.0,\n-  'EP02': 0.951,\n?           ----\n\n+  'EP02': 1.0,\n?          ++\n\n   'EP03': 1.0,\n   'EP04': 1.0,\n   'EP05': 1.0,\n   'EP06': 0.771,\n   'EP07': 1.0,\n   'EP08': 1.0,\n   'EP09': 0.5,\n-  'EP10': 0.941,\n?           ----\n\n+  'EP10': 1.0,\n?          ++\n\n   'EP11': 1.0,\n   'EP12': 1.0}"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_validity"
+    ],
+    "failures": {
+      "tests.test_2_validity.TestValidity.test_4_inactive_robots": "AssertionError: Lists differ: [] != ['EP05', 'EP09']\n\nSecond list contains 2 additional elements.\nFirst extra element 0:\n'EP05'\n\n- []\n+ ['EP05', 'EP09']"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_2_validity"
+    ],
+    "failures": {
+      "tests.test_2_validity.TestValidity.test_5_frame_gaps": "AssertionError: Lists differ: ['EP06', 'EP08'] != ['EP08']\n\nFirst differing element 0:\n'EP06'\n'EP08'\n\nFirst list contains 1 additional elements.\nFirst extra element 1:\n'EP08'\n\n- ['EP06', 'EP08']\n+ ['EP08']"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_6_valid_minutes": "AssertionError: 366.83 != 0.37"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_metrics",
+      "test_2_validity",
+      "test_3_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_metrics.TestMetrics.test_1_frame_counts",
+      "tests.test_1_metrics.TestMetrics.test_2_durations",
+      "tests.test_1_metrics.TestMetrics.test_3_sync_rates",
+      "tests.test_2_validity.TestValidity.test_4_inactive_robots",
+      "tests.test_2_validity.TestValidity.test_5_frame_gaps",
+      "tests.test_3_summary.TestSummary.test_6_valid_minutes"
+    ]
+  }
+}

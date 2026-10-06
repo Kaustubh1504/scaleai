@@ -1,0 +1,120 @@
+{
+  "id": "set-009",
+  "title": "NER span merger with inclusive-end exports",
+  "domain": "ner_spans",
+  "length": "MINI",
+  "difficulty": "easy",
+  "format": "multi",
+  "package": "spanmerge",
+  "scenario": "Convert inclusive-end character spans from three annotators to half-open offsets, reject spans whose text doesn't match their quote, drop each annotator's overlapped shorter spans, then keep spans that at least two annotators agree on.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_spans",
+      "test_2_entities"
+    ]
+  },
+  "verified": [
+    {
+      "file": "spanmerge/spans.py",
+      "symbol": "overlaps",
+      "why_correct": "Strict `<` looks as if it might miss touching spans, but with half-open offsets `[0, 5)` and `[5, 9)` share no character, and README rule 5 says touching spans do not overlap."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Inclusive end not converted",
+      "type": "span-offset-off-by-one",
+      "file": "spanmerge/loader.py",
+      "function": "load_spans",
+      "old": "                end=end + 1,",
+      "new": "                end=end,",
+      "symptom": "All 38 spans are misaligned. Test 1: kept is {} and test_overlaps_resolved raises KeyError: 'ann-c'. Test 2: no entities at all and label_counts is {}.",
+      "why": "The CSV's `end` is the last character (inclusive) but spans are half-open internally. Without `+ 1` every span covers one character too few, so `text[start:end]` never equals the quote and every span is misaligned.",
+      "unblocks": "Both test files; exposes B2 and B3.",
+      "hints": [
+        "Every single span is reported as misaligned. Pick one and slice the text by hand.",
+        "Compare README rules 1-2 with how load_spans builds `end`.",
+        "Use `end=end + 1` to convert the inclusive end to half-open."
+      ],
+      "probes": [
+        "Why did fixing this make new failures appear in Test 2?",
+        "If the export had been half-open already, which spans would have looked wrong instead?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "List shrunk while looping over it",
+      "type": "mutate-while-iterating",
+      "file": "spanmerge/spans.py",
+      "function": "resolve_overlaps",
+      "old": "    for span in list(spans):",
+      "new": "    for span in spans:",
+      "masked_by": [
+        "B1"
+      ],
+      "symptom": "Only visible once B1 is fixed. Test 1: ann-c keeps 10 spans instead of 9, and on d10 keeps [[0, 18, 'ORG'], [10, 18, 'ORG']]. Test 2: Ericsson on d10 has 3 votes instead of 2.",
+      "why": "Removing an item from the list being iterated shifts the next item into the current index, so the loop skips it. In ann-c's d10 spans, 'Nokia' is removed and 'Ericsson', which also overlaps the longer span, is never examined.",
+      "unblocks": "test_1_spans overlap and count tests, and Ericsson's votes in test_2.",
+      "hints": [
+        "ann-c keeps two overlapping spans on d10. Which one should have been dropped?",
+        "Look at the loop in resolve_overlaps. What happens to the iteration after `spans.remove`?",
+        "Iterate over a copy: `for span in list(spans):`."
+      ],
+      "probes": [
+        "Why was 'Nokia' dropped correctly but not 'Ericsson'?",
+        "Give another way to write this without removing from a list at all."
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Doc loop returns on the first unannotated doc",
+      "type": "early-return",
+      "file": "spanmerge/consensus.py",
+      "function": "build_entities",
+      "old": "        if not spans:\n            continue",
+      "new": "        if not spans:\n            return entities",
+      "masked_by": [
+        "B1"
+      ],
+      "symptom": "Only visible once B1 is fixed. Test 2: entities exist only for d01 and d02; d04, d05, d07, d08 and d10 are missing, and label_counts shrinks.",
+      "why": "d03 has no annotations. `return` instead of `continue` stops the whole loop there, so no document after d03 is processed.",
+      "unblocks": "test_2_entities.",
+      "hints": [
+        "Only d01 and d02 have entities. What is special about the next doc id?",
+        "Look at what build_entities does with a document that has no spans.",
+        "Skip the document with `continue` instead of returning."
+      ],
+      "probes": [
+        "Why was this invisible while every span was misaligned?",
+        "Which data change would have hidden this bug entirely?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() do, in order?",
+      "a": "It loads docs.json into {doc_id: text}, loads annotations.csv into Span objects, calls `spans.clean_spans` to split them into kept spans per (annotator, doc) and misaligned spans, then `consensus.build_entities`, and finally builds the `kept`, `misaligned`, `entities` and `label_counts` fields."
+    },
+    {
+      "q": "What are Span.start and Span.end after loading?",
+      "a": "Both are ints. `start` is the CSV `start`. `end` is computed from the CSV `end` in `load_spans`; `Span.length` is `end - start`, and `aligned` compares `text[span.start:span.end]` with the trimmed quote."
+    },
+    {
+      "q": "How does resolve_overlaps order and filter spans?",
+      "a": "It sorts by `(start, -end)`, so at the same start the longer span comes first, then loops over the spans and removes any span for which some other span in the list is strictly longer and overlaps it. It returns the list it removed from."
+    },
+    {
+      "q": "What counts as a vote in build_entities?",
+      "a": "Spans from all annotators on a doc are pooled. `votes[(start, end)]` is a dict of annotator \u2192 label, so one annotator counts once per position. Positions with at least MIN_VOTES (2) annotators become entities."
+    },
+    {
+      "q": "How is the entity label chosen?",
+      "a": "`majority_label` builds a Counter of the voters' labels and takes `min` over `(-count, label)`, i.e. the highest count with an alphabetical tie-break."
+    },
+    {
+      "q": "Which docs appear in `entities`?",
+      "a": "build_entities walks `sorted(docs)` and only adds a doc id when it found at least one entity for it."
+    }
+  ]
+}

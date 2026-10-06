@@ -1,0 +1,193 @@
+{
+  "id": "set-022",
+  "title": "Confidence-threshold triage to a human review queue",
+  "domain": "hitl_routing",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "multi",
+  "package": "triage",
+  "scenario": "Dedupe re-scored model predictions, route each to auto-accept or human review by per-task-type confidence thresholds and always-human flags, order the review queue by priority (higher = more urgent), and hand it out to language-matched reviewers by remaining capacity. Test 3 summarises routing per task type.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_routing",
+      "test_2_review_queue",
+      "test_3_summary"
+    ]
+  },
+  "verified": [
+    {
+      "file": "triage/assigner.py",
+      "symbol": "pick_reviewer",
+      "why_correct": "min() over (-remaining, id) looks backwards for 'most remaining capacity', but negating remaining makes the largest capacity the smallest key, and the id breaks ties ascending, exactly as rule 6 says."
+    },
+    {
+      "file": "triage/utils.py",
+      "symbol": "parse_ts",
+      "why_correct": "It covers exactly the three formats in the README, with day.month.year for the dotted one."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Dedupe key includes created_at",
+      "type": "missing-dedupe",
+      "file": "triage/loader.py",
+      "function": "latest_per_prediction",
+      "old": "        key = pred.pred_id\n",
+      "new": "        key = (pred.pred_id, pred.created_at)\n",
+      "symptom": "Test 1: P003 and P009 appear twice in decisions (26 ids instead of 24), and test_reasons lists stale low_confidence copies of P003 and P009. Test 2: the extra copies enter the queue (P009 right after P018) and shift assignments; backlog becomes P018, P016, P021, P014, P003, P020. Test 3: backlog_size 6, sentiment human 3 / rate 0.5.",
+      "why": "With the timestamp in the key, only rows with identical created_at collapse (P016). Re-scores of P003 and P009 at different times both survive, so each gets two decisions and the stale low-confidence copies reach the queue.",
+      "unblocks": "test_one_decision_per_prediction and the P003/P009 routes.",
+      "hints": [
+        "P003 and P009 show up twice in decisions. Find them in predictions.csv.",
+        "Look at how latest_per_prediction decides two rows are the same prediction.",
+        "The dict key is (pred_id, created_at); it should be just pred.pred_id."
+      ],
+      "probes": [
+        "Why did P016 still come out once?",
+        "Why does the `>=` in the comparison matter for P016 but not for P003?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Zero threshold replaced by the default",
+      "type": "falsy-zero",
+      "file": "triage/models.py",
+      "function": "Thresholds.for_task",
+      "old": "        return self.by_type.get(task_type, self.default)",
+      "new": "        return self.by_type.get(task_type) or self.default",
+      "symptom": "Test 1: P004, P008 and P023 (all spam) are routed human with low_confidence instead of auto. Test 2: P023 enters the queue and the backlog grows to 7 items. Test 3: spam shows auto 0, human 5, human_rate 1.0; backlog_size 7.",
+      "why": "spam has a threshold of 0, which `or` treats as missing and swaps for the 0.8 default, so low-scored spam items are sent to humans.",
+      "unblocks": "test_routes for P004/P008/P023.",
+      "hints": [
+        "P004, P008 and P023 are all spam. What is spam's threshold?",
+        "Look at how the threshold for a task type is looked up.",
+        "`get(task_type) or self.default` turns 0.0 into 0.8; use get(task_type, self.default)."
+      ],
+      "probes": [
+        "Why was P014 (spam, blank confidence) unaffected?",
+        "What would a threshold written as \"0\" in the JSON have done before float() conversion?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Confidence equal to the threshold not accepted",
+      "type": "off-by-one",
+      "file": "triage/router.py",
+      "function": "route_one",
+      "old": "    if pred.confidence >= threshold:",
+      "new": "    if pred.confidence > threshold:",
+      "symptom": "Test 1: P002 and P011 are routed human with low_confidence instead of auto. Test 2: both enter the queue, R01 gets P013 instead of P010 and the backlog grows to 7. Test 3: intent becomes auto 1 / human 6 (0.857), toxicity changes too; backlog_size 7.",
+      "why": "Rule 3 accepts confidence >= threshold. P002 (toxicity 0.90 vs 0.9) and P011 (intent 0.80 vs 0.8) sit exactly on the threshold and get sent to review.",
+      "unblocks": "test_routes and test_reasons for P002/P011.",
+      "hints": [
+        "Compare P002's and P011's confidence with their thresholds.",
+        "Look at the comparison that decides auto vs human.",
+        "route_one uses >; it should be >=."
+      ],
+      "probes": [
+        "Why did P007 (0.80, sentiment) stay auto?",
+        "Is comparing floats with >= safe here? When would it not be?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Queue filter compares the Enum to a string",
+      "type": "enum-vs-string",
+      "file": "triage/review_queue.py",
+      "function": "build_queue",
+      "old": "d.route is Route.HUMAN",
+      "new": "d.route == \"human\"",
+      "symptom": "Test 2: the queue, every assignment list and the backlog are empty, although Test 1 shows 13 human decisions. Test 3: backlog_size 0 and busiest_reviewer 'R01' instead of 'R02'. Test 1 passes.",
+      "why": "route is a Route enum member; a plain Enum never equals its value string, so nothing passes the filter and the queue, assignments and backlog are all empty.",
+      "unblocks": "test_queue_order/test_assignments/test_backlog (and exposes B5).",
+      "hints": [
+        "The queue is empty even though test 1 shows many human decisions.",
+        "Look at how build_queue picks the human decisions. What type is d.route?",
+        "Compare with Route.HUMAN (`d.route is Route.HUMAN`), not the string \"human\"."
+      ],
+      "probes": [
+        "Why does d.route.value == \"human\" work but d.route == \"human\" not?",
+        "What change to the Route class would have made the string comparison work?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Queue sorted least urgent first",
+      "type": "sort-direction",
+      "file": "triage/review_queue.py",
+      "function": "queue_key",
+      "old": "    return (-pred.priority, score, pred.pred_id)",
+      "new": "    return (pred.priority, score, pred.pred_id)",
+      "masked_by": [
+        "B4"
+      ],
+      "symptom": "Only visible after B4 is fixed. Test 2: the queue starts with P014, P020 (priority 1) instead of P005, P012 (priority 5), and the backlog becomes P019, P018, P005, P012, so the most urgent items go unreviewed.",
+      "why": "In this repo higher priority numbers are more urgent. Sorting on +priority puts priority-1 items first, so they take reviewer capacity and the urgent items land in the backlog.",
+      "unblocks": "test_queue_order, test_assignments, test_backlog and test_busiest_reviewer.",
+      "hints": [
+        "Look at where the priority-5 items sit in the queue.",
+        "Read README rule 4 and then the sort key in review_queue.py.",
+        "queue_key should return (-pred.priority, score, pred.pred_id)."
+      ],
+      "probes": [
+        "Why was this invisible until the Enum comparison was fixed?",
+        "The comment says 'most urgent first'. What convention did the author assume?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "groupby over data not sorted by task type",
+      "type": "groupby-misuse",
+      "file": "triage/reports.py",
+      "function": "summarize",
+      "old": "    ordered = sorted(decisions, key=lambda d: d.prediction.task_type)",
+      "new": "    ordered = sorted(decisions, key=lambda d: d.prediction.pred_id)",
+      "visible_only_in": [
+        "test_3_summary"
+      ],
+      "symptom": "Test 3 only: by_task_type comes out as toxicity 0/1 (rate 1.0), sentiment 0/1, spam 1/0, intent 1/0, i.e. only the last consecutive run of each type, instead of intent 2/5, sentiment 3/2, spam 3/2, toxicity 3/4.",
+      "why": "itertools.groupby only groups consecutive items. Sorted by pred_id the task types are interleaved, so each type yields many small groups and the dict keeps only the last run's counts.",
+      "unblocks": "test_by_task_type.",
+      "hints": [
+        "The per-type totals in the summary don't add up to 24.",
+        "How does groupby decide where one group ends?",
+        "Sort by d.prediction.task_type before grouping."
+      ],
+      "probes": [
+        "Why didn't Python raise an error when the same key came out of groupby twice?",
+        "How would a Counter or defaultdict avoid the sort requirement?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report do, step by step?",
+      "a": "It loads thresholds, predictions (via load_predictions, which reads the CSV and calls latest_per_prediction) and reviewers. Then route_all makes one Decision per prediction, build_queue filters and sorts the queue, assign hands items to reviewers, and summarize builds the summary."
+    },
+    {
+      "q": "What does latest_per_prediction return?",
+      "a": "A list of Prediction objects sorted by pred_id. It walks the rows in file order, keeps one entry per dict key, and replaces the stored row when the new row's created_at is >= the stored one."
+    },
+    {
+      "q": "What type is Decision.route?",
+      "a": "A member of the `Route` Enum in models.py (`Route.AUTO` or `Route.HUMAN`), a plain Enum whose values are the strings 'auto' and 'human'. The report converts it with `.value`."
+    },
+    {
+      "q": "How are thresholds loaded?",
+      "a": "load_thresholds reads `default`, the `task_types` map (keys trimmed and lower-cased, values converted with float()) and `always_human_flags` into a set. Thresholds.for_task looks the task type up in that map."
+    },
+    {
+      "q": "In what order does route_one check things?",
+      "a": "Flags in always_human first, then a missing confidence, then the confidence compared with the threshold for the task type."
+    },
+    {
+      "q": "How does assign treat inactive reviewers and capacity?",
+      "a": "It only uses reviewers with active True. It tracks remaining capacity per reviewer, filters candidates by language and remaining > 0, and asks pick_reviewer to choose. Items with no candidate go to backlog in queue order."
+    },
+    {
+      "q": "How does summarize compute per-type counts?",
+      "a": "It sorts the decisions into `ordered`, runs itertools.groupby on task_type, and for each group counts human routes, auto = group size minus human, and human_rate rounded to 3 decimals. The result is stored in a dict keyed by task type."
+    }
+  ]
+}

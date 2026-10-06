@@ -1,0 +1,13 @@
+project_id,priority,status,seats,hours_per_seat,required_courses
+P01,5,open,2,10,QA-101
+P02,9,Open,1,15,med-200; QA-101
+P03,5,open,2,5,
+P04,7,OPEN,3,10,CODE-300
+P05,2,open,2,10,LANG-ES
+P06,1,paused,2,5,MED-200
+p07,1,Paused,1,5,med-200
+P08,8,open,1,20,qa-101
+P09,3,open,2,10,MED-200
+P10,4,open,0,10,QA-101
+P11,6,open,2,10,QA-101 ; CODE-300
+P12,1,PAUSED,1,10,MED-200

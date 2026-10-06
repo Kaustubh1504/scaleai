@@ -1,0 +1,16 @@
+{
+  "id": "prob-003",
+  "title": "Idempotent Task Intake with Tenant Rate Limits",
+  "topics": [
+    "idempotency",
+    "rate-limiting",
+    "multi-tenant",
+    "durable-persistence"
+  ],
+  "mode": "fastapi",
+  "difficulty": "medium",
+  "starter": "skeleton",
+  "planted_bugs": false,
+  "package": "app",
+  "kind": "service"
+}

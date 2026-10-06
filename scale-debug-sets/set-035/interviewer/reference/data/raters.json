@@ -1,0 +1,12 @@
+[
+  {"id": "r01", "attention_passed": true},
+  {"id": "R02", "attention_passed": true},
+  {"id": "r03", "attention_passed": "yes"},
+  {"id": "r04", "attention_passed": true},
+  {"id": "r05", "attention_passed": 1},
+  {"id": "r06", "attention_passed": true},
+  {"id": "r07", "attention_passed": true},
+  {"id": "r08", "attention_passed": "True"},
+  {"id": "r09", "attention_passed": true},
+  {"id": "r10", "attention_passed": "no"}
+]

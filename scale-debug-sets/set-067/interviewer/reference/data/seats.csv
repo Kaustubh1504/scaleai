@@ -1,0 +1,33 @@
+section,row,number,tier
+ORCH,A,1,Premium
+ORCH,A,2,Premium
+ORCH,A,3,Premium
+ORCH ,a,4,premium
+orch,A,5,Premium
+ORCH,A,6,Premium
+ORCH,A, 7,Premium
+ORCH ,a,8,premium
+ORCH,A,9,Premium
+orch,A,10,Premium
+ORCH,A,11,Premium
+ORCH ,a,12,premium
+ORCH,B,1,standard
+ORCH,B,2,standard
+ORCH,B,3,standard
+ORCH,B,4,standard
+ORCH,B,5,standard
+ORCH,B,6,standard
+ORCH,B,7,standard
+ORCH,B,8,standard
+BALC,A,1,balcony
+BALC,A,2,balcony
+BALC,A,3, Balcony
+BALC,A,4,balcony
+BALC,A,5,balcony
+BALC,A,6,balcony
+BALC,B,1,balcony
+BALC,B,2,balcony
+BALC,B,3, Balcony
+BALC,B,4,balcony
+BALC,B,5,balcony
+BALC,B,6,balcony

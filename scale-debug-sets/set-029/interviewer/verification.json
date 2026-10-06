@@ -1,0 +1,39 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_matching"
+    ],
+    "failures": {
+      "tests.test_1_matching.TestMatching.test_matches": "AssertionError: {'p01': 'g02', 'p02': 'g01', 'p03': 'g02', 'p04': 'g[181 chars]g09'} != {'p01': 'g01', 'p02': 'g02', 'p03': 'g01', 'p04': 'g[181 chars]g09'}\n- {'p01': 'g02',\n?            ^\n\n+ {'p01': 'g01',\n?            ^\n\n-  'p02': 'g01',\n?            ^\n\n+  'p02': 'g02',\n?            ^\n\n-  'p03': 'g02',\n?            ^\n\n+  'p03': 'g01',\n?            ^\n\n   'p04': 'g03',\n   'p05': 'g04',\n   'p06': 'g03',\n   'p08': 'g03',\n   'p10': 'g05',\n   'p11': 'g06',\n   'p13': 'g06',\n-  'p14': 'g06',\n?     ^\n\n+  'p15': 'g06',\n?     ^\n\n   'p16': 'g07',\n   'p17': 'g07',\n   'p18': 'g08',\n   'p19': 'g08',\n   'p2",
+      "tests.test_1_matching.TestMatching.test_unmatched_predictions": "AssertionError: Lists differ: ['p07', 'p09', 'p12', 'p15', 'p20'] != ['p07', 'p09', 'p12', 'p14', 'p20']\n\nFirst differing element 3:\n'p15'\n'p14'\n\n- ['p07', 'p09', 'p12', 'p15', 'p20']\n?                          ^\n\n+ ['p07', 'p09', 'p12', 'p14', 'p20']\n?                          ^\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_annotator_scores": "AssertionError: {'ANN-3': {'tp': 1, 'fp': 1, 'fn': 9, 'prec[375 chars]429}} != {'ann-1': {'tp': 8, 'fp': 0, 'fn': 2, 'prec[206 chars]0.5}}\n- {'ANN-3': {'f1': 0.167,\n-            'fn': 9,\n-            'fp': 1,\n-            'precision': 0.5,\n-            'recall': 0.1,\n-            'tp': 1},\n-  'Ann-2': {'f1': 0.182,\n-            'fn': 9,\n-            'fp': 0,\n-            'precision': 1.0,\n-            'recall': 0.1,\n-            'tp': 1},\n-  'ann-1': {'f1': 0.889,\n? ^\n\n+ {'ann-1': {'f1': 0.889,\n? ^\n\n             'fn': 2,\n             'fp': 0,\n             'precision': 1.0,\n             'recall"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_localization": "AssertionError: {'car': 1.0, 'person': 0.984, 'sign': 0.776} != {'car': 0.971, 'person': 0.944, 'sign': 0.701}\n- {'car': 1.0, 'person': 0.984, 'sign': 0.776}\n?          --               ^              ^^\n\n+ {'car': 0.971, 'person': 0.944, 'sign': 0.701}\n?         ++++                ^              ^^\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_matching",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_matching.TestMatching.test_matches",
+      "tests.test_1_matching.TestMatching.test_unmatched_predictions",
+      "tests.test_2_report.TestReport.test_annotator_scores",
+      "tests.test_2_report.TestReport.test_localization"
+    ]
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_1_concurrency_limit": "AssertionError: 5 not less than or equal to 2"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_2_every_batch_archived": "AssertionError: Lists differ: [] != ['batch_s1', 'batch_s2', 'batch_s3', 'batch_s4', 'batch_s5']\n\nSecond list contains 5 additional elements.\nFirst extra element 0:\n'batch_s1'\n\n- []\n+ ['batch_s1', 'batch_s2', 'batch_s3', 'batch_s4', 'batch_s5']"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_results"
+    ],
+    "failures": {
+      "tests.test_2_results.TestResults.test_3_shard_s2_all_pages": "AssertionError: {'R04[471 chars]rd': 'S2', 'status': 'missing', 'label': None, 'score': None}} != {'R04[471 chars]rd': 'S2', 'status': 'labeled', 'label': 'dog', 'score': 0.86}}\n  {'R04': {'label': 'dog', 'score': 0.91, 'shard': 'S2', 'status': 'labeled'},\n   'R05': {'label': 'bird', 'score': 0.77, 'shard': 'S2', 'status': 'labeled'},\n   'R06': {'label': 'cat', 'score': 0.83, 'shard': 'S2', 'status': 'labeled'},\n   'R07': {'label': 'dog',\n           'score': 0.52,\n           'shard': 'S2',\n           'status': 'needs_review'},\n   'R08': {'label': 'bird', 'score': 0.99, 'shard': 'S2', 'status':"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_results"
+    ],
+    "failures": {
+      "tests.test_2_results.TestResults.test_4_shard_s3_review_threshold": "AssertionError: {'R11[102 chars]s': 'needs_review', 'label': 'cat', 'score': 0[80 chars].69}} != {'R11[102 chars]s': 'labeled', 'label': 'cat', 'score': 0.7}, [75 chars].69}}\n  {'R11': {'label': 'bird', 'score': 0.93, 'shard': 'S3', 'status': 'labeled'},\n-  'R12': {'label': 'cat', 'score': 0.7, 'shard': 'S3', 'status': 'needs_review'},\n?                                                                  ^   --------\n\n+  'R12': {'label': 'cat', 'score': 0.7, 'shard': 'S3', 'status': 'labeled'},\n?                                                                  ^^^ +\n\n   'R13': {'label': 'dog',\n  "
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_2_results"
+    ],
+    "failures": {
+      "tests.test_2_results.TestResults.test_5_shard_s5": "AssertionError: {'R16[71 chars], 'R18': {'shard': 'S5', 'status': 'skipped', [264 chars]0.0}} != {'R16[71 chars], 'R17': {'shard': 'S5', 'status': 'labeled', [256 chars]one}}\nDiff is 754 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_6_cost": "AssertionError: 0.18 != 0.1763"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_requests",
+      "test_2_results",
+      "test_3_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_requests.TestRequests.test_1_concurrency_limit",
+      "tests.test_1_requests.TestRequests.test_2_every_batch_archived",
+      "tests.test_2_results.TestResults.test_3_shard_s2_all_pages",
+      "tests.test_2_results.TestResults.test_4_shard_s3_review_threshold",
+      "tests.test_2_results.TestResults.test_5_shard_s5",
+      "tests.test_3_summary.TestSummary.test_6_cost"
+    ]
+  }
+}

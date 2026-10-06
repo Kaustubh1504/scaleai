@@ -1,0 +1,8 @@
+{
+  "model": "embed-small-3",
+  "batch_size": 3,
+  "max_concurrency": 2,
+  "max_retries": 2,
+  "backoff_seconds": 0.01,
+  "index_page_size": 4
+}

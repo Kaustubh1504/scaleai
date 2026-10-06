@@ -1,0 +1,11 @@
+benchmark,weight,direction,status
+reasoning,2,higher,active
+coding,2,higher,active
+latency_ms,1,lower,active
+safety,1,higher, Active
+trivia_v1,1,higher,retired
+Translation,1,higher,retired
+math_v1,2,higher,retired
+latency_v1,1,lower,retired
+toxicity,1,lower,retired
+summarisation,1,higher,retired

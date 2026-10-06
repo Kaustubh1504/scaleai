@@ -1,0 +1,8 @@
+{
+  "model": "embed-small-3",
+  "batch_size": 4,
+  "max_concurrency": 2,
+  "max_retries": 3,
+  "backoff_seconds": 0.5,
+  "similarity_threshold": 0.95
+}

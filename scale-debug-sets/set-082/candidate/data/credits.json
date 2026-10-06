@@ -1,0 +1,12 @@
+[
+  {"credit_id": "cr-01", "tenant_id": "acme", "month": "2026-03", "amount": "10.00"},
+  {"credit_id": "cr-02", "tenant_id": "Halcyon", "month": "2026-03", "amount": 25},
+  {"credit_id": "cr-03", "tenant_id": "juniper", "month": "03/2026", "amount": "5"},
+  {"credit_id": "cr-04", "tenant_id": "cinder", "month": "02/2026", "amount": "5.00"},
+  {"credit_id": "cr-05", "tenant_id": "borealis", "month": "2026-04", "amount": "8.00"},
+  {"credit_id": "cr-06", "tenant_id": "ibis", "month": "2026-03", "amount": "3.00"},
+  {"credit_id": "cr-07", "tenant_id": " ACME", "month": "2026-03", "amount": " 3.50"},
+  {"credit_id": "cr-08", "tenant_id": "dunmore", "month": "03/2026", "amount": 0.99},
+  {"credit_id": "cr-09", "tenant_id": "garnet", "month": "2026-03", "amount": "7.25"},
+  {"credit_id": "cr-10", "tenant_id": "halcyon", "month": "2026-03", "amount": "4.00"}
+]

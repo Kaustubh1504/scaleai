@@ -1,0 +1,121 @@
+{
+  "id": "set-003",
+  "title": "Task lease replay with expiry and dead-lettering",
+  "domain": "task_queue_leases",
+  "length": "MINI",
+  "difficulty": "easy",
+  "format": "multi",
+  "package": "leasequeue",
+  "scenario": "Replay a lease/complete event log against a priority queue (higher number = more urgent). Leases last 15 minutes. Expired tasks go back to pending, or to dead once they have used max_attempts.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_dispatch",
+      "test_2_final_state"
+    ]
+  },
+  "verified": [
+    {
+      "file": "leasequeue/broker.py",
+      "symbol": "pick_next",
+      "why_correct": "It is a two-pass stable sort. The first pass orders by (created_at, id) and the second by priority, descending. Python's sort is stable, so ties on priority keep the created_at/id order. It looks backwards, but it is correct, as long as priority is really an int."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Priority loaded as a string",
+      "type": "string-vs-int",
+      "file": "leasequeue/loader.py",
+      "function": "load_tasks",
+      "old": "                priority=int(clean(row[\"priority\"])),",
+      "new": "                priority=clean(row[\"priority\"]),",
+      "symptom": "Test 1: the first lease hands out A-106 (priority 9) instead of A-101 (priority 12). A-101 and A-103 are never leased at all. Test 2: tasks the workers did finish get marked dead or pending, and completed_by collapses to {'w1': 1}.",
+      "why": "Priorities stay strings, so the descending sort is lexicographic: '9' > '7' > '12' > '10'. Nothing crashes, because pick_next only ever compares priorities with each other.",
+      "unblocks": "Test 1, and most of Test 2.",
+      "hints": [
+        "Which task did the very first lease get, and what's its priority compared with A-101's?",
+        "pick_next is verified, so check what type of value it is sorting.",
+        "load_tasks keeps priority as a str. Wrap it: int(clean(row[\"priority\"]))."
+      ],
+      "probes": [
+        "Why would '-t.priority' in a one-pass sort have crashed right away, while this version silently gave the wrong order?",
+        "Show a pair of priorities that compares the same way as strings and as ints, and a pair that doesn't."
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Lease age measured with timedelta.seconds",
+      "type": "timedelta-seconds",
+      "file": "leasequeue/broker.py",
+      "function": "Broker.reap",
+      "old": "            if (now - lease.leased_at).total_seconds() >= LEASE_SECONDS:",
+      "new": "            if (now - lease.leased_at).seconds >= LEASE_SECONDS:",
+      "symptom": "Test 2 only: A-110 ends up 'done' (w4 'completes' it at 08:46 on day 2) instead of 'dead', completed_by gains w4, and the 08:46 w4 row is missing from rejected. The day-1 lease was still treated as live the next morning.",
+      "why": "timedelta.seconds is only the seconds part (0-86399) and drops whole days. A lease that is 1 day and 5 minutes old reads as 300 seconds, so it looks live.",
+      "unblocks": "Test 2 for A-110. This exposes B3.",
+      "hints": [
+        "Look at A-110's lease: when was it taken, and when did w4 complete it?",
+        "Look at how reap measures the age of a lease.",
+        "Use (now - lease.leased_at).total_seconds(), not .seconds."
+      ],
+      "probes": [
+        "Why did every same-day expiry still work?",
+        "What would .seconds give for a negative timedelta, say if events were out of order?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Dead-letter check allows one extra attempt",
+      "type": "retry-off-by-one",
+      "file": "leasequeue/models.py",
+      "function": "Task.exhausted",
+      "old": "        return self.attempts >= self.max_attempts",
+      "new": "        return self.attempts > self.max_attempts",
+      "masked_by": [
+        "B2"
+      ],
+      "symptom": "Only visible after B2 is fixed. On day 2, w2 leases A-110 a third time (attempts 3, max 2) instead of getting A-104, so A-104 ends up pending and w2's 08:59 completion is rejected.",
+      "why": "attempts counts leases already taken. Once attempts equals max_attempts there are none left, so the check has to be >=. With > the task gets max_attempts + 1 leases.",
+      "unblocks": "Tests 1 and 2 fully.",
+      "hints": [
+        "How many times was A-110 leased, and what is its max_attempts?",
+        "Look at the condition that decides dead versus pending.",
+        "Task.exhausted uses >; it should be attempts >= max_attempts."
+      ],
+      "probes": [
+        "Why couldn't you see this until the lease-age fix?",
+        "A-103 has max_attempts 1. Why does it never reach the dead-letter check at all?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report do from start to finish?",
+      "a": "It loads the tasks into a `Broker`, calls `broker.handle(event)` for every event in file order, calls `broker.reap(AS_OF)` once at the end (AS_OF = 2026-04-02 12:00), and then formats the dispatch log, per-task status and attempts, dead letters, rejections and completion counts."
+    },
+    {
+      "q": "Why does pick_next sort twice?",
+      "a": "It sorts by `(created_at, id)` first, then sorts the result by `priority` with `reverse=True`. Python's sort is stable, so tasks with equal priority keep the created_at/id order from the first pass. It returns the first element, or `None` if nothing is pending."
+    },
+    {
+      "q": "Where and when are expired leases handled?",
+      "a": "In `Broker.reap(now)`. `handle()` calls it before every event, and `build_report` calls it once more at AS_OF. For each lease it considers expired (compared against `LEASE_SECONDS` = 900), it deletes the lease and sets the task to `dead` or `pending` depending on `Task.exhausted()`."
+    },
+    {
+      "q": "When does a task's attempts counter go up?",
+      "a": "Only in `Broker.lease`, when a task is handed out. Expiry and completion never change it."
+    },
+    {
+      "q": "What happens on a complete from a worker who doesn't hold the lease?",
+      "a": "`Broker.complete` appends `(time, worker, task_id)` to `rejected` and returns `False`. The task and the lease are left untouched. The same thing happens for unknown task ids like A-999."
+    },
+    {
+      "q": "How does the loader handle a blank max_attempts?",
+      "a": "`load_tasks` uses `DEFAULT_MAX_ATTEMPTS` (3) when the stripped cell is empty, and `int(...)` otherwise."
+    },
+    {
+      "q": "Which timestamp formats does parse_ts accept?",
+      "a": "`%Y-%m-%d %H:%M:%S`, `%Y-%m-%d %H:%M`, `%m/%d/%Y %H:%M` and `%Y-%m-%dT%H:%M:%S`, tried in that order. Anything else raises ValueError."
+    }
+  ]
+}

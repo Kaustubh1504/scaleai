@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_intake"
+    ],
+    "failures": {
+      "tests.test_1_intake.TestIntake.test_1_dependencies": "AssertionError: {'I02': ['I01'], 'M04': ['M02', 'M03']} != {'G03': ['G01'], 'I02': ['I01'], 'M04': ['M02', 'M03']}\n- {'I02': ['I01'], 'M04': ['M02', 'M03']}\n+ {'G03': ['G01'], 'I02': ['I01'], 'M04': ['M02', 'M03']}\n?  ++++++++++++++++\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_schedule"
+    ],
+    "failures": {
+      "tests.test_2_schedule.TestSchedule.test_2_cpu_lane": "AssertionError: {'C01[26 chars] '08:00', '08:40'), 'C02': ('succeeded', 1, 'w[118 chars]40')} != {'C01[26 chars] '08:20', '09:00'), 'C02': ('succeeded', 1, 'w[118 chars]40')}\n- {'C01': ('succeeded', 1, 'w01', '08:00', '08:40'),\n?                                     ^      ^ ^\n\n+ {'C01': ('succeeded', 1, 'w01', '08:20', '09:00'),\n?                                     ^      ^ ^\n\n-  'C02': ('succeeded', 1, 'w01', '08:40', '09:00'),\n?                                     ^      ^ ^\n\n+  'C02': ('succeeded', 1, 'w01', '08:00', '08:20'),\n?                                     ^      ^ ^\n\n   'C03': ('s"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_schedule"
+    ],
+    "failures": {
+      "tests.test_2_schedule.TestSchedule.test_3_io_lane": "AssertionError: {'I01': ('failed', 1, 'w06', '08:00', '08:15'), 'I0[82 chars]40')} != {'I01': ('succeeded', 2, 'w06', '08:00', '08:35'), [94 chars]55')}\n- {'I01': ('failed', 1, 'w06', '08:00', '08:15'),\n?           ^^^^     ^                      ^\n\n+ {'I01': ('succeeded', 2, 'w06', '08:00', '08:35'),\n?           ^^^^^^^     ^                      ^\n\n-  'I02': ('blocked', 0, None, None, None),\n-  'I03': ('succeeded', 1, 'w06', '08:30', '08:40')}\n?     ^                                ^        ^  ^\n\n+  'I02': ('succeeded', 1, 'w06', '08:35', '08:45'),\n?     ^                                ^   "
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_schedule"
+    ],
+    "failures": {
+      "tests.test_2_schedule.TestSchedule.test_4_gpu_lane": "AssertionError: {'G01[59 chars]ed', 3, 'w04', '08:50', '09:35'), 'G03': ('suc[32 chars]50')} != {'G01[59 chars]ed', 1, 'w04', '08:50', '09:00'), 'G03': ('suc[32 chars]50')}\n  {'G01': ('succeeded', 1, 'w04', '08:00', '08:30'),\n-  'G02': ('failed', 3, 'w04', '08:50', '09:35'),\n?                    ^                      ^^\n\n+  'G02': ('failed', 1, 'w04', '08:50', '09:00'),\n?                    ^                      ^^\n\n   'G03': ('succeeded', 1, 'w04', '08:30', '08:50')}"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_5_longest_wait": "AssertionError: {'job': 'M04', 'minutes': 60} != {'job': 'M01', 'minutes': 2890}\n- {'job': 'M04', 'minutes': 60}\n?            ^              ^\n\n+ {'job': 'M01', 'minutes': 2890}\n?            ^              ^^^\n"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_6_pool_capacity": "AssertionError: {'cpu': 4, 'gpu': 2, 'io': 1, 'mem': 3} != {'cpu': 2, 'gpu': 1, 'io': 1, 'mem': 2}\n- {'cpu': 4, 'gpu': 2, 'io': 1, 'mem': 3}\n?         ^         ^                  ^\n\n+ {'cpu': 2, 'gpu': 1, 'io': 1, 'mem': 2}\n?         ^         ^                  ^\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_intake",
+      "test_2_schedule",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_intake.TestIntake.test_1_dependencies",
+      "tests.test_2_schedule.TestSchedule.test_2_cpu_lane",
+      "tests.test_2_schedule.TestSchedule.test_3_io_lane",
+      "tests.test_2_schedule.TestSchedule.test_4_gpu_lane",
+      "tests.test_3_report.TestReport.test_5_longest_wait",
+      "tests.test_3_report.TestReport.test_6_pool_capacity"
+    ]
+  }
+}

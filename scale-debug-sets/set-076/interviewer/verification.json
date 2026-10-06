@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_concurrency_limit": "AssertionError: 7 != 2"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_attempts_per_batch": "AssertionError: {'faq[45 chars]01': 3, 'policies-02': 2, 'changelog-01': 1, '[29 chars]': 1} != {'faq[45 chars]01': 4, 'policies-02': 2, 'changelog-01': 1, '[29 chars]': 1}\n  {'changelog-01': 1,\n   'changelog-02': 1,\n   'faq-01': 1,\n   'faq-02': 3,\n   'faq-03': 1,\n-  'policies-01': 3,\n?                 ^\n\n+  'policies-01': 4,\n?                 ^\n\n   'policies-02': 2,\n   'pricing-01': 1}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_batches"
+    ],
+    "failures": {
+      "tests.test_2_batches.TestBatches.test_backoff_delays": "AssertionError: Lists differ: [0.5, 0.5, 0.5, 1.0, 1.0, 2.0] != [0.0, 0.0, 0.5, 0.5, 1.0, 2.0]\n\nFirst differing element 0:\n0.5\n0.0\n\n- [0.5, 0.5, 0.5, 1.0, 1.0, 2.0]\n+ [0.0, 0.0, 0.5, 0.5, 1.0, 2.0]"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_batches"
+    ],
+    "failures": {
+      "tests.test_2_batches.TestBatches.test_job_committed": "AssertionError: Lists differ: [] != [{'job_id': 'backfill-0412', 'accepted': [[74 chars] 10}]\n\nSecond list contains 1 additional elements.\nFirst extra element 0:\n{'job_id': 'backfill-0412', 'accepted': ['changelog-02', 'faq-01', 'faq-02', 'faq-03', 'policies-02'], 'documents': 10}\n\n- []\n+ [{'accepted': ['changelog-02', 'faq-01', 'faq-02', 'faq-03', 'policies-02'],\n+   'documents': 10,\n+   'job_id': 'backfill-0412'}]"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_index_coverage": "AssertionError: {'faq': {'stored': 6, 'missing': ['faq-004', 'faq-005']}, 'p[118 chars] []}} != {'faq': {'stored': 9, 'missing': []}, 'policies': {'stored':[98 chars] []}}\n  {'changelog': {'missing': [], 'stored': 1},\n-  'faq': {'missing': ['faq-004', 'faq-005'], 'stored': 6},\n?                      --------------------             ^\n\n+  'faq': {'missing': [], 'stored': 9},\n?                                   ^\n\n   'policies': {'missing': [], 'stored': 3},\n   'pricing': {'missing': [], 'stored': 0}}"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_requeue": "AssertionError: Lists differ: [] != ['chg-201', 'chg-202', 'chg-203', 'pol-101[52 chars]303']\n\nSecond list contains 9 additional elements.\nFirst extra element 0:\n'chg-201'\n\n- []\n+ ['chg-201',\n+  'chg-202',\n+  'chg-203',\n+  'pol-101',\n+  'pol-103',\n+  'pol-104',\n+  'prc-301',\n+  'prc-302',\n+  'prc-303']"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_requests",
+      "test_2_batches",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_requests.TestRequests.test_attempts_per_batch",
+      "tests.test_1_requests.TestRequests.test_concurrency_limit",
+      "tests.test_2_batches.TestBatches.test_backoff_delays",
+      "tests.test_2_batches.TestBatches.test_job_committed",
+      "tests.test_3_report.TestReport.test_index_coverage",
+      "tests.test_3_report.TestReport.test_requeue"
+    ]
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "id": "set-047",
+  "title": "Pay-period statements with bonuses and a platform fee",
+  "domain": "payouts",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "paycycle",
+  "scenario": "Per-task pay inside a half-open pay period plus spreadsheet-exported bonuses, minus a 2.5% fee rounded half-up, with a minimum payout that decides paid vs carried over.",
+  "design": {},
+  "verified": [
+    {
+      "file": "paycycle/utils.py",
+      "symbol": "to_cents",
+      "why_correct": "Multiplying a Decimal after quantize looks like it could leave fractions, but quantize to 0.01 guarantees a whole number of cents, it rounds half up as the spec says, and it strips `$` and thousands separators. Blank amounts return None so the loader can skip them."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Period end treated as inclusive",
+      "type": "time-window-boundary",
+      "file": "paycycle/earnings.py",
+      "function": "in_period",
+      "test": "test_1_earnings.TestEarnings.test_1_base_earnings",
+      "old": "    return period[\"start\"] <= ts < period[\"end\"]",
+      "new": "    return period[\"start\"] <= ts <= period[\"end\"]",
+      "symptom": "Test 1 test_1_base_earnings: C-01 base_cents is 860 instead of 650 (T-107, a 210-cent transcribe task at exactly 2026-04-15 00:00, is paid). Every other contributor matches.",
+      "why": "The period is half-open. T-107 was completed at exactly 2026-04-15 00:00, which is the next period's start, so it must not be paid now.",
+      "unblocks": "test_1_base_earnings",
+      "hints": [
+        "C-01 is overpaid by exactly one transcribe task. Which one?",
+        "Look at T-107's timestamp and the period end in period.json.",
+        "in_period uses `<= end`; README rule 2 says `< end`."
+      ],
+      "probes": [
+        "Why is T-101 (exactly at start) still paid?",
+        "What would go wrong across two consecutive periods if both ends were inclusive?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Byte order mark kept in the first header",
+      "type": "csv-bom-encoding",
+      "file": "paycycle/loader.py",
+      "function": "_rows",
+      "test": "test_1_earnings.TestEarnings.test_2_bonuses",
+      "old": "    with open(path, newline=\"\", encoding=\"utf-8-sig\") as fh:",
+      "new": "    with open(path, newline=\"\", encoding=\"utf-8\") as fh:",
+      "symptom": "Test 1 test_2_bonuses: every bonus_cents is 0 and C-08/C-09 disappear from the statement entirely; task earnings are unaffected.",
+      "why": "bonuses.csv starts with a UTF-8 BOM. Read as plain utf-8, the first header becomes '\\ufeffcontributor_id' (strip() does not remove it), so `r.get(\"contributor_id\")` is None and every bonus row is skipped as having no id.",
+      "unblocks": "test_2_bonuses",
+      "hints": [
+        "Every bonus is 0 and C-08/C-09 are missing. Is bonuses.csv being read at all?",
+        "Print the keys of the first row the loader yields for bonuses.csv.",
+        "Open CSVs with encoding='utf-8-sig' in _rows."
+      ],
+      "probes": [
+        "Why did tasks.csv and rates.csv load fine through the same helper?",
+        "Why didn't this raise a KeyError?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Fee rounded with banker's rounding",
+      "type": "float-rounding",
+      "file": "paycycle/statement.py",
+      "function": "platform_fee",
+      "test": "test_2_statement.TestStatement.test_3_fees_on_task_only_earners",
+      "old": "    basis_points = int(round(fee_percent * 100))\n    return (gross_cents * basis_points + 5000) // 10000",
+      "new": "    return round(gross_cents * fee_percent / 100)",
+      "symptom": "Test 2 test_3_fees_on_task_only_earners: C-03 shows (26, 1034) instead of (27, 1033) and C-05 (30, 1190) instead of (31, 1189). C-04 is unchanged.",
+      "why": "Python's round() rounds halves to the even neighbour, so 26.5 → 26 and 30.5 → 30. The spec rounds halves up.",
+      "unblocks": "test_3_fees_on_task_only_earners",
+      "hints": [
+        "C-03's fee is 26 but 1060 × 2.5% is 26.5. What rule decides that?",
+        "Look at how platform_fee rounds.",
+        "round() is half-to-even; use integer half-up: (gross * 250 + 5000) // 10000."
+      ],
+      "probes": [
+        "Why was C-04's fee (8.125) right either way?",
+        "Why does doing the arithmetic in integer cents avoid float surprises?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does _rows yield?",
+      "a": "For each CSV data row it yields a dict whose keys are the header names passed through clean() and lower-cased; values are the raw strings. It is used for rates, tasks and bonuses."
+    },
+    {
+      "q": "How does base_earnings decide whether a task is paid?",
+      "a": "It skips task ids it has already seen, then skips tasks whose status isn't `approved` or whose type isn't in the rates table, then checks `in_period(completed_at, period)`. Paid tasks add their rate in cents to the contributor's total."
+    },
+    {
+      "q": "What do the period values look like after load_period?",
+      "a": "`start` and `end` are datetimes (bare dates become midnight), `fee_percent` is a float (2.5), and `min_payout_cents` is an int (2000)."
+    },
+    {
+      "q": "Which contributors appear in lines?",
+      "a": "The union of contributor ids with task earnings and ids with bonuses, sorted. A contributor with only bonuses gets base_cents 0."
+    },
+    {
+      "q": "How does to_cents handle '$1,000.00' or a blank?",
+      "a": "It strips `$` and commas, returns None for a blank string, otherwise quantizes the Decimal to 0.01 with ROUND_HALF_UP and multiplies by 100, returning an int."
+    },
+    {
+      "q": "What does platform_fee return for a given gross?",
+      "a": "An int number of cents computed from gross_cents and fee_percent; build_statement subtracts it from gross to get net."
+    }
+  ]
+}

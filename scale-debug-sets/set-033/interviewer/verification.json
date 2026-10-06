@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_entities"
+    ],
+    "failures": {
+      "tests.test_1_entities.TestEntities.test_entity_text": "AssertionError: {'D01[13 chars]erkel ', 'Paris '], 'D02': ['Apple ', 'Austin.[202 chars]to']} != {'D01[13 chars]erkel', 'Paris'], 'D02': ['Apple', 'Austin'], [190 chars]to']}\n- {'D01': ['Angela Merkel ', 'Paris '],\n?                        -         -\n\n+ {'D01': ['Angela Merkel', 'Paris'],\n-  'D02': ['Apple ', 'Austin.'],\n?                -          -\n\n+  'D02': ['Apple', 'Austin'],\n-  'D03': ['Washington ', 'Ghent.'],\n?                     -         -\n\n+  'D03': ['Washington', 'Ghent'],\n-  'D04': ['World Health Organization ', 'Geneva.'],\n?                                    -          -\n\n+  "
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_entities"
+    ],
+    "failures": {
+      "tests.test_1_entities.TestEntities.test_votes": "AssertionError: {'D01[29 chars]3': [2, 2], 'D04': [2, 3], 'D05': [3], 'D06': [46 chars] [2]} != {'D01[29 chars]3': [3, 2], 'D04': [2, 3], 'D05': [3], 'D06': [46 chars] [2]}\n  {'D01': [3, 2],\n   'D02': [2, 2],\n-  'D03': [2, 2],\n?          ^\n\n+  'D03': [3, 2],\n?          ^\n\n   'D04': [2, 3],\n   'D05': [3],\n   'D06': [2],\n   'D07': [3],\n   'D08': [],\n   'D09': [2],\n   'D10': [2]}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_annotators"
+    ],
+    "failures": {
+      "tests.test_2_annotators.TestAnnotators.test_agreement": "AssertionError: {'a01': 1.0, 'a02': 0.778, 'a03': 1.0, 'a04': 1.0, 'a05': 1.0, 'a06': 0.714} != {'a01': 1.0, 'a02': 0.75, 'a03': 1.0, 'a04': 1.0, 'a05': 1.0, 'a06': 0.714}\n- {'a01': 1.0, 'a02': 0.778, 'a03': 1.0, 'a04': 1.0, 'a05': 1.0, 'a06': 0.714}\n?                        ^^\n\n+ {'a01': 1.0, 'a02': 0.75, 'a03': 1.0, 'a04': 1.0, 'a05': 1.0, 'a06': 0.714}\n?                        ^\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_entities",
+      "test_2_annotators"
+    ],
+    "failing_tests": [
+      "tests.test_1_entities.TestEntities.test_entity_text",
+      "tests.test_1_entities.TestEntities.test_votes",
+      "tests.test_2_annotators.TestAnnotators.test_agreement"
+    ]
+  }
+}

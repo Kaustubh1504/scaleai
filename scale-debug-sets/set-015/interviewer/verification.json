@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_examples"
+    ],
+    "failures": {
+      "tests.test_1_examples.TestExamples.test_1_outcomes": "AssertionError: {'c01[32 chars], 'c04': ('ok', 17), 'c05': ('truncated', 35),[33 chars] 30)} != {'c01[32 chars], 'c03': ('ok', 19), 'c04': ('ok', 17), 'c05':[52 chars] 30)}\n  {'c01': ('ok', 28),\n   'c02': ('ok', 23),\n+  'c03': ('ok', 19),\n   'c04': ('ok', 17),\n   'c05': ('truncated', 35),\n   'c11': ('ok', 19),\n   'c12': ('ok', 30)}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_examples"
+    ],
+    "failures": {
+      "tests.test_1_examples.TestExamples.test_2_rendered_text": "AssertionError: '<|sy[13 chars]re a careful math tutor.\\n<|user|>\\nWhat is 12[527 chars]|>\\n' != '<|sy[13 chars]re a friendly travel assistant.\\n<|user|>\\nHow[103 chars]|>\\n'\n- <|system|>\n- You are a careful math tutor.\n- <|user|>\n- What is 12 times 9?\n- <|assistant|>\n- 12 times 9 is 108.\n- <|end|>\n- <|user|>\n- How do I reverse a list in Python?\n- <|assistant|>\n- Use slicing: my_list[::-1] returns a reversed copy.\n- <|end|>\n- <|user|>\n- What is 7 minus 7? Reply with just the number.\n- <|assistant|>\n- 0\n- <|end|>\n- <|user|>\n- Translate to French:\n- Good morning, everyone.\n- <|assistant|>\n- Bonj"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_summary"
+    ],
+    "failures": {
+      "tests.test_2_summary.TestSummary.test_3_tag_counts": "AssertionError: {'': 3, 'chat': 3, 'code': 3, 'long': 1, 'math': 3, 'python': 1, 'safety': 1} != {'chat': 3, 'code': 3, 'long': 1, 'math': 3, 'python': 1, 'safety': 1}\n- {'': 3, 'chat': 3, 'code': 3, 'long': 1, 'math': 3, 'python': 1, 'safety': 1}\n?  -------\n\n+ {'chat': 3, 'code': 3, 'long': 1, 'math': 3, 'python': 1, 'safety': 1}"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_examples",
+      "test_2_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_examples.TestExamples.test_1_outcomes",
+      "tests.test_1_examples.TestExamples.test_2_rendered_text",
+      "tests.test_2_summary.TestSummary.test_3_tag_counts"
+    ]
+  }
+}

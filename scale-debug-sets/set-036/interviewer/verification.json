@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_concurrency_limit": "AssertionError: 5 not less than or equal to 2"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_attempts_per_batch": "AssertionError: {0: 1, 1: 2, 2: 3, 3: 1, 4: 2} != {0: 1, 1: 2, 2: 4, 3: 1, 4: 2}\n- {0: 1, 1: 2, 2: 3, 3: 1, 4: 2}\n?                 ^\n\n+ {0: 1, 1: 2, 2: 4, 3: 1, 4: 2}\n?                 ^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_backoff_waits": "AssertionError: Lists differ: [] != [0.5, 0.5, 1.0, 2.0, 2.0]\n\nSecond list contains 5 additional elements.\nFirst extra element 0:\n0.5\n\n- []\n+ [0.5, 0.5, 1.0, 2.0, 2.0]"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_results"
+    ],
+    "failures": {
+      "tests.test_2_results.TestResults.test_index_results": "AssertionError: {'stored': 14, 'rejected': []} != {'stored': 13, 'rejected': ['d07']}\n- {'rejected': [], 'stored': 14}\n?                             ^\n\n+ {'rejected': ['d07'], 'stored': 13}\n?               +++++              ^\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_tokens_per_doc": "AssertionError: 14 != 14.86"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_near_duplicates": "AssertionError: Lists differ: [['d03', 'd13', 1.0], ['d05', 'd14', 0.98], ['d15', 'd16', 0.95]] != [['d03', 'd13', 1.0], ['d05', 'd14', 0.98]]\n\nFirst list contains 1 additional elements.\nFirst extra element 2:\n['d15', 'd16', 0.95]\n\n- [['d03', 'd13', 1.0], ['d05', 'd14', 0.98], ['d15', 'd16', 0.95]]\n?                                           --------------------- -\n\n+ [['d03', 'd13', 1.0], ['d05', 'd14', 0.98]]"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_requests",
+      "test_2_results",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_requests.TestRequests.test_attempts_per_batch",
+      "tests.test_1_requests.TestRequests.test_backoff_waits",
+      "tests.test_1_requests.TestRequests.test_concurrency_limit",
+      "tests.test_2_results.TestResults.test_index_results",
+      "tests.test_3_report.TestReport.test_near_duplicates",
+      "tests.test_3_report.TestReport.test_tokens_per_doc"
+    ]
+  }
+}

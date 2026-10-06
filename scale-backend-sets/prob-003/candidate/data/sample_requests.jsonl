@@ -1,0 +1,19 @@
+{"name": "create, no key", "tenant": "acme", "key": null, "body": "{\"project\": \"lidar-3d\", \"payload\": {\"scene\": \"s-001\", \"frames\": 120}, \"priority\": 7}"}
+{"name": "create with key", "tenant": "acme", "key": "order-1001", "body": "{\"project\": \"lidar-3d\", \"payload\": {\"scene\": \"s-002\"}}"}
+{"name": "retry of order-1001: same body, other key order and spacing, explicit default priority -> replay", "tenant": "acme", "key": "order-1001", "body": "{ \"payload\": {\"scene\": \"s-002\"},   \"priority\": 5, \"project\": \"lidar-3d\" }"}
+{"name": "order-1001 with a different body -> 409", "tenant": "acme", "key": "order-1001", "body": "{\"project\": \"lidar-3d\", \"payload\": {\"scene\": \"s-999\"}}"}
+{"name": "same key, other tenant -> new task", "tenant": "globex", "key": "order-1001", "body": "{\"project\": \"lidar-3d\", \"payload\": {\"scene\": \"s-002\"}}"}
+{"name": "missing tenant header -> 400", "tenant": null, "key": null, "body": "{\"project\": \"p\", \"payload\": {}}"}
+{"name": "unknown tenant -> 403", "tenant": "umbrella", "key": null, "body": "{\"project\": \"p\", \"payload\": {}}"}
+{"name": "key with a space -> 400", "tenant": "acme", "key": "order 1002", "body": "{\"project\": \"p\", \"payload\": {}}"}
+{"name": "key of 65 chars -> 400", "tenant": "acme", "key": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk", "body": "{\"project\": \"p\", \"payload\": {}}"}
+{"name": "truncated JSON -> 422", "tenant": "acme", "key": null, "body": "{\"project\": \"lidar-3d\", \"payload\": {\"scene\""}
+{"name": "empty body -> 422", "tenant": "acme", "key": null, "body": ""}
+{"name": "body is a JSON array -> 422", "tenant": "acme", "key": null, "body": "[{\"project\": \"p\", \"payload\": {}}]"}
+{"name": "empty project -> 422", "tenant": "acme", "key": null, "body": "{\"project\": \"\", \"payload\": {}}"}
+{"name": "payload is a list -> 422", "tenant": "acme", "key": null, "body": "{\"project\": \"p\", \"payload\": [1, 2]}"}
+{"name": "priority out of range -> 422", "tenant": "acme", "key": null, "body": "{\"project\": \"p\", \"payload\": {}, \"priority\": 10}"}
+{"name": "priority as a string -> 422", "tenant": "acme", "key": null, "body": "{\"project\": \"p\", \"payload\": {}, \"priority\": \"3\"}"}
+{"name": "priority as a boolean -> 422", "tenant": "acme", "key": null, "body": "{\"project\": \"p\", \"payload\": {}, \"priority\": true}"}
+{"name": "unknown field -> 422", "tenant": "acme", "key": null, "body": "{\"project\": \"p\", \"payload\": {}, \"owner\": \"bob\"}"}
+{"name": "free tenant burst (send 6 quickly; Part 2: the 6th is 429)", "tenant": "initech", "key": null, "body": "{\"project\": \"ocr\", \"payload\": {\"doc\": \"d-1\"}}"}

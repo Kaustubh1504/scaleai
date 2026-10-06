@@ -1,0 +1,111 @@
+{
+  "id": "set-039",
+  "title": "SFT formatter: trimming, loss-mask spans, role enums",
+  "domain": "sft_formatting",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "sftfmt",
+  "scenario": "Chat logs become SFT examples: roles normalised, bad conversations rejected, default system prompt added, oldest turns trimmed to a token budget, and assistant-content character spans recorded for the loss mask.",
+  "verified": [
+    {
+      "file": "sftfmt/render.py",
+      "symbol": "fits",
+      "why_correct": "`<=` looks like a boundary slip, but the README says an example of exactly max_tokens fits. truncate uses fits both for the loop and for the final too_long check, so the boundary is consistent."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Assistant span starts on the header newline",
+      "type": "span-offset-off-by-one",
+      "file": "sftfmt/masks.py",
+      "function": "assistant_spans",
+      "test": "test_1_render.TestRender.test_assistant_spans",
+      "old": "            start = offset + len(tag(message)) + 1",
+      "new": "            start = offset + len(tag(message))",
+      "symptom": "Test 1 test_assistant_spans: c03 spans are [[105, 109], [160, 164]] instead of [[106, 110], [161, 165]]. Every span is shifted one character left (text[s:e] would be \"\\nCat\" instead of \"Cat.\").",
+      "why": "The header is the tag plus a newline. Starting at offset + len(tag) puts the span on the '\\n', and because end is start + len(content), the last character of the content falls outside the span.",
+      "unblocks": "Test 1 test_assistant_spans.",
+      "hints": [
+        "Print text[s:e] for one span. What is the first character?",
+        "Compare how block() builds the header with how assistant_spans skips it.",
+        "Skip the newline too: offset + len(tag(message)) + 1."
+      ],
+      "probes": [
+        "Why is the span length still right but the content wrong?",
+        "How would you compute the span so it can't drift from block()?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Trimming edits the caller's message list",
+      "type": "aliasing-shallow-copy",
+      "file": "sftfmt/render.py",
+      "function": "truncate",
+      "test": "test_1_render.TestRender.test_truncation",
+      "old": "    kept = list(messages)",
+      "new": "    kept = messages",
+      "symptom": "Test 1 test_truncation: c07 and c13 show turns_dropped 0 instead of 2, while their token counts (20, 26) are already the trimmed values.",
+      "why": "kept is the same list object as messages, so `del kept[...]` also shrinks the caller's list. build_examples then computes turns_dropped = len(messages) - len(kept) = 0, since both names point at the trimmed list.",
+      "unblocks": "Test 1 test_truncation.",
+      "hints": [
+        "c07 was clearly trimmed (20 tokens). Why does turns_dropped say 0?",
+        "What does build_examples compare to get turns_dropped, and what does truncate do to its argument?",
+        "Copy before deleting: kept = list(messages)."
+      ],
+      "probes": [
+        "Why are the token counts still right?",
+        "Would a shallow copy be enough if truncate changed message content instead of removing messages?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Role enum compared with a string",
+      "type": "enum-vs-string",
+      "file": "sftfmt/reports.py",
+      "function": "summarize",
+      "test": "test_2_report.TestReport.test_assistant_turns",
+      "old": "if m.role is Role.ASSISTANT),",
+      "new": "if m.role == \"assistant\"),",
+      "symptom": "Test 2 test_assistant_turns: 0 != 13.",
+      "why": "Role is a plain Enum, so Role.ASSISTANT == 'assistant' is False. The count comes out 0 instead of 13.",
+      "unblocks": "Test 2 test_assistant_turns.",
+      "hints": [
+        "assistant_turns is 0 although every example has an assistant reply.",
+        "What type is m.role? What does it compare equal to?",
+        "Compare with Role.ASSISTANT (or m.role.value == 'assistant')."
+      ],
+      "probes": [
+        "Would class Role(str, Enum) have avoided this? What would you give up?",
+        "Where else in the package are roles compared, and how?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_examples do for each conversation?",
+      "a": "It runs loader.validate on the cleaned messages (rejecting with its reason), adds the default system prompt with with_system, trims with render.truncate, and stores text, tokens, spans and turns_dropped for the trimmed messages. A None from truncate becomes a too_long rejection."
+    },
+    {
+      "q": "How are roles represented?",
+      "a": "models.Role is an Enum with values 'system', 'user', 'assistant'. normalize_role lower-cases and trims the raw string, maps aliases through ALIASES, and returns Role(name)."
+    },
+    {
+      "q": "How does truncate decide what to drop?",
+      "a": "It works on `kept`, starting after the system message, and deletes kept[start:start + 2] while the messages don't fit and more than one pair remains. It returns kept if it fits, otherwise None."
+    },
+    {
+      "q": "How are tokens counted?",
+      "a": "render.count_tokens returns len(content.split()) + 2 per message; total_tokens sums that over the list."
+    },
+    {
+      "q": "What does a rendered block look like?",
+      "a": "render.block(m) returns tag(m) + '\\n' + content + '<|end|>\\n', where tag(m) is '<|' + role value + '|>'. render() concatenates the blocks."
+    },
+    {
+      "q": "Which conversations get trimmed with this data?",
+      "a": "c07 (54 tokens before trimming) and c13 (46) are over the 40-token budget and lose their first user/assistant pair. c12 has a single long pair and cannot be trimmed."
+    }
+  ]
+}

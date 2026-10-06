@@ -1,0 +1,11 @@
+reviewer_id,languages,capacity,active
+R01,en,2,yes
+R02,en;es,3,yes
+R03,es,1,true
+R04,en,0,yes
+R05,en;es,2,no
+r06, EN ,1,Y
+R07,fr,2,false
+R08,es; en,1,1
+R09,de,2,yes
+R10,en,1,

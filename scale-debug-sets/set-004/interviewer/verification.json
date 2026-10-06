@@ -1,0 +1,83 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_request_body": "AssertionError: {'mod[236 chars]s': 200, 'temperature': 0.7, 'metadata': {'request_id': 'r02'}} != {'mod[236 chars]s': 200, 'temperature': 0, 'metadata': {'request_id': 'r02'}}\n  {'max_tokens': 200,\n   'messages': [{'content': 'You are a strict grader. Reply with a JSON object '\n                            'containing score (0-10) and passed.',\n                 'role': 'system'},\n                {'content': 'Question: What is 17 * 3?\\nAnswer: 41',\n                 'role': 'user'}],\n   'metadata': {'request_id': 'r02'},\n   'model': 'judge-large-2',\n-  'temperature': 0.7}\n?                  --\n\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_requests",
+      "test_2_results",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_attempts_per_request": "AssertionError: {'r02': 1, 'r03': 3, 'r07': 3, 'r01': 1, 'r05': 1, 'r09': 1[36 chars]': 2} != {'r02': 1, 'r03': 4, 'r07': 4, 'r01': 1, 'r05': 1, 'r09': 1[36 chars]': 2}\n  {'r01': 1,\n   'r02': 1,\n-  'r03': 3,\n?         ^\n\n+  'r03': 4,\n?         ^\n\n   'r04': 2,\n   'r05': 1,\n   'r06': 1,\n-  'r07': 3,\n?         ^\n\n+  'r07': 4,\n?         ^\n\n   'r08': 1,\n   'r09': 1,\n   'r10': 2}",
+      "tests.test_2_results.TestResults.test_results": "AssertionError: {'r02': {'status': 'ok', 'http_status': 200, [740 chars]rue}} != {'r01': {'status': 'ok', 'http_status': 200, [731 chars]rue}}\n  {'r01': {'http_status': 200, 'passed': True, 'score': 8.0, 'status': 'ok'},\n   'r02': {'http_status': 200, 'passed': False, 'score': 3.0, 'status': 'ok'},\n+  'r03': {'http_status': 200, 'passed': True, 'score': 6.0, 'status': 'ok'},\n-  'r03': {'http_status': 429,\n-          'passed': None,\n-          'score': None,\n-          'status': 'http_error'},\n   'r04': {'http_status': 200, 'passed': True, 'score': 9.0, 'status': 'ok'},\n   'r05': {'http_status'",
+      "tests.test_2_results.TestResults.test_statuses": "AssertionError: {'r02': 'ok', 'r03': 'http_error', 'r07': 'ht[113 chars]'ok'} != {'r01': 'ok', 'r02': 'ok', 'r03': 'ok', 'r04'[105 chars]'ok'}\n  {'r01': 'ok',\n   'r02': 'ok',\n-  'r03': 'http_error',\n+  'r03': 'ok',\n   'r04': 'ok',\n   'r05': 'http_error',\n   'r06': 'parse_error',\n   'r07': 'http_error',\n   'r08': 'ok',\n   'r09': 'ok',\n   'r10': 'ok'}",
+      "tests.test_3_report.TestReport.test_counts": "AssertionError: {'ok': 6, 'parse_error': 1, 'http_error': 3} != {'ok': 7, 'parse_error': 1, 'http_error': 2}\n- {'http_error': 3, 'ok': 6, 'parse_error': 1}\n?                ^        ^\n\n+ {'http_error': 2, 'ok': 7, 'parse_error': 1}\n?                ^        ^\n",
+      "tests.test_3_report.TestReport.test_latency": "AssertionError: 0.98 != 0.9",
+      "tests.test_3_report.TestReport.test_scores": "AssertionError: Tuples differ: (6.58, 0.667) != (6.5, 0.714)\n\nFirst differing element 0:\n6.58\n6.5\n\n- (6.58, 0.667)\n?     -    --\n\n+ (6.5, 0.714)\n?          ++\n",
+      "tests.test_3_report.TestReport.test_usage_totals": "AssertionError: 2538 != 3039"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_results",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_2_results.TestResults.test_results": "AssertionError: {'r02': {'status': 'ok', 'http_status': 200, [732 chars]rue}} != {'r01': {'status': 'ok', 'http_status': 200, [731 chars]rue}}\n  {'r01': {'http_status': 200, 'passed': True, 'score': 8.0, 'status': 'ok'},\n   'r02': {'http_status': 200, 'passed': False, 'score': 3.0, 'status': 'ok'},\n   'r03': {'http_status': 200, 'passed': True, 'score': 6.0, 'status': 'ok'},\n   'r04': {'http_status': 200, 'passed': True, 'score': 9.0, 'status': 'ok'},\n   'r05': {'http_status': 400,\n           'passed': None,\n           'score': None,\n-          'status': 'parse_error'},\n?                      ",
+      "tests.test_2_results.TestResults.test_statuses": "AssertionError: {'r02': 'ok', 'r03': 'ok', 'r07': 'http_error[106 chars]'ok'} != {'r01': 'ok', 'r02': 'ok', 'r03': 'ok', 'r04'[105 chars]'ok'}\n  {'r01': 'ok',\n   'r02': 'ok',\n   'r03': 'ok',\n   'r04': 'ok',\n-  'r05': 'parse_error',\n?           ----\n\n+  'r05': 'http_error',\n?          +++\n\n   'r06': 'parse_error',\n   'r07': 'http_error',\n   'r08': 'ok',\n   'r09': 'ok',\n   'r10': 'ok'}",
+      "tests.test_3_report.TestReport.test_counts": "AssertionError: {'ok': 7, 'parse_error': 2, 'http_error': 1} != {'ok': 7, 'parse_error': 1, 'http_error': 2}\n- {'http_error': 1, 'ok': 7, 'parse_error': 2}\n?                ^                          ^\n\n+ {'http_error': 2, 'ok': 7, 'parse_error': 1}\n?                ^                          ^\n"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_results",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_2_results.TestResults.test_results": "AssertionError: {'r02': {'status': 'ok', 'http_status': 200, [741 chars]rue}} != {'r01': {'status': 'ok', 'http_status': 200, [731 chars]rue}}\n  {'r01': {'http_status': 200, 'passed': True, 'score': 8.0, 'status': 'ok'},\n   'r02': {'http_status': 200, 'passed': False, 'score': 3.0, 'status': 'ok'},\n+  'r03': {'http_status': 200, 'passed': True, 'score': 6.0, 'status': 'ok'},\n-  'r03': {'http_status': 200,\n-          'passed': None,\n-          'score': None,\n-          'status': 'parse_error'},\n   'r04': {'http_status': 200, 'passed': True, 'score': 9.0, 'status': 'ok'},\n   'r05': {'http_status",
+      "tests.test_2_results.TestResults.test_statuses": "AssertionError: {'r02': 'ok', 'r03': 'parse_error', 'r07': 'h[114 chars]'ok'} != {'r01': 'ok', 'r02': 'ok', 'r03': 'ok', 'r04'[105 chars]'ok'}\n  {'r01': 'ok',\n   'r02': 'ok',\n-  'r03': 'parse_error',\n+  'r03': 'ok',\n   'r04': 'ok',\n   'r05': 'http_error',\n   'r06': 'parse_error',\n   'r07': 'http_error',\n   'r08': 'ok',\n   'r09': 'ok',\n   'r10': 'ok'}",
+      "tests.test_3_report.TestReport.test_counts": "AssertionError: {'ok': 6, 'parse_error': 2, 'http_error': 2} != {'ok': 7, 'parse_error': 1, 'http_error': 2}\n- {'http_error': 2, 'ok': 6, 'parse_error': 2}\n?                         ^                 ^\n\n+ {'http_error': 2, 'ok': 7, 'parse_error': 1}\n?                         ^                 ^\n",
+      "tests.test_3_report.TestReport.test_scores": "AssertionError: Tuples differ: (6.58, 0.667) != (6.5, 0.714)\n\nFirst differing element 0:\n6.58\n6.5\n\n- (6.58, 0.667)\n?     -    --\n\n+ (6.5, 0.714)\n?          ++\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_latency": "AssertionError: 0.963 != 0.9",
+      "tests.test_3_report.TestReport.test_usage_totals": "AssertionError: 2276 != 3039"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_latency": "AssertionError: 900.0 != 0.9"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_requests",
+      "test_2_results",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_requests.TestRequests.test_attempts_per_request",
+      "tests.test_1_requests.TestRequests.test_request_body",
+      "tests.test_2_results.TestResults.test_results",
+      "tests.test_2_results.TestResults.test_statuses",
+      "tests.test_3_report.TestReport.test_counts",
+      "tests.test_3_report.TestReport.test_latency",
+      "tests.test_3_report.TestReport.test_scores",
+      "tests.test_3_report.TestReport.test_usage_totals"
+    ]
+  }
+}

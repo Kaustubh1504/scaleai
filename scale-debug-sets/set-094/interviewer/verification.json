@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_routing"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_guard_mini_routing": "AssertionError: {'M01': ('crowd', 'low_confidence'), 'M02': ('auto'[171 chars]ed')} != {'M01': ('auto', 'confident'), 'M02': ('auto', 'con[159 chars]ed')}\n- {'M01': ('crowd', 'low_confidence'),\n?           ^^ --    ----        ^^\n\n+ {'M01': ('auto', 'confident'),\n?           ^^^             ^\n\n   'M02': ('auto', 'confident'),\n-  'M03': ('crowd', 'low_confidence'),\n?           ^^ --    ----        ^^\n\n+  'M03': ('auto', 'confident'),\n?           ^^^             ^\n\n   'M04': ('auto', 'confident'),\n   'M05': ('crowd', 'low_confidence'),\n   'M06': ('auto', 'confident'),\n   'M07': ('crowd', 'flagge"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_routing"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_legacy_model_routing": "AssertionError: {'L01': ('auto', 'confident'), 'L02': ('auto', 'con[107 chars]ce')} != {'L01': ('crowd', 'legacy_model'), 'L02': ('crowd',[119 chars]ce')}\n- {'L01': ('auto', 'confident'),\n-  'L02': ('auto', 'confident'),\n+ {'L01': ('crowd', 'legacy_model'),\n+  'L02': ('crowd', 'legacy_model'),\n   'L03': ('expert', 'low_confidence'),\n-  'L04': ('auto', 'confident'),\n+  'L04': ('crowd', 'legacy_model'),\n   'L05': ('crowd', 'low_confidence')}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_assignment"
+    ],
+    "failures": {
+      "tests.test_2_assignment.TestAssignment.test_spanish_pool": "AssertionError: Tuples differ: ({'rv-05': ['I05', 'I18'], 'rv-06': ['I04', 'I20'], 'rv-07': ['I12']}, []) != ({'rv-05': ['I05', 'I12'], 'rv-06': [], 'rv-07': ['I04', 'I18']}, ['I20'])\n\nFirst differing element 0:\n{'rv-05': ['I05', 'I18'], 'rv-06': ['I04', 'I20'], 'rv-07': ['I12']}\n{'rv-05': ['I05', 'I12'], 'rv-06': [], 'rv-07': ['I04', 'I18']}\n\n- ({'rv-05': ['I05', 'I18'], 'rv-06': ['I04', 'I20'], 'rv-07': ['I12']}, [])\n?                       ^              ------------                ^\n\n+ ({'rv-05': ['I05', 'I12'], 'rv-06': [], 'rv-07': ['I04', 'I18']}, ['I20'])\n?                       ^     "
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_assignment"
+    ],
+    "failures": {
+      "tests.test_2_assignment.TestAssignment.test_english_pool": "AssertionError: Tuples differ: ({'rv-01': ['I03', 'L03', 'I14'], 'rv-02': [], 'rv-03': ['I02[28 chars]19']) != ({'rv-01': ['I03', 'I11'], 'rv-02': ['I02', 'I14'], 'rv-03': [28 chars], [])\n\nFirst differing element 0:\n{'rv-01': ['I03', 'L03', 'I14'], 'rv-02': [], 'rv-03': ['I02[18 chars]: []}\n{'rv-01': ['I03', 'I11'], 'rv-02': ['I02', 'I14'], 'rv-03': [23 chars]: []}\n\n- ({'rv-01': ['I03', 'L03', 'I14'],\n?                    -------   ^\n\n+ ({'rv-01': ['I03', 'I11'],\n?                       ^\n\n-   'rv-02': [],\n-   'rv-03': ['I02', 'I11'],\n?        ^              ^\n\n+   'rv-02': ['I02', 'I14'],\n?  "
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_calibration"
+    ],
+    "failures": {
+      "tests.test_3_calibration.TestCalibration.test_label_confusions": "AssertionError: {'adu[107 chars]'off_topic': None, 'promo': 'spam', 'spam': 'promo'} != {'adu[107 chars]'off_topic': None, 'promo': 'off_topic', 'spam': 'low_quality'}\n  {'adult': 'clean',\n   'clean': None,\n   'graphic_violence': None,\n   'harassment': 'clean',\n   'hate_speech': 'harassment',\n   'off_topic': None,\n-  'promo': 'spam',\n-  'spam': 'promo'}\n+  'promo': 'off_topic',\n+  'spam': 'low_quality'}"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_calibration"
+    ],
+    "failures": {
+      "tests.test_3_calibration.TestCalibration.test_model_calibration": "AssertionError: {'gua[17 chars]ws': 1, 'agreement': 1.0, 'mean_confidence': 0[182 chars].08}} != {'gua[17 chars]ws': 6, 'agreement': 0.667, 'mean_confidence':[189 chars]236}}\nDiff is 1220 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_routing",
+      "test_2_assignment",
+      "test_3_calibration"
+    ],
+    "failing_tests": [
+      "tests.test_1_routing.TestRouting.test_guard_mini_routing",
+      "tests.test_1_routing.TestRouting.test_legacy_model_routing",
+      "tests.test_2_assignment.TestAssignment.test_english_pool",
+      "tests.test_2_assignment.TestAssignment.test_spanish_pool",
+      "tests.test_3_calibration.TestCalibration.test_label_confusions",
+      "tests.test_3_calibration.TestCalibration.test_model_calibration"
+    ]
+  }
+}

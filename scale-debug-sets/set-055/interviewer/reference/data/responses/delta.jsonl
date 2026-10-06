@@ -1,0 +1,14 @@
+{"model": "DELTA", "item": "I01", "attempt": 1, "status": "ok", "output": "Answer: B"}
+{"model": "DELTA", "item": "I02", "attempt": 1, "status": "ok", "output": "Let me think step by step. Option A looks tempting, but the answer is (c)."}
+{"model": "DELTA", "item": "I03", "attempt": 1, "status": "ok", "output": "{\"answer\": \"C\", \"confidence\": 0.8}"}
+{"model": "DELTA", "item": "I04", "attempt": 1, "status": "ok", "output": "B"}
+{"model": "DELTA", "item": "I05", "attempt": 1, "status": "timeout", "output": "Request timed out after 30s"}
+{"model": "delta", "item": "i05", "attempt": 2, "status": "timeout", "output": "Request timed out after 30s"}
+{"model": "DELTA", "item": "I05", "attempt": 3, "status": "error", "output": ""}
+{"model": "DELTA", "item": "I06", "attempt": 1, "status": "ok", "output": "The answer is D."}
+{"model": "DELTA", "item": "I07", "attempt": 1, "status": "ok", "output": "I'm not able to determine which option is correct from the passage."}
+{"model": "DELTA", "item": "I08", "attempt": 1, "status": "ok", "output": "First guess: answer is A. On reflection, Answer = C"}
+{"model": "DELTA", "item": "I09", "attempt": 1, "status": "rate_limited", "output": ""}
+{"model": "DELTA", "item": "I10", "attempt": 1, "status": "ok", "output": "Answer: D"}
+{"model": "DELTA", "item": "I11", "attempt": 1, "status": "ok", "output": "Let me think step by step. Option A looks tempting, but the answer is (a)."}
+{"model": "DELTA", "item": "I12", "attempt": 1, "status": "ok", "output": "{\"answer\": \"D\", \"confidence\": 0.8}"}

@@ -1,0 +1,12 @@
+[
+  {"robot_id": "arm-01", "rate_hz": 10, "active": true},
+  {"robot_id": "ARM-02", "rate_hz": 10},
+  {"robot_id": " arm-03", "rate_hz": 20, "active": true},
+  {"robot_id": "arm-04", "rate_hz": 10, "active": false},
+  {"robot_id": "Arm-05", "rate_hz": "10", "active": true},
+  {"robot_id": "arm-06", "rate_hz": 15, "active": true},
+  {"robot_id": "arm-07 ", "rate_hz": 10, "active": true},
+  {"robot_id": "arm-08", "rate_hz": 30, "active": false},
+  {"robot_id": "arm-09", "rate_hz": 10, "active": true},
+  {"robot_id": "arm-10", "rate_hz": 25.0, "active": true}
+]

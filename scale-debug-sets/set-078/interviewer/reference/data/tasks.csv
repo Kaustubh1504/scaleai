@@ -1,0 +1,15 @@
+task_id,project,priority,created,state
+T-01,alpha,3,2026-06-10 08:00,
+t-02,Alpha,5,2026-06-10 07:15,
+T-03,gamma,2,06/10/2026 12:00,queued
+T-04,gamma,4,2026-06-09 10:00,submitted
+T-05, alpha ,4,2026-06-09 11:00,Submitted
+T-06,beta,5,2026-06-09 08:00,submitted
+T-07,delta,5,2026-06-09T08:30:00,submitted
+T-08,gamma,5,2026-06-09 09:00,submitted
+T-09,alpha,5,06/09/2026 09:00,submitted
+T-10,beta,1,2026-06-11 15:00,submitted
+T-11,alpha,2,2026-06-12 08:00,labeling
+T-12,gamma,3,2026-06-11 09:00,submitted
+t-13 ,alpha,1,2026-06-12 07:00,
+T-14,delta,2,2026-06-12 07:30, queued

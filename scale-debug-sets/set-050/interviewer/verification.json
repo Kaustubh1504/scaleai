@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_cleaning"
+    ],
+    "failures": {
+      "tests.test_1_cleaning.TestCleaning.test_1_rushed_counts": "AssertionError: {'ann-07': 1, 'ann-08': 1, 'ann-10': 1} != {'ann-08': 1, 'ann-10': 1}\n- {'ann-07': 1, 'ann-08': 1, 'ann-10': 1}\n?  -------------\n\n+ {'ann-08': 1, 'ann-10': 1}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_cleaning"
+    ],
+    "failures": {
+      "tests.test_1_cleaning.TestCleaning.test_2_resubmitted_item": "AssertionError: {'status': 'agreed', 'consensus': 7, 'agreement': 0.8} != {'status': 'agreed', 'consensus': 7, 'agreement': 1.0}\n- {'agreement': 0.8, 'consensus': 7, 'status': 'agreed'}\n?                --\n\n+ {'agreement': 1.0, 'consensus': 7, 'status': 'agreed'}\n?               ++\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_consensus"
+    ],
+    "failures": {
+      "tests.test_2_consensus.TestConsensus.test_3_consensus_values": "AssertionError: {'I-0[61 chars]6': 6, 'I-07': 5, 'I-08': 8, 'I-09': 6, 'I-10'[24 chars]None} != {'I-0[61 chars]6': 6.5, 'I-07': 5, 'I-08': 8, 'I-09': 6, 'I-1[26 chars]None}\n  {'I-01': None,\n   'I-02': 6,\n   'I-03': 4,\n   'I-04': 7,\n   'I-05': None,\n-  'I-06': 6,\n+  'I-06': 6.5,\n?           ++\n\n   'I-07': 5,\n   'I-08': 8,\n   'I-09': 6,\n   'I-10': 5,\n   'I-11': 9,\n   'I-12': None}"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_consensus"
+    ],
+    "failures": {
+      "tests.test_2_consensus.TestConsensus.test_4_outlier_counts": "AssertionError: {'ann-03': 1, 'ann-04': 1} != {'ann-03': 1, 'ann-04': 1, 'ann-05': 1}\n- {'ann-03': 1, 'ann-04': 1}\n+ {'ann-03': 1, 'ann-04': 1, 'ann-05': 1}\n?                         +++++++++++++\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_5_category_means": "AssertionError: {'coding': 5.67, 'writing': 18.83} != {'coding': 5.67, 'writing': 6.67}\n- {'coding': 5.67, 'writing': 18.83}\n?                             ^^ ^^\n\n+ {'coding': 5.67, 'writing': 6.67}\n?                             ^ ^^\n"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_6_escalated_items": "AssertionError: Lists differ: [] != ['I-02', 'I-10']\n\nSecond list contains 2 additional elements.\nFirst extra element 0:\n'I-02'\n\n- []\n+ ['I-02', 'I-10']"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_cleaning",
+      "test_2_consensus",
+      "test_3_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_cleaning.TestCleaning.test_1_rushed_counts",
+      "tests.test_1_cleaning.TestCleaning.test_2_resubmitted_item",
+      "tests.test_2_consensus.TestConsensus.test_3_consensus_values",
+      "tests.test_2_consensus.TestConsensus.test_4_outlier_counts",
+      "tests.test_3_summary.TestSummary.test_5_category_means",
+      "tests.test_3_summary.TestSummary.test_6_escalated_items"
+    ]
+  }
+}

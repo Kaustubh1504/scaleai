@@ -1,0 +1,196 @@
+{
+  "id": "set-090",
+  "title": "Teleop episode QA with stream sync checks",
+  "domain": "robotics_episodes",
+  "length": "FULL",
+  "difficulty": "hard",
+  "format": "multi",
+  "package": "episodeqa",
+  "scenario": "Validate teleoperation episodes with ordered checks (robot registry, calibration, required streams, duration, frame gaps, camera/joint sync, label). Streams come in mixed units and per-robot clock offsets. The report covers per-task usable data, success rates and operator stats.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_validity",
+      "test_2_dataset",
+      "test_3_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "episodeqa/streams.py",
+      "symbol": "drop_repeats",
+      "why_correct": "It sorts first, so repeated timestamps end up next to each other, and then skips any value equal to the last one kept. Comparing with out[-1] is the standard way to dedupe a sorted sequence; E01's repeated frame is removed exactly once."
+    },
+    {
+      "file": "episodeqa/sync.py",
+      "symbol": "nearest_gap",
+      "why_correct": "bisect_left gives the insertion point i. The closest value is always at i-1 or i, and both are checked with bounds guards, so the edges of the stream and exact matches are handled. The loop over (i - 1, i) looks like an off-by-one, but it is correct."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Episode robot ids not lower-cased",
+      "type": "id-normalization",
+      "file": "episodeqa/loader.py",
+      "function": "load_episodes",
+      "old": "            robot=norm(row[\"robot_id\"]),",
+      "new": "            robot=clean(row[\"robot_id\"]),",
+      "symptom": "All three files fail. Test 1: E03 and E04 are unknown_robot. Test 2: their durations are None and open_drawer/pick_place lose them. Test 3: totals (6, 0.0056), open_drawer rate 1.0, pick_place 0.667, ana valid 1.",
+      "why": "robots.json keys are lower-cased, but episode robot ids are only trimmed. E03 and E04 were logged as `R-02`, so the lookup fails and both are rejected as unknown_robot.",
+      "unblocks": "E03/E04 in all three files. It also exposes B3.",
+      "hints": [
+        "R-02 is in robots.json, so why are E03 and E04 unknown_robot?",
+        "Compare how robot ids are normalised in load_robots and in load_episodes.",
+        "load_episodes should use norm(row[\"robot_id\"])."
+      ],
+      "probes": [
+        "Why does E10's ` r-05` still match with this bug?",
+        "After the fix, E03 and E04 fail a different check. Why couldn't you see that before?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Joint timestamps left in seconds",
+      "type": "ms-vs-s",
+      "file": "episodeqa/streams.py",
+      "function": "prepare",
+      "old": "    joints_ms = to_ms(streams.get(\"joints\", []), unit)",
+      "new": "    joints_ms = streams.get(\"joints\", [])",
+      "symptom": "Test 1: E05 and E06 are out_of_sync. Test 2: the task table loses them (open_drawer total 2.0); durations are unchanged. Test 3: totals (6, 0.0053), open_drawer rate 0.0, ben valid 1 / dara valid 0.",
+      "why": "Only the camera stream is converted to milliseconds. For r-03's episodes (unit sec / s), the camera is at ~1000-4000 ms and the joints stay at ~1.0-4.0, so no camera frame has a joint sample within 25 ms. ms episodes are unaffected because their scale is 1.",
+      "unblocks": "E05/E06 back to valid in all three files.",
+      "hints": [
+        "E05 and E06 are out_of_sync. What is special about their lines in frames.jsonl?",
+        "Follow the joint timestamps through prepare() and compare them with the camera path.",
+        "joints_ms should be to_ms(streams.get(\"joints\", []), unit)."
+      ],
+      "probes": [
+        "Why did the duration check pass for E05 even though one stream was in the wrong unit?",
+        "Which episodes would break if the camera conversion were skipped instead?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Joint stream shifted by the camera offset",
+      "type": "wrong-field",
+      "file": "episodeqa/streams.py",
+      "function": "prepare",
+      "old": "t + robot.joint_offset_ms for t",
+      "new": "t + robot.camera_offset_ms for t",
+      "masked_by": [
+        "B1"
+      ],
+      "symptom": "Hidden while B1 is present (E03/E04 are already unknown_robot). Once B1 is fixed, E03 and E04 are out_of_sync instead of valid, with the same task-table and summary effects as B1 but with durations present.",
+      "why": "r-02's joint clock runs 40 ms behind its camera (joint_offset_ms 40, camera_offset_ms 0). Using the camera offset for joints leaves every joint sample 35 ms away from its frame, so E03 and E04 are out_of_sync. This can't be seen while B1 rejects every r-02 episode as unknown_robot.",
+      "unblocks": "E03/E04 valid in every file.",
+      "hints": [
+        "Which robot's episodes fail sync, and how does its entry in robots.json differ from the others?",
+        "Look at which offset is added to each stream in prepare().",
+        "The joints line should add robot.joint_offset_ms."
+      ],
+      "probes": [
+        "Why was this invisible until robot ids were normalised?",
+        "r-08 has equal camera and joint offsets. Would it ever expose this?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Camera period truncated",
+      "type": "integer-division",
+      "file": "episodeqa/quality.py",
+      "function": "gap_limit_ms",
+      "old": "    return GAP_FACTOR * 1000 / robot.camera_hz",
+      "new": "    return GAP_FACTOR * (1000 // robot.camera_hz)",
+      "symptom": "Test 1: E07 is dropped_frames. Test 2: pick_place loses E07 (total 8.5). Test 3: totals (7, 0.0061), pick_place rate 1.0, chen valid 2 / 7.5 s.",
+      "why": "At 15 Hz the period is 66.67 ms, so the limit is 166.67 ms. Floor division gives 66, so the limit becomes 165, and E07's single 166 ms gap now counts as dropped frames. At 10 Hz the division is exact, so other robots are unaffected.",
+      "unblocks": "E07 valid in all three files.",
+      "hints": [
+        "E07's largest camera gap is 166 ms. What limit applies to a 15 Hz camera?",
+        "Look at how the gap limit is computed.",
+        "Use true division: GAP_FACTOR * 1000 / robot.camera_hz."
+      ],
+      "probes": [
+        "Why does E08 fail dropped_frames either way?",
+        "Why do the 10 Hz robots never show this?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Operator valid count includes failed checks",
+      "type": "counting-wrong-subset",
+      "file": "episodeqa/report.py",
+      "function": "operator_table",
+      "old": "        if v.valid:\n            row[\"valid\"] += 1",
+      "new": "        if v.duration_s is not None:\n            row[\"valid\"] += 1",
+      "visible_only_in": [
+        "test_3_report"
+      ],
+      "symptom": "Only test_3 test_operators fails: ana shows valid 4 / valid_s 8.0 (expected 2 / 5.0). Every operator picks up their invalid episodes that have a duration.",
+      "why": "Having a duration only means the episode got as far as the duration check. too_short, too_long, dropped_frames, out_of_sync and unlabelled episodes all have one, so they are counted as valid for their operator.",
+      "unblocks": "test_operators.",
+      "hints": [
+        "ana's valid_s is 8.0, but her valid episodes add up to 5.0. Which extra episodes are included?",
+        "Look at the condition operator_table uses to count an episode as valid.",
+        "Use `if v.valid:`."
+      ],
+      "probes": [
+        "Why does the task table not have the same problem?",
+        "Which operator would still be right with this bug, and why?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "0.0 success rate reported as None",
+      "type": "falsy-zero",
+      "file": "episodeqa/report.py",
+      "function": "success_rates",
+      "old": "    return {task: round(wins[task] / n, 3) for task, n in sorted(totals.items())}",
+      "new": "    return {task: round(wins[task] / n, 3) or None for task, n in sorted(totals.items())}",
+      "visible_only_in": [
+        "test_3_report"
+      ],
+      "symptom": "Only test_3 test_success_rate fails: fold_towel and wipe_table are None instead of 0.0.",
+      "why": "`x or None` replaces a real 0.0 with None, so tasks that have valid episodes but no successes (fold_towel, wipe_table) look as if there were no data. The spec says 0.0.",
+      "unblocks": "test_success_rate.",
+      "hints": [
+        "fold_towel has a valid episode, so why is its rate None?",
+        "Look at the expression that builds each rate.",
+        "Remove the `or None`."
+      ],
+      "probes": [
+        "Can this function ever produce a division by zero? Why not?",
+        "When would returning None be the right answer for a task?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "In what order does check_episode run its checks?",
+      "a": "Robot lookup, calibration time, required streams (from the raw record), then `prepare()`, the rounded duration range, dropped frames, sync, and finally the outcome label. It returns a Verdict at the first failure. duration_s is filled only for verdicts created after the duration was computed."
+    },
+    {
+      "q": "What does prepare() return?",
+      "a": "Two lists of integer timestamps: camera and joints. Each stream is read from the record, passed through `to_ms` and `drop_repeats`, and then shifted by an offset from the Robot object."
+    },
+    {
+      "q": "How does load_frames handle the unit field?",
+      "a": "It stores `norm(item.get(\"unit\") or \"ms\")` for each episode, so a missing unit becomes `ms` and ` S` becomes `s`. Stream names are lower-cased; the timestamp lists are kept as they are in the file."
+    },
+    {
+      "q": "What is the sync rule in code?",
+      "a": "`sync_ratio` counts camera timestamps whose `nearest_gap` to the joints list is <= TOLERANCE_MS (25) and divides by the number of camera frames. `in_sync` requires that ratio >= MIN_SYNC_RATIO (0.9). An empty camera or joints list gives 0.0."
+    },
+    {
+      "q": "How is the frame-gap limit derived?",
+      "a": "`has_dropped_frames` gets the limit from `gap_limit_ms(robot)`, which uses GAP_FACTOR (2.5) and the robot's camera_hz (loaded as a float), and flags the episode if any consecutive camera difference is greater than that limit."
+    },
+    {
+      "q": "Where do robot offsets come from when robots.json has null or no value?",
+      "a": "load_robots uses `int(item.get(...) or 0)` for both camera_offset_ms and joint_offset_ms, so null or missing becomes 0."
+    },
+    {
+      "q": "Which verdicts feed the task table and success rates?",
+      "a": "Both `task_table` and `success_rates` iterate over all verdicts and only use those where `v.valid` is True. success_rates counts outcome == \"success\" as wins."
+    }
+  ]
+}

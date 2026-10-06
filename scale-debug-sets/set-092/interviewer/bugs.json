@@ -1,0 +1,186 @@
+{
+  "id": "set-092",
+  "title": "Async embedding index sync: batches, concurrency, retries, paginated index",
+  "domain": "endpoint_client",
+  "length": "FULL",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "embedsync",
+  "scenario": "An asyncio client lists a paginated vector index per collection, skips documents whose SHA-1 is unchanged, embeds the rest in concurrent batches (semaphore-limited, retried on 429/5xx), records failed batches without stopping the run, and reports index entries to delete plus token cost.",
+  "verified": [
+    {
+      "file": "embedsync/documents.py",
+      "symbol": "latest_by_id",
+      "why_correct": "The `>=` looks like it lets an equal timestamp overwrite, and it does, which is the spec: on equal timestamps the later row in the file wins. It compares parsed datetimes, so the three formats order correctly."
+    },
+    {
+      "file": "embedsync/transport.py",
+      "symbol": "_send_sync",
+      "why_correct": "Catching HTTPError looks like it swallows failures, but it turns them into a Response carrying the real status code, which the retry loop and embed_batch then check. Nothing is lost."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Datetimes encoded with str() instead of ISO 8601",
+      "type": "json-serialization",
+      "file": "embedsync/transport.py",
+      "function": "_json_default",
+      "test": "test_1_requests.TestRequests.test_embedding_request_body",
+      "old": "        return value.isoformat()",
+      "new": "        return str(value)",
+      "symptom": "Test 1 test_embedding_request_body: the faq-0 body differs only in documents[].updated_at, which arrives as '2026-09-01 10:00:00' (space) instead of '2026-09-01T10:00:00'.",
+      "why": "json.dumps calls the default hook for datetimes. str(datetime) puts a space between date and time ('2026-09-01 10:00:00'), so the body no longer carries ISO 8601 as the spec requires. Nothing crashes; the server just gets a different string.",
+      "unblocks": "test_embedding_request_body.",
+      "hints": [
+        "Only the updated_at values in the request body differ. Where do datetimes become strings?",
+        "Look at the hook json.dumps uses for objects it cannot encode itself.",
+        "_json_default returns str(value); it should return value.isoformat()."
+      ],
+      "probes": [
+        "What would have happened if there were no default hook at all?",
+        "How would a set or a Decimal in the payload behave with this hook?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Fresh semaphore per request",
+      "type": "semaphore-unused",
+      "file": "embedsync/client.py",
+      "function": "EmbeddingClient._bounded",
+      "test": "test_1_requests.TestRequests.test_concurrency_limit",
+      "old": "        async with self._limit:",
+      "new": "        async with asyncio.Semaphore(self.config.max_concurrency):",
+      "symptom": "Test 1 test_concurrency_limit: the mock server saw 6 embedding requests in flight at once ('6 not less than or equal to 2'). Every result is still correct.",
+      "why": "Each task acquires its own brand-new semaphore, so it never waits for anyone. The shared self._limit is created in embed_all but never acquired, so all six batches run at once.",
+      "unblocks": "test_concurrency_limit.",
+      "hints": [
+        "The server saw more requests in flight than max_concurrency. Where is concurrency supposed to be limited?",
+        "Look at which semaphore _bounded acquires, and which one embed_all creates.",
+        "_bounded must use the shared semaphore: `async with self._limit:`."
+      ],
+      "probes": [
+        "Why does every result still come out right with no limit at all?",
+        "Why is the semaphore created inside embed_all rather than at import time or in a default argument?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Backoff sleep never awaited",
+      "type": "missing-await",
+      "file": "embedsync/retry.py",
+      "function": "with_retries",
+      "test": "test_1_requests.TestRequests.test_backoff_delays",
+      "old": "        await sleep(policy.delay(attempt, response))",
+      "new": "        sleep(policy.delay(attempt, response))",
+      "symptom": "Test 1 test_backoff_delays: no delays recorded ([] instead of [0.25, 0.5, 0.5, 1.0]), with a 'coroutine ... was never awaited' RuntimeWarning. Attempt counts are unchanged.",
+      "why": "Calling an async function without await only creates a coroutine object; its body never runs. So the retry loop goes straight to the next attempt without waiting, and Python prints a 'coroutine was never awaited' RuntimeWarning.",
+      "unblocks": "test_backoff_delays.",
+      "hints": [
+        "The retries happen, but no delays were recorded. Did the sleep ever actually run?",
+        "Look at the line in with_retries that waits between attempts. Check the warnings in the test output.",
+        "Add the await: `await sleep(policy.delay(attempt, response))`."
+      ],
+      "probes": [
+        "Why did the attempt counts stay right even though nothing waited?",
+        "In production (real asyncio.sleep), what would this do to a rate-limited API?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Last page of the index listing dropped",
+      "type": "pagination-cursor",
+      "file": "embedsync/index.py",
+      "function": "list_index",
+      "test": "test_2_sync.TestSync.test_index_entries_to_delete",
+      "old": "        items.extend(page[\"items\"])\n        token = page.get(\"next_page_token\")\n        if not token:\n            break\n",
+      "new": "        token = page.get(\"next_page_token\")\n        if not token:\n            break\n        items.extend(page[\"items\"])\n",
+      "symptom": "Test 2 test_index_entries_to_delete: to_delete is ['p41', 'p42', 'p43'], so p06 and p88 are missing. The request log still shows all three policies pages.",
+      "why": "The loop breaks on the last page before adding its items, so the final page of every collection is lost. All three pages are still requested, so the request log looks normal. Only policies has a multi-page index, and its last page holds p06 and p88, which should be deleted.",
+      "unblocks": "test_index_entries_to_delete.",
+      "hints": [
+        "p06 and p88 are in the index but not in to_delete. Did the client ever see them?",
+        "Trace list_index for policies: three pages are requested. Which page's items end up in `items`?",
+        "Extend items before checking next_page_token: move `items.extend(page[\"items\"])` above the break."
+      ],
+      "probes": [
+        "Why didn't faq and products notice anything?",
+        "Why did the skipped documents still come out right?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Failed batches filtered out of the gather results",
+      "type": "gather-hides-failures",
+      "file": "embedsync/client.py",
+      "function": "EmbeddingClient.embed_all",
+      "test": "test_3_summary.TestSummary.test_status_counts",
+      "old": "        return await asyncio.gather(*(self._bounded(b) for b in batches), return_exceptions=True)",
+      "new": "        outcomes = await asyncio.gather(*(self._bounded(b) for b in batches), return_exceptions=True)\n        return [o for o in outcomes if not isinstance(o, Exception)]",
+      "symptom": "Test 3 test_status_counts: counts show failed 0 (not 3) and failed_batches is {} (not {'products-1': 503}). x04, x05 and x07 just disappear from outcomes, with no error anywhere.",
+      "why": "return_exceptions=True turns the BatchError into a value, and the filter then throws it away. run_sync never sees the failure, so products-1's documents get no outcome at all and failed_batches is empty. (It also shifts zip(batches, outcomes), which only stays harmless because the failing batch is last.)",
+      "unblocks": "test_status_counts.",
+      "hints": [
+        "products-1 was tried 3 times and never succeeded, yet nothing is reported as failed. Where did that error go?",
+        "Follow what embed_all returns into run_sync's loop over zip(batches, outcomes).",
+        "Return the gather results unchanged: `return await asyncio.gather(..., return_exceptions=True)`."
+      ],
+      "probes": [
+        "What would happen if return_exceptions were False instead?",
+        "If the failing batch were first rather than last, what else would break with this filter?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Integer division in the cost",
+      "type": "integer-division",
+      "file": "embedsync/reports.py",
+      "function": "summarize",
+      "test": "test_3_summary.TestSummary.test_cost",
+      "old": "        \"cost_usd\": round(result.total_tokens / 1000 * config.price_per_1k_tokens, 4),",
+      "new": "        \"cost_usd\": round(result.total_tokens // 1000 * config.price_per_1k_tokens, 4),",
+      "symptom": "Test 3 test_cost: cost_usd is 0.0 instead of 0.0118, while total_tokens (91) is right.",
+      "why": "`//` floors the token count to whole thousands before pricing. With 91 tokens that is 0, so the cost is 0.0 instead of 0.0118.",
+      "unblocks": "test_cost.",
+      "hints": [
+        "total_tokens is right but the cost is zero. What is 91 tokens in thousands?",
+        "Look at the cost formula in reports.summarize.",
+        "Use true division: total_tokens / 1000 * price_per_1k_tokens."
+      ],
+      "probes": [
+        "For which token totals would this formula still give the right answer?",
+        "Why round only at the end rather than rounding the thousands first?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What is the overall flow of build_report()?",
+      "a": "It loads the config, documents and retired ids, then runs `sync.run_sync` with `asyncio.run`. run_sync lists the index for each collection, marks unchanged documents as skipped, collects index ids that are not active into to_delete, batches the rest with `documents.make_batches`, and calls `client.embed_all`. It then walks the batch outcomes to fill outcomes, embeddings, errors and total_tokens. `reports.summarize` builds the summary."
+    },
+    {
+      "q": "How does the HTTP layer work with asyncio here?",
+      "a": "`transport.send` encodes the payload with `encode_body` and runs the blocking `_send_sync` (urllib) in a worker thread via `asyncio.to_thread`. `_send_sync` returns a `Response(status, headers, body)` for both 2xx and HTTP error statuses."
+    },
+    {
+      "q": "What does embed_all return, and in what order?",
+      "a": "It creates `self._limit` and returns the result of `asyncio.gather` over `_bounded(batch)` for each batch. Plain gather results come back in the same order as the batches passed in; with `return_exceptions=True` a raised exception appears as a value in that list."
+    },
+    {
+      "q": "What does the mock server do differently for some batches?",
+      "a": "SCRIPT in mock_server.py: faq-1 gets one 429 with `Retry-After: 0.25`, policies-0 gets one 500, and products-1 gets 503 on every attempt. Every embedding request is held for 40 ms, and the server tracks the largest number in flight in `max_in_flight`."
+    },
+    {
+      "q": "How does the mock index paginate?",
+      "a": "GET /v1/index/<collection> returns `limit` items from an offset plus `next_page_token`, an opaque base64 token, or null when there are no more items. faq and products have empty indexes. policies has 10 entries, so with page_size 4 it takes three pages."
+    },
+    {
+      "q": "How does the test harness record backoff?",
+      "a": "`tests/harness.SyncRun.sleep` is an async function that appends the requested seconds to `self.delays` and returns at once. build_report passes it through to `EmbeddingClient`, which gives it to `with_retries`."
+    },
+    {
+      "q": "How does embed_batch map vectors back to documents?",
+      "a": "For each item in the response's `data`, it uses `item[\"index\"]` as a position in `batch.docs` and stores `item[\"embedding\"]` under that document's id. It returns `(vectors, usage.total_tokens)`, or raises `BatchError` if the final status is not 200."
+    }
+  ]
+}

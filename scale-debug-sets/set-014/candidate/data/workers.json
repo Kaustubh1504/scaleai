@@ -1,0 +1,12 @@
+[
+  {"id": "W-01", "zone": "us-east", "weight": 2, "max_conns": 2, "admin": "active"},
+  {"id": "w-02", "zone": "US-East", "weight": 1, "max_conns": 2, "admin": "active"},
+  {"id": "W-03", "zone": "us-east ", "weight": 1, "max_conns": 1, "admin": "Active"},
+  {"id": "W-04", "zone": "us-east", "weight": 3, "max_conns": 2, "admin": "active"},
+  {"id": " W-05", "zone": "eu-west", "weight": 1, "max_conns": 2, "admin": "active"},
+  {"id": "W-06", "zone": "eu-west", "weight": 2, "max_conns": 2, "admin": "active"},
+  {"id": "W-07", "zone": "EU-west", "weight": 1, "max_conns": 1, "admin": "active"},
+  {"id": "W-08", "zone": "ap-south", "weight": 2, "max_conns": 2, "admin": " Draining"},
+  {"id": "W-09", "zone": "ap-south", "weight": 1, "max_conns": 2, "admin": "active"},
+  {"id": "w-10", "zone": "ap-south", "weight": 1, "max_conns": 1, "admin": "active"}
+]

@@ -1,0 +1,12 @@
+doc_id,retired_on,reason
+p06,2026-09-10,merged into handbook
+x06 ,2026-08-01,product sunset
+X07,2026-12-01,planned sunset
+f90,2026-05-01,duplicate question
+f91,,pending review
+p41,2026-07-01,legacy
+p42,2026-07-01,legacy
+P43,2026-07-01,legacy
+x90,2026-04-15,renamed
+x91,2026-09-15,renamed
+f92,2026-10-01,planned removal

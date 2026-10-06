@@ -1,0 +1,14 @@
+{
+  "cards": [
+    {"card_id": "c01", "home_country": "US", "daily_limit_usd": 1000},
+    {"card_id": "C02", "home_country": "us", "daily_limit_usd": 2000},
+    {"card_id": "c03", "home_country": "GB", "daily_limit_usd": 500},
+    {"card_id": "c04", "home_country": "US", "daily_limit_usd": 1000},
+    {"card_id": "c05 ", "home_country": "DE", "daily_limit_usd": 1500},
+    {"card_id": "c06", "home_country": "US", "daily_limit_usd": 300},
+    {"card_id": "c07", "home_country": "JP", "daily_limit_usd": 800},
+    {"card_id": "c08", "home_country": "CA", "daily_limit_usd": 600},
+    {"card_id": "c09", "home_country": "US", "daily_limit_usd": 1200},
+    {"card_id": "c10", "home_country": "FR", "daily_limit_usd": 900}
+  ]
+}

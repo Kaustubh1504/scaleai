@@ -1,0 +1,29 @@
+prompt_id,model_a,model_b,winner,rater,created_at,swapped
+p01,atlas-7b,borealis,a,r01,2026-06-01 09:00,
+P01,Atlas-7B,borealis,a,r02 ,06/01/2026 09:05,
+p02,cirrus-2,drift-xl,b,r01,2026-06-01T09:10:00,
+p02,drift-xl,cirrus-2,A,r03,2026-06-01 09:12,
+p03,atlas-7b,cirrus-2,tie,r02,2026-06-01 09:20,
+p06,borealis,cirrus-2,b,r03,2026-06-01 09:22,
+p03,atlas-7b, cirrus-2,a,r04,2026-06-01 09:25,
+p04,borealis,drift-xl,b,r05,2026-06-01 09:30,
+p04,borealis,drift-xl,a,r01,2026-06-01 09:40,
+p04,drift-xl,borealis,a,r06,2026-06-01 09:41,
+p05,atlas-7b,drift-xl,b,R07,2026-06-01 10:00,true
+p05,atlas-7b,drift-xl,a,r02,2026-06-01 10:05,
+p06,borealis,cirrus-2,a,R07,2026-06-01 10:10,false
+p07,cirrus-2,atlas-7b,b,r04,06/01/2026 10:20,
+p07,cirrus-2,atlas-7b,b,r06,2026-06-01T10:25:00,
+p08,drift-xl,atlas-7b,a,R07,2026-06-01 10:30,False
+p08,Drift-XL,atlas-7b,a,r03,2026-06-01 10:35,
+p09,borealis,atlas-7b,tie,r01,2026-06-01 10:40,
+p10,cirrus-2,drift-xl,a,r02,2026-06-01 11:00,
+p10,drift-xl,cirrus-2,B,R07,2026-06-01 11:05,TRUE
+p11,atlas-7b,borealis,skip,r04,2026-06-01 11:10,
+p11,atlas-7b,borealis,b,r04,2026-06-01 11:12,
+p11,atlas-7b,borealis,b,r09,2026-06-01 11:15,
+p12,cirrus-2,borealis,,r06,2026-06-01 11:20,
+p12,cirrus-2,borealis,a,r08,2026-06-01 11:25,
+p12,cirrus-2,borealis,a,r03,2026-06-01 11:30,
+p02,cirrus-2,drift-xl,b,r11,2026-06-01 11:35,
+p09,borealis,atlas-7b,b,r01,06/01/2026 11:40,

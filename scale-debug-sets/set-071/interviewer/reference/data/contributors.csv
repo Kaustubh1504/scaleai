@@ -1,0 +1,13 @@
+contributor_id,name,tier,carryover_cents,active
+C01,Ana Ruiz,gold,,yes
+c02 ,Ben Okafor,Silver,350,yes
+C03,Chen Wei,standard,0,TRUE
+C04,Dara Singh,gold,-500,yes
+ C05,Eli Novak,standard,,no
+C06,Fatima Zahra,silver,1200,1
+c07,Gus Lindqvist,STANDARD,,yes
+C08,Hana Mori,gold,,y
+C09,Ivan Petrov,silver,,yes
+C10,Jade Kim,standard,1900,yes
+C11,Kofi Mensah,silver,,false
+C12,Lena Vogel,gold, ,yes

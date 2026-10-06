@@ -1,0 +1,23 @@
+doc_id,text,updated
+d01,Reset your password from the account settings page and confirm the change by email.,2026-02-01
+D02,Invoices are generated on the first business day of each month.,02/04/2026
+d03,"To export a project, open the menu and choose Download as CSV.",Feb 2 2026
+d04,Annotators should flag images with faces.,2026-01-10
+d05,"Every bounding box must fully enclose the visible part of the object and must not include shadows, reflections or any neighbouring objects that appear in the frame.",2026-02-03
+d06,  Two factor authentication can be enabled under security preferences.  ,2026-02-03
+ d07,Legacy API keys stop working after the migration on June first.,01/28/2026
+d08,Workers are paid weekly once their reviewed tasks pass quality checks.,2026-02-06
+d09,Audio clips longer than ten minutes are split into separate segments.,Jan 30 2026
+D04 ,Annotators should flag images that show faces before submitting a task.,02/03/2026
+d10,Use the keyboard shortcut B to draw a new box on the canvas.,2026-02-05
+ d11 ,Reviewers can send a task back with a comment explaining the issue.,2026-02-05
+d12,Customer data is stored in the region selected during onboarding.,02/01/2026
+d19,,2026-02-07
+d13,to export a project open the menu and choose download as csv,2026-02-07
+d14,"Every bounding box must fully enclose the visible part of the object and must not include shadows, reflections or any neighbouring items that appear in the frame.",Feb 7 2026
+d08,Workers are paid monthly.,2026-01-15
+d15,"Transcribers should write numbers as words, keep filler sounds like um and uh, and mark any unclear speech with a tag.",2026-02-08
+D16,"Transcribers should write numbers as words, keep filler sounds like um and uh, and label all unclear speech with a tag.",02/09/2026
+d17,Batch exports are retained for thirty days and then deleted automatically.,2026-02-09
+d20,   ,Feb 10 2026
+d18,Project owners can invite reviewers from the team members tab.,2026-02-10

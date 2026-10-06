@@ -1,0 +1,193 @@
+{
+  "id": "set-048",
+  "title": "Group-aware stratified train/val/test splitter",
+  "domain": "dataset_split",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "multi",
+  "package": "splitkit",
+  "scenario": "Clean and dedupe samples, label each source group by majority vote, split groups (not samples) per label stratum with floor-rounded val/test counts, then cap train per label and report counts.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_cleaning",
+      "test_2_splits",
+      "test_3_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "splitkit/splitter.py",
+      "symbol": "apply_cap",
+      "why_correct": "The `>=` check against the cap looks like it lets one too few through, but it runs before the increment, so exactly `cap` samples per label are kept. Sorting by (created_at, sample_id) is the spec's earliest-first order with id tie-break."
+    },
+    {
+      "file": "splitkit/utils.py",
+      "symbol": "parse_timestamp",
+      "why_correct": "It accepts exactly the four formats the README lists (two with time, two bare dates), with month/day order for the slash formats."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "exclude flag parsed with bool()",
+      "type": "bool-from-string",
+      "file": "splitkit/utils.py",
+      "function": "parse_flag",
+      "old": "    if isinstance(value, str):\n        return value.strip().lower() in TRUE_WORDS\n    return bool(value)",
+      "new": "    return bool(value)",
+      "symptom": "Test 1: excluded is ['S-004', 'S-010', 'S-014', 'S-016', 'S-019', 'S-036'] instead of ['S-010', 'S-036'], and duplicates is [] (the duplicate rows were excluded first). Test 3: S-004 and S-016 vanish from test/train, test has dog 3 instead of 4, and S-033 is no longer capped.",
+      "why": "csv gives strings, and bool() of any non-empty string is True, so `no`, `false` and `No` rows are excluded too. Only blank cells survive.",
+      "unblocks": "Test 1 excluded list; S-004 and S-016 return to the splits in Test 3. It also exposes B2.",
+      "hints": [
+        "S-004 and S-016 are listed as excluded. What does their exclude cell say?",
+        "Look at how the exclude column is interpreted.",
+        "parse_flag returns bool(value); strings must be checked against TRUE_WORDS."
+      ],
+      "probes": [
+        "Why did fixing this make the duplicates list change?",
+        "Why are S-010 (`yes`) and S-036 (`1`) excluded either way?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Duplicates detected on the raw id",
+      "type": "id-normalization",
+      "file": "splitkit/loader.py",
+      "function": "load_samples",
+      "old": "            key = sid\n",
+      "new": "            key = clean(row[\"sample_id\"])\n",
+      "masked_by": [
+        "B1"
+      ],
+      "symptom": "Only visible once B1 is fixed. Test 1: duplicates is [] instead of ['S-014', 'S-019']. Test 2: g-10 becomes a dog group and moves from test to train (g-12 to train as well). Test 3: S-014 and S-019 show up twice and the capped list grows.",
+      "why": "The seen-set is keyed by the trimmed but not upper-cased id, so `s-014` and ` s-019` don't match `S-014`/`S-019` and are kept a second time. The extra dog vote also turns g-10 into a dog group.",
+      "unblocks": "Test 1 duplicates, g-10 in Test 2, train/test membership in Test 3.",
+      "hints": [
+        "Both duplicate rows are lower-case versions of ids already in the file.",
+        "Compare the id that is stored with the id that is checked against `seen`.",
+        "Use the normalised `sid` as the dedupe key, not clean(row['sample_id'])."
+      ],
+      "probes": [
+        "Why was this invisible until the exclude flag was parsed properly?",
+        "Why did a duplicate row change which split g-10 landed in?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "groupby over unsorted samples",
+      "type": "groupby-misuse",
+      "file": "splitkit/strata.py",
+      "function": "group_labels",
+      "old": "    by_group = sorted(samples, key=lambda s: s.group_id)",
+      "new": "    by_group = list(samples)",
+      "symptom": "Test 2: g-07 is labelled 'dog' instead of 'cat'; the cat stratum shrinks, so g-02 moves to val and g-03 to train. Test 3: split members, capped list and label counts all shift.",
+      "why": "itertools.groupby only groups adjacent items. g-07's rows are split into two runs (S-013/S-014, then S-033 much later), and the dict comprehension keeps the last run, so g-07's label becomes dog.",
+      "unblocks": "Test 2 group_labels for g-07 and the cat/dog strata.",
+      "hints": [
+        "g-07 has two cat samples and one dog sample. Why is it a dog group?",
+        "Where are a group's samples collected before the majority vote?",
+        "groupby needs input sorted by the key: sort by group_id first."
+      ],
+      "probes": [
+        "Why were all the other groups right even with the unsorted input?",
+        "Would collections.defaultdict(list) have avoided this?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Majority tie resolved by first seen",
+      "type": "wrong-tie-break",
+      "file": "splitkit/strata.py",
+      "function": "majority",
+      "old": "    return min(counts, key=lambda label: (-counts[label], label))",
+      "new": "    return counts.most_common(1)[0][0]",
+      "symptom": "Test 2: g-10 is labelled 'dog' instead of 'bird'; g-10 moves from test to train and g-12 from val to train. Test 3: test has no bird sample and four extra train samples are capped.",
+      "why": "most_common orders equal counts by first insertion, so g-10 (dog, bird) becomes dog. The spec breaks ties alphabetically, giving bird.",
+      "unblocks": "Test 2 g-10 label and the bird/dog strata.",
+      "hints": [
+        "Look at g-10's two samples. Is there a clear majority?",
+        "How does majority() break ties?",
+        "most_common keeps insertion order on ties; use min(counts, key=lambda l: (-counts[l], l))."
+      ],
+      "probes": [
+        "Why did g-02 (cat, dog) come out right even with most_common?",
+        "The comment says 'alphabetical among equals'. What does the code actually rely on?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Val slice end ignores the test offset",
+      "type": "slice-bounds",
+      "file": "splitkit/splitter.py",
+      "function": "split_groups",
+      "old": "        for gid in ordered[n_test:n_test + n_val]:",
+      "new": "        for gid in ordered[n_test:n_val]:",
+      "symptom": "Test 2: g-03, g-05, g-06 and g-12 are missing from group_split. Test 3: val is empty and its label counts are all 0.",
+      "why": "The val slice must start after the test groups and run n_val further. Ending at n_val (equal to n_test here) gives an empty slice, so g-03, g-05, g-06 and g-12 get no split at all and their samples vanish.",
+      "unblocks": "Test 2 every-group-assigned and the val split in Test 3.",
+      "hints": [
+        "Four groups are missing from group_split. What do they have in common?",
+        "Look at the three slices in split_groups and where each starts and ends.",
+        "The val slice should be ordered[n_test:n_test + n_val]."
+      ],
+      "probes": [
+        "Why didn't any group end up in two splits?",
+        "With val_percent ≠ test_percent, what would this slice have done instead?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "All splits share one counts dict",
+      "type": "aliasing-shallow-copy",
+      "file": "splitkit/reports.py",
+      "function": "label_counts",
+      "old": "    counts = {name: dict(empty) for name in SPLITS}",
+      "new": "    counts = {name: empty for name in SPLITS}",
+      "visible_only_in": [
+        "test_3_report"
+      ],
+      "symptom": "Test 3 only: label_counts reports the same totals for every split, e.g. train {'bird': 7, 'cat': 10, 'dog': 10} instead of {'bird': 4, 'cat': 4, 'dog': 4}.",
+      "why": "Every split points at the same `empty` dict, so each sample increments one shared counter and every split reports the overall totals.",
+      "unblocks": "Test 3 label_counts.",
+      "hints": [
+        "train, val and test show identical counts. Is that plausible?",
+        "Check how the per-split dicts are created.",
+        "Use dict(empty) (a fresh copy) for each split."
+      ],
+      "probes": [
+        "Why do the split member lists look fine while the counts don't?",
+        "Would `{name: {**empty} ...}` or `copy.copy(empty)` also work? What about a nested dict?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does load_samples return and in what order does it apply its rules?",
+      "a": "A LoadResult with `samples` (kept Sample objects in file order), `excluded` and `duplicates` (ids). For each row it skips blank labels, then checks `parse_flag(exclude)`, then checks a `seen` set for duplicates, then builds the Sample with normalised ids and a parsed timestamp."
+    },
+    {
+      "q": "What does group_labels produce?",
+      "a": "A dict of group id → label, built with itertools.groupby over the samples keyed by group_id, calling `majority()` on each run's labels."
+    },
+    {
+      "q": "What does strata() return?",
+      "a": "A dict of label → sorted list of the group ids whose group label is that label."
+    },
+    {
+      "q": "How does split_groups size each split?",
+      "a": "Per stratum (labels processed in sorted order) it computes `n_test = n * test_percent // 100` and `n_val = n * val_percent // 100`, then walks three slices of the sorted group list, writing 'test', 'val' and 'train' into one assignment dict."
+    },
+    {
+      "q": "What happens to a sample whose group has no entry in the assignment?",
+      "a": "build_splits looks it up with `assignment.get(group_id)`; if that is None the sample is skipped and appears in no split."
+    },
+    {
+      "q": "Which samples does the cap look at?",
+      "a": "Only the train members, sorted by (created_at, sample_id). Val and test lists are passed through unchanged."
+    },
+    {
+      "q": "How is label_counts built?",
+      "a": "It starts from a zeroed dict over every label in the kept samples, creates a per-split dict from it, and increments by each member's own sample label (not the group label)."
+    }
+  ]
+}

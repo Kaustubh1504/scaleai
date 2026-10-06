@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_routing"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_1_east_assignments": "AssertionError: {'e01[68 chars]': 'east-2', 'e06': 'east-1', 'e07': 'east-1', 'e08': 'east-2'} != {'e01[68 chars]': 'east-1', 'e06': 'east-2', 'e07': 'east-1', 'e08': 'east-2'}\n  {'e01': 'east-1',\n   'e02': 'east-2',\n   'e03': 'east-3',\n   'e04': 'east-1',\n-  'e05': 'east-2',\n?               ^\n\n+  'e05': 'east-1',\n?               ^\n\n-  'e06': 'east-1',\n?               ^\n\n+  'e06': 'east-2',\n?               ^\n\n   'e07': 'east-1',\n   'e08': 'east-2'}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_routing"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_2_west_assignments": "AssertionError: {'w01[21 chars]west-2', 'w03': 'west-1', 'w04': 'west-1', 'w0[25 chars]t-1'} != {'w01[21 chars]west-1', 'w03': 'west-2', 'w04': 'west-1', 'w0[25 chars]t-1'}\n  {'w01': 'west-1',\n-  'w02': 'west-2',\n?               ^\n\n+  'w02': 'west-1',\n?               ^\n\n-  'w03': 'west-1',\n?               ^\n\n+  'w03': 'west-2',\n?               ^\n\n   'w04': 'west-1',\n   'w05': 'west-1',\n   'w06': 'west-1'}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_workers"
+    ],
+    "failures": {
+      "tests.test_2_workers.TestWorkerStats.test_3_central_utilisation": "AssertionError: {'cen-1': 114.99999999999999, 'cen-2': 52.0, 'cen-3': 33.0, 'cen-4': 0.0} != {'cen-1': 115.0, 'cen-2': 52.0, 'cen-3': 33.0, 'cen-4': 0.0}\n- {'cen-1': 114.99999999999999, 'cen-2': 52.0, 'cen-3': 33.0, 'cen-4': 0.0}\n?             ^ ^^^^^^^^^^^^^^\n\n+ {'cen-1': 115.0, 'cen-2': 52.0, 'cen-3': 33.0, 'cen-4': 0.0}\n?             ^ ^\n"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_workers"
+    ],
+    "failures": {
+      "tests.test_2_workers.TestWorkerStats.test_4_central_peak_inflight": "AssertionError: {'cen-1': 3, 'cen-2': 3, 'cen-3': 3, 'cen-4': 3} != {'cen-1': 3, 'cen-2': 2, 'cen-3': 1, 'cen-4': 0}\n- {'cen-1': 3, 'cen-2': 3, 'cen-3': 3, 'cen-4': 3}\n?                       ^           ^           ^\n\n+ {'cen-1': 3, 'cen-2': 2, 'cen-3': 1, 'cen-4': 0}\n?                       ^           ^           ^\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_5_rejected": "AssertionError: Lists differ: ['s01'] != ['n02', 'n06', 's01']\n\nFirst differing element 0:\n's01'\n'n02'\n\nSecond list contains 2 additional elements.\nFirst extra element 1:\n'n06'\n\n- ['s01']\n+ ['n02', 'n06', 's01']"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_6_out_of_rotation": "AssertionError: Lists differ: ['cen-1', 'cen-2', 'cen-3', 'cen-4', 'east-1', [77 chars]t-3'] != ['cen-4', 'east-3', 'west-2', 'west-3']\n\nFirst differing element 0:\n'cen-1'\n'cen-4'\n\nFirst list contains 9 additional elements.\nFirst extra element 4:\n'east-1'\n\n+ ['cen-4', 'east-3', 'west-2', 'west-3']\n- ['cen-1',\n-  'cen-2',\n-  'cen-3',\n-  'cen-4',\n-  'east-1',\n-  'east-2',\n-  'east-3',\n-  'north-1',\n-  'north-2',\n-  'north-3',\n-  'west-1',\n-  'west-2',\n-  'west-3']"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_routing",
+      "test_2_workers",
+      "test_3_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_routing.TestRouting.test_1_east_assignments",
+      "tests.test_1_routing.TestRouting.test_2_west_assignments",
+      "tests.test_2_workers.TestWorkerStats.test_3_central_utilisation",
+      "tests.test_2_workers.TestWorkerStats.test_4_central_peak_inflight",
+      "tests.test_3_summary.TestSummary.test_5_rejected",
+      "tests.test_3_summary.TestSummary.test_6_out_of_rotation"
+    ]
+  }
+}

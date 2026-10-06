@@ -1,0 +1,6 @@
+{
+  "period": {"start": "2026-09-28", "end": "2026-10-04"},
+  "min_payout_cents": 2000,
+  "task_types": {"bbox": 25, "polygon": 60, "Transcription": 40, "ranking": 15},
+  "tier_percent": {"gold": 120, "silver": 110, "standard": 100}
+}

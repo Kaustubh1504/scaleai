@@ -1,0 +1,117 @@
+{
+  "id": "set-063",
+  "title": "Chat-format SFT export with a token budget",
+  "domain": "sft_formatting",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "multi",
+  "package": "turnsmith",
+  "scenario": "Convert raw support-chat turns into system/user/assistant SFT examples: map and merge roles, trim to user-first/assistant-last, drop the oldest exchange until the example fits max_tokens, and hold back excluded tags.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_examples",
+      "test_2_summary"
+    ]
+  },
+  "verified": [
+    {
+      "file": "turnsmith/budget.py",
+      "symbol": "count_tokens",
+      "why_correct": "`str.split()` with no argument splits on any whitespace run and returns [] for an empty string, so it counts words exactly as rule 5 says. It looks like a cousin of the tag-splitting code, but only `split(\";\")` produces empty entries."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Blank tag cells produce an empty tag",
+      "type": "empty-split",
+      "file": "turnsmith/loader.py",
+      "function": "parse_tags",
+      "old": "    return [t.strip().lower() for t in clean(raw).split(\";\") if t.strip()]",
+      "new": "    return [t.strip().lower() for t in clean(raw).split(\";\")]",
+      "symptom": "Test 1 test_example_tags: c02 and c09 have tags [\"\"] instead of [\"general\"], and c08 has an extra \"\". Test 2 test_tag_counts: an empty-string key with count 3 appears and general is missing.",
+      "why": "`\"\".split(\";\")` is `[\"\"]`, not `[]`. A blank cell becomes a one-element list holding an empty tag, which is truthy, so the `general` default never applies; the trailing `;` on c08 adds an empty tag too.",
+      "unblocks": "test_example_tags and test_tag_counts.",
+      "hints": [
+        "Where does the empty-string key in tag_counts come from?",
+        "Look at what parse_tags returns for a blank cell and for `coding;billing ;`.",
+        "Filter out empty entries: `... for t in clean(raw).split(\";\") if t.strip()`."
+      ],
+      "probes": [
+        "Why did `tags or [DEFAULT_TAG]` stop working?",
+        "Why is count_tokens' `.split()` safe while this `.split(\";\")` is not?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Budget loop config reads the generation limit",
+      "type": "wrong-field",
+      "file": "turnsmith/loader.py",
+      "function": "load_config",
+      "old": "        \"max_tokens\": int(raw[\"max_tokens\"]),",
+      "new": "        \"max_tokens\": int(raw[\"max_new_tokens\"]),",
+      "symptom": "Test 1: c07 shows up as an example, c03 has 86 tokens and c10 73 (no truncation, dropped_messages 0). Test 2: c07 is missing from rejected, examples is 8, coding counts 2 and total_tokens is 417 instead of 295.",
+      "why": "The export budget is taken from `max_new_tokens` (256) instead of `max_tokens` (60). Nothing exceeds 256, so c03 and c10 are never truncated and c07 is accepted instead of rejected as too_long.",
+      "unblocks": "The token, truncation and rejection tests, and it exposes B3.",
+      "hints": [
+        "c03 has 86 tokens with a 60-token budget, yet nothing was dropped. What budget is the code using?",
+        "Look at how load_config builds the settings dict, and compare with config.json.",
+        "Read `raw[\"max_tokens\"]`, not `raw[\"max_new_tokens\"]`."
+      ],
+      "probes": [
+        "Why was the truncation loop impossible to test while this was wrong?",
+        "How would you make a config mix-up like this fail loudly?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Truncation drops one message instead of an exchange",
+      "type": "slice-bounds",
+      "file": "turnsmith/budget.py",
+      "function": "fit_to_budget",
+      "old": "        body = body[2:]",
+      "new": "        body = body[1:]",
+      "masked_by": [
+        "B2"
+      ],
+      "symptom": "Only visible after B2 is fixed. Test 1: c10 keeps the assistant message \"Yes, and no fees.\" as its first turn (tokens 55 instead of 47) and c03 reports dropped_messages 4 instead of 2. Test 2: total_tokens is 303 instead of 295.",
+      "why": "Slicing off one message at a time leaves an example that can start with an assistant turn (c10 starts with \"Yes, and no fees.\"), and `dropped` still grows by 2 per step, so c03 reports 4 dropped messages.",
+      "unblocks": "test_truncated_examples, test_token_counts and test_total_tokens.",
+      "hints": [
+        "After truncation, what role is the first non-system message in c10?",
+        "Look at the slice inside fit_to_budget's loop.",
+        "Drop a whole exchange: `body = body[2:]`."
+      ],
+      "probes": [
+        "Why did c03 end up with the right messages but the wrong dropped_messages?",
+        "Why was this invisible until the budget came from the right config key?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What is the flow inside build_dataset()?",
+      "a": "It loads the config, the conversation index (conv id → tags) and the grouped turns. For each conversation in index order it applies the `general` default, checks excluded tags, builds the body with `chat.to_messages`, runs `budget.fit_to_budget` with the system message, and stores the example or a rejection reason. The summary is computed from those two dicts at the end."
+    },
+    {
+      "q": "What does to_messages do with roles it doesn't know?",
+      "a": "It looks each role up in `ROLE_MAP`; a role missing from the map (such as `system` or `tool`) gives None and the turn is skipped, as is a turn with empty text. Consecutive same-role messages are merged with a newline."
+    },
+    {
+      "q": "What does fit_to_budget return?",
+      "a": "Either None (rejected as too long) or a tuple `(body, dropped)`, where `body` is the remaining non-system messages and `dropped` is a counter increased inside the loop. It loops while `count_tokens([system] + body)` exceeds `max_tokens`."
+    },
+    {
+      "q": "Which config keys does load_config read?",
+      "a": "It returns a dict with `system_prompt` (stripped), `max_tokens` (as int) and `exclude_tags` (a set of trimmed, lower-cased strings). Other keys in config.json are not returned."
+    },
+    {
+      "q": "How are turns ordered inside a conversation?",
+      "a": "`load_turns` groups rows by lower-cased conv id and sorts each group by the integer `turn` value, so file order does not matter."
+    },
+    {
+      "q": "How is tag_counts built?",
+      "a": "A Counter over every tag of every accepted example (rejected conversations are not counted), returned as a dict sorted by tag."
+    }
+  ]
+}

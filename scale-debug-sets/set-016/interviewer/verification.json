@@ -1,0 +1,107 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_schedule",
+      "test_2_outcomes",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_1_schedule.TestSchedule.test_all_rounds": "AssertionError: Lists differ: [] != [['J05', 'J02'], ['J01', 'J03'], ['J04', '[58 chars]14']]\n\nSecond list contains 7 additional elements.\nFirst extra element 0:\n['J05', 'J02']\n\n- []\n+ [['J05', 'J02'],\n+  ['J01', 'J03'],\n+  ['J04', 'J03'],\n+  ['J06', 'J08'],\n+  ['J08', 'J07'],\n+  ['J07', 'J11'],\n+  ['J14']]",
+      "tests.test_1_schedule.TestSchedule.test_first_round": "IndexError: list index out of range",
+      "tests.test_2_outcomes.TestOutcomes.test_all_jobs": "AssertionError: {'J01': {'status': 'pending', 'attempts': 0, 'finished_round'[762 chars]one}} != {'J01': {'status': 'succeeded', 'attempts': 1, 'finished_roun[742 chars]: 7}}\n- {'J01': {'attempts': 0, 'finished_round': None, 'status': 'pending'},\n?                      ^                    ^^^^             ^ ^ ^^^\n\n+ {'J01': {'attempts': 1, 'finished_round': 2, 'status': 'succeeded'},\n?                      ^                    ^             ^^^^ ^ ^^\n\n-  'J02': {'attempts': 0, 'finished_round': None, 'status': 'pending'},\n?                      ^                    ^^^^             ^ ^ ^^^\n\n+",
+      "tests.test_2_outcomes.TestOutcomes.test_attempts": "AssertionError: {'J01': 0, 'J02': 0, 'J03': 0, 'J04': 0, 'J05': 0[66 chars]': 0} != {'J01': 1, 'J02': 1, 'J03': 2, 'J04': 1, 'J05': 1[66 chars]': 1}\n- {'J01': 0,\n?         ^\n\n+ {'J01': 1,\n?         ^\n\n-  'J02': 0,\n?         ^\n\n+  'J02': 1,\n?         ^\n\n-  'J03': 0,\n?         ^\n\n+  'J03': 2,\n?         ^\n\n-  'J04': 0,\n?         ^\n\n+  'J04': 1,\n?         ^\n\n-  'J05': 0,\n?         ^\n\n+  'J05': 1,\n?         ^\n\n-  'J06': 0,\n?         ^\n\n+  'J06': 1,\n?         ^\n\n-  'J07': 0,\n?         ^\n\n+  'J07': 2,\n?         ^\n\n-  'J08': 0,\n?         ^\n\n+  'J08': 2,\n?         ^\n\n   'J09': 0,\n   'J10': 0,\n-  'J11':",
+      "tests.test_2_outcomes.TestOutcomes.test_dead_jobs": "AssertionError: Lists differ: [] != ['J05', 'J07']\n\nSecond list contains 2 additional elements.\nFirst extra element 0:\n'J05'\n\n- []\n+ ['J05', 'J07']",
+      "tests.test_2_outcomes.TestOutcomes.test_dependents_of_dead_jobs_skipped": "AssertionError: {'J09': 'pending', 'J10': 'pending'} != {'J09': 'skipped', 'J10': 'skipped'}\n- {'J09': 'pending', 'J10': 'pending'}\n?            - ---             - ---\n\n+ {'J09': 'skipped', 'J10': 'skipped'}\n?          ++++              ++++\n",
+      "tests.test_3_summary.TestSummary.test_busy_minutes": "AssertionError: 0.0 != 76.7",
+      "tests.test_3_summary.TestSummary.test_counts": "AssertionError: {'succeeded': 0, 'dead': 0, 'skipped': 0, 'pending': 12} != {'succeeded': 8, 'dead': 2, 'skipped': 2, 'pending': 0}\n- {'dead': 0, 'pending': 12, 'skipped': 0, 'succeeded': 0}\n?          ^             ^^             ^               ^\n\n+ {'dead': 2, 'pending': 0, 'skipped': 2, 'succeeded': 8}\n?          ^             ^             ^               ^\n",
+      "tests.test_3_summary.TestSummary.test_mean_attempts": "AssertionError: None != 1.3",
+      "tests.test_3_summary.TestSummary.test_total_attempts": "AssertionError: 0 != 13"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_schedule",
+      "test_2_outcomes",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_1_schedule.TestSchedule.test_all_rounds": "AssertionError: Lists differ: [['J05', 'J12'], ['J13', 'J02'], ['J01', 'J03'], ['J[64 chars]14']] != [['J05', 'J02'], ['J01', 'J03'], ['J04', 'J03'], ['J[48 chars]14']]\n\nFirst differing element 0:\n['J05', 'J12']\n['J05', 'J02']\n\nFirst list contains 1 additional elements.\nFirst extra element 7:\n['J14']\n\n- [['J05', 'J12'],\n?            ^\n\n+ [['J05', 'J02'],\n?            ^\n\n-  ['J13', 'J02'],\n   ['J01', 'J03'],\n   ['J04', 'J03'],\n   ['J06', 'J08'],\n   ['J08', 'J07'],\n   ['J07', 'J11'],\n   ['J14']]",
+      "tests.test_1_schedule.TestSchedule.test_disabled_jobs_never_run": "AssertionError: Items in the first set but not the second:\n'J12'\n'J13'",
+      "tests.test_1_schedule.TestSchedule.test_first_round": "AssertionError: Lists differ: ['J05', 'J12'] != ['J05', 'J02']\n\nFirst differing element 1:\n'J12'\n'J02'\n\n- ['J05', 'J12']\n?           ^\n\n+ ['J05', 'J02']\n?           ^\n",
+      "tests.test_2_outcomes.TestOutcomes.test_all_jobs": "AssertionError: {'J01[55 chars]nd': 3}, 'J02': {'status': 'succeeded', 'attem[833 chars]: 8}} != {'J01[55 chars]nd': 2}, 'J02': {'status': 'succeeded', 'attem[697 chars]: 7}}\n- {'J01': {'attempts': 1, 'finished_round': 3, 'status': 'succeeded'},\n?                                           ^\n\n+ {'J01': {'attempts': 1, 'finished_round': 2, 'status': 'succeeded'},\n?                                           ^\n\n-  'J02': {'attempts': 1, 'finished_round': 2, 'status': 'succeeded'},\n?                                           ^\n\n+  'J02': {'attempts': 1, 'finished_round': 1, 'status': 'succeeded'},\n",
+      "tests.test_2_outcomes.TestOutcomes.test_attempts": "AssertionError: {'J01[72 chars] 2, 'J09': 0, 'J10': 0, 'J11': 1, 'J12': 1, 'J13': 1, 'J14': 1} != {'J01[72 chars] 2, 'J09': 0, 'J10': 0, 'J11': 1, 'J14': 1}\n  {'J01': 1,\n   'J02': 1,\n   'J03': 2,\n   'J04': 1,\n   'J05': 1,\n   'J06': 1,\n   'J07': 2,\n   'J08': 2,\n   'J09': 0,\n   'J10': 0,\n   'J11': 1,\n-  'J12': 1,\n-  'J13': 1,\n   'J14': 1}",
+      "tests.test_3_summary.TestSummary.test_busy_minutes": "AssertionError: 86.0 != 76.7",
+      "tests.test_3_summary.TestSummary.test_counts": "AssertionError: {'succeeded': 10, 'dead': 2, 'skipped': 2, 'pending': 0} != {'succeeded': 8, 'dead': 2, 'skipped': 2, 'pending': 0}\n- {'dead': 2, 'pending': 0, 'skipped': 2, 'succeeded': 10}\n?                                                      ^^\n\n+ {'dead': 2, 'pending': 0, 'skipped': 2, 'succeeded': 8}\n?                                                      ^\n",
+      "tests.test_3_summary.TestSummary.test_mean_attempts": "AssertionError: 1.25 != 1.3",
+      "tests.test_3_summary.TestSummary.test_total_attempts": "AssertionError: 15 != 13"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_schedule",
+      "test_2_outcomes"
+    ],
+    "failures": {
+      "tests.test_1_schedule.TestSchedule.test_all_rounds": "AssertionError: Lists differ: [['J03', 'J02'], ['J03', 'J01'], ['J07', 'J08'[56 chars]14']] != [['J05', 'J02'], ['J01', 'J03'], ['J04', 'J03'[54 chars]14']]\n\nFirst differing element 0:\n['J03', 'J02']\n['J05', 'J02']\n\nFirst list contains 1 additional elements.\nFirst extra element 7:\n['J14']\n\n- [['J03', 'J02'],\n?      ^\n\n+ [['J05', 'J02'],\n?      ^\n\n-  ['J03', 'J01'],\n-  ['J07', 'J08'],\n?      ^      ^\n\n+  ['J01', 'J03'],\n?      ^      ^\n\n-  ['J07', 'J08'],\n-  ['J04', 'J05'],\n?             ^\n\n+  ['J04', 'J03'],\n?             ^\n\n-  ['J06'],\n-  ['J11'],\n+  ['J06', 'J08'],\n+  ['J08', 'J07'],\n+  ['J0",
+      "tests.test_1_schedule.TestSchedule.test_first_round": "AssertionError: Lists differ: ['J03', 'J02'] != ['J05', 'J02']\n\nFirst differing element 0:\n'J03'\n'J05'\n\n- ['J03', 'J02']\n?     ^\n\n+ ['J05', 'J02']\n?     ^\n",
+      "tests.test_2_outcomes.TestOutcomes.test_all_jobs": "AssertionError: {'J01[191 chars]nd': 2}, 'J04': {'status': 'succeeded', 'attem[561 chars]: 8}} != {'J01[191 chars]nd': 3}, 'J04': {'status': 'succeeded', 'attem[561 chars]: 7}}\n  {'J01': {'attempts': 1, 'finished_round': 2, 'status': 'succeeded'},\n   'J02': {'attempts': 1, 'finished_round': 1, 'status': 'succeeded'},\n-  'J03': {'attempts': 2, 'finished_round': 2, 'status': 'succeeded'},\n?                                           ^\n\n+  'J03': {'attempts': 2, 'finished_round': 3, 'status': 'succeeded'},\n?                                           ^\n\n-  'J04': {'attempts': 1, 'finished_round': 5"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_1_schedule",
+      "test_2_outcomes",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_1_schedule.TestSchedule.test_all_rounds": "AssertionError: Lists differ: [['J05', 'J02'], ['J05', 'J01'], ['J04', 'J03'], ['J06', 'J03'[70 chars]14']] != [['J05', 'J02'], ['J01', 'J03'], ['J04', 'J03'], ['J06', 'J08'[38 chars]14']]\n\nFirst differing element 1:\n['J05', 'J01']\n['J01', 'J03']\n\nFirst list contains 2 additional elements.\nFirst extra element 7:\n['J09', 'J10']\n\n  [['J05', 'J02'],\n-  ['J05', 'J01'],\n+  ['J01', 'J03'],\n   ['J04', 'J03'],\n-  ['J06', 'J03'],\n?             ^\n\n+  ['J06', 'J08'],\n?             ^\n\n-  ['J08', 'J07'],\n   ['J08', 'J07'],\n   ['J07', 'J11'],\n-  ['J09', 'J10'],\n   ['J14']]",
+      "tests.test_2_outcomes.TestOutcomes.test_all_jobs": "AssertionError: {'J01[191 chars]nd': 4}, 'J04': {'status': 'succeeded', 'attem[564 chars]: 9}} != {'J01[191 chars]nd': 3}, 'J04': {'status': 'succeeded', 'attem[561 chars]: 7}}\n  {'J01': {'attempts': 1, 'finished_round': 2, 'status': 'succeeded'},\n   'J02': {'attempts': 1, 'finished_round': 1, 'status': 'succeeded'},\n-  'J03': {'attempts': 2, 'finished_round': 4, 'status': 'succeeded'},\n?                                           ^\n\n+  'J03': {'attempts': 2, 'finished_round': 3, 'status': 'succeeded'},\n?                                           ^\n\n   'J04': {'attempts': 1, 'finished_round': 3",
+      "tests.test_2_outcomes.TestOutcomes.test_attempts": "AssertionError: {'J01[38 chars]05': 2, 'J06': 1, 'J07': 3, 'J08': 2, 'J09': 1[26 chars]': 1} != {'J01[38 chars]05': 1, 'J06': 1, 'J07': 2, 'J08': 2, 'J09': 0[26 chars]': 1}\n  {'J01': 1,\n   'J02': 1,\n   'J03': 2,\n   'J04': 1,\n-  'J05': 2,\n?         ^\n\n+  'J05': 1,\n?         ^\n\n   'J06': 1,\n-  'J07': 3,\n?         ^\n\n+  'J07': 2,\n?         ^\n\n   'J08': 2,\n-  'J09': 1,\n?         ^\n\n+  'J09': 0,\n?         ^\n\n-  'J10': 1,\n?         ^\n\n+  'J10': 0,\n?         ^\n\n   'J11': 1,\n   'J14': 1}",
+      "tests.test_2_outcomes.TestOutcomes.test_dead_jobs": "AssertionError: Lists differ: ['J05'] != ['J05', 'J07']\n\nSecond list contains 1 additional elements.\nFirst extra element 1:\n'J07'\n\n- ['J05']\n+ ['J05', 'J07']",
+      "tests.test_2_outcomes.TestOutcomes.test_dependents_of_dead_jobs_skipped": "AssertionError: {'J09': 'succeeded', 'J10': 'succeeded'} != {'J09': 'skipped', 'J10': 'skipped'}\n- {'J09': 'succeeded', 'J10': 'succeeded'}\n+ {'J09': 'skipped', 'J10': 'skipped'}",
+      "tests.test_3_summary.TestSummary.test_busy_minutes": "AssertionError: 114.7 != 76.7",
+      "tests.test_3_summary.TestSummary.test_counts": "AssertionError: {'succeeded': 11, 'dead': 1, 'skipped': 0, 'pending': 0} != {'succeeded': 8, 'dead': 2, 'skipped': 2, 'pending': 0}\n- {'dead': 1, 'pending': 0, 'skipped': 0, 'succeeded': 11}\n?          ^                           ^               ^^\n\n+ {'dead': 2, 'pending': 0, 'skipped': 2, 'succeeded': 8}\n?          ^                           ^               ^\n",
+      "tests.test_3_summary.TestSummary.test_mean_attempts": "AssertionError: 1.42 != 1.3",
+      "tests.test_3_summary.TestSummary.test_total_attempts": "AssertionError: 17 != 13"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_2_outcomes",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_2_outcomes.TestOutcomes.test_all_jobs": "AssertionError: {'J01[613 chars]s': 'pending', 'attempts': 0, 'finished_round'[139 chars]: 7}} != {'J01[613 chars]s': 'skipped', 'attempts': 0, 'finished_round'[139 chars]: 7}}\n  {'J01': {'attempts': 1, 'finished_round': 2, 'status': 'succeeded'},\n   'J02': {'attempts': 1, 'finished_round': 1, 'status': 'succeeded'},\n   'J03': {'attempts': 2, 'finished_round': 3, 'status': 'succeeded'},\n   'J04': {'attempts': 1, 'finished_round': 3, 'status': 'succeeded'},\n   'J05': {'attempts': 1, 'finished_round': 1, 'status': 'dead'},\n   'J06': {'attempts': 1, 'finished_round': 4, 'status': 'succeeded'},\n  ",
+      "tests.test_2_outcomes.TestOutcomes.test_dependents_of_dead_jobs_skipped": "AssertionError: {'J09': 'skipped', 'J10': 'pending'} != {'J09': 'skipped', 'J10': 'skipped'}\n- {'J09': 'skipped', 'J10': 'pending'}\n?                              - ---\n\n+ {'J09': 'skipped', 'J10': 'skipped'}\n?                            ++++\n",
+      "tests.test_3_summary.TestSummary.test_counts": "AssertionError: {'succeeded': 8, 'dead': 2, 'skipped': 1, 'pending': 1} != {'succeeded': 8, 'dead': 2, 'skipped': 2, 'pending': 0}\n- {'dead': 2, 'pending': 1, 'skipped': 1, 'succeeded': 8}\n?                        ^             ^\n\n+ {'dead': 2, 'pending': 0, 'skipped': 2, 'succeeded': 8}\n?                        ^             ^\n"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_mean_attempts": "AssertionError: 1 != 1.3"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_schedule",
+      "test_2_outcomes",
+      "test_3_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_schedule.TestSchedule.test_all_rounds",
+      "tests.test_1_schedule.TestSchedule.test_disabled_jobs_never_run",
+      "tests.test_1_schedule.TestSchedule.test_first_round",
+      "tests.test_2_outcomes.TestOutcomes.test_all_jobs",
+      "tests.test_2_outcomes.TestOutcomes.test_attempts",
+      "tests.test_2_outcomes.TestOutcomes.test_dead_jobs",
+      "tests.test_2_outcomes.TestOutcomes.test_dependents_of_dead_jobs_skipped",
+      "tests.test_3_summary.TestSummary.test_busy_minutes",
+      "tests.test_3_summary.TestSummary.test_counts",
+      "tests.test_3_summary.TestSummary.test_mean_attempts",
+      "tests.test_3_summary.TestSummary.test_total_attempts"
+    ]
+  }
+}

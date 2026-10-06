@@ -1,0 +1,9 @@
+{
+  "free": {"limit": 3, "window_s": 10, "billed": false, "monthly_fee_cents": 0, "included_units": 0, "tiers": []},
+  "starter": {"limit": 5, "window_s": 60, "billed": true, "monthly_fee_cents": 1900, "included_units": 5000,
+              "tiers": [{"up_to_blocks": 20, "cents_per_block": 40}, {"up_to_blocks": null, "cents_per_block": 30}]},
+  "growth": {"limit": 10, "window_s": 60, "billed": true, "monthly_fee_cents": 4900, "included_units": 20000,
+             "tiers": [{"up_to_blocks": 50, "cents_per_block": 25}, {"up_to_blocks": null, "cents_per_block": 18}]},
+  "scale": {"limit": 50, "window_s": 60, "billed": true, "monthly_fee_cents": 19900, "included_units": 250000,
+            "tiers": [{"up_to_blocks": 500, "cents_per_block": 15}, {"up_to_blocks": null, "cents_per_block": 10}]}
+}

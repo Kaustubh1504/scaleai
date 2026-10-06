@@ -1,0 +1,14 @@
+[
+  {"id": "kelp", "name": "Kelp Labs", "status": "active"},
+  {"id": "Narwhal", "name": "Narwhal AI", "status": "Active"},
+  {"id": "puffin", "name": "Puffin Research", "status": "active"},
+  {"id": " otter", "name": "Otter Systems", "status": "active"},
+  {"id": "ORCA", "name": "Orca Collective", "status": "active"},
+  {"id": "lynx", "name": "Lynx Group", "status": " active "},
+  {"id": "heron", "name": "Heron Works", "status": "active"},
+  {"id": "marten", "name": "Marten & Co", "status": ""},
+  {"id": "wren", "name": "Wren Analytics", "status": "active"},
+  {"id": "ibis", "name": "Ibis Lab", "status": "active"},
+  {"id": "fox", "name": "Fox Models", "status": "Banned"},
+  {"id": "moth", "name": "Moth Studio", "status": "withdrawn"}
+]

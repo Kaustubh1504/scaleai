@@ -1,0 +1,35 @@
+ts,task_id,actor,action
+2026-06-10 09:00,T-01,an-01,claim_label
+2026-06-10 09:15,t-02,AN-02,claim_label
+06/10/2026 10:00,T-01,an-01,submit
+2026-06-10T10:30:00,T-01,rv-01,claim_review
+2026-06-10 11:00,T-02,an-02,submit
+2026-06-10 11:00,T-01,rv-01,approve
+2026-06-10 11:00,T-01,RV-01 ,approve
+2026-06-10 11:10,T-02,rv-02,claim_review
+2026-06-10 11:40,T-02,rv-02, reject
+2026-06-10 13:00,T-03,an-03,claim_label
+2026-06-10 14:00,T-03,an-03,submit
+06/10/2026 14:05,T-03,rv-03,claim_review
+2026-06-10 14:35,T-03,rv-03,reject
+2026-06-10 15:30,T-03,an-03,submit
+2026-06-10 15:40,T-03,rv-03,claim_review
+2026-06-10 16:00,T-03,rv-03,reject
+2026-06-10 17:00,T-03,rv-03,resolve
+2026-06-11 08:00,t-03,SR-01,resolve
+2026-06-11 09:00,T-02,an-02,submit
+2026-06-11T09:30:00,T-02,rv-01,claim_review
+2026-06-11 10:15,T-02,rv-01,approve
+2026-06-11 10:00,T-04,zz-99,claim_review
+2026-06-11 11:20,T-05,rv-02,claim_review
+2026-06-11 11:30,T-05,rv-03,approve
+2026-06-11 12:00,T-99,an-01,submit
+2026-06-12 09:00,T-11,an-02,submit
+2026-06-12 10:00,T-11,rv-01,claim_review
+06/12/2026 12:00,T-11,rv-01,approve
+2026-06-12 07:45,T-13,rv-02,claim_label
+2026-06-12 08:10,T-13,an-04,claim_label
+2026-06-12 08:20,T-14,rv-03,claim_review
+2026-06-12 16:00,T-12,rv-04,claim_review
+2026-06-12 16:30,T-10,rv-02,claim_review
+2026-06-12T17:00:00,T-12,rv-03,claim_review

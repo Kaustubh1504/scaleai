@@ -1,0 +1,26 @@
+doc_id,collection,text,updated_at
+FAQ-001,faq,How do I reset my password?,2026-04-03
+pol-101,policies,Refunds are issued within 14 days of a request.,2026-03-15
+faq-002, FAQ,Where can I download invoices?,04/01/2026
+chg-201,changelog,Added bulk export for annotations.,2026-02-01
+faq-003,faq,  Can I change my username?  ,2 Apr 2026
+leg-401,legacy,Old export format notes.,2025-11-02
+Faq-004,faq,How do refunds work?,2026-04-05
+POL-102,Policies,Accounts inactive for a year are archived.,03/20/2026
+prc-301,pricing,Starter plan includes 1000 tasks per month.,2026-01-10
+faq-005 ,faq,Is there a mobile app?,04/03/2026
+faq-008,faq,,2026-04-06
+chg-202,changelog,Fixed timezone display on dashboards.,02/03/2026
+pol-103,policies,Data is retained for 90 days after deletion.,2026-03-10
+faq-006,faq,How do I contact support?,2026-03-30
+drf-501,drafts,Unreleased roadmap item.,2026-04-01
+prc-302,Pricing,Enterprise plans are billed annually.,2026-01-12
+pol-104, policies ,Two-factor authentication is required for admins.,18 Mar 2026
+chg-203,changelog,Improved review queue performance.,2026-02-02
+tmp-601,scratch,Scratch note.,2026-04-02
+faq-007,faq,What payment methods are accepted?,7 Apr 2026
+pol-105,policies,Contractors must sign the data agreement.,2026-03-22
+leg-402,Legacy,Deprecated API v1 endpoints.,11/05/2025
+prc-303,pricing,Overage is charged per 100 tasks.,01/11/2026
+pol-106,policies,   ,2026-03-25
+CHG-204,changelog,New keyboard shortcuts for labeling.,5 Feb 2026

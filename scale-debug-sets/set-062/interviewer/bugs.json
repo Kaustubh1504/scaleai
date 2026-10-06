@@ -1,0 +1,186 @@
+{
+  "id": "set-062",
+  "title": "Zone-local least-inflight replay",
+  "domain": "load_balancer",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "relaymesh",
+  "scenario": "Replay ten seconds of traffic against a worker pool with health transitions. Requests stay in their zone and go to the lowest running/effective-weight worker (degraded halves the weight). Report assignments, per-worker load and rejections.",
+  "verified": [
+    {
+      "file": "relaymesh/health.py",
+      "symbol": "apply_due",
+      "why_correct": "The `<=` matches rule 1 (transitions at or before the arrival apply), and the cursor only moves forward because events are sorted by time in load_health."
+    },
+    {
+      "file": "relaymesh/stats.py",
+      "symbol": "sweep_points",
+      "why_correct": "Plain tuple sorting puts (t, -1) before (t, 1), so a request that ends exactly when another starts is counted as finished first, as the spec asks. It looks like it needs an explicit sort key, but it doesn't."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Degraded check compares the enum to a string",
+      "type": "enum-vs-string",
+      "file": "relaymesh/router.py",
+      "function": "effective_weight",
+      "test": "test_1_routing.TestRouting.test_1_east_assignments",
+      "old": "    if worker.state is WorkerState.DEGRADED:",
+      "new": "    if worker.state == \"degraded\":",
+      "symptom": "Test 1 test_1_east_assignments: e05 goes to east-2 instead of east-1, and e06 to east-1 instead of east-2. Every other zone is unaffected.",
+      "why": "Worker states are WorkerState members, and a plain Enum never equals its value string. So the check is never true, east-2 keeps its full weight while degraded, and it wins ties it should lose.",
+      "unblocks": "test_1_east_assignments.",
+      "hints": [
+        "east-2 is the only worker that is degraded while traffic arrives. Does it ever look less attractive than east-1?",
+        "Look at how effective_weight decides whether a worker is degraded.",
+        "`worker.state == \"degraded\"` is always False for an Enum; compare with `is WorkerState.DEGRADED`."
+      ],
+      "probes": [
+        "Why does `parse_state(...) == \"degraded\"` fail even though WorkerState.DEGRADED.value is \"degraded\"?",
+        "Why were e01 to e04 still right with the comparison broken?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Request ending at the arrival time still counted as running",
+      "type": "off-by-one",
+      "file": "relaymesh/router.py",
+      "function": "release_finished",
+      "test": "test_1_routing.TestRouting.test_2_west_assignments",
+      "old": "    w.inflight = [end for end in w.inflight if end > now_ms]",
+      "new": "    w.inflight = [end for end in w.inflight if end >= now_ms]",
+      "symptom": "Test 1 test_2_west_assignments: w02 goes to west-2 instead of west-1, and w03 to west-1 instead of west-2.",
+      "why": "Rule 2 says a request ending at or before the new arrival has finished. Keeping `end >= now` leaves w01 (ends 12:00:02) on west-1 when w02 arrives at exactly 12:00:02, so w02 goes to west-2 and w03 flips too.",
+      "unblocks": "test_2_west_assignments.",
+      "hints": [
+        "Compare w01's end time with w02's arrival time.",
+        "Look at how finished requests are dropped before routing.",
+        "release_finished keeps `end >= now_ms`; the spec wants `end > now_ms`."
+      ],
+      "probes": [
+        "Why does only the west zone notice this?",
+        "stats.peak_inflight has the same boundary rule. Where is it enforced there?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Utilisation rounded before scaling to a percentage",
+      "type": "float-rounding",
+      "file": "relaymesh/stats.py",
+      "function": "worker_stats",
+      "test": "test_2_workers.TestWorkerStats.test_3_central_utilisation",
+      "old": "            \"utilisation_pct\": round(100 * busy_ms / WINDOW_MS, 1),",
+      "new": "            \"utilisation_pct\": round(busy_ms / WINDOW_MS, 3) * 100,",
+      "symptom": "Test 2 test_3_central_utilisation: cen-1 shows 114.99999999999999 instead of 115.0; the other central workers are exact.",
+      "why": "Rounding the fraction and then multiplying by 100 brings binary float error back in, so 1.15 * 100 is 114.99999999999999. Scale first and round last.",
+      "unblocks": "test_3_central_utilisation.",
+      "hints": [
+        "cen-1 shows 114.99999999999999. Where could the trailing 9s come from?",
+        "Look at the order of rounding and multiplying in utilisation_pct.",
+        "Use round(100 * busy_ms / WINDOW_MS, 1)."
+      ],
+      "probes": [
+        "Why do 52.0 and 33.0 come out exact but 115.0 doesn't?",
+        "Would round(x * 100, 1) after round(x, 3) be safe? Why or why not?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Peak counter carried across workers",
+      "type": "state-not-reset",
+      "file": "relaymesh/stats.py",
+      "function": "worker_stats",
+      "test": "test_2_workers.TestWorkerStats.test_4_central_peak_inflight",
+      "old": "    out = {}\n    for wid in sorted(by_worker):\n        reqs = by_worker[wid]\n        busy_ms = sum(r.duration_ms for r in reqs)\n        current = 0\n        peak = 0\n",
+      "new": "    out = {}\n    peak = 0\n    for wid in sorted(by_worker):\n        reqs = by_worker[wid]\n        busy_ms = sum(r.duration_ms for r in reqs)\n        current = 0\n",
+      "symptom": "Test 2 test_4_central_peak_inflight: every central worker reports peak 3 (cen-1 is right; cen-2 should be 2, cen-3 1, cen-4 0).",
+      "why": "`peak` is set once before the loop, so each worker reports the running maximum of every worker before it in id order. cen-1's 3 leaks into cen-2, cen-3 and cen-4.",
+      "unblocks": "test_4_central_peak_inflight.",
+      "hints": [
+        "Every central worker after cen-1 has the same peak as cen-1. Is that plausible for cen-4, which served nothing?",
+        "Look at where peak and current are initialised in worker_stats.",
+        "Move `peak = 0` inside the per-worker loop, next to `current = 0`."
+      ],
+      "probes": [
+        "Why was `current` fine even though it is also a running counter?",
+        "Which ordering of workers would have hidden this from the test?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "max_inflight 0 replaced by the default",
+      "type": "falsy-zero",
+      "file": "relaymesh/loader.py",
+      "function": "load_workers",
+      "test": "test_3_summary.TestSummary.test_5_rejected",
+      "old": "            max_inflight=int(item.get(\"max_inflight\", DEFAULT_MAX_INFLIGHT)),",
+      "new": "            max_inflight=int(item.get(\"max_inflight\") or DEFAULT_MAX_INFLIGHT),",
+      "symptom": "Test 3 test_5_rejected: only s01 is rejected; n02 and n06 are missing because north-2 served them.",
+      "why": "`or` treats an explicit 0 as missing, so the provisioning worker north-2 gets the default capacity of 2 and absorbs the north requests that should be rejected.",
+      "unblocks": "test_5_rejected.",
+      "hints": [
+        "n02 and n06 should have nowhere to go. Which worker took them?",
+        "Look at how the loader fills in max_inflight.",
+        "`item.get(\"max_inflight\") or DEFAULT_MAX_INFLIGHT` turns 0 into 2; use item.get(\"max_inflight\", DEFAULT_MAX_INFLIGHT)."
+      ],
+      "probes": [
+        "cen-2 has no max_inflight at all. Why did it behave the same with and without the change?",
+        "Why didn't any test on assignments notice north-2 taking traffic?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Out-of-rotation filter always true",
+      "type": "or-precedence",
+      "file": "relaymesh/report.py",
+      "function": "out_of_rotation",
+      "test": "test_3_summary.TestSummary.test_6_out_of_rotation",
+      "old": "        if w.state is WorkerState.DOWN or w.state is WorkerState.DRAINING",
+      "new": "        if w.state is WorkerState.DOWN or WorkerState.DRAINING",
+      "symptom": "Test 3 test_6_out_of_rotation: all 13 workers are listed instead of cen-4, east-3, west-2, west-3.",
+      "why": "The condition parses as `(w.state is DOWN) or WorkerState.DRAINING`, and an Enum member is truthy, so every worker passes the filter.",
+      "unblocks": "test_6_out_of_rotation.",
+      "hints": [
+        "Every worker is listed, including healthy ones. What does the filter evaluate to for a healthy worker?",
+        "Read the condition in out_of_rotation operator by operator.",
+        "Compare w.state on both sides of the `or` (or use `w.state in (DOWN, DRAINING)`)."
+      ],
+      "probes": [
+        "Why is WorkerState.DRAINING truthy on its own?",
+        "Why does this only show up in the summary?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What happens inside replay() for each request?",
+      "a": "It calls `feed.apply_due(arrival)` to apply health transitions, `release_finished(workers, arrival)` to drop finished requests, then `pick_worker` on the workers of the request's zone. The chosen worker gets the request's end time appended to `inflight`; with no candidate the assignment is None. After the loop it calls `feed.flush()`."
+    },
+    {
+      "q": "What is stored in Worker.inflight?",
+      "a": "A list of end times in ms, one per running request. `len(inflight)` is the number of running requests used by `has_room` and the score in `pick_worker`."
+    },
+    {
+      "q": "How does pick_worker break ties?",
+      "a": "It takes `min` over eligible workers with the key `(len(inflight) / effective_weight(w), worker_id)`, so equal scores fall back to the worker id string."
+    },
+    {
+      "q": "What type is Worker.state after loading and after a health event?",
+      "a": "`parse_state` returns a `WorkerState` member (a plain `Enum`, not a `str` subclass). Health events are parsed with the same function, and `apply_due` assigns `event.state` to the worker."
+    },
+    {
+      "q": "How does worker_stats work out peak_inflight?",
+      "a": "For each worker it builds (arrival, end) intervals of its requests, turns them into (time, ±1) points with `sweep_points`, walks them in sorted order adding the deltas to `current`, and keeps the largest value seen in `peak`."
+    },
+    {
+      "q": "What does load_requests return, and in what order?",
+      "a": "A list of `Request` objects sorted by `arrival_ms` with Python's stable sort, so same-time requests keep file order. A blank zone becomes `DEFAULT_ZONE` (\"central\")."
+    },
+    {
+      "q": "When is out_of_rotation computed?",
+      "a": "In `build_report`, after `replay` has returned. `replay` ends with `feed.flush()`, which applies any remaining health transitions, so it reads each worker's final state."
+    }
+  ]
+}

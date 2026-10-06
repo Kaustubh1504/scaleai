@@ -1,0 +1,4 @@
+{
+  "max_tokens": 40,
+  "default_system": "  You are a helpful assistant.  "
+}

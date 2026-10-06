@@ -1,0 +1,6 @@
+{
+  "default_ttl_seconds": 60,
+  "ttl_seconds": {"m-small": 300, "m-large": 120, "m-embed": 0},
+  "default_region": "us",
+  "discounts": {"acme": 0.1, "globex": 0, "initech": 0.2}
+}

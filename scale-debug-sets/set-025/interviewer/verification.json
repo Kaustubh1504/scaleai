@@ -1,0 +1,48 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_allocations",
+      "test_2_capacity_report"
+    ],
+    "failures": {
+      "tests.test_1_allocations.TestAllocations.test_all_allocations": "AssertionError: {'P01[114 chars] {'C09': 10, 'C11': 5}, 'P06': {'C03': 10}, 'P[62 chars]: 9}} != {'P01[114 chars] {'C03': 10, 'C09': 5}, 'P06': {'C05': 10}, 'P[72 chars]: 4}}\n  {'P01': {'C01': 20, 'C08': 8, 'C12': 2},\n   'P02': {'C04': 14, 'C10': 6},\n   'P03': {'C02': 10, 'C03': 10},\n   'P04': {},\n-  'P05': {'C09': 10, 'C11': 5},\n+  'P05': {'C03': 10, 'C09': 5},\n-  'P06': {'C03': 10},\n?             ^\n\n+  'P06': {'C05': 10},\n?             ^\n\n   'P07': {},\n   'P08': {'C04': 1},\n   'P09': {},\n-  'P10': {'C05': 9, 'C12': 3}}\n+  'P10': {'C05': 4, 'C09': 5, 'C12': 3}}\n?                 ++++++ ++++\n",
+      "tests.test_2_capacity_report.TestCapacityReport.test_idle": "AssertionError: Lists differ: [] != ['C11']\n\nSecond list contains 1 additional elements.\nFirst extra element 0:\n'C11'\n\n- []\n+ ['C11']",
+      "tests.test_2_capacity_report.TestCapacityReport.test_utilization": "AssertionError: {'C01[48 chars]': 0.36, 'C08': 1.0, 'C09': 1.0, 'C10': 1.0, '[17 chars] 1.0} != {'C01[48 chars]': 0.56, 'C08': 1.0, 'C09': 1.0, 'C10': 1.0, '[17 chars] 1.0}\n  {'C01': 1.0,\n   'C02': 1.0,\n   'C03': 1.0,\n   'C04': 1.0,\n-  'C05': 0.36,\n?           ^\n\n+  'C05': 0.56,\n?           ^\n\n   'C08': 1.0,\n   'C09': 1.0,\n   'C10': 1.0,\n-  'C11': 0.5,\n?           ^\n\n+  'C11': 0.0,\n?           ^\n\n   'C12': 1.0}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_allocations",
+      "test_2_capacity_report"
+    ],
+    "failures": {
+      "tests.test_1_allocations.TestAllocations.test_all_allocations": "AssertionError: {'P01[72 chars] {'C05': 20}, 'P04': {}, 'P05': {'C03': 15}, '[102 chars]: 4}} != {'P01[72 chars] {'C02': 10, 'C03': 10}, 'P04': {}, 'P05': {'C[114 chars]: 4}}\n  {'P01': {'C01': 20, 'C08': 8, 'C12': 2},\n   'P02': {'C04': 14, 'C10': 6},\n-  'P03': {'C05': 20},\n+  'P03': {'C02': 10, 'C03': 10},\n   'P04': {},\n-  'P05': {'C03': 15},\n-  'P06': {'C02': 5, 'C05': 5},\n?     ^       ^   ^     ^\n\n+  'P05': {'C03': 10, 'C09': 5},\n?     ^       ^   ^^     ^\n\n+  'P06': {'C05': 10},\n   'P07': {},\n   'P08': {'C04': 1},\n   'P09': {},\n-  'P10': {'C02': 5, 'C09': 4, 'C12': 3}}\n?             ^   ^ ",
+      "tests.test_1_allocations.TestAllocations.test_top_priority_projects": "AssertionError: {'P02': {'C10': 6, 'C04': 14}, 'P03': {'C05': 20}, 'P07': {}} != {'P02': {'C10': 6, 'C04': 14}, 'P03': {'C02': 10, 'C03': 10}, 'P07': {}}\n- {'P02': {'C04': 14, 'C10': 6}, 'P03': {'C05': 20}, 'P07': {}}\n?                                           ^   ^\n\n+ {'P02': {'C04': 14, 'C10': 6}, 'P03': {'C02': 10, 'C03': 10}, 'P07': {}}\n?                                           ^   ^^^^^^^^^^^^\n",
+      "tests.test_2_capacity_report.TestCapacityReport.test_utilization": "AssertionError: {'C01[22 chars]03': 0.75, 'C04': 1.0, 'C05': 1.0, 'C08': 1.0,[43 chars] 1.0} != {'C01[22 chars]03': 1.0, 'C04': 1.0, 'C05': 0.56, 'C08': 1.0,[43 chars] 1.0}\n  {'C01': 1.0,\n   'C02': 1.0,\n-  'C03': 0.75,\n?          ---\n\n+  'C03': 1.0,\n?         ++\n\n   'C04': 1.0,\n-  'C05': 1.0,\n?         ^ ^\n\n+  'C05': 0.56,\n?         ^ ^^\n\n   'C08': 1.0,\n-  'C09': 0.4,\n?          --\n\n+  'C09': 1.0,\n?         ++\n\n   'C10': 1.0,\n   'C11': 0.0,\n   'C12': 1.0}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_allocations",
+      "test_2_capacity_report"
+    ],
+    "failures": {
+      "tests.test_1_allocations.TestAllocations.test_all_allocations": "AssertionError: {'P01[111 chars]5': {}, 'P06': {'C05': 10}, 'P07': {}, 'P08': [20 chars]: {}} != {'P01[111 chars]5': {'C03': 10, 'C09': 5}, 'P06': {'C05': 10},[75 chars]: 4}}\n  {'P01': {'C01': 20, 'C08': 8, 'C12': 2},\n   'P02': {'C04': 14, 'C10': 6},\n   'P03': {'C02': 10, 'C03': 10},\n   'P04': {},\n-  'P05': {},\n+  'P05': {'C03': 10, 'C09': 5},\n   'P06': {'C05': 10},\n   'P07': {},\n-  'P08': {},\n+  'P08': {'C04': 1},\n   'P09': {},\n-  'P10': {}}\n+  'P10': {'C05': 4, 'C09': 5, 'C12': 3}}",
+      "tests.test_1_allocations.TestAllocations.test_unfilled": "AssertionError: {'P04': 10, 'P05': 15, 'P08': 10, 'P09': 8, 'P10': 12} != {'P04': 10, 'P08': 9, 'P09': 8}\n- {'P04': 10, 'P05': 15, 'P08': 10, 'P09': 8, 'P10': 12}\n+ {'P04': 10, 'P08': 9, 'P09': 8}",
+      "tests.test_2_capacity_report.TestCapacityReport.test_idle": "AssertionError: Lists differ: ['C09', 'C11'] != ['C11']\n\nFirst differing element 0:\n'C09'\n'C11'\n\nFirst list contains 1 additional elements.\nFirst extra element 1:\n'C11'\n\n- ['C09', 'C11']\n+ ['C11']",
+      "tests.test_2_capacity_report.TestCapacityReport.test_utilization": "AssertionError: {'C01[22 chars]03': 0.5, 'C04': 0.93, 'C05': 0.4, 'C08': 1.0,[43 chars] 0.4} != {'C01[22 chars]03': 1.0, 'C04': 1.0, 'C05': 0.56, 'C08': 1.0,[43 chars] 1.0}\n  {'C01': 1.0,\n   'C02': 1.0,\n+  'C03': 1.0,\n+  'C04': 1.0,\n-  'C03': 0.5,\n?     ^\n\n+  'C05': 0.56,\n?     ^      +\n\n-  'C04': 0.93,\n-  'C05': 0.4,\n   'C08': 1.0,\n-  'C09': 0.0,\n?         ^\n\n+  'C09': 1.0,\n?         ^\n\n   'C10': 1.0,\n   'C11': 0.0,\n-  'C12': 0.4}\n?          --\n\n+  'C12': 1.0}\n?         ++\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_allocations",
+      "test_2_capacity_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_allocations.TestAllocations.test_all_allocations",
+      "tests.test_1_allocations.TestAllocations.test_unfilled",
+      "tests.test_2_capacity_report.TestCapacityReport.test_idle",
+      "tests.test_2_capacity_report.TestCapacityReport.test_utilization"
+    ]
+  }
+}

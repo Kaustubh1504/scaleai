@@ -1,0 +1,117 @@
+{
+  "id": "set-045",
+  "title": "Price-quote TTL cache with per-model TTLs and tenant discounts",
+  "domain": "cache_ttl",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "multi",
+  "package": "cachekit",
+  "scenario": "Replay a quote-request trace through a TTL cache (per-model TTLs, 0 = never cache) in front of a time-versioned price origin, with per-tenant discounts. Report hits, prices, origin calls, per-tenant spend and the requests that were served stale prices.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_quotes",
+      "test_2_summary"
+    ]
+  },
+  "verified": [
+    {
+      "file": "cachekit/origin.py",
+      "symbol": "price_at",
+      "why_correct": "`start <= at` is right: a price takes effect at its effective_from instant, so a request at exactly 10:03:00 sees the new price. `start >= best[0]` keeps the latest effective row, and on a tie the later file row wins, which never happens in this data."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Cache key ignores region",
+      "type": "cache-key-missing-param",
+      "file": "cachekit/client.py",
+      "function": "QuoteService.cache_key",
+      "old": "        return (model, region)",
+      "new": "        return model",
+      "why": "Prices differ by region, but the key is the model alone, so an EU request is served whatever US entry is cached (and the other way round). Misses also refresh the shared entry at different times, which shifts every later expiry.",
+      "unblocks": "Most of Test 1 and Test 2. It also exposes B2.",
+      "hints": [
+        "R03 (m-small, eu) is a hit at 0.40. Which entry did it come from?",
+        "Which request fields go into the cache key, and which of them change the origin price?",
+        "cache_key should return (model, region)."
+      ],
+      "probes": [
+        "Why is tenant correctly not part of the key here?",
+        "Why did the expiry-boundary problem stay invisible until this was fixed?"
+      ],
+      "symptom": "Test 1: R03, R05, R14 and others become hits served the other region's price (R03 0.40 instead of 0.44, R05 1.98 instead of 1.8). Test 2: origin_calls 12 instead of 16, stale_served ['R03', 'R05', 'R08', 'R14', 'R16', 'R18', 'R23'], and every tenant's hits and spend change."
+    },
+    {
+      "id": "B2",
+      "title": "Entry still served at its exact expiry instant",
+      "type": "time-window-boundary",
+      "file": "cachekit/store.py",
+      "function": "TTLCache.get",
+      "old": "        if now < entry.expires_at:",
+      "new": "        if now <= entry.expires_at:",
+      "masked_by": [
+        "B1"
+      ],
+      "why": "The spec says an entry stored at t with TTL s has expired at t + s. With `<=`, R10 (10:04:00, exactly 120 s after R05 stored m-large/us) is a hit instead of a miss.",
+      "unblocks": "Test 1 hits, Test 2 origin_calls and initech's hit count.",
+      "hints": [
+        "R10 is a hit. When was its entry stored, and what is m-large's TTL?",
+        "Look at the freshness comparison in TTLCache.get.",
+        "Use `now < entry.expires_at`."
+      ],
+      "probes": [
+        "Why didn't R10's price change even though its hit/miss status did?",
+        "With region missing from the key, why did R10 no longer land on a boundary?"
+      ],
+      "symptom": "Only visible after B1 is fixed. Test 1 test_hits: R10 shows up as a hit (its price is unchanged at 1.6). Test 2: origin_calls 15 instead of 16, initech hits 4 instead of 3."
+    },
+    {
+      "id": "B3",
+      "title": "TTL of 0 replaced by the default",
+      "type": "falsy-zero",
+      "file": "cachekit/client.py",
+      "function": "QuoteService.ttl_for",
+      "old": "        return self.ttls.get(model, self.default_ttl)",
+      "new": "        return self.ttls.get(model) or self.default_ttl",
+      "why": "`x or default` treats a real TTL of 0 as missing, so m-embed (which must never be cached) gets the 60 s default. R13, five seconds after R12, becomes a cache hit.",
+      "unblocks": "Test 1 hits, Test 2 origin_calls and acme's hit count.",
+      "hints": [
+        "R13 is a hit, but m-embed is configured never to be cached.",
+        "Follow how quote() decides the TTL for m-embed.",
+        "Use self.ttls.get(model, self.default_ttl) so that 0 is kept."
+      ],
+      "probes": [
+        "Why didn't any price change?",
+        "Which other falsy values could a config like this contain, and how would you treat them?"
+      ],
+      "symptom": "Test 1 test_hits: R13 (m-embed) is a hit. Test 2: origin_calls 15 instead of 16, acme hits 4 instead of 3. No price changes."
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report do for each request?",
+      "a": "It normalises the row in `load_requests` (blank region \u2192 `default_region`), calls `service.quote(tenant, model, region, at)`, records hit and price, updates the tenant totals, and adds the request id to `stale_served` when the returned `base` differs from `origin.price_at(...)` at that time."
+    },
+    {
+      "q": "What does QuoteService.quote return?",
+      "a": "A dict with `hit` (whether the cache returned a value), `base` (the undiscounted price in the value) and `price` (base \u00d7 (1 \u2212 tenant discount), rounded to 4 decimals). On a miss it fetches from the origin and caches the value when the model's TTL is above 0."
+    },
+    {
+      "q": "How is a model's TTL chosen?",
+      "a": "`ttl_for` reads the model's entry from config `ttl_seconds`, with `default_ttl_seconds` (60) as the fallback. The config gives m-small 300, m-large 120 and m-embed 0. `quote()` only calls `cache.put` when the TTL it gets is above 0."
+    },
+    {
+      "q": "When does TTLCache.get treat an entry as expired?",
+      "a": "It compares `now` with the entry's `expires_at` (stored time + TTL). If the entry fails the freshness comparison it is deleted and None is returned; otherwise a `dict(...)` copy of the stored value is returned."
+    },
+    {
+      "q": "What does PriceOrigin.fetch count and return?",
+      "a": "Each call adds 1 to `origin.calls` and returns a new dict `{model, region, price}`, with the price from `price_at` for that instant. `origin_calls` in the report is this counter."
+    },
+    {
+      "q": "What does the price data look like?",
+      "a": "prices.csv has one row per (model, region, effective_from). m-small/us changes from 0.50 to 0.60 at 10:03:00 and m-large/eu from 2.20 to 2.40 at 10:06:00. Model and region values are trimmed and lower-cased on load."
+    }
+  ]
+}

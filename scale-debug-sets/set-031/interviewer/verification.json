@@ -1,0 +1,43 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_scoring",
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_1_scoring.TestScoring.test_accuracy": "AssertionError: {'atlas-7b': 0.552, 'boreal-13b': 0.586} != {'atlas-7b': 0.621, 'boreal-13b': 0.655}\n- {'atlas-7b': 0.552, 'boreal-13b': 0.586}\n?                ^^                    ^^\n\n+ {'atlas-7b': 0.621, 'boreal-13b': 0.655}\n?                ^ +                  + ^\n",
+      "tests.test_1_scoring.TestScoring.test_correct_items": "AssertionError: Lists differ: ['Q01', 'Q02', 'Q03', 'Q07', 'Q09', 'Q11', 'Q12'] != ['Q01', 'Q02', 'Q03', 'Q07', 'Q08', 'Q09', 'Q11', 'Q12']\n\nFirst differing element 4:\n'Q09'\n'Q08'\n\nSecond list contains 1 additional elements.\nFirst extra element 7:\n'Q12'\n\n- ['Q01', 'Q02', 'Q03', 'Q07', 'Q09', 'Q11', 'Q12']\n+ ['Q01', 'Q02', 'Q03', 'Q07', 'Q08', 'Q09', 'Q11', 'Q12']\n?                              +++++++\n",
+      "tests.test_1_scoring.TestScoring.test_unparsed_and_failed": "AssertionError: {'atlas-7b': (['Q04', 'Q05', 'Q06', 'Q08'], []), 'boreal-13[34 chars] [])} != {'atlas-7b': (['Q06'], ['Q05']), 'boreal-13b': (['Q08'], ['Q03', 'Q09'])}\n+ {'atlas-7b': (['Q06'], ['Q05']), 'boreal-13b': (['Q08'], ['Q03', 'Q09'])}\n- {'atlas-7b': (['Q04', 'Q05', 'Q06', 'Q08'], []),\n-  'boreal-13b': (['Q03', 'Q08', 'Q09', 'Q11'], [])}",
+      "tests.test_2_report.TestReport.test_by_category": "AssertionError: {'atl[15 chars]': 0.5, 'math': 0.667, 'reading': 0.444}, 'bor[54 chars]556}} != {'atl[15 chars]': 0.75, 'math': 0.667, 'reading': 0.444}, 'bo[54 chars]556}}\n- {'atlas-7b': {'logic': 0.5, 'math': 0.667, 'reading': 0.444},\n+ {'atlas-7b': {'logic': 0.75, 'math': 0.667, 'reading': 0.444},\n?                          +\n\n-  'boreal-13b': {'logic': 0.25, 'math': 0.833, 'reading': 0.556}}\n?                            -\n\n+  'boreal-13b': {'logic': 0.5, 'math': 0.833, 'reading': 0.556}}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_status_counts": "AssertionError: {'atl[23 chars]or': 0, 'timeout': 6}, 'boreal-13b': {'ok': 11[23 chars]: 6}} != {'atl[23 chars]or': 4, 'timeout': 2}, 'boreal-13b': {'ok': 11[23 chars]: 2}}\n- {'atlas-7b': {'error': 0, 'ok': 11, 'timeout': 6},\n?                        ^                       ^\n\n+ {'atlas-7b': {'error': 4, 'ok': 11, 'timeout': 2},\n?                        ^                       ^\n\n-  'boreal-13b': {'error': 0, 'ok': 11, 'timeout': 6}}\n?                          ^                       ^\n\n+  'boreal-13b': {'error': 4, 'ok': 11, 'timeout': 2}}\n?                          ^                       ^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_scoring"
+    ],
+    "failures": {
+      "tests.test_1_scoring.TestScoring.test_accuracy": "AssertionError: {'atlas-7b': 0.692, 'boreal-13b': 0.76} != {'atlas-7b': 0.621, 'boreal-13b': 0.655}\n- {'atlas-7b': 0.692, 'boreal-13b': 0.76}\n?                 -                   -\n\n+ {'atlas-7b': 0.621, 'boreal-13b': 0.655}\n?                  +                   ++\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_scoring",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_scoring.TestScoring.test_accuracy",
+      "tests.test_1_scoring.TestScoring.test_correct_items",
+      "tests.test_1_scoring.TestScoring.test_unparsed_and_failed",
+      "tests.test_2_report.TestReport.test_by_category",
+      "tests.test_2_report.TestReport.test_status_counts"
+    ]
+  }
+}

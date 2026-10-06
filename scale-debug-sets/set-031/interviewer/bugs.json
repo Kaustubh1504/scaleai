@@ -1,0 +1,117 @@
+{
+  "id": "set-031",
+  "title": "Multiple-choice eval scoring with retried attempts",
+  "domain": "llm_eval_scoring",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "multi",
+  "package": "evalscore",
+  "scenario": "Two models answered a weighted multiple-choice bank with harness retries. Pick the highest-numbered ok attempt per (model, item), parse the last Answer marker, and score weighted accuracy with failed items kept in the denominator.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_scoring",
+      "test_2_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "evalscore/parsing.py",
+      "symbol": "parse_choice",
+      "why_correct": "Taking matches[-1] looks like it should be the first match, but README rule 3 says the last Answer marker wins because models revise themselves. The negative lookahead stops words like 'Definitely' from being read as a D, and the bare-letter fallback uses fullmatch so it only fires on outputs that are a lone letter."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Status enum compared to plain strings",
+      "type": "enum-vs-string",
+      "file": "evalscore/scoring.py",
+      "function": "select_final",
+      "old": "        if att.status in (Status.ERROR, Status.TIMEOUT):",
+      "new": "        if att.status in (\"error\", \"timeout\"):",
+      "symptom": "Test 1: test_correct_items loses atlas Q08 and boreal Q11; test_unparsed_and_failed shows atlas unparsed [Q04, Q05, Q06, Q08] and both failed lists empty; accuracy 0.552 / 0.586. Test 2: test_by_category shows atlas logic 0.5 (boreal logic 0.25).",
+      "why": "Attempt.status holds a Status enum member, and a plain Enum never equals its value string, so the filter never skips anything. The highest-numbered attempt is graded even when it errored or timed out.",
+      "unblocks": "test_correct_items, test_unparsed_and_failed and test_by_category; exposes B3 in test_accuracy.",
+      "hints": [
+        "Atlas Q08 has an ok 'Answer: C' attempt, yet it shows up as unparsed. Which attempt was graded?",
+        "Look at how select_final decides an attempt is not a candidate.",
+        "`att.status in (\"error\", \"timeout\")` compares an Enum to strings. Use (Status.ERROR, Status.TIMEOUT)."
+      ],
+      "probes": [
+        "Why would this comparison have worked if Status were declared as `class Status(str, Enum)`?",
+        "Why did the failed lists become empty instead of just changing?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Timeout check always true",
+      "type": "or-precedence",
+      "file": "evalscore/loader.py",
+      "function": "parse_status",
+      "old": "    if text == \"timeout\" or text == \"timed_out\":",
+      "new": "    if text == \"timeout\" or \"timed_out\":",
+      "symptom": "Test 2 only: test_status_counts shows error 0 and timeout 6 for both models (should be error 4, timeout 2).",
+      "why": "`text == \"timeout\" or \"timed_out\"` parses as `(text == \"timeout\") or \"timed_out\"`, and a non-empty string is truthy, so every non-ok status becomes TIMEOUT. Grading is unaffected because both error and timeout are skipped, so only the counts show it.",
+      "unblocks": "test_status_counts.",
+      "hints": [
+        "Every error row is being counted as a timeout. Where are status strings turned into Status values?",
+        "Read the timeout branch of parse_status slowly.",
+        "Write `text == \"timeout\" or text == \"timed_out\"` (or `text in (...)`)."
+      ],
+      "probes": [
+        "Why didn't any model's accuracy change while this was present?",
+        "What would `if text == (\"timeout\" or \"timed_out\")` have done instead?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Failed items dropped from the denominator",
+      "type": "counting-wrong-subset",
+      "file": "evalscore/scoring.py",
+      "function": "score_model",
+      "old": "        score.possible += item.weight\n        final = select_final(by_item.get(item.item_id, []))\n        if final is None:\n            score.failed.append(item.item_id)\n            continue\n",
+      "new": "        final = select_final(by_item.get(item.item_id, []))\n        if final is None:\n            score.failed.append(item.item_id)\n            continue\n        score.possible += item.weight\n",
+      "masked_by": [
+        "B1"
+      ],
+      "symptom": "Only visible after B1 is fixed. Test 1 test_accuracy: atlas 0.692 and boreal 0.76 instead of 0.621 / 0.655. Correct lists and by_category are fine.",
+      "why": "The weight is only added to `possible` after the failed check's `continue`, so items with no ok attempt vanish from the denominator. README rule 7 keeps them in.",
+      "unblocks": "test_accuracy.",
+      "hints": [
+        "Correct lists now match, but both accuracies are too high. What do you get dividing earned weight by the whole bank?",
+        "Look at where `possible` is accumulated in score_model, relative to the failed branch.",
+        "Move `score.possible += item.weight` above the `if final is None:` check."
+      ],
+      "probes": [
+        "Why was this invisible until the status comparison in select_final was fixed?",
+        "by_category was right the whole time. Why?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() do, step by step?",
+      "a": "It loads items (sorted by id) and attempts, groups attempts by model then item with `group_attempts`, calls `score_model` per model, and builds `by_category` with `category_accuracy` from the correct ids. Status counts are computed from the raw attempt list per model, and the leaderboard sorts models by (-accuracy, name)."
+    },
+    {
+      "q": "What type is Attempt.status after loading?",
+      "a": "`load_attempts` calls `parse_status`, which returns a member of the `Status` enum in models.py (`Status.OK`, `Status.ERROR` or `Status.TIMEOUT`). `Status` is a plain `Enum` with string values."
+    },
+    {
+      "q": "How does select_final pick between several attempts?",
+      "a": "It loops over the attempts for one (model, item), skips any whose status is in the tuple it checks, and keeps the one with the largest `attempt` number among the rest. It returns None if nothing survives the filter."
+    },
+    {
+      "q": "What does parse_choice return for 'Answer: B ... Answer: C'?",
+      "a": "It collects every marker match with `findall` and returns the last one upper-cased, so 'C'. Without any marker it tries a full match of a lone letter, optionally in parentheses and followed by a period, and otherwise returns None."
+    },
+    {
+      "q": "Where is the accuracy denominator computed?",
+      "a": "In `score_model`, `score.possible` is incremented with each item's weight inside the item loop; `build_report` divides `score.earned` by it. `by_category` is computed separately in `category_accuracy`, which sums weights over all items of each category."
+    },
+    {
+      "q": "What counts as an error status?",
+      "a": "`parse_status` trims and lower-cases the cell. `ok`/`success` map to OK, the timeout branch maps to TIMEOUT, and everything that falls through (including blank and numeric codes) maps to ERROR."
+    }
+  ]
+}

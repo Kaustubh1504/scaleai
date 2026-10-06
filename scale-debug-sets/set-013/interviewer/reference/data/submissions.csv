@@ -1,0 +1,30 @@
+submission_id,annotator_id,task_id,started_at,submitted_at,answer
+s01,ann-01,t1,2026-05-04 09:00:00,2026-05-04 09:01:30,The image shows two cats on a red sofa.
+s02,ann-01,T2,05/04/2026 09:05:00,05/04/2026 09:06:10,A cyclist waiting at a crosswalk.
+s03,ann-01,T3,2026-05-04T09:10:00,2026-05-04T09:11:05,Three people sharing a pizza at a table.
+s04,ann-02,T1,2026-05-04 09:00:00,2026-05-04 09:00:12,cats on sofa
+s05,ann-02,t2,2026-05-04 09:01:00,2026-05-04 09:01:09,bike
+s06,ann-02,T3,05/04/2026 09:02:00,05/04/2026 09:03:20,People eating pizza together indoors.
+s07,ann-02,T4,2026-05-04 09:04:00,2026-05-04 09:04:15,dog
+s08,ann-03,T3,2026-05-04 10:00:00,2026-05-04 10:02:00,Friends share a large pepperoni pizza at a wooden table.
+s09,ann-03,T5,2026-05-04T10:03:00,2026-05-04T10:04:30,A lighthouse on a rocky coast at sunset.
+s10,ann-04,T1,2026-05-04 11:00:00,2026-05-04 11:01:00,Two cats resting on a red couch.
+s11,ANN-04,T2,2026-05-04 11:02:00,2026-05-04 11:02:10,cyclist
+s12,ann-04,T3,05/04/2026 11:05:00,05/04/2026 11:05:14,pizza
+s13, Ann-04,T4,2026-05-04 11:07,2026-05-04 11:07:40,A dog jumping for a frisbee.
+s14,ann-04,t5,2026-05-04 11:10:00,2026-05-04 11:11:20,Lighthouse beside the sea in the evening.
+s15,ann-05,T3,2026-05-04 12:00:00,2026-05-04 12:01:40,Friends share a large pepperoni  pizza at a wooden table
+s16,ann-05,T6,2026-05-04T12:05:00,2026-05-04T12:06:00,A snowy mountain trail with hikers.
+s17,ann-06,T4,2026-05-04 13:00:00,2026-05-04 13:01:00,A brown dog catching a frisbee in the park.
+s18,ann-06,T4,2026-05-04 13:05:00,2026-05-04 13:05:50,A brown dog catching a frisbee in the park.
+s19,ann-06,T6,05/04/2026 13:10:00,05/04/2026 13:11:15,Hikers on a snowy mountain path.
+s20,ann-07,T5,2026-05-04 14:00:00,2026-05-04 14:00:20,Lighthouse at dusk on the rocks.
+s21,ann-07,T6,2026-05-04 14:02:00,2026-05-04 14:03:30,Mountain hikers in deep snow.
+s22,ann-11,T1,2026-05-04 14:05:00,2026-05-04 14:05:04,cats
+s23,ann-08,T2,2026-05-04 15:00:00,2026-05-04 15:01:30,A cyclist stopped at a pedestrian crossing.
+s24,ann-08,T5,2026-05-04T15:02:00,2026-05-04T15:03:10,A lighthouse on a rocky coast at sunset!
+s25,ann-09,T1,2026-05-04 16:00:00,2026-05-04 16:00:50,Two cats lying on a red sofa.
+s26,ann-09,T4,05/04/2026 16:01:00,05/04/2026 16:01:18,dog with frisbee
+s27,ann-10,T2,2026-05-04 17:00:00,2026-05-04 17:00:45,Cyclist at a crosswalk on a cloudy day.
+s28,ann-10,T6,2026-05-04 17:02:00,2026-05-04 17:03:06,A trail through snowy mountains with hikers.
+s29,ann-08,t6,2026-05-04 15:05:00,2026-05-04 15:05:35,a snowy mountain trail with hikers

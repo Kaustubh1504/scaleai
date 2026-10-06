@@ -1,0 +1,181 @@
+{
+  "id": "set-018",
+  "title": "Teleop episode QA: frames, sync and validity",
+  "domain": "robotics_episodes",
+  "length": "FULL",
+  "difficulty": "easy",
+  "format": "one_to_one",
+  "package": "teleop",
+  "scenario": "Measure each teleoperation episode (distinct camera frames, duration, frame gaps, camera-to-joint sync), apply validity rules per robot, and summarise valid episodes per task. Test 3 reports usable minutes.",
+  "verified": [
+    {
+      "file": "teleop/metrics.py",
+      "symbol": "nearest_gap",
+      "why_correct": "The slice `sorted_ts[max(i - 1, 0):i + 1]` looks like it could miss a neighbour or go out of range, but bisect_left puts t between index i-1 and i, so those are the only two candidates, the slice clamps at both ends, and an empty list returns None."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Repeated camera timestamps counted as frames",
+      "type": "missing-dedupe",
+      "file": "teleop/metrics.py",
+      "function": "frame_times",
+      "test": "test_1_metrics.TestMetrics.test_1_frame_counts",
+      "old": "    return sorted(set(raw))",
+      "new": "    return sorted(raw)",
+      "symptom": "test_1_frame_counts fails: EP01 shows 32 frames instead of 30 and EP07 32 instead of 31. Gaps, durations and sync rates are unchanged.",
+      "why": "The camera log repeats some timestamps, and the spec counts one frame per distinct timestamp. Sorting without set() keeps the repeats. They add 0 ms gaps and are always matched, so only the frame count changes.",
+      "unblocks": "test_1_frame_counts.",
+      "hints": [
+        "Only EP01 and EP07 have too many frames. Look at their camera_ms lists in frames.json.",
+        "Look at how the raw camera timestamps become frames.",
+        "frame_times should be sorted(set(raw))."
+      ],
+      "probes": [
+        "Why didn't the extra frames change max_gap_ms or duration_s?",
+        "Under what data would the repeats have changed sync_rate as well?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Duration floored to whole seconds",
+      "type": "integer-division",
+      "file": "teleop/metrics.py",
+      "function": "compute_metrics",
+      "test": "test_1_metrics.TestMetrics.test_2_durations",
+      "old": "        duration_s=round(span_ms / 1000, 2),",
+      "new": "        duration_s=round(span_ms // 1000, 2),",
+      "symptom": "test_2_durations fails: every duration is a whole number (EP01 2 instead of 2.9, EP03 2 instead of 2.44, EP08 3 instead of 3.06, EP09 3 instead of 3.9 ...). Validity is unchanged.",
+      "why": "`//` floors the millisecond span to whole seconds before round() runs, so 2.9 s becomes 2. It never changes the too_short check, because floor(x) >= 2 exactly when x >= 2.",
+      "unblocks": "test_2_durations.",
+      "hints": [
+        "Every duration is a whole number. Is that plausible?",
+        "Look at how span_ms is turned into seconds.",
+        "Use / 1000, not // 1000."
+      ],
+      "probes": [
+        "Why didn't the validity tests notice whole-second durations?",
+        "If min_duration_s were 2.5, what would this have done to EP01?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Sync tolerance made exclusive",
+      "type": "time-window-boundary",
+      "file": "teleop/metrics.py",
+      "function": "sync_rate",
+      "test": "test_1_metrics.TestMetrics.test_3_sync_rates",
+      "old": "        if gap is not None and gap <= tolerance_ms:",
+      "new": "        if gap is not None and gap < tolerance_ms:",
+      "symptom": "test_3_sync_rates fails: EP02 drops to 0.951 and EP10 to 0.941 instead of 1.0. Neither falls below 0.9, so validity is unchanged.",
+      "why": "The spec says a joint sample exactly sync_tolerance_ms away still counts. With `<`, frames exactly 10 ms from their nearest joint sample stop matching.",
+      "unblocks": "test_3_sync_rates.",
+      "hints": [
+        "EP02 and EP10 lose a few matches. How far are their unmatched frames from the nearest joint sample?",
+        "Check the tolerance comparison in sync_rate against metrics rule 5.",
+        "Use gap <= tolerance_ms."
+      ],
+      "probes": [
+        "Why didn't EP02 or EP10 become unsynced?",
+        "How would you test the boundary so this fails loudly?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "\"no\"/\"false\" robots treated as active",
+      "type": "bool-from-string",
+      "file": "teleop/loader.py",
+      "function": "parse_bool",
+      "test": "test_2_validity.TestValidity.test_4_inactive_robots",
+      "old": "    return text.lower() in TRUTHY",
+      "new": "    return bool(text)",
+      "symptom": "test_4_inactive_robots fails: no episode is flagged robot_inactive ([] instead of ['EP05', 'EP09']). The valid set is unchanged because both episodes break other rules.",
+      "why": "bool() of a non-empty string is always True, so RB-04 (`no`) and RB-07 (`false`) load as active and their episodes lose the robot_inactive reason. Both episodes are invalid for other reasons too, so the valid set doesn't change.",
+      "unblocks": "test_4_inactive_robots.",
+      "hints": [
+        "No episode is flagged robot_inactive. Which robots are inactive in robots.csv?",
+        "Look at how the `active` column is parsed.",
+        "parse_bool should return text.lower() in TRUTHY."
+      ],
+      "probes": [
+        "Why does a blank `active` cell still come out active with the original code?",
+        "Why did test_valid_episodes keep passing?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Gap equal to the limit flagged",
+      "type": "off-by-one",
+      "file": "teleop/validity.py",
+      "function": "check_episode",
+      "test": "test_2_validity.TestValidity.test_5_frame_gaps",
+      "old": "    if robot is not None and metrics.max_gap_ms > robot.max_gap_ms:",
+      "new": "    if robot is not None and metrics.max_gap_ms >= robot.max_gap_ms:",
+      "symptom": "test_5_frame_gaps fails: frame_gap is ['EP06', 'EP08'] instead of ['EP08']. EP06 is already unsynced, so the valid set is unchanged.",
+      "why": "The spec flags a gap only when it is greater than the robot's limit. `>=` also flags EP06, whose largest gap is exactly 150 ms on a robot whose limit is 150 ms.",
+      "unblocks": "test_5_frame_gaps.",
+      "hints": [
+        "EP06 is flagged frame_gap. Compare its max_gap_ms with its robot's limit.",
+        "Look at the frame_gap rule in validity.py.",
+        "Use > robot.max_gap_ms."
+      ],
+      "probes": [
+        "Why didn't EP03 (140 ms gap) get flagged?",
+        "Why is EP06 invalid either way?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Valid time divided as if it were seconds",
+      "type": "ms-vs-s",
+      "file": "teleop/reports.py",
+      "function": "summarize",
+      "test": "test_3_summary.TestSummary.test_6_valid_minutes",
+      "old": "    return {\"by_task\": tasks, \"valid_minutes\": round(valid_ms / 60_000, 2)}",
+      "new": "    return {\"by_task\": tasks, \"valid_minutes\": round(valid_ms / 60, 2)}",
+      "symptom": "test_6_valid_minutes fails: valid_minutes is 366.83 instead of 0.37.",
+      "why": "The spans are in milliseconds. Dividing by 60 treats them as seconds, so the total is 1000 times too large.",
+      "unblocks": "test_6_valid_minutes.",
+      "hints": [
+        "Seven episodes of 2–5 seconds can't add up to 366 minutes.",
+        "Check the units of span_ms in the valid_minutes calculation.",
+        "Divide by 60_000."
+      ],
+      "probes": [
+        "Why does the spec say to use the raw spans and not the rounded duration_s values?",
+        "How would you name variables so that a unit slip like this is harder to make?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What is the flow inside build_report()?",
+      "a": "It loads the thresholds, the robots and the episodes (metadata from episodes.csv, timestamps from frames.json). For each episode it calls `metrics.compute_metrics`, then `validity.check_episode` with that episode's robot, and collects rows of episode, metrics and reasons. The episodes table is built from those rows and `summarize(rows)` builds the summary."
+    },
+    {
+      "q": "How does load_episodes match frames.json entries to CSV rows?",
+      "a": "It builds a dict keyed by the upper-cased, trimmed `episode_id` from frames.json, then looks each normalised CSV episode id up in it. An id missing from frames.json gets empty timestamp lists, and frames.json entries without a CSV row are never read."
+    },
+    {
+      "q": "What does nearest_gap return?",
+      "a": "The absolute distance in ms from `t` to the closest value in the sorted list, using bisect to look only at the neighbours on either side, or None if the list is empty."
+    },
+    {
+      "q": "What fields does EpisodeMetrics carry, and in what units?",
+      "a": "`frames` (count), `span_ms` (last minus first frame, ms), `duration_s` (seconds, from span_ms), `max_gap_ms` (ms) and `sync_rate` (a fraction from 0 to 1)."
+    },
+    {
+      "q": "What decides whether an episode counts as valid in the summary?",
+      "a": "A row is valid when its `reasons` list is empty. `summarize` groups rows by task and computes valid counts and success rates from those rows, and `valid_minutes` sums `span_ms` over valid rows."
+    },
+    {
+      "q": "Where does a robot's max_gap_ms come from?",
+      "a": "From robots.csv, parsed to int in `load_robots`. `check_episode` compares the episode's `max_gap_ms` against it whenever the robot is known."
+    },
+    {
+      "q": "How is success parsed for an episode?",
+      "a": "In `load_episodes`: the cell is trimmed, lower-cased and checked for membership in `TRUTHY` (`true`, `yes`, `y`, `1`)."
+    }
+  ]
+}

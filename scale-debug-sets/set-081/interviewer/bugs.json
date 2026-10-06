@@ -1,0 +1,126 @@
+{
+  "id": "set-081",
+  "title": "Entity span audit: trim, snap, score",
+  "domain": "ner_spans",
+  "length": "MINI",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "spanalign",
+  "scenario": "Clean sloppy character-range NER selections (trim whitespace, resolve label aliases, snap to token boundaries, dedupe), export spans for non-gold documents and score each annotator against adjudicated gold spans with exact-match P/R/F1 plus a label-confusion table.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_spans",
+      "test_2_scores"
+    ]
+  },
+  "verified": [
+    {
+      "file": "spanalign/tokens.py",
+      "symbol": "tokenize",
+      "why_correct": "finditer's m.end() is already end-exclusive, matching the span convention, and the pattern keeps inner apostrophes (O'Brien) and splits punctuation into single tokens exactly as the README describes."
+    },
+    {
+      "file": "spanalign/spans.py",
+      "symbol": "trim_whitespace",
+      "why_correct": "The arithmetic looks backwards, but lstrip measures the leading whitespace (added to start) and rstrip the trailing whitespace (subtracted from end). An all-whitespace selection makes start >= end and is rejected as empty."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Snap covers the token that starts at the span end",
+      "type": "span-offset-off-by-one",
+      "file": "spanalign/tokens.py",
+      "function": "snap",
+      "test": "test_1_spans.TestSpanNormalization.test_exported_spans",
+      "old": "    covered = [t for t in tokens if t.start < end and t.end > start]",
+      "new": "    covered = [t for t in tokens if t.start <= end and t.end > start]",
+      "symptom": "Test 1 test_exported_spans: four spans grow by one character to swallow the following punctuation: 'Redwood Media,' (25, 39), 'Dublin.' (52, 59), 'Global Freight Inc.' (0, 19) and 'Milan.' (53, 59). Spans followed by a space are unchanged.",
+      "why": "With end-exclusive offsets, a token that starts exactly at `end` shares no character with the span. `<=` pulls in a punctuation mark that directly follows the entity (\"Redwood Media,\", \"Dublin.\"), widening the span by one. Words followed by a space are unaffected, which is why only some spans move.",
+      "unblocks": "test_1 test_exported_spans.",
+      "hints": [
+        "Which exported spans changed, and what character follows each of them in the text?",
+        "Look at how snap decides whether a token is covered by the selection.",
+        "In snap, `t.start <= end` should be `t.start < end` (end is exclusive)."
+      ],
+      "probes": [
+        "Why did \"Liam O'Brien\" and \"Hannah Becker\" keep their offsets while \"Milan\" moved?",
+        "Why don't the gold-document scores change with this slip, even though snapping runs on every span?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Non-gold spans scored as false positives",
+      "type": "counting-wrong-subset",
+      "file": "spanalign/scoring.py",
+      "function": "score_annotators",
+      "test": "test_2_scores.TestAgreementReport.test_annotator_scores",
+      "old": "    for span in scored:\n        predicted[span.annotator].add(_key(span))",
+      "new": "    for span in spans:\n        predicted[span.annotator].add(_key(span))",
+      "symptom": "Test 2 test_annotator_scores: ann-a shows fp 4 / precision 0.636 / f1 0.7 (expected fp 1, 0.875, 0.824), ann-b fp 7 / precision 0.364 / f1 0.32, and an extra ann-d row with tp 0, fp 3 and all metrics 0.0. tp, fn and recall are unchanged.",
+      "why": "`scored` is the gold-document subset, but the loop walks every accepted span. Spans on documents with no gold become false positives, and ann-d, who only annotated non-gold documents, gets a row with tp 0.",
+      "unblocks": "test_2 test_annotator_scores.",
+      "hints": [
+        "Where does ann-d's row come from? Which documents did ann-d annotate?",
+        "Compare the list score_annotators builds with the list it actually iterates over.",
+        "Loop over `scored`, not `spans`, when filling predicted/docs_seen."
+      ],
+      "probes": [
+        "Why did tp and fn stay the same for ann-a while fp grew?",
+        "Why is the confusion table unaffected even though it also reads every span?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Confusion ties left in insertion order",
+      "type": "wrong-tie-break",
+      "file": "spanalign/reports.py",
+      "function": "rank_confusions",
+      "test": "test_2_scores.TestAgreementReport.test_label_confusions",
+      "old": "    ranked = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))",
+      "new": "    ranked = counts.most_common()",
+      "symptom": "Test 2 test_label_confusions: [['ORG', 'LOC', 2], ['LOC', 'ORG', 2], ['PERSON', 'ORG', 1]]; the two count-2 rows are swapped.",
+      "why": "most_common() orders by count only and keeps first-seen order among equal counts. ann-a's ORG→LOC confusion comes first in the file, so it is listed before LOC→ORG instead of after it alphabetically.",
+      "unblocks": "test_2 test_label_confusions.",
+      "hints": [
+        "The counts are right; only the order of two rows differs. What do those rows have in common?",
+        "Look at how rank_confusions orders the Counter.",
+        "Replace most_common() with sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))."
+      ],
+      "probes": [
+        "What order does Counter.most_common use for equal counts, and why is that fragile?",
+        "If ann-b's rows came first in the CSV, would the test have passed with the old code?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report do, step by step?",
+      "a": "It loads documents, label aliases and gold spans, reads the annotation rows, then calls `spans.normalize_all` to clean them into `Span` objects plus a Counter of rejection reasons. It then builds the export (non-gold docs), accepted counts, `scoring.score_annotators`, the ranked confusions and the gold label counts."
+    },
+    {
+      "q": "How is a single annotation row turned into a Span?",
+      "a": "`Normalizer.normalize` looks up the document, resolves the label via `resolve_label`, parses both offsets, checks `0 <= start < end <= len(text)`, calls `trim_whitespace`, then `tokens.snap` with the cached tokens for that document. Any `SpanError` raised along the way carries the rejection reason."
+    },
+    {
+      "q": "What does tokenize return for \"Dr. Kenji\"?",
+      "a": "Three `Token` objects: `Dr` (0, 2), `.` (2, 3) and `Kenji` (4, 9). The end offsets come straight from `re.finditer`."
+    },
+    {
+      "q": "How are duplicates detected?",
+      "a": "`normalize_all` keeps a set of accepted `Span` dataclass instances (frozen, so hashable). A cleaned span equal to one already in the set increments `rejected[\"duplicate\"]` and is not added."
+    },
+    {
+      "q": "What is in the gold list and how is it keyed?",
+      "a": "`read_gold` returns tuples `(doc_id, start, end, LABEL)`. `score_annotators` uses them as a set, and `confusion_counts` builds a dict keyed by `(doc_id, start, end)` mapping to the gold label."
+    },
+    {
+      "q": "Which annotators appear in the scores table?",
+      "a": "One row for each annotator key in `predicted`, sorted by id. `predicted` is filled inside `score_annotators` from the spans its loop iterates over."
+    },
+    {
+      "q": "How is the export ordered?",
+      "a": "`export_spans` sorts all spans by `(doc_id, start, end, annotator)`, skips gold documents, and groups the rest per doc id with the text slice `docs[doc_id][start:end]`."
+    }
+  ]
+}

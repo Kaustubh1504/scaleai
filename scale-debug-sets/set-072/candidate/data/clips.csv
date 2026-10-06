@@ -1,0 +1,39 @@
+clip_id,speaker_id,duration_ms,transcript,consent,recorded_on
+C001,S01,8200,Turn left at the next light.,yes,2026-04-28
+C002,s01,30000,Please set a timer for ten minutes.,no,29/04/2026
+C003,S04,12000,What's the weather in Boston?,yes,30 Apr 2026
+C004,S04,30000,Read me the headlines.,Y,2026-05-01
+C005,S07,9400,Call the front desk.,yes,2026-04-27
+C006,S07,15100,call the front desk,yes,26/04/2026
+C007,S10,12500,Add milk to the shopping list.,yes,2026-04-29
+C008,S10,8300,How far is the airport?,true,02/05/2026
+C009,S10,20000,Play something relaxing.,yes,3 May 2026
+C010,S13,5600,Turn left at the next light.,yes,2026-05-02
+C011,S13,750,Okay.,yes,2026-05-02
+C012,S16,14200,Remind me to water the plants.,false,2026-05-03
+C013,S16,11800,Set an alarm for six.,yes,04/05/2026
+C014,S19,16700,Where is the nearest pharmacy?,yes,2026-04-30
+C015,S02,10400,Book a table for two.,yes,2026-04-26
+C016,S02,10400,"Book a table, for two!",yes,2026-04-25
+C017,S05,6300,Send a message to Sam.,0,2026-04-28
+C018,S05,9900,Lock the front door.,yes,01/05/2026
+C019,S08,13300,Open the garage.,yes,2026-04-29
+C020,S09,7700,Is it going to rain tomorrow?,yes,2026-05-01
+C021,S11,18800,Translate hello into French.,yes,30/04/2026
+C022,S14,44000,Tell me a long story about dragons.,yes,2026-05-02
+C023,S14,11100,Dim the lights.,yes,2026-05-03
+C024,S20,15250,Find a recipe for pancakes.,yes,2026-04-27
+C025,S20,9900,What time does the gym open?,Yes,4 May 2026
+C026,S03,1000,Hi.,yes,2026-04-30
+C027,S03,7200,Skip this song.,,2026-05-01
+C028,S06,10900,Start a workout.,yes,2026-04-28
+C029,S12,29500,Order more printer paper.,yes,2026-04-29
+C030,S12,4100,Who won the match?,yes,05/05/2026
+C031,S17,12600,Turn up the volume.,yes,2026-05-01
+C032,S15,8800,Navigate to the beach.,yes,2026-04-30
+C033,S18,5000,...,yes,2026-05-01
+C034,S18,9300,How do I get to the station?,yes,2026-05-02
+C035,S21,6600,Pause the podcast.,yes,2026-05-03
+C036,S21, 6600 ,  pause the podcast ,yes,2026-04-29
+C037,S99,9000,Check my calendar.,yes,2026-05-01
+C038,s15,7400,  ,yes,2026-05-04

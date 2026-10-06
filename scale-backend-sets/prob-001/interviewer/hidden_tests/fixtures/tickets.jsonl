@@ -1,0 +1,8 @@
+{"ticket_id": "J-1", "customer_email": "a@example.com", "subject": "Refund", "body": "Please refund my invoice.", "created_at": "2024-06-01T10:00:00Z"}
+{"ticket_id": "J-2", "customer_email": "b@example.com", "subject": "Crash", "body": "It crashes on start.", "created_at": "2024-06-01T11:00:00Z", "extra": 1}
+not json at all
+["an", "array"]
+{"ticket_id": "J-3", "customer_email": "c@example.com", "subject": "Hi", "created_at": "2024-06-01T12:00:00Z"}
+
+{"ticket_id": "J-4", "customer_email": "d@example.com", "subject": "Number body", "body": 42, "created_at": "2024-06-01T12:00:00Z"}
+{"ticket_id": "J-1", "customer_email": "e@example.com", "subject": "Again", "body": "Same id as the first line.", "created_at": "2024-06-01T13:00:00Z"}

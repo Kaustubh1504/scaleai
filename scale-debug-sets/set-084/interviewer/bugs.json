@@ -1,0 +1,193 @@
+{
+  "id": "set-084",
+  "title": "Async batch embedding client: jobs, polling, paged results",
+  "domain": "endpoint_client",
+  "length": "FULL",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "embedjobs",
+  "scenario": "An asyncio client submits document batches as embedding jobs (bounded concurrency), retries 429/5xx creates with Retry-After or exponential backoff, polls jobs to completion, pages through results by token, and reports norms plus every failed batch.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_requests",
+      "test_2_jobs",
+      "test_3_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "embedjobs/transport.py",
+      "symbol": "send",
+      "why_correct": "Catching HTTPError and returning a Response looks like it hides errors, but it is deliberate: status handling happens in raise_for_status, and HTTPError (a URLError subclass) is the only exception that carries a status and body."
+    },
+    {
+      "file": "embedjobs/errors.py",
+      "symbol": "retry_after_seconds",
+      "why_correct": "The header is in seconds and the body field in milliseconds, so only the body value is divided by 1000. `is not None` keeps a legitimate 0 ms."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Fresh semaphore per batch",
+      "type": "semaphore-unused",
+      "file": "embedjobs/runner.py",
+      "function": "run_batches",
+      "test": "test_1_requests.TestRequests.test_concurrency_cap",
+      "old": "        async with sem:",
+      "new": "        async with asyncio.Semaphore(client.config.max_concurrency):",
+      "symptom": "Test 1 test_concurrency_cap: '6 not less than or equal to 2'. All six batches hit the server at once. Every result is still correct.",
+      "why": "Each batch acquires its own brand-new semaphore, so nothing is shared and every batch starts at once. The shared `sem` built above is never used.",
+      "unblocks": "test_1 test_concurrency_cap.",
+      "hints": [
+        "How many requests were in flight at the peak, and how many batches are there?",
+        "Look at what run_one acquires before starting a batch.",
+        "Use the shared `sem`: `async with sem:`."
+      ],
+      "probes": [
+        "Why does every result still come out right without the limit?",
+        "Why must the semaphore be created once, outside run_one?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Transient handler shadows RateLimited",
+      "type": "exception-order",
+      "file": "embedjobs/retry.py",
+      "function": "create_with_retries",
+      "test": "test_2_jobs.TestJobLifecycle.test_rate_limit_honours_retry_after",
+      "old": "        except RateLimited as err:\n            delay = err.retry_after_s if err.retry_after_s is not None else client.config.backoff_s * 2 ** attempt\n        except TransientError:\n            delay = client.config.backoff_s * 2 ** attempt",
+      "new": "        except TransientError:\n            delay = client.config.backoff_s * 2 ** attempt\n        except RateLimited as err:\n            delay = err.retry_after_s if err.retry_after_s is not None else client.config.backoff_s * 2 ** attempt",
+      "symptom": "Test 2 test_rate_limit_honours_retry_after: legal/1's wait is [['legal/1', 'retry', 0.05]] instead of 0.12. It still makes 2 creates and succeeds.",
+      "why": "RateLimited subclasses TransientError, and except clauses are tried top to bottom. With the parent first, a 429 is handled as a plain transient error and the server's 120 ms request is replaced by the 50 ms backoff. The RateLimited clause can never run.",
+      "unblocks": "test_2 test_rate_limit_honours_retry_after.",
+      "hints": [
+        "legal/1 is retried, but how long does it wait compared with what the server asked for?",
+        "Look at the class hierarchy in errors.py and the order of the except clauses in retry.py.",
+        "Put `except RateLimited` before `except TransientError`."
+      ],
+      "probes": [
+        "Why does the retry still succeed, just with the wrong delay?",
+        "How could a real server punish a client that ignores Retry-After?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "max_attempts excludes the first try",
+      "type": "retry-off-by-one",
+      "file": "embedjobs/config.py",
+      "function": "Config.max_attempts",
+      "test": "test_2_jobs.TestJobLifecycle.test_transient_errors_retried",
+      "old": "        return self.max_retries + 1",
+      "new": "        return self.max_retries",
+      "symptom": "Test 2 test_transient_errors_retried: '2 != 3' create requests for product. product/1 then shows up in failures as retries_exhausted and pr-01/pr-02 are missing.",
+      "why": "max_retries counts retries, not attempts. With max_retries = 2 the batch needs three create requests, but only two are made, so product/1 gives up after the 500 and the 503.",
+      "unblocks": "test_2 test_transient_errors_retried.",
+      "hints": [
+        "How many create requests did product make, and what did the last one return?",
+        "Follow where create_with_retries gets its number of attempts.",
+        "max_attempts should be max_retries + 1."
+      ],
+      "probes": [
+        "Why does legal/1 still succeed with this slip?",
+        "Where does the product failure show up besides this test?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Poll pause never awaited",
+      "type": "missing-await",
+      "file": "embedjobs/client.py",
+      "function": "BatchClient.wait_until_done",
+      "test": "test_2_jobs.TestJobLifecycle.test_polls_wait_between_checks",
+      "old": "            await self.pause(label, \"poll\", self.config.poll_interval_s)",
+      "new": "            self.pause(label, \"poll\", self.config.poll_interval_s)",
+      "symptom": "Test 2 test_polls_wait_between_checks: no poll waits recorded for news/1 ([] instead of three 0.01 waits), although it was still polled 4 times. A 'coroutine ... was never awaited' RuntimeWarning is printed.",
+      "why": "Calling an async function without await only creates a coroutine object; its body (recording the wait and sleeping) never runs. The client then polls back to back. Python's 'coroutine was never awaited' RuntimeWarning is the tell.",
+      "unblocks": "test_2 test_polls_wait_between_checks.",
+      "hints": [
+        "news/1 was polled four times, yet no poll waits were recorded. Any warnings in the output?",
+        "Look at how the poll loop pauses between checks.",
+        "`await self.pause(...)`."
+      ],
+      "probes": [
+        "Why did the job still complete correctly?",
+        "What would this do to a real API's rate limit?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Failed batches dropped after gather",
+      "type": "gather-hides-failures",
+      "file": "embedjobs/runner.py",
+      "function": "run_batches",
+      "test": "test_3_report.TestReport.test_failed_batch_reported",
+      "old": "        if isinstance(outcome, Exception):\n            failures[batch.label] = getattr(outcome, \"reason\", type(outcome).__name__)\n        else:\n            embedded.update(outcome)",
+      "new": "        if not isinstance(outcome, Exception):\n            embedded.update(outcome)",
+      "symptom": "Test 3 test_failed_batch_reported: failures.get('support/1') is None instead of 'input_too_long'. failures is empty.",
+      "why": "With return_exceptions=True, gather hands exceptions back as values. Only the successes are used, so support/1's JobFailed disappears: its documents are missing and nothing says why.",
+      "unblocks": "test_3 test_failed_batch_reported.",
+      "hints": [
+        "The support documents aren't embedded, but failures is empty. Where did the exception go?",
+        "Look at what happens to each gather outcome in run_batches.",
+        "Record exceptions: failures[batch.label] = getattr(outcome, 'reason', ...)."
+      ],
+      "probes": [
+        "What would happen without return_exceptions=True if one batch failed?",
+        "Why is silently dropping a failed batch worse than crashing?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Next page read from the echoed token",
+      "type": "pagination-cursor",
+      "file": "embedjobs/client.py",
+      "function": "BatchClient.results",
+      "test": "test_3_report.TestReport.test_faq_embeddings",
+      "old": "            token = response.body.get(\"next_page_token\")",
+      "new": "            token = response.body.get(\"page_token\")",
+      "symptom": "Test 3 test_faq_embeddings: faq-06 is missing from the FAQ norms; the other six match.",
+      "why": "The server echoes the token that was sent as `page_token` (null on the first page) and puts the next one in `next_page_token`. Reading the echo stops after page one, so faq/1 (6 docs, page size 5) loses faq-06.",
+      "unblocks": "test_3 test_faq_embeddings.",
+      "hints": [
+        "Only one FAQ document is missing. Which batch is it in, and how many results pages does that batch have?",
+        "Look at which field the results loop takes the next token from.",
+        "Use next_page_token."
+      ],
+      "probes": [
+        "Why are all the other batches complete?",
+        "What data change would have exposed this in more than one batch?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What happens inside build_report?",
+      "a": "It loads config, collections and documents, builds the batches with `make_batches`, creates a `BatchClient`, runs `runner.run_batches` with `asyncio.run`, then turns the embeddings into dims/norm and returns batches, embedded, failures, skipped and the client's `waits` list."
+    },
+    {
+      "q": "What does run_one do for a single batch?",
+      "a": "Inside an `async with` block it calls `create_with_retries`, then `client.wait_until_done`, then `client.results`, and returns a dict of doc id → embedding vector."
+    },
+    {
+      "q": "How are errors classified from an HTTP response?",
+      "a": "`errors.raise_for_status` raises `RateLimited` (with `retry_after_seconds`) for 429, `TransientError` for 500/502/503/504, and `ApiError` for any other status >= 400. RateLimited is a subclass of TransientError, which is a subclass of ApiError."
+    },
+    {
+      "q": "How does the mock server behave for each collection?",
+      "a": "legal's first create returns 429 with `retry_after_ms: 120`; product's first two creates return 500 and 503; news jobs need 4 polls before completing; any job with an input over 120 characters finishes as `failed` with code `input_too_long`. Results pages include `page_token` (the token sent) and `next_page_token`."
+    },
+    {
+      "q": "What does BatchClient.pause record?",
+      "a": "It appends `[label, kind, round(seconds, 3)]` to `self.waits` and then awaits the injected `sleep` function. Tests inject a sleep that returns immediately."
+    },
+    {
+      "q": "Where does the number of create attempts come from?",
+      "a": "`create_with_retries` loops `range(client.config.max_attempts)`; `max_attempts` is a property on `Config` in config.py. It pauses between attempts but not after the last one, then raises `ApiError('retries_exhausted')`."
+    },
+    {
+      "q": "How does the server measure concurrency?",
+      "a": "Every request increments an in-flight counter on arrival and decrements it after replying (each request takes about 20 ms). `max_inflight` is the peak value."
+    }
+  ]
+}

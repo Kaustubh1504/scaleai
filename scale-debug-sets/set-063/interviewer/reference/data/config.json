@@ -1,0 +1,17 @@
+{
+  "system_prompt": "You are a helpful support assistant. ",
+  "max_tokens": 60,
+  "max_new_tokens": 256,
+  "exclude_tags": [
+    "pii",
+    " Legal",
+    "medical",
+    "minor",
+    "self-harm",
+    "credentials",
+    "chargeback-dispute",
+    "harassment",
+    "law-enforcement",
+    "internal-only"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_judgements"
+    ],
+    "failures": {
+      "tests.test_1_judgements.TestJudgements.test_labeler_quality": "AssertionError: {'lab[486 chars], 'lab-09': {'checks': 5, 'accuracy': 0.6, 'excluded': True}} != {'lab[486 chars], 'lab-09': {'checks': 4, 'accuracy': 0.75, 'excluded': False}}\n  {'lab-01': {'accuracy': 1.0, 'checks': 2, 'excluded': False},\n   'lab-02': {'accuracy': 1.0, 'checks': 2, 'excluded': False},\n   'lab-03': {'accuracy': 1.0, 'checks': 2, 'excluded': False},\n   'lab-04': {'accuracy': 1.0, 'checks': 2, 'excluded': False},\n   'lab-05': {'accuracy': 0.333, 'checks': 3, 'excluded': True},\n   'lab-06': {'accuracy': None, 'checks': 0, 'excluded': False},\n   'lab-07': {'accuracy': None, 'chec"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_judgements"
+    ],
+    "failures": {
+      "tests.test_1_judgements.TestJudgements.test_pair_margins": "AssertionError: {'P01[86 chars]08': 0.67, 'P09': None, 'P10': 1.5, 'P11': 2.5[36 chars]-1.0} != {'P01[86 chars]08': 1.33, 'P09': None, 'P10': 1.5, 'P11': 2.5[36 chars]-1.0}\n  {'P01': 1.67,\n   'P02': -2.0,\n   'P03': 0.0,\n   'P04': -1.5,\n   'P05': 2.5,\n   'P06': 0.5,\n   'P07': 0.33,\n-  'P08': 0.67,\n?         ^ ^^\n\n+  'P08': 1.33,\n?         ^ ^^\n\n   'P09': None,\n   'P10': 1.5,\n   'P11': 2.5,\n   'P12': -0.67,\n   'P13': None,\n   'P14': -1.0}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_dataset"
+    ],
+    "failures": {
+      "tests.test_2_dataset.TestDataset.test_standings": "AssertionError: Lists differ: [{'model': 'cobalt-70b', 'wins': 4, 'losses': 1, 'tie[248 chars]0.0}] != [{'model': 'atlas-7b', 'wins': 5, 'losses': 1, 'ties'[248 chars]0.0}]\n\nFirst differing element 0:\n{'model': 'cobalt-70b', 'wins': 4, 'losses': 1, 'ties': 1, 'win_rate': 0.75}\n{'model': 'atlas-7b', 'wins': 5, 'losses': 1, 'ties': 2, 'win_rate': 0.75}\n\n+ [{'losses': 1, 'model': 'atlas-7b', 'ties': 2, 'win_rate': 0.75, 'wins': 5},\n- [{'losses': 1, 'model': 'cobalt-70b', 'ties': 1, 'win_rate': 0.75, 'wins': 4},\n? ^\n\n+  {'losses': 1, 'model': 'cobalt-70b', 'ties': 1, 'win_rate': 0.75, 'wins': 4},\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_judgements",
+      "test_2_dataset"
+    ],
+    "failing_tests": [
+      "tests.test_1_judgements.TestJudgements.test_labeler_quality",
+      "tests.test_1_judgements.TestJudgements.test_pair_margins",
+      "tests.test_2_dataset.TestDataset.test_standings"
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+team_id,task,score,submitted_at
+aurora,gsm8k,78.0,2026-06-10 09:00
+aurora,HumanEval,70.0,2026-06-10 09:30
+aurora,mmlu,86.0,06/11/2026 14:00
+aurora,gsm8k,84.5,2026-06-20 10:00
+basalt,gsm8k,98.5,2026-06-12 08:00
+Basalt,humaneval,64.0,2026-06-12 08:30
+basalt,MMLU,79.5,2026-06-12T09:00:00
+basalt,gsm8k,100,2026-06-25 16:00
+cobalt,gsm8k,81,2026-06-15 11:00
+cobalt,humaneval,72.5,06/15/2026 11:20
+ cobalt,mmlu,87,2026-06-15 11:45
+dynamo,gsm8k,90.0,2026-06-02 13:00
+dynamo,mmlu,91.0,2026-06-03 13:00
+ember,humaneval,85.0,2026-06-05 10:00
+ember,gsm8k,88.0,2026-06-05T10:30:00
+ember,mmlu,92.0,2026-06-06 10:00
+EMBER,mmlu,99.0,07/01/2026 00:05
+fjord,gsm8k,99.0,2026-06-20 12:00
+fjord,humaneval,97.0,2026-06-20 12:30
+fjord,mmlu,98.0,2026-06-20 13:00
+garnet,mmlu,55,2026-06-18 17:00
+garnet,humaneval,,2026-06-18 17:30
+s-hydra,gsm8k,75,2026-06-08 19:00
+s-hydra,humaneval,60,2026-06-08 19:30
+s-hydra,mmlu,70,06/09/2026 19:00
+s-iris,gsm8k,80,2026-06-14 15:00
+s-iris,humaneval,65.5,2026-06-14 15:20
+s-iris,humaneval,62,2026-06-22 15:20
+S-Iris,mmlu,72,2026-06-14T15:40:00
+s-jade,gsm8k,50,2026-06-16 09:00
+s-jade,humaneval,40,2026-06-16 09:10
+s-jade,mmlu,60,2026-06-16 09:20
+s-koi,gsm8k,72.5,2026-06-21 20:00
+s-koi,humaneval,70,2026-06-21 20:15
+s-koi,mmlu,74,2026-06-21 20:30
+s-koi,mmlu,70.0,2026-06-30 23:59
+unknown-team,mmlu,95,2026-06-21 20:30

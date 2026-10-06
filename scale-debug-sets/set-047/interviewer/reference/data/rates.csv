@@ -1,0 +1,11 @@
+task_type,rate
+label_easy,0.40
+label_hard,1.25
+review,0.75
+transcribe,2.10
+bbox,0.55
+ranking,0.90
+writing,3.40
+qa,0.65
+ner,0.85
+audio,1.10

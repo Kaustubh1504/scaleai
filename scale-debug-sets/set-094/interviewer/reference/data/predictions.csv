@@ -1,0 +1,33 @@
+item_id,model,label,confidence,received_at,lang,flagged
+i01,guard-v3,hate_speech,0.97,2026-09-28 09:00,en,no
+I02,guard-v3,hate_speech,0.62,2026-09-28 09:01,EN,
+i03,guard-v3,violent_threat,"0,90",28/09/2026 09:02,en,no
+I04,guard-v3,self_harm,0.99,2026-09-28 09:03,es,no
+i05,Guard-v3,harassment,0.70,2026-09-28T09:04:00,es,
+I06,guard-v3,adult,0.81,2026-09-28 09:05,,no
+I07,guard-v3,adult,0.79,2026-09-28 09:06,de,no
+I08,guard-v3,spam,0.5,2026-09-28 09:07,en,no
+I09,guard-v3, clean ,0.95,2026-09-28 09:08,en,no
+I10,guard-v3,graphic_violence,88%,28/09/2026 09:09,de,
+I11,guard-v3,misinformation,0.99,2026-09-28 09:10,en,no
+I12,guard-v3,harassment,,2026-09-28 09:11,es,no
+I13,guard-v3,violent_threat,0.97,2026-09-28 09:12,de,yes
+I14,guard-v3,doxxing,0.91,2026-09-28 09:13,en,no
+I15,guard-v3,off_topic,0.4,2026-09-28 09:14,en,
+I16,guard-v3,Hate_Speech,0.66,2026-09-28 09:15,DE,no
+I17,guard-v3,adult,0.55,2026-09-28 09:16,de,no
+I18,guard-v3,harassment,0.6,28/09/2026 09:17,es,no
+I19,guard-v3,graphic_violence,0.5,2026-09-28 09:18,en ,no
+I20,guard-v3,harassment,0.3,2026-09-28 09:19,es,FALSE
+m01,guard-mini,promo,0.35,2026-09-28 09:20,en,no
+M02,guard-mini,promo,0.92,2026-09-28 09:21,es,no
+M03,guard-mini,promo,61%,2026-09-28 09:22,en,
+M04,guard-mini,spam,0.81,2026-09-28 09:23,en,no
+M05,guard-mini,low_quality,0.4,2026-09-28T09:24:00,es,no
+M06,guard-mini,clean,0.72,2026-09-28 09:25,de,no
+M07,guard-mini,off_topic,0.55,2026-09-28 09:26,en,Yes
+L01,guard-v1,hate_speech,0.95,2026-09-28 09:27,en,no
+l02,guard-v1,spam,0.9,2026-09-28 09:28,es,
+L03,GUARD-V1,harassment,0.5,2026-09-28 09:29,en,no
+L04,guard-v1,promo,0.95,2026-09-28 09:30,de,no
+L05,guard-v1,clean,0.65,2026-09-28 09:31,en,no

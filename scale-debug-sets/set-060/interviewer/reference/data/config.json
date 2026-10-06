@@ -1,0 +1,11 @@
+{
+  "dataset": "support-faq",
+  "model": "embed-small-3",
+  "dimensions": 4,
+  "since": "2026-03-01",
+  "page_size": 5,
+  "batch_size": 4,
+  "max_concurrency": 2,
+  "max_retries": 3,
+  "backoff_s": 0.1
+}

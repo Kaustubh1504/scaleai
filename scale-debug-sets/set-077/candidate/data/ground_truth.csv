@@ -1,0 +1,14 @@
+image_id,label,x1,y1,x2,y2,reviewer
+img-01,car,64,96,320,288,mk
+img-02,Person,32,48,160,432,mk
+img-02,dog,320,240,480,400,mk
+IMG-03,sign,0,0,128,128,jt
+img-04,car,100,100,200,200,jt
+img-05,truck,200,150,600,450,
+img-05, car ,40,40,120,100,mk
+img-06,person,300,100,380,300,jt
+img-06,person,400,100,480,300,jt
+img-07,dog,64,64,256,256,mk
+img-08,bike,100,200,300,400,
+img-09,car,0,0,400,300,jt
+img-12,car,10,10,90,90,mk

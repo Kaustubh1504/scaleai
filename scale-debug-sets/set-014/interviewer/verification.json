@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_health"
+    ],
+    "failures": {
+      "tests.test_1_health.TestHealth.test_1_worker_states": "AssertionError: {'W-0[80 chars], 'W-07': 'up', 'W-08': 'down', 'W-09': 'up', 'W-10': 'up'} != {'W-0[80 chars], 'W-07': 'up', 'W-08': 'draining', 'W-09': 'up', 'W-10': 'up'}\n  {'W-01': 'up',\n   'W-02': 'down',\n   'W-03': 'up',\n   'W-04': 'up',\n   'W-05': 'up',\n   'W-06': 'up',\n   'W-07': 'up',\n-  'W-08': 'down',\n?            ^^\n\n+  'W-08': 'draining',\n?            ^^^ +++\n\n   'W-09': 'up',\n   'W-10': 'up'}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_health"
+    ],
+    "failures": {
+      "tests.test_1_health.TestHealth.test_2_availability": "AssertionError: {'W-0[39 chars]04': 1.0, 'W-05': None, 'W-06': 1.0, 'W-07': 1[37 chars] 0.0} != {'W-0[39 chars]04': 0.0, 'W-05': None, 'W-06': 1.0, 'W-07': 1[37 chars] 0.0}\n  {'W-01': 1.0,\n   'W-02': 0.0,\n   'W-03': None,\n-  'W-04': 1.0,\n?          ^\n\n+  'W-04': 0.0,\n?          ^\n\n   'W-05': None,\n   'W-06': 1.0,\n   'W-07': 1.0,\n-  'W-08': 1.0,\n?          ^\n\n+  'W-08': 0.0,\n?          ^\n\n   'W-09': 1.0,\n   'W-10': 0.0}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_routing"
+    ],
+    "failures": {
+      "tests.test_2_routing.TestRouting.test_3_assignments": "AssertionError: {'R01': 'W-01', 'R02': 'W-03', 'R03': 'W-05', 'R04': [227 chars]-09'} != {'R01': 'W-04', 'R02': 'W-01', 'R03': 'W-06', 'R04': [227 chars]-09'}\n- {'R01': 'W-01',\n?             ^\n\n+ {'R01': 'W-04',\n?             ^\n\n-  'R02': 'W-03',\n?             ^\n\n+  'R02': 'W-01',\n?             ^\n\n-  'R03': 'W-05',\n?             ^\n\n+  'R03': 'W-06',\n?             ^\n\n   'R04': 'W-09',\n-  'R05': 'W-04',\n?             ^\n\n+  'R05': 'W-03',\n?             ^\n\n   'R06': 'W-10',\n   'R07': 'W-09',\n-  'R08': 'W-05',\n?             ^\n\n+  'R08': 'W-06',\n?             ^\n\n-  'R09': 'W-01',\n?             ^\n\n+ "
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_routing"
+    ],
+    "failures": {
+      "tests.test_2_routing.TestRouting.test_4_peak_in_flight": "AssertionError: 7 != 5"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_5_zone_served": "AssertionError: {'ap-south': 171, 'eu-west': 171, 'us-east': 228} != {'ap-south': 6, 'eu-west': 5, 'us-east': 8}\n- {'ap-south': 171, 'eu-west': 171, 'us-east': 228}\n?              ^^^             ^^^             --\n\n+ {'ap-south': 6, 'eu-west': 5, 'us-east': 8}\n?              ^             ^\n"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_6_zone_mean_duration": "AssertionError: {'ap-south': 1316, 'eu-west': 1060, 'us-east': 1087} != {'ap-south': 1316.7, 'eu-west': 1060.0, 'us-east': 1087.5}\n- {'ap-south': 1316, 'eu-west': 1060, 'us-east': 1087}\n+ {'ap-south': 1316.7, 'eu-west': 1060.0, 'us-east': 1087.5}\n?                  ++                 ++                 ++\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_health",
+      "test_2_routing",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_health.TestHealth.test_1_worker_states",
+      "tests.test_1_health.TestHealth.test_2_availability",
+      "tests.test_2_routing.TestRouting.test_3_assignments",
+      "tests.test_2_routing.TestRouting.test_4_peak_in_flight",
+      "tests.test_3_report.TestReport.test_5_zone_served",
+      "tests.test_3_report.TestReport.test_6_zone_mean_duration"
+    ]
+  }
+}

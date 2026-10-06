@@ -1,0 +1,11 @@
+source,max_tokens,include
+sharegpt,,yes
+ OASST ,48,yes
+dolly,40,Yes
+internal-qa,,yes
+support-logs,60,no
+code-review,80,yes
+math-tutor, 36 ,yes
+legacy-chat,,no
+vendor-a,50,yes
+Vendor-B,,yes

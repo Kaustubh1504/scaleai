@@ -1,0 +1,191 @@
+{
+  "id": "set-004",
+  "title": "LLM judge client: retries, parsing, paginated usage",
+  "domain": "endpoint_client",
+  "length": "FULL",
+  "difficulty": "easy",
+  "format": "multi",
+  "package": "evalclient",
+  "scenario": "Batch client for a judge-model HTTP endpoint (local mock server). It builds chat requests from config, retries 429/5xx, parses fenced or nested JSON verdicts, then pages through usage records to build a summary.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_requests",
+      "test_2_results",
+      "test_3_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "evalclient/transport.py",
+      "symbol": "send",
+      "why_correct": "Catching urllib.error.HTTPError looks like swallowing errors. But urllib raises HTTPError for every 4xx/5xx response, and the exception is the response. Turning it into Response(status, headers, body) is what lets the retry and status logic see 429/503 at all."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "temperature 0 replaced by the default",
+      "type": "falsy-zero",
+      "file": "evalclient/config.py",
+      "function": "load_config",
+      "old": "        temperature=float(raw.get(\"temperature\", DEFAULT_TEMPERATURE)),",
+      "new": "        temperature=float(raw.get(\"temperature\") or DEFAULT_TEMPERATURE),",
+      "symptom": "Test 1 test_request_body: the request has \"temperature\": 0.7, but config.json says 0.",
+      "why": "`raw.get('temperature') or DEFAULT` treats the configured 0 as missing, because 0 is falsy. The spec says defaults only apply when a key is absent.",
+      "unblocks": "Test 1 request body.",
+      "hints": [
+        "Compare the body the server received with config.json, field by field.",
+        "Look at how config.py applies its defaults.",
+        "Use raw.get(\"temperature\", DEFAULT_TEMPERATURE) instead of `or`."
+      ],
+      "probes": [
+        "Which other config keys would break the same way if someone wrote them with `or`?",
+        "Why doesn't anything in Tests 2 or 3 notice the wrong temperature?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "One attempt short of max_retries + 1",
+      "type": "retry-off-by-one",
+      "file": "evalclient/retry.py",
+      "function": "send_with_retries",
+      "old": "    for attempt in range(policy.max_retries + 1):",
+      "new": "    for attempt in range(policy.max_retries):",
+      "symptom": "Test 1: r03 and r07 get 3 attempts instead of 4. Test 2: r03 becomes http_error 429, although its 4th attempt would have succeeded. Test 3: counts become ok 6 / http_error 3, and total_tokens drops to 2538.",
+      "why": "max_retries counts retries, not attempts. The first try plus 3 retries is 4 attempts, so the loop has to run max_retries + 1 times.",
+      "unblocks": "Test 1 attempt counts, and r03 in Test 2. This exposes B4.",
+      "hints": [
+        "How many times did the server see r03? How many does the README allow?",
+        "Look at the loop bound in retry.py.",
+        "Use range(policy.max_retries + 1)."
+      ],
+      "probes": [
+        "With the fix, why doesn't the code sleep after the very last failed attempt?",
+        "If max_retries were 0, how many requests should go out, before and after your fix?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "4xx responses treated as success",
+      "type": "ignoring-http-status",
+      "file": "evalclient/client.py",
+      "function": "ModelClient.grade",
+      "old": "        if response.status >= 400:",
+      "new": "        if response.status >= 500:",
+      "symptom": "Test 2: r05 shows parse_error with http_status 400. It should be http_error. Test 3 counts: parse_error 2, http_error 1.",
+      "why": "Only 5xx counts as an error, so a 400 body ({\"error\": ...}) gets passed to the verdict parser. The parser finds no choices and reports parse_error, which hides the real HTTP failure.",
+      "unblocks": "Test 2 status for r05, and the Test 3 counts.",
+      "hints": [
+        "r05 got HTTP 400. Why does its result say parse_error?",
+        "Look at how grade() decides that a response failed.",
+        "The final-status check should be response.status >= 400."
+      ],
+      "probes": [
+        "Why didn't parse_completion crash on an error body?",
+        "Would checking `response.status != 200` be equivalent here? What about 204 or 201?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Verdict JSON cut at the first closing brace",
+      "type": "slice-bounds",
+      "file": "evalclient/parsing.py",
+      "function": "extract_json",
+      "old": "    start, end = text.find(\"{\"), text.rfind(\"}\")",
+      "new": "    start, end = text.find(\"{\"), text.find(\"}\")",
+      "masked_by": [
+        "B2"
+      ],
+      "symptom": "Only visible after B2 is fixed. r03 (the only verdict with a nested 'rubric' object) shows parse_error instead of ok 6.0/True. Test 3 counts and mean_score change.",
+      "why": "Slicing to the first '}' stops at the end of the nested object, which leaves invalid JSON, so json.loads fails. The outer object ends at the last '}'.",
+      "unblocks": "Test 2 r03, and Test 3 counts and scores.",
+      "hints": [
+        "Look at r03's raw content in tests/mock_server.py. How is it different from the others?",
+        "Look at how extract_json finds where the object ends.",
+        "Use text.rfind(\"}\") for the end of the slice."
+      ],
+      "probes": [
+        "Why couldn't you see this before the retry fix?",
+        "rfind would still break if prose after the JSON contained a '}'. How would you make extraction robust (e.g. json.JSONDecoder.raw_decode)?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Last usage page dropped",
+      "type": "pagination-cursor",
+      "file": "evalclient/runner.py",
+      "function": "collect_usage",
+      "old": "        items.extend(page[\"data\"])\n        cursor = page.get(\"next_cursor\")\n        if not cursor:\n            break",
+      "new": "        cursor = page.get(\"next_cursor\")\n        if not cursor:\n            break\n        items.extend(page[\"data\"])",
+      "visible_only_in": [
+        "test_3_report"
+      ],
+      "symptom": "Test 3 only: total_tokens is 2276 instead of 3039, and p50_latency_s is 0.963 instead of 0.9. All 3 pages are still requested (test_usage_fetched_page_by_page passes), but the last page's records are thrown away.",
+      "why": "The loop checks for the end before storing the page it just fetched. The final page has next_cursor null, so its data is never added.",
+      "unblocks": "Test 3 total_tokens (and latency together with B6).",
+      "hints": [
+        "Three usage pages were fetched. How many records ended up being summed?",
+        "Walk through collect_usage on the final page.",
+        "Move items.extend(page[\"data\"]) above the next_cursor check."
+      ],
+      "probes": [
+        "What would happen if the server returned an empty final page with a null cursor?",
+        "How would you write a test that catches this with only a single page of data?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Median latency reported in milliseconds",
+      "type": "ms-vs-s",
+      "file": "evalclient/reports.py",
+      "function": "summarize",
+      "old": "        \"p50_latency_s\": round(statistics.median(latencies) / 1000, 3) if latencies else None,",
+      "new": "        \"p50_latency_s\": round(statistics.median(latencies), 3) if latencies else None,",
+      "visible_only_in": [
+        "test_3_report"
+      ],
+      "symptom": "Test 3 only: p50_latency_s is 900.0 instead of 0.9 (962.5 while B5 is also present).",
+      "why": "The usage records are in latency_ms, but the field is reported in seconds, and the code never divides by 1000.",
+      "unblocks": "Test 3 latency.",
+      "hints": [
+        "Look at the units in the field name and in the usage records.",
+        "Look at the p50 computation in reports.py.",
+        "Divide the median by 1000 before rounding."
+      ],
+      "probes": [
+        "Why should you divide before rounding and not after?",
+        "Where would you put a unit conversion so a mistake like this can't happen twice?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does run_batch do?",
+      "a": "It loads `config.json` into a frozen `Config`, builds a `ModelClient`, loads the prompts (blank answers dropped, sorted by due date), calls `client.grade` for each one in order, and then calls `collect_usage` to page through `/v1/usage`. `reports.build_report` turns the results and usage into the report dict."
+    },
+    {
+      "q": "Why does transport.send catch urllib.error.HTTPError?",
+      "a": "`urllib` raises HTTPError for any 4xx/5xx response. The exception carries the status code, headers and body, so `send` converts it into the same `Response` object a 2xx produces. Callers always get a Response and decide what the status means."
+    },
+    {
+      "q": "How does send_with_retries decide to retry and how long to wait?",
+      "a": "A response whose status is in `RETRYABLE` (429, 500, 502, 503, 504) is retried. Any other status is returned straight away. Before the next attempt it sleeps `wait_time(...)`: the `Retry-After` header if present, otherwise `backoff_seconds * 2**attempt`. When the loop ends it returns the last response."
+    },
+    {
+      "q": "What does parse_completion accept as a valid verdict?",
+      "a": "It reads `choices[0].message.content`, and a missing key or index returns None. `extract_json` uses the fenced block if there is one, slices out the brace-delimited object and runs `json.loads` on it. The result must be a dict containing `score` and `passed`, with score between 0 and 10. `passed` goes through `_as_bool`, which accepts strings case-insensitively."
+    },
+    {
+      "q": "What does the mock server send for r05 and r07?",
+      "a": "r05 always gets HTTP 400 with `{\"error\": {\"message\": \"prompt too long\"}}`. r07 always gets 503: the last scripted step repeats for every further attempt. r03 gets three 429s with `Retry-After: 0`, then a 200."
+    },
+    {
+      "q": "How does the usage endpoint paginate?",
+      "a": "`GET /v1/usage?limit=N[&cursor=...]` returns `{\"data\": [...], \"next_cursor\": ...}`. The cursor is a base64-encoded offset, and `next_cursor` is `null` on the final page. Usage records are only created for 200 completions, in the order they were served."
+    },
+    {
+      "q": "Where do config defaults live?",
+      "a": "As module constants at the top of `config.py` (`DEFAULT_MAX_TOKENS`, `DEFAULT_TEMPERATURE`, etc.), used inside `load_config` when it builds the `Config`."
+    }
+  ]
+}

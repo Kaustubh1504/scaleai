@@ -1,0 +1,193 @@
+{
+  "id": "set-072",
+  "title": "Speaker-disjoint, accent-stratified speech splits",
+  "domain": "dataset_split",
+  "length": "FULL",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "voxsplit",
+  "scenario": "Clean a speech-clip export (consent, duration, per-speaker duplicate transcripts), then assign whole speakers to train/val/test per accent stratum by seeded sha256 order, with held-out speakers forced into test. Test 3 checks the validation split's minutes and accent mix.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_cleaning",
+      "test_2_assignment",
+      "test_3_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "voxsplit/normalize.py",
+      "symbol": "parse_recorded",
+      "why_correct": "`%d/%m/%Y` looks like a US-format slip, but the spec says the slash format is day/month/year (London studio). This matters for duplicates: C006 (26/04) is earlier than C005 (2026-04-27)."
+    },
+    {
+      "file": "voxsplit/hashing.py",
+      "symbol": "hash_order",
+      "why_correct": "Sorting by the hex digest string looks like it should convert to an int first, but every sha256 hex digest is 64 lower-case characters, so lexicographic order equals numeric order. The spec orders by the hex digest."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Consent flag read with bool()",
+      "type": "bool-from-string",
+      "file": "voxsplit/normalize.py",
+      "function": "parse_flag",
+      "test": "test_1_cleaning.TestCleaning.test_consent_exclusions",
+      "old": "    return clean(value).lower() in TRUTHY",
+      "new": "    return bool(clean(value))",
+      "symptom": "Test 1 test_consent_exclusions: only ['C027'] (the blank cell) is listed as no_consent; C002 ('no'), C012 ('false') and C017 ('0') are missing. Nothing else fails because those clips belong to train speakers who have other clips.",
+      "why": "bool() of any non-empty string is True, so 'no', 'false' and '0' all count as consent. Only the blank cell stays false. held_out goes through the same helper but only uses yes/Y/TRUE/blank, so it is unaffected.",
+      "unblocks": "test_consent_exclusions.",
+      "hints": [
+        "Which clips are still listed as no_consent, and what do their consent cells say?",
+        "Look at how consent strings become booleans.",
+        "parse_flag returns bool(clean(value)); it should be clean(value).lower() in TRUTHY."
+      ],
+      "probes": [
+        "Why did the held_out column survive this helper unchanged?",
+        "Why didn't these extra clips change any speaker's split?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Clip of exactly max duration rejected",
+      "type": "off-by-one",
+      "file": "voxsplit/filters.py",
+      "function": "exclusion_reason",
+      "test": "test_1_cleaning.TestCleaning.test_duration_exclusions",
+      "old": "    if not config[\"min_ms\"] <= clip.duration_ms <= config[\"max_ms\"]:",
+      "new": "    if not config[\"min_ms\"] <= clip.duration_ms < config[\"max_ms\"]:",
+      "symptom": "Test 1 test_duration_exclusions: the list is ['C004', 'C011', 'C022']; C004 is exactly 30000 ms, the configured max.",
+      "why": "The spec allows both limits. With `<` on the upper bound, C004 (exactly 30000 ms) is excluded as `duration`.",
+      "unblocks": "test_duration_exclusions.",
+      "hints": [
+        "C004 is in the duration list. How long is it, and what is the configured max?",
+        "Check the duration comparison in filters.py against README rule 4.",
+        "Use `<= config[\"max_ms\"]` on the upper bound."
+      ],
+      "probes": [
+        "Why is C002 (also 30000 ms) not in the duration list?",
+        "Why did C026 (exactly 1000 ms) pass even with this bug?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Held-out removal skips the next speaker",
+      "type": "mutate-while-iterating",
+      "file": "voxsplit/stratify.py",
+      "function": "take_held_out",
+      "test": "test_2_assignment.TestAssignment.test_held_out_speakers_in_test",
+      "old": "    for spk in list(pool):",
+      "new": "    for spk in pool:",
+      "symptom": "Test 2 test_held_out_speakers_in_test: S09 is assigned 'train' instead of 'test'. The regular speakers keep their splits.",
+      "why": "Removing S08 from the list being iterated shifts S09 into the slot the iterator has already passed, so S09 is never seen. It stays in the pool and is allocated by hash order, landing in train.",
+      "unblocks": "test_held_out_speakers_in_test.",
+      "hints": [
+        "S09 is marked held-out but ended in train. Which other held-out speaker is next to it in the uk stratum?",
+        "Look at how take_held_out walks the pool while removing from it.",
+        "Iterate over a copy: `for spk in list(pool):`."
+      ],
+      "probes": [
+        "Why was S19, also held-out, handled correctly?",
+        "Why did no regular speaker change split when S09 leaked into the pool?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Accent not lower-cased",
+      "type": "id-normalization",
+      "file": "voxsplit/loader.py",
+      "function": "load_speakers",
+      "test": "test_2_assignment.TestAssignment.test_strata_sizes",
+      "old": "accent=norm_code(row[\"accent\"])",
+      "new": "accent=clean(row[\"accent\"])",
+      "symptom": "Test 2 test_strata_sizes: strata is {'US': 1, 'au': 3, 'in': 4, 'uk': 7, 'us': 6} instead of four lower-case strata.",
+      "why": "S04's accent is 'US'. Without lower-casing it forms its own one-speaker stratum, so the strata (and the stratified allocation) no longer follow the spec.",
+      "unblocks": "test_strata_sizes.",
+      "hints": [
+        "Where does the 'US' key in strata come from?",
+        "Compare how accents and ids are normalised in loader.py.",
+        "Use norm_code(row[\"accent\"]) for the accent."
+      ],
+      "probes": [
+        "S04 still ended up in train. Why did that happen with the bug, and would it always?",
+        "Why did ' uk' (S05) and 'us ' (S16) behave correctly anyway?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Minutes floored to whole minutes",
+      "type": "integer-division",
+      "file": "voxsplit/reports.py",
+      "function": "minutes",
+      "test": "test_3_report.TestValidationSplit.test_val_minutes",
+      "old": "    return round(total_ms / 60_000, 2)",
+      "new": "    return round(total_ms // 60_000, 2)",
+      "symptom": "Test 3 test_val_minutes: 1 instead of 1.66.",
+      "why": "`//` floors before rounding, so 99 550 ms becomes 1 minute instead of 1.66. round(..., 2) of an int changes nothing.",
+      "unblocks": "test_val_minutes.",
+      "hints": [
+        "The val split has about 100 seconds of audio. Why would minutes be a whole number?",
+        "Look at how minutes() converts milliseconds.",
+        "Use true division: total_ms / 60_000."
+      ],
+      "probes": [
+        "Why didn't the round(..., 2) protect against this?",
+        "Which split totals would a test have to check to catch this with other data?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Accent mix counts letters",
+      "type": "counter-misuse",
+      "file": "voxsplit/stats.py",
+      "function": "accent_mix",
+      "test": "test_3_report.TestValidationSplit.test_val_accent_mix",
+      "old": "        mix[speakers[clip.speaker_id].accent] += 1",
+      "new": "        mix.update(speakers[clip.speaker_id].accent)",
+      "symptom": "Test 3 test_val_accent_mix: {'i': 2, 'k': 2, 'n': 2, 's': 3, 'u': 5} instead of {'in': 2, 'uk': 2, 'us': 3}.",
+      "why": "Counter.update() with a string iterates it, so each clip adds one count per character ('u', 's', 'k', 'i', 'n') instead of one count for the accent.",
+      "unblocks": "test_val_accent_mix.",
+      "hints": [
+        "The accents map has single-letter keys. Where could letters come from?",
+        "Look at how accent_mix adds to its Counter.",
+        "Use mix[accent] += 1 (or update([accent]))."
+      ],
+      "probes": [
+        "Why does strata_sizes, which also uses Counter, give accent keys?",
+        "What would update([accent]) do differently?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What is the flow inside build_report()?",
+      "a": "load_config, load_speakers and load_clips read the data; filters.usable_clips returns kept clips plus an excluded map; the participating speakers are those with at least one kept clip; stratify.assign_speakers maps each to a split; stats.clips_by_split groups kept clips, and each split gets clips, minutes() and accent_mix()."
+    },
+    {
+      "q": "Where are consent and held_out parsed?",
+      "a": "Both go through normalize.parse_flag, called from loader.load_clips (consent) and loader.load_speakers (held_out)."
+    },
+    {
+      "q": "How does drop_duplicates decide which clip to keep?",
+      "a": "It walks the candidate clips sorted by (recorded_on, id) and keeps the first clip seen for each (speaker_id, normalised transcript) key. Everything else in that key is returned as a duplicate id."
+    },
+    {
+      "q": "How are strata built in assign_speakers?",
+      "a": "Speakers are sorted by id and appended to a defaultdict(list) keyed by spk.accent. For each accent in sorted order, take_held_out moves held-out speakers out of the pool (they get 'test'), then allocate() splits the remaining pool."
+    },
+    {
+      "q": "What does allocate() do with the pool?",
+      "a": "It orders the pool with hash_order (sha256 of '<seed>:<id>'), computes n_test and n_val as len(ordered) * percent // 100, and assigns the first n_test to test, the next n_val to val and the rest to train."
+    },
+    {
+      "q": "What is in the strata field of the report?",
+      "a": "stats.strata_sizes builds a Counter over the accent of every participating speaker (including held-out ones) and returns it as a dict sorted by accent."
+    },
+    {
+      "q": "Which clips feed the per-split stats?",
+      "a": "Only kept clips. clips_by_split puts each into grouped[assignment[clip.speaker_id]]; minutes() sums duration_ms for the group and accent_mix() counts by speaker accent."
+    }
+  ]
+}

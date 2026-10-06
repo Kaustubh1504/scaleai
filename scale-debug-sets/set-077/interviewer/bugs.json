@@ -1,0 +1,122 @@
+{
+  "id": "set-077",
+  "title": "Detection pre-label QA: two models vs ground truth",
+  "domain": "bbox_qa",
+  "length": "MINI",
+  "difficulty": "hard",
+  "format": "multi",
+  "package": "prelabel",
+  "scenario": "Two detection models' normalised centre-format predictions are converted to pixels and greedily matched (IoU >= 0.5, same label) against reviewer ground truth. Each model is scored independently, and Test 2 reports precision/recall/F1, auto-accept images and the best model.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_image_matching",
+      "test_2_model_summary"
+    ]
+  },
+  "verified": [
+    {
+      "file": "prelabel/geometry.py",
+      "symbol": "from_normalized_center",
+      "why_correct": "The halving and the width/height scaling look easy to get backwards, but this is exactly the README formula for continuous pixel edges. No +1 is needed because edges are not inclusive pixel indices."
+    },
+    {
+      "file": "prelabel/matching.py",
+      "symbol": "pick_best",
+      "why_correct": "The key (iou, -index) looks odd, but max() then takes the highest IoU and, among equal IoUs, the smallest index, which is the earliest ground-truth box as rule 2 requires."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Area computed with inclusive +1",
+      "type": "iou-inclusive-exclusive",
+      "file": "prelabel/geometry.py",
+      "function": "area",
+      "old": "    return max(0.0, box.x2 - box.x1) * max(0.0, box.y2 - box.y1)",
+      "new": "    return (box.x2 - box.x1 + 1) * (box.y2 - box.y1 + 1)",
+      "symptom": "Test 1 test_yolo_images: yolo-s img-03 and img-04 become {tp 0, fp 1, fn 1}. Test 2: yolo totals are (8, 2, 4, 0.8, 0.667, 0.727) instead of (10, 0, 2, 1.0, 0.833, 0.909), img-03/img-04 drop out of yolo's auto_accept, and best_model flips to 'detr-v2'. detr-v2 is unaffected.",
+      "why": "The +1 belongs to inclusive integer pixel indices, but these boxes use continuous edges. Each area is inflated while the intersection is not, so every IoU shrinks and borderline matches (yolo-s img-03 at exactly 0.5, img-04 at 0.51) fall below the threshold.",
+      "unblocks": "yolo-s rows in Test 1 and yolo totals/auto_accept in Test 2; it also exposes B3.",
+      "hints": [
+        "yolo-s loses two matches whose boxes overlap the ground truth by about half. Compute their IoU by hand from the README.",
+        "Compare area() with the README's geometry section.",
+        "Remove the + 1 from both factors in area()."
+      ],
+      "probes": [
+        "Why did the large boxes still match while the small ones flipped?",
+        "Why does a +1 in area but not in the intersection always lower IoU?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Shallow copy of the ground-truth pool",
+      "type": "aliasing-shallow-copy",
+      "file": "prelabel/matching.py",
+      "function": "evaluate_model",
+      "old": "    unmatched = {image: list(boxes) for image, boxes in ground_truth.items()}",
+      "new": "    unmatched = dict(ground_truth)",
+      "symptom": "Test 1 test_yolo_images: yolo-s shows FPs (fn 0) on every image detr-v2 matched (img-01, 02, 04, 06, 07, 08, and the truck on img-05). Test 2: yolo totals are (3, 7, 0, 0.3, 1.0, 0.462), auto_accept is `{'detr-v2': [], 'yolo-s': []}`, and best_model is 'detr-v2'. detr-v2's own counts stay correct.",
+      "why": "dict() copies only the outer mapping. The per-image lists are still the loader's lists, so pool.pop() removes detr-v2's matches from the shared ground truth. yolo-s is then scored against what detr-v2 left over, and auto_accept (which checks gt[image]) sees emptied lists.",
+      "unblocks": "Most of yolo-s in Test 1, both models' auto_accept, and best_model.",
+      "hints": [
+        "yolo-s gets FPs on images where its boxes are perfect, but only on images detr-v2 already matched. What do the two models share?",
+        "Look at the 'copy' evaluate_model makes before matching, and at what match_image does to the pool.",
+        "dict(ground_truth) is shallow. Copy each list: {image: list(boxes) for image, boxes in ground_truth.items()}."
+      ],
+      "probes": [
+        "Why did detr-v2's auto_accept change too, even though detr-v2 is evaluated first?",
+        "Would copy.copy(ground_truth) have fixed it? What about copy.deepcopy?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "IoU threshold made strict",
+      "type": "off-by-one",
+      "file": "prelabel/matching.py",
+      "function": "match_image",
+      "old": "            if overlap >= IOU_THRESHOLD:",
+      "new": "            if overlap > IOU_THRESHOLD:",
+      "masked_by": [
+        "B1"
+      ],
+      "symptom": "Masked by B1. Once B1 is fixed: Test 1 test_yolo_images shows yolo-s img-03 as {tp 0, fp 1, fn 1}; Test 2 yolo totals are (9, 1, 3, 0.9, 0.75, 0.818) and img-03 is missing from yolo's auto_accept. best_model is still yolo-s.",
+      "why": "The spec matches at IoU >= 0.5. yolo-s's img-03 sign box covers exactly half of the ground truth (IoU 0.5) and is rejected by `>`.",
+      "unblocks": "yolo-s img-03 in Test 1, plus yolo totals/auto_accept.",
+      "hints": [
+        "After the area fix, one yolo-s image is still a miss. What is its IoU exactly?",
+        "Check the threshold comparison in match_image against rule 2.",
+        "Use `overlap >= IOU_THRESHOLD`."
+      ],
+      "probes": [
+        "Why was this invisible while area() added +1?",
+        "Why can this data test an exact 0.5 boundary with floats (what is special about 128/512 and 64/512)?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does load_predictions return, and which predictions does it keep?",
+      "a": "A nested mapping model -> image_id -> list of (score, Box) in file order. It drops rows whose image is not in images.csv, whose score is missing/blank, or whose score is below MIN_SCORE (0.30), and converts each box to pixels with from_normalized_center."
+    },
+    {
+      "q": "What does load_ground_truth return for an image with no reviewer boxes?",
+      "a": "An empty list. The result has one key for every image in images.csv (built with gt.get(image, [])); rows for unknown images such as img-12 are ignored."
+    },
+    {
+      "q": "How does match_image use the pool argument?",
+      "a": "It loops over predictions sorted by descending score, collects (iou, index) candidates from `pool` with the same label that pass the threshold check, asks pick_best for one, and pops that index out of `pool`. It returns (tp, fp); the caller reads fn as len(pool) afterwards."
+    },
+    {
+      "q": "In what order are models evaluated in build_report?",
+      "a": "sorted(preds), so detr-v2 first, then yolo-s. Both calls to evaluate_model receive the same `gt` dict object from load_ground_truth."
+    },
+    {
+      "q": "How is auto_accept computed?",
+      "a": "In build_report, after a model's counts are built: sorted images i where gt[i] is non-empty and that model's counts have fp == 0 and fn == 0."
+    },
+    {
+      "q": "Which IoUs sit close to the 0.5 threshold in this data?",
+      "a": "yolo-s on img-03 (sign, a 128x64 box inside a 128x128 ground truth) and yolo-s on img-04 (car, roughly a 100x51 box inside a 100x100 ground truth). Every other matched pair is well above 0.8."
+    }
+  ]
+}

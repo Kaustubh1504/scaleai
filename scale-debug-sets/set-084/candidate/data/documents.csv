@@ -1,0 +1,22 @@
+doc_id,collection,text
+faq-03,faq,How do I reset my password?
+FAQ-01,faq,What payment methods are accepted?
+faq-02,FAQ, Can I change my plan later?
+faq-05,faq,Where can I download invoices?
+faq-04,faq,Is there a free trial?
+ faq-06,faq,How do I contact support after hours?
+faq-07,faq,Do you offer student discounts?
+faq-08,faq,
+lg-02,legal,Termination requires thirty days written notice.
+lg-01,Legal,This agreement is governed by the laws of Ontario.
+lg-03,legal ,Liability is capped at fees paid in the prior year.
+pr-01,product,The X2 router supports dual band Wi-Fi.
+PR-02,product,Battery life is rated at ten hours.
+nw-01,news,Quarterly revenue grew eight percent.
+nw-02,News,The company opened an office in Lisbon.
+sp-01,support,Customer reports login loop on mobile.
+sp-02,support,"Customer reports that after upgrading the desktop app the sync service crashes on startup, every time, on two different laptops running the same build."
+sp-03,support,Refund requested for duplicate charge.
+ar-01,archive,Legacy pricing sheet from 2019.
+ar-02,archive,Old onboarding checklist.
+mk-01,marketing,Spring campaign tagline ideas.

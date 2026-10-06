@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_lookups"
+    ],
+    "failures": {
+      "tests.test_1_lookups.TestLookups.test_ner_lookups": "AssertionError: {'N1'[25 chars]t', 1), 'N3': ('hit', 1), 'N4': ('miss', 2), 'N5': ('hit', 2)} != {'N1'[25 chars]t', 1), 'N3': ('miss', 2), 'N4': ('hit', 2), 'N5': ('miss', 2)}\n  {'N1': ('miss', 1),\n   'N2': ('hit', 1),\n-  'N3': ('hit', 1),\n-  'N4': ('miss', 2),\n?    ^\n\n+  'N3': ('miss', 2),\n?    ^\n\n-  'N5': ('hit', 2)}\n?    ^             ^\n\n+  'N4': ('hit', 2),\n?    ^             ^\n\n+  'N5': ('miss', 2)}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_lookups"
+    ],
+    "failures": {
+      "tests.test_1_lookups.TestLookups.test_bbox_lookups": "AssertionError: {'B1'[24 chars]': ('hit', 1, 'en'), 'B3': ('hit', 1, 'en'), '[42 chars]en')} != {'B1'[24 chars]': ('miss', 1, 'fr'), 'B3': ('hit', 1, 'en'), [43 chars]en')}\n  {'B1': ('miss', 1, 'en'),\n-  'B2': ('hit', 1, 'en'),\n?          ^ ^       ^^\n\n+  'B2': ('miss', 1, 'fr'),\n?          ^ ^^       ^^\n\n   'B3': ('hit', 1, 'en'),\n-  'B4': ('hit', 1, 'en'),\n?                    ^^\n\n+  'B4': ('hit', 1, 'fr'),\n?                    ^^\n\n   'B5': ('miss', 1, 'en')}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_sentiment_payloads": "AssertionError: {'S1'[85 chars]tral', 'sarcasm', 'sarcasm'], 'S3': ['positive[216 chars]al']} != {'S1'[85 chars]tral'], 'S3': ['positive', 'negative', 'neutra[150 chars]al']}\n  {'S1': ['positive', 'negative', 'neutral', 'sarcasm'],\n-  'S2': ['positive', 'negative', 'neutral', 'sarcasm', 'sarcasm'],\n?                                          ----------------------\n\n+  'S2': ['positive', 'negative', 'neutral'],\n-  'S3': ['positive', 'negative', 'neutral', 'sarcasm', 'sarcasm'],\n?                                           -----------\n\n+  'S3': ['positive', 'negative', 'neutral', 'sarcasm'],\n-  'S"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_lookups",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_lookups.TestLookups.test_bbox_lookups",
+      "tests.test_1_lookups.TestLookups.test_ner_lookups",
+      "tests.test_2_report.TestReport.test_sentiment_payloads"
+    ]
+  }
+}

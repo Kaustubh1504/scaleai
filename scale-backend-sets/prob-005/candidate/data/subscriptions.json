@@ -1,0 +1,20 @@
+[
+  {
+    "id": "sub_warehouse",
+    "url": "http://127.0.0.1:9100/hooks/warehouse",
+    "secret": "whsec_warehouse_8f2c",
+    "event_types": ["*"]
+  },
+  {
+    "id": "sub_qa_bot",
+    "url": "http://127.0.0.1:9100/hooks/qa-bot",
+    "secret": "whsec_qa_bot_41d0",
+    "event_types": ["task.completed", "task.failed"]
+  },
+  {
+    "id": "sub_exports",
+    "url": "http://127.0.0.1:9100/hooks/exports",
+    "secret": "whsec_exports_a713",
+    "event_types": ["batch.exported"]
+  }
+]

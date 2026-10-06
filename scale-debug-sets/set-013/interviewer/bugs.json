@@ -1,0 +1,122 @@
+{
+  "id": "set-013",
+  "title": "Annotator speeding and copy detection",
+  "domain": "fraud_detection",
+  "length": "MINI",
+  "difficulty": "easy",
+  "format": "multi",
+  "package": "fraudscan",
+  "scenario": "Scan a day of captioning submissions: reject rows with bad timestamps, flag annotators whose share of sub-20-second submissions is at least 0.5, and flag annotators who gave the same normalised answer as a different annotator on a task.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_annotators",
+      "test_2_summary"
+    ]
+  },
+  "verified": [
+    {
+      "file": "fraudscan/timing.py",
+      "symbol": "is_fast",
+      "why_correct": "`<` looks like a boundary slip, but the spec says under 20 seconds is fast and exactly 20 is not. ann-07's 20-second submission confirms it. The duration uses total_seconds(), not .seconds."
+    },
+    {
+      "file": "fraudscan/copying.py",
+      "symbol": "norm_answer",
+      "why_correct": "split()/join collapses every run of whitespace and trims the ends, lower() handles case, and rstrip('.!?') drops trailing punctuation, exactly as README rule 4 says."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Submission annotator ids not lower-cased",
+      "type": "id-normalization",
+      "file": "fraudscan/loader.py",
+      "function": "load_submissions",
+      "old": "            annotator_id = norm_annotator(row[\"annotator_id\"])",
+      "new": "            annotator_id = row[\"annotator_id\"].strip()",
+      "symptom": "Test 1 test_annotator_table: ann-04 shows 3 submissions, fast_ratio 0.333 and no flags (expected 4 / 0.5 / speeding). Test 2: ann-04 is missing from flagged, and rejected is [] instead of ['s13'].",
+      "why": "The registry keys are lower-cased but submission ids are only trimmed, so rows written as 'ANN-04' / ' Ann-04' fail the registry check and are skipped as unknown annotators.",
+      "unblocks": "Test 1 row for ann-04 and the ann-04 entry in Test 2's flagged list. Exposes B2.",
+      "hints": [
+        "ann-04 has five rows in the CSV. How many does the report count, and which are missing?",
+        "Compare how annotator ids are cleaned in load_registry and in load_submissions.",
+        "Use norm_annotator(row[\"annotator_id\"]) in load_submissions."
+      ],
+      "probes": [
+        "Why did ann-03 and ann-08 (mixed case in annotators.csv) work fine?",
+        "After this fix, s13 is still missing from the rejected list. What does that tell you about where to look next?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Rejected submissions silently dropped",
+      "type": "swallowed-exception",
+      "file": "fraudscan/loader.py",
+      "function": "load_submissions",
+      "old": "            except ValueError:\n                rejected.append(row[\"submission_id\"].strip())\n                continue",
+      "new": "            except ValueError:\n                continue",
+      "masked_by": [
+        "B1"
+      ],
+      "symptom": "Only visible after B1 is fixed. Test 2 test_rejected_submissions: rejected is [] instead of ['s13']. Test 1 passes.",
+      "why": "The handler catches the parse error and moves on without recording the row, so a rejected submission disappears instead of being reported. The only such row (s13) belongs to ann-04 and is written ' Ann-04', so while B1 drops it as unknown the output is the same with or without this bug.",
+      "unblocks": "Test 2 rejected list.",
+      "hints": [
+        "s13 has a timestamp with no seconds. Where should it show up in the report?",
+        "Look at what the except block in load_submissions does with the row.",
+        "Append row[\"submission_id\"].strip() to rejected before `continue`."
+      ],
+      "probes": [
+        "Why was this invisible until ann-04's ids were normalised?",
+        "What would have made this failure loud instead of silent?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Same annotator resubmitting counted as copying",
+      "type": "missing-dedupe",
+      "file": "fraudscan/copying.py",
+      "function": "copy_tasks",
+      "old": "        who = {s.annotator_id for s in group}",
+      "new": "        who = [s.annotator_id for s in group]",
+      "symptom": "Test 1 test_annotator_table: ann-06 is flagged ['copying']. Test 2: copy_tasks gains 'T4': ['ann-06'] and ann-06 appears in flagged.",
+      "why": "A list keeps one entry per submission, so ann-06 submitting the same answer twice on T4 makes len(who) == 2 although only one annotator is involved. The spec needs two different annotators.",
+      "unblocks": "Test 1 row for ann-06 and the Test 2 flagged / copy_tasks entries.",
+      "hints": [
+        "Who is ann-06 supposed to have copied on T4?",
+        "Look at how copy_tasks counts the annotators that share an answer.",
+        "Build `who` as a set: {s.annotator_id for s in group}."
+      ],
+      "probes": [
+        "Why does the `found` accumulation still work once `who` is a set?",
+        "Should the resubmission itself be a separate signal? How would you add it without breaking this rule?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What is the flow inside build_report()?",
+      "a": "`load_registry` builds a set of normalised annotator ids from annotators.csv. `load_submissions` returns `(valid, rejected)`. build_report then builds one `AnnotatorReport` per annotator with valid submissions, counts fast ones with `timing.is_fast`, calls `flag_speeders`, and adds `copying` flags from `copying.copy_tasks`."
+    },
+    {
+      "q": "Which rows does load_submissions skip before parsing timestamps?",
+      "a": "Rows whose annotator id (as computed in that function) is not in the registry set. Those rows are skipped without being parsed or recorded anywhere."
+    },
+    {
+      "q": "When does parse_submission raise?",
+      "a": "`parse_time` raises ValueError if a timestamp matches none of the three formats in `TIME_FORMATS`, and parse_submission raises ValueError itself when `submitted_at` is earlier than `started_at`."
+    },
+    {
+      "q": "How is fast_ratio computed?",
+      "a": "It is a property on `AnnotatorReport` in models.py: `fast / submissions`, rounded to 3 decimals, or 0.0 if there are no submissions. `fast` is the count of submissions for which `is_fast` returned True."
+    },
+    {
+      "q": "How does copy_tasks group answers?",
+      "a": "It groups submissions by `(task_id, norm_answer(answer))`. For each group it builds `who` from the annotator ids, and when `who` has two or more entries those annotators are added to that task's set. It returns task id \u2192 sorted names, with tasks sorted."
+    },
+    {
+      "q": "Which annotators appear in the report?",
+      "a": "Only annotators who have at least one valid (non-rejected) submission, since table rows are created while iterating over valid submissions. They are listed in sorted id order."
+    }
+  ]
+}

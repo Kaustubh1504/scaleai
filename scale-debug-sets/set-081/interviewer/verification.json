@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_spans"
+    ],
+    "failures": {
+      "tests.test_1_spans.TestSpanNormalization.test_exported_spans": "AssertionError: {'D07[49 chars]25, 39, 'ORG', 'ann-a', 'Redwood Media,'], [52[325 chars]y']]} != {'D07[49 chars]25, 38, 'ORG', 'ann-a', 'Redwood Media'], [52,[321 chars]y']]}\n  {'D07': [[0, 12, 'PERSON', 'ann-a', \"Liam O'Brien\"],\n-          [25, 39, 'ORG', 'ann-a', 'Redwood Media,'],\n?                ^                                -\n\n+          [25, 38, 'ORG', 'ann-a', 'Redwood Media'],\n?                ^\n\n-          [52, 59, 'LOC', 'ann-a', 'Dublin.']],\n?                ^                         -\n\n+          [52, 58, 'LOC', 'ann-a', 'Dublin']],\n?                ^\n\n-  'D08': [[0, 19, 'ORG',"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_scores"
+    ],
+    "failures": {
+      "tests.test_2_scores.TestAgreementReport.test_annotator_scores": "AssertionError: {'ann[16 chars]fp': 4, 'fn': 2, 'precision': 0.636, 'recall':[272 chars]0.0}} != {'ann[16 chars]fp': 1, 'fn': 2, 'precision': 0.875, 'recall':[191 chars]588}}\n- {'ann-a': {'f1': 0.7,\n?                    ^\n\n+ {'ann-a': {'f1': 0.824,\n?                    ^^^\n\n             'fn': 2,\n-            'fp': 4,\n?                  ^\n\n+            'fp': 1,\n?                  ^\n\n-            'precision': 0.636,\n?                           ^^^\n\n+            'precision': 0.875,\n?                           ^^^\n\n             'recall': 0.778,\n             'tp': 7},\n-  'ann-b': {'f1': 0.32,\n?    "
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_scores"
+    ],
+    "failures": {
+      "tests.test_2_scores.TestAgreementReport.test_label_confusions": "AssertionError: Lists differ: [['ORG', 'LOC', 2], ['LOC', 'ORG', 2], ['PERSON', 'ORG', 1]] != [['LOC', 'ORG', 2], ['ORG', 'LOC', 2], ['PERSON', 'ORG', 1]]\n\nFirst differing element 0:\n['ORG', 'LOC', 2]\n['LOC', 'ORG', 2]\n\n- [['ORG', 'LOC', 2], ['LOC', 'ORG', 2], ['PERSON', 'ORG', 1]]\n+ [['LOC', 'ORG', 2], ['ORG', 'LOC', 2], ['PERSON', 'ORG', 1]]"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_spans",
+      "test_2_scores"
+    ],
+    "failing_tests": [
+      "tests.test_1_spans.TestSpanNormalization.test_exported_spans",
+      "tests.test_2_scores.TestAgreementReport.test_annotator_scores",
+      "tests.test_2_scores.TestAgreementReport.test_label_confusions"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+sample_id,doc_id,label,text,quality,created
+SM-01,sum-d01,faithful,The council approved the new budget.,0.9,2026-03-01
+SM-02,sum-d02,hallucinated,The mayor resigned after the vote.,0.4,03/01/2026
+SM-03,sum-d01,partial,Budget approved; details unclear.,0.6,2026-03-02
+SM-04,sum-d07,faithful,Rates rose by a quarter point.,0.9,2026-03-02
+SM-05,sum-d03,faithful,Rain is expected through Sunday.,,2 Mar 2026
+SM-06,sum-d01,hallucinated,The budget was rejected.,0.7,2026-03-03
+sm-07,sum-d02,faithful,Turnout was the highest in a decade.,0.8,2026-03-03
+SM-08,sum-d04,partial,  ,0.8,2026-03-03
+SM-09,sum-d03,partial,Storms are possible this weekend.,0.25,2026-03-04
+SM-10,Sum-D04,faithful,The bridge reopens on Monday.,0.85,03/04/2026
+SM-11,sum-d01,faithful,The council approved the new budget!,0.9,03/01/2026
+SM-12,sum-d05,hallucinated,Officials denied any delay.,0.5,2026-03-05
+SM-13,sum-d02,partial,Turnout rose.,0.35,5 Mar 2026
+SM-14,sum-d03,hallucinated,Snow will fall all week.,0.6,2026-03-05
+SM-15,sum-d06,faithful,Shares closed up two percent.,0.95,2026-03-06
+SM-16,sum-d01,partial,A budget passed.,0.65,2026-03-06

@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_request_body": "AssertionError: {'mod[185 chars], 'faq-02', 'faq-03'], 'newest_update': '2026-04-03 08:15:00'}} != {'mod[185 chars], 'faq-02', 'faq-03'], 'newest_update': '2026-04-03T08:15:00'}}\n  {'input': ['How do I reset my password',\n             'Where can I download my invoices',\n             'Can I change the billing email'],\n   'metadata': {'batch_id': 'b01',\n                'doc_ids': ['faq-01', 'faq-02', 'faq-03'],\n-               'newest_update': '2026-04-03 08:15:00'},\n?                                           ^\n\n+               'newest_update': '2026-04-03T08:15:00'},\n?                         "
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_concurrency_limit": "AssertionError: 7 not less than or equal to 2"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_retries"
+    ],
+    "failures": {
+      "tests.test_2_retries.TestRetries.test_attempts_per_batch": "AssertionError: Tuples differ: ({'b0[29 chars]04': 2, 'b05': 1, 'b06': 2, 'b07': 1}, {'b01':[59 chars]: 1}) != ({'b0[29 chars]04': 3, 'b05': 1, 'b06': 2, 'b07': 1}, {'b01':[59 chars]: 1})\n\nFirst differing element 0:\n{'b01': 1, 'b02': 2, 'b03': 1, 'b04': 2, 'b05': 1, 'b06': 2, 'b07': 1}\n{'b01': 1, 'b02': 2, 'b03': 1, 'b04': 3, 'b05': 1, 'b06': 2, 'b07': 1}\n\n- ({'b01': 1, 'b02': 2, 'b03': 1, 'b04': 2, 'b05': 1, 'b06': 2, 'b07': 1},\n?                                        ^\n\n+ ({'b01': 1, 'b02': 2, 'b03': 1, 'b04': 3, 'b05': 1, 'b06': 2, 'b07': 1},\n?                                        ^\n\n-  "
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_retries"
+    ],
+    "failures": {
+      "tests.test_2_retries.TestRetries.test_retry_after_respected": "AssertionError: 0.1 not greater than or equal to 0.3"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_doc_norms": "AssertionError: {'faq[102 chars]01': 10.77, 'sup-03': 7.81, 'sup-04': 6.403, '[95 chars].708} != {'faq[102 chars]01': 6.403, 'sup-03': 7.81, 'sup-04': 10.77, '[95 chars].708}\n  {'faq-01': 7.28,\n   'faq-02': 10.05,\n   'faq-03': 8.367,\n   'faq-07': 8.124,\n   'faq-08': 9.95,\n   'faq-09': 6.708,\n   'leg-01': 8.775,\n   'leg-02': 7.483,\n   'leg-03': 8.367,\n-  'sup-01': 10.77,\n?            ^ ^^^\n\n+  'sup-01': 6.403,\n?            ^^^ ^\n\n   'sup-03': 7.81,\n-  'sup-04': 6.403,\n?            ^ ^^^\n\n+  'sup-04': 10.77,\n?            ^^ ^^\n\n   'sup-05': 10.247,\n   'sup-06': 8.124,\n   'sup-08': 6.164}"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_summary": "AssertionError: {'emb[60 chars]c': 6, 'by_collection': {'faq': 6, 'legal': 3, 'support': 6}} != {'emb[60 chars]c': 6.93, 'by_collection': {'faq': 6, 'legal':[13 chars]: 6}}\n  {'by_collection': {'faq': 6, 'legal': 3, 'support': 6},\n   'embedded': 15,\n   'failed': 6,\n-  'tokens_per_doc': 6,\n+  'tokens_per_doc': 6.93,\n?                     +++\n\n   'total_tokens': 104}"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_requests",
+      "test_2_retries",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_requests.TestRequests.test_concurrency_limit",
+      "tests.test_1_requests.TestRequests.test_request_body",
+      "tests.test_2_retries.TestRetries.test_attempts_per_batch",
+      "tests.test_2_retries.TestRetries.test_retry_after_respected",
+      "tests.test_3_report.TestReport.test_doc_norms",
+      "tests.test_3_report.TestReport.test_summary"
+    ]
+  }
+}

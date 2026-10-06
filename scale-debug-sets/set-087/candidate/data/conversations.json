@@ -1,0 +1,74 @@
+[
+  {"id": "c01", "source": "sharegpt", "tags": "general; Greeting", "turns": [
+    {"role": "human", "content": "Hi there, can you help me plan a trip?"},
+    {"role": "gpt", "content": "Sure, where would you like to go?"}]},
+  {"id": "C02", "source": " OASST", "tags": "", "turns": [
+    {"role": "prompter", "content": "What is the capital of France?"},
+    {"role": "assistant", "content": "Paris."},
+    {"role": "Prompter", "content": "And of Spain?"},
+    {"role": "assistant", "content": " Madrid. "}]},
+  {"id": "c03", "source": "dolly", "tags": "summarize;;News", "turns": [
+    {"role": "instruction", "content": "You summarise news articles in one line."},
+    {"role": "user", "content": "Summarise: the city council approved a new park budget on Monday after a long debate."},
+    {"role": "assistant", "content": "Council approves park budget."}]},
+  {"id": "c04", "source": "math-tutor", "tags": "math", "turns": [
+    {"role": "user", "content": "What is 2 plus 2?"},
+    {"role": "assistant", "content": "4"},
+    {"role": "user", "content": "And 3 times 3?"},
+    {"role": "assistant", "content": "9"},
+    {"role": "user", "content": "Now 12 divided by 4?"},
+    {"role": "assistant", "content": "3"}]},
+  {"id": "c05", "source": "Internal-QA", "tags": "qa", "turns": [
+    {"role": "user", "content": "How do I reset my password?"},
+    {"role": "user", "content": "   "},
+    {"role": "user", "content": "It says the link expired."},
+    {"role": "Bot", "content": "Request a new link from the login page."}]},
+  {"id": "c06", "source": "sharegpt", "tags": "travel", "turns": [
+    {"role": "system", "content": "You are a friendly travel agent."},
+    {"role": "human", "content": "Find me a hotel in Rome."},
+    {"role": "gpt", "content": "Here are three options near the Colosseum."},
+    {"role": "system", "content": "Always answer in French."},
+    {"role": "human", "content": "Something cheaper please."},
+    {"role": "gpt", "content": "Try the hostel on Via Cavour."}]},
+  {"id": "c07", "source": "code-review", "tags": "code; review", "turns": [
+    {"role": "assistant", "content": "Welcome to code review."},
+    {"role": "user", "content": "Please review this function name: getData."},
+    {"role": "model", "content": "Consider a more specific name such as load_user_profile."},
+    {"role": "user", "content": "Thanks."}]},
+  {"id": "c08", "source": "vendor-a", "tags": "Support", "turns": [
+    {"role": "user", "content": "My order has not arrived."},
+    {"role": "tool", "content": "lookup_order(4411)"},
+    {"role": "assistant", "content": "Your order ships tomorrow."}]},
+  {"id": "c09", "source": "vendor-b", "tags": "chitchat", "turns": [
+    {"role": "user", "content": "Tell me a fun fact about octopuses for my class."},
+    {"role": "assistant", "content": "Octopuses have three hearts and blue blood, which helps them survive in cold water."},
+    {"role": "user", "content": "Great, and can you give me one about sea turtles?"},
+    {"role": "assistant", "content": "Sea turtles can migrate thousands of miles and often return to the same beach."}]},
+  {"id": "c10", "source": "dolly", "tags": "", "turns": [
+    {"role": "user", "content": "Write a detailed paragraph explaining how photosynthesis converts sunlight water and carbon dioxide into glucose and oxygen inside the chloroplasts of green plants and why it matters for life on Earth."},
+    {"role": "assistant", "content": "Photosynthesis powers nearly all ecosystems."}]},
+  {"id": "c11", "source": "legacy-chat", "tags": "old", "turns": [
+    {"role": "user", "content": "hello"},
+    {"role": "assistant", "content": "hi"}]},
+  {"id": "c12", "source": "reddit", "tags": "forum", "turns": [
+    {"role": "user", "content": "Best pizza topping?"},
+    {"role": "assistant", "content": "Mushrooms."}]},
+  {"id": "c13", "source": "oasst", "tags": "faq", "turns": [
+    {"role": "user", "content": "Is anyone there?"},
+    {"role": "assistant", "content": ""}]},
+  {"id": "c14", "source": "sharegpt", "tags": "cooking;", "turns": [
+    {"role": "sys", "content": "Answer as a chef."},
+    {"role": "Human", "content": "How long should I boil an egg?"},
+    {"role": "gpt", "content": "About nine minutes for a firm yolk."},
+    {"role": "human", "content": "And for a soft one?"},
+    {"role": "gpt", "content": "Six minutes."}]},
+  {"id": "c15", "source": "support-logs", "tags": "support", "turns": [
+    {"role": "user", "content": "Refund please."},
+    {"role": "assistant", "content": "Done."}]},
+  {"id": " C16 ", "source": "VENDOR-A", "tags": " Support ;billing ", "turns": [
+    {"role": "  Human", "content": "Why was I charged twice?"},
+    {"role": "function", "content": "billing_lookup()"},
+    {"role": "Assistant", "content": "One charge was a temporary hold and will drop off."},
+    {"role": "user", "content": "Okay, thanks."},
+    {"role": "assistant", "content": "You are welcome."}]}
+]

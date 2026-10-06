@@ -1,0 +1,88 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_ingest",
+      "test_2_catalog",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_1_ingest.TestIngest.test_accepted_per_source": "AssertionError: {'supplier_a': 0, 'supplier_b': 10} != {'supplier_a': 8, 'supplier_b': 10}\n- {'supplier_a': 0, 'supplier_b': 10}\n?                ^\n\n+ {'supplier_a': 8, 'supplier_b': 10}\n?                ^\n",
+      "tests.test_1_ingest.TestIngest.test_rejects": "AssertionError: Lists differ: [('supplier_a', 2, 'missing_sku'), ('supplier_a', 3, 'mis[556 chars]ce')] != [('supplier_a', 5, 'missing_sku'), ('supplier_a', 7, 'unk[280 chars]ce')]\n\nFirst differing element 0:\n('supplier_a', 2, 'missing_sku')\n('supplier_a', 5, 'missing_sku')\n\nFirst list contains 8 additional elements.\nFirst extra element 10:\n('supplier_a', 12, 'missing_sku')\n\nDiff is 1072 characters long. Set self.maxDiff to None to see it.",
+      "tests.test_2_catalog.TestCatalog.test_catalog_records": "AssertionError: {'CB-[119 chars]DR-201': {'title': 'Drill bit set', 'category'[881 chars]_b'}} != {'CB-[119 chars]DR-200': {'title': 'Cordless drill kit', 'cate[1242 chars]_b'}}\n  {'CB-120': {'category': 'electrical',\n              'price_cents': 480,\n              'qty': 60,\n              'source': 'supplier_b',\n              'title': 'Cable ties 100pk'},\n+  'DR-200': {'category': 'tools',\n+             'price_cents': 124900,\n+             'qty': 3,\n+             'source': 'supplier_a',\n+             'title': 'Cordless drill kit'},\n   'DR-201': {'category': 'tools',\n              'price_cents",
+      "tests.test_2_catalog.TestCatalog.test_catalog_skus": "AssertionError: Lists differ: ['CB-120', 'DR-201', 'GD-700', 'GD-702', 'HM-100', 'LT-400[27 chars]801'] != ['CB-120', 'DR-200', 'DR-201', 'EL-900', 'GD-700', 'GD-702[57 chars]801']\n\nFirst differing element 1:\n'DR-201'\n'DR-200'\n\nSecond list contains 3 additional elements.\nFirst extra element 9:\n'PR-050'\n\n  ['CB-120',\n+  'DR-200',\n   'DR-201',\n+  'EL-900',\n   'GD-700',\n   'GD-702',\n   'HM-100',\n   'LT-400',\n   'LT-401',\n   'PR-050',\n+  'PT-310',\n   'SF-801']",
+      "tests.test_3_summary.TestSummary.test_categories": "AssertionError: {'ele[14 chars]us': 1, 'units': 60, 'avg_price': 4.8, 'stock_[319 chars]1.9}} != {'ele[14 chars]us': 2, 'units': 60, 'avg_price': 8.4, 'stock_[398 chars].88}}\n- {'electrical': {'avg_price': 4.8, 'skus': 1, 'stock_value': 288.0, 'units': 60},\n?                               --          ^\n\n+ {'electrical': {'avg_price': 8.4, 'skus': 2, 'stock_value': 288.0, 'units': 60},\n?                              ++           ^\n\n   'garden': {'avg_price': 21.6, 'skus': 2, 'stock_value': 393.0, 'units': 16},\n   'lighting': {'avg_price': 29.65, 'skus': 2, 'stock_value': 440.0, 'units': 10},\n+ ",
+      "tests.test_3_summary.TestSummary.test_counts": "AssertionError: Tuples differ: (1, 0, {'bad_date': 1, 'bad_price': 2, 'mi[34 chars]: 1}) != (2, 4, {'bad_date': 2, 'bad_price': 2, 'ba[47 chars]: 3})\n\nFirst differing element 0:\n1\n2\n\n- (1,\n-  0,\n-  {'bad_date': 1, 'bad_price': 2, 'missing_sku': 14, 'unknown_category': 1})\n+ (2,\n+  4,\n+  {'bad_date': 2,\n+   'bad_price': 2,\n+   'bad_qty': 2,\n+   'missing_sku': 1,\n+   'unknown_category': 3})"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_ingest",
+      "test_2_catalog",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_1_ingest.TestIngest.test_accepted_per_source": "AssertionError: {'supplier_a': 9, 'supplier_b': 10} != {'supplier_a': 8, 'supplier_b': 10}\n- {'supplier_a': 9, 'supplier_b': 10}\n?                ^\n\n+ {'supplier_a': 8, 'supplier_b': 10}\n?                ^\n",
+      "tests.test_1_ingest.TestIngest.test_rejects": "AssertionError: Lists differ: [('su[79 chars]_a', 10, 'bad_qty'), ('supplier_a', 12, 'bad_d[177 chars]ce')] != [('su[79 chars]_a', 8, 'bad_qty'), ('supplier_a', 10, 'bad_qt[207 chars]ce')]\n\nFirst differing element 2:\n('supplier_a', 10, 'bad_qty')\n('supplier_a', 8, 'bad_qty')\n\nSecond list contains 1 additional elements.\nFirst extra element 9:\n('supplier_b', 15, 'bad_price')\n\n  [('supplier_a', 5, 'missing_sku'),\n   ('supplier_a', 7, 'unknown_category'),\n+  ('supplier_a', 8, 'bad_qty'),\n   ('supplier_a', 10, 'bad_qty'),\n   ('supplier_a', 12, 'bad_date'),\n   ('supplier_a', 14, 'unknown_category'),",
+      "tests.test_2_catalog.TestCatalog.test_catalog_records": "AssertionError: {'CB-[469 chars]'}, 'FS-600': {'title': 'Wood screws 200pk', '[1013 chars]_b'}} != {'CB-[469 chars]'}, 'GD-700': {'title': 'Garden hose 50ft', 'c[892 chars]_b'}}\n  {'CB-120': {'category': 'electrical',\n              'price_cents': 480,\n              'qty': 60,\n              'source': 'supplier_b',\n              'title': 'Cable ties 100pk'},\n   'DR-200': {'category': 'tools',\n              'price_cents': 124900,\n              'qty': 3,\n              'source': 'supplier_a',\n              'title': 'Cordless drill kit'},\n   'DR-201': {'category': 'tools',\n              'price_cents",
+      "tests.test_2_catalog.TestCatalog.test_catalog_skus": "AssertionError: Lists differ: ['CB-[32 chars]0', 'FS-600', 'GD-700', 'GD-702', 'HM-100', 'L[42 chars]801'] != ['CB-[32 chars]0', 'GD-700', 'GD-702', 'HM-100', 'LT-400', 'L[32 chars]801']\n\nFirst differing element 4:\n'FS-600'\n'GD-700'\n\nFirst list contains 1 additional elements.\nFirst extra element 12:\n'SF-801'\n\n  ['CB-120',\n   'DR-200',\n   'DR-201',\n   'EL-900',\n-  'FS-600',\n   'GD-700',\n   'GD-702',\n   'HM-100',\n   'LT-400',\n   'LT-401',\n   'PR-050',\n   'PT-310',\n   'SF-801']",
+      "tests.test_3_summary.TestSummary.test_categories": "AssertionError: {'ele[72 chars]0}, 'fasteners': {'skus': 1, 'units': 0, 'avg_[417 chars].88}} != {'ele[72 chars]0}, 'garden': {'skus': 2, 'units': 16, 'avg_pr[340 chars].88}}\n  {'electrical': {'avg_price': 8.4, 'skus': 2, 'stock_value': 288.0, 'units': 60},\n-  'fasteners': {'avg_price': 9.49, 'skus': 1, 'stock_value': 0.0, 'units': 0},\n   'garden': {'avg_price': 21.6, 'skus': 2, 'stock_value': 393.0, 'units': 16},\n   'lighting': {'avg_price': 29.65, 'skus': 2, 'stock_value': 440.0, 'units': 10},\n   'paint': {'avg_price': 38.5, 'skus': 1, 'stock_value': 770.0, 'units': 20},\n   'safety': {'avg_p",
+      "tests.test_3_summary.TestSummary.test_counts": "AssertionError: Tuples differ: (2, 4[26 chars]ce': 2, 'bad_qty': 1, 'missing_sku': 1, 'unknown_category': 3}) != (2, 4[26 chars]ce': 2, 'bad_qty': 2, 'missing_sku': 1, 'unknown_category': 3})\n\nFirst differing element 2:\n{'bad[18 chars]ice': 2, 'bad_qty': 1, 'missing_sku': 1, 'unknown_category': 3}\n{'bad[18 chars]ice': 2, 'bad_qty': 2, 'missing_sku': 1, 'unknown_category': 3}\n\n  (2,\n   4,\n   {'bad_date': 2,\n    'bad_price': 2,\n-   'bad_qty': 1,\n?              ^\n\n+   'bad_qty': 2,\n?              ^\n\n    'missing_sku': 1,\n    'unknown_category': 3})"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_catalog",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_2_catalog.TestCatalog.test_catalog_records": "AssertionError: {'CB-[854 chars]light', 'category': 'lighting', 'price_cents':[502 chars]_b'}} != {'CB-[854 chars]light 4ft', 'category': 'lighting', 'price_cen[507 chars]_b'}}\n  {'CB-120': {'category': 'electrical',\n              'price_cents': 480,\n              'qty': 60,\n              'source': 'supplier_b',\n              'title': 'Cable ties 100pk'},\n   'DR-200': {'category': 'tools',\n              'price_cents': 124900,\n              'qty': 3,\n              'source': 'supplier_a',\n              'title': 'Cordless drill kit'},\n   'DR-201': {'category': 'tools',\n              'price_cents'",
+      "tests.test_3_summary.TestSummary.test_categories": "AssertionError: {'ele[181 chars]ts': 8, 'avg_price': 30.15, 'stock_value': 360[230 chars].88}} != {'ele[181 chars]ts': 10, 'avg_price': 29.65, 'stock_value': 44[231 chars].88}}\n  {'electrical': {'avg_price': 8.4, 'skus': 2, 'stock_value': 288.0, 'units': 60},\n   'garden': {'avg_price': 21.6, 'skus': 2, 'stock_value': 393.0, 'units': 16},\n-  'lighting': {'avg_price': 30.15, 'skus': 2, 'stock_value': 360.0, 'units': 8},\n?                            ^^ ^                             ^^              ^\n\n+  'lighting': {'avg_price': 29.65, 'skus': 2, 'stock_value': 440.0, 'units': 10},\n?             "
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_1_ingest",
+      "test_2_catalog",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_1_ingest.TestIngest.test_accepted_per_source": "AssertionError: {'supplier_a': 8, 'supplier_b': 9} != {'supplier_a': 8, 'supplier_b': 10}\n- {'supplier_a': 8, 'supplier_b': 9}\n?                                 ^\n\n+ {'supplier_a': 8, 'supplier_b': 10}\n?                                 ^^\n",
+      "tests.test_1_ingest.TestIngest.test_rejects": "AssertionError: Lists differ: [('su[212 chars]_b', 5, 'bad_price'), ('supplier_b', 8, 'bad_p[106 chars]ce')] != [('su[212 chars]_b', 8, 'bad_price'), ('supplier_b', 9, 'bad_d[74 chars]ce')]\n\nFirst differing element 6:\n('supplier_b', 5, 'bad_price')\n('supplier_b', 8, 'bad_price')\n\nFirst list contains 1 additional elements.\nFirst extra element 10:\n('supplier_b', 15, 'bad_price')\n\n  [('supplier_a', 5, 'missing_sku'),\n   ('supplier_a', 7, 'unknown_category'),\n   ('supplier_a', 8, 'bad_qty'),\n   ('supplier_a', 10, 'bad_qty'),\n   ('supplier_a', 12, 'bad_date'),\n   ('supplier_a', 14, 'unknown_categor",
+      "tests.test_2_catalog.TestCatalog.test_catalog_records": "AssertionError: {'CB-[1056 chars]}, 'PT-310': {'title': 'Exterior paint 1gal', [188 chars]_b'}} != {'CB-[1056 chars]}, 'PR-050': {'title': 'Promo work gloves', 'c[305 chars]_b'}}\n  {'CB-120': {'category': 'electrical',\n              'price_cents': 480,\n              'qty': 60,\n              'source': 'supplier_b',\n              'title': 'Cable ties 100pk'},\n   'DR-200': {'category': 'tools',\n              'price_cents': 124900,\n              'qty': 3,\n              'source': 'supplier_a',\n              'title': 'Cordless drill kit'},\n   'DR-201': {'category': 'tools',\n              'price_cent",
+      "tests.test_2_catalog.TestCatalog.test_catalog_skus": "AssertionError: Lists differ: ['CB-[52 chars]2', 'HM-100', 'LT-400', 'LT-401', 'PT-310', 'SF-801'] != ['CB-[52 chars]2', 'HM-100', 'LT-400', 'LT-401', 'PR-050', 'PT-310', 'SF-801']\n\nFirst differing element 9:\n'PT-310'\n'PR-050'\n\nSecond list contains 1 additional elements.\nFirst extra element 11:\n'SF-801'\n\n  ['CB-120',\n   'DR-200',\n   'DR-201',\n   'EL-900',\n   'GD-700',\n   'GD-702',\n   'HM-100',\n   'LT-400',\n   'LT-401',\n+  'PR-050',\n   'PT-310',\n   'SF-801']",
+      "tests.test_3_summary.TestSummary.test_categories": "AssertionError: {'ele[323 chars]us': 1, 'units': 12, 'avg_price': 18.6, 'stock[90 chars].88}} != {'ele[323 chars]us': 2, 'units': 37, 'avg_price': 9.3, 'stock_[89 chars].88}}\n  {'electrical': {'avg_price': 8.4, 'skus': 2, 'stock_value': 288.0, 'units': 60},\n   'garden': {'avg_price': 21.6, 'skus': 2, 'stock_value': 393.0, 'units': 16},\n   'lighting': {'avg_price': 29.65, 'skus': 2, 'stock_value': 440.0, 'units': 10},\n   'paint': {'avg_price': 38.5, 'skus': 1, 'stock_value': 770.0, 'units': 20},\n-  'safety': {'avg_price': 18.6, 'skus': 1, 'stock_value': 223.2, 'units': 12},\n?                   ",
+      "tests.test_3_summary.TestSummary.test_counts": "AssertionError: Tuples differ: (2, 4[26 chars]ce': 3, 'bad_qty': 2, 'missing_sku': 1, 'unknown_category': 3}) != (2, 4[26 chars]ce': 2, 'bad_qty': 2, 'missing_sku': 1, 'unknown_category': 3})\n\nFirst differing element 2:\n{'bad[18 chars]ice': 3, 'bad_qty': 2, 'missing_sku': 1, 'unknown_category': 3}\n{'bad[18 chars]ice': 2, 'bad_qty': 2, 'missing_sku': 1, 'unknown_category': 3}\n\n  (2,\n   4,\n   {'bad_date': 2,\n-   'bad_price': 3,\n?                ^\n\n+   'bad_price': 2,\n?                ^\n\n    'bad_qty': 2,\n    'missing_sku': 1,\n    'unknown_category': 3})"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_categories": "AssertionError: {'ele[90 chars]us': 3, 'units': 25, 'avg_price': 21.53, 'stoc[323 chars].88}} != {'ele[90 chars]us': 2, 'units': 16, 'avg_price': 21.6, 'stock[322 chars].88}}\n  {'electrical': {'avg_price': 8.4, 'skus': 2, 'stock_value': 288.0, 'units': 60},\n-  'garden': {'avg_price': 21.53, 'skus': 3, 'stock_value': 585.6, 'units': 25},\n?                             ^^          ^                 ^^^ ^           ^^\n\n+  'garden': {'avg_price': 21.6, 'skus': 2, 'stock_value': 393.0, 'units': 16},\n?                             ^          ^                 ^^^ ^           ^^\n\n   'lighting': {'avg_p"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_categories": "AssertionError: {'ele[401 chars]: 3, 'units': 37, 'avg_price': 429.99, 'stock_value': 4398.88}} != {'ele[401 chars]: 3, 'units': 37, 'avg_price': 430.0, 'stock_value': 4398.88}}\n  {'electrical': {'avg_price': 8.4, 'skus': 2, 'stock_value': 288.0, 'units': 60},\n   'garden': {'avg_price': 21.6, 'skus': 2, 'stock_value': 393.0, 'units': 16},\n   'lighting': {'avg_price': 29.65, 'skus': 2, 'stock_value': 440.0, 'units': 10},\n   'paint': {'avg_price': 38.5, 'skus': 1, 'stock_value': 770.0, 'units': 20},\n   'safety': {'avg_price': 9.3, 'skus': 2, 'stock_value': 223.2, 'units': 37},\n-  'tools': {'avg_"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_ingest",
+      "test_2_catalog",
+      "test_3_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_ingest.TestIngest.test_accepted_per_source",
+      "tests.test_1_ingest.TestIngest.test_rejects",
+      "tests.test_2_catalog.TestCatalog.test_catalog_records",
+      "tests.test_2_catalog.TestCatalog.test_catalog_skus",
+      "tests.test_3_summary.TestSummary.test_categories",
+      "tests.test_3_summary.TestSummary.test_counts"
+    ]
+  }
+}

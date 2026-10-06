@@ -1,0 +1,5 @@
+{
+  "starter": {"limit": 3, "window_ms": 60000, "price_per_1k": "0.40", "included_tokens": 1000},
+  "Growth": {"limit": 5, "window_ms": 60000, "price_per_1k": "0.25", "included_tokens": 5000},
+  "scale": {"limit": 10, "window_ms": 60000, "price_per_1k": 0.15, "included_tokens": 20000}
+}

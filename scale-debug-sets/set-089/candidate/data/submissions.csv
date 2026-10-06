@@ -1,0 +1,41 @@
+submission_id,team,benchmark,score,submitted_at
+S01,kelp,reasoning,58,2026-09-02 10:00
+S02,Kelp,reasoning,64,09/05/2026 14:30
+S03,kelp,coding,45,2026-09-04 09:00
+S04,kelp,latency_ms,230,2026-09-03 11:00
+S05,kelp ,Latency_ms,200,2026-09-08T16:00:00
+S06,kelp,safety,81,2026-09-09 12:00
+S07,narwhal,reasoning,80,2026-09-06 08:00
+S07,narwhal,reasoning,80,2026-09-06 08:00
+S08,narwhal,coding,40,09/07/2026 10:15
+S09,NARWHAL,latency_ms,250,2026-09-07 11:00
+S10,narwhal,safety,72,2026-09-11 09:30
+S12,puffin,reasoning,60,2026-09-03 15:00
+S13,puffin,Coding,50,2026-09-10 13:00
+S14,puffin,latency_ms,400,2026-09-04T10:00:00
+S15,puffin,safety,45,2026-09-05 10:00
+S16,otter,reasoning,72,2026-09-02 09:00
+S17,otter,coding,30,2026-09-03 09:00
+S18, otter,latency_ms,500,2026-09-04 09:00
+S19,otter,safety,90,09/06/2026 09:00
+S20,orca,reasoning,48,2026-09-03 12:00
+S21,Orca,coding,40,2026-09-05 12:00
+S22,orca,latency_ms,250,2026-09-09 12:00
+S23,orca,safety,54,2026-09-10 12:00
+S24,orca,reasoning,52,09/15/2026 00:00
+S25,lynx,reasoning,56,2026-09-03 09:00
+S26,lynx,coding,35,2026-09-07 09:00
+S27,lynx,latency_ms,400,2026-09-10 08:00
+S28,lynx,safety,63,2026-09-05T09:00:00
+S29,heron,reasoning,56,2026-09-02 14:00
+S30,heron,coding,35,2026-09-06 14:00
+S31,Heron,latency_ms,400,2026-09-12T16:00:00
+S32,heron,safety,63,2026-09-04 14:00
+S33,marten,reasoning,40,2026-09-13 18:00
+S34,wren,coding,25,2026-09-14 23:59
+S35,wren,safety,45,2026-09-01 00:00
+S36,ibis,reasoning,70,2026-08-31 23:59
+S37,fox,reasoning,95,2026-09-04 10:00
+S38,moth,coding,55,2026-09-05 10:00
+S39,kelp,trivia_v1,99,2026-09-06 10:00
+S40,puffin,coding,,2026-09-07 10:00

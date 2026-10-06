@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_cleaning"
+    ],
+    "failures": {
+      "tests.test_1_cleaning.TestCleaning.test_consent_exclusions": "AssertionError: Lists differ: ['C027'] != ['C002', 'C012', 'C017', 'C027']\n\nFirst differing element 0:\n'C027'\n'C002'\n\nSecond list contains 3 additional elements.\nFirst extra element 1:\n'C012'\n\n- ['C027']\n+ ['C002', 'C012', 'C017', 'C027']"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_cleaning"
+    ],
+    "failures": {
+      "tests.test_1_cleaning.TestCleaning.test_duration_exclusions": "AssertionError: Lists differ: ['C004', 'C011', 'C022'] != ['C011', 'C022']\n\nFirst differing element 0:\n'C004'\n'C011'\n\nFirst list contains 1 additional elements.\nFirst extra element 2:\n'C022'\n\n- ['C004', 'C011', 'C022']\n?  --------\n\n+ ['C011', 'C022']"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_assignment"
+    ],
+    "failures": {
+      "tests.test_2_assignment.TestAssignment.test_held_out_speakers_in_test": "AssertionError: {'S08': 'test', 'S09': 'train', 'S19': 'test'} != {'S08': 'test', 'S09': 'test', 'S19': 'test'}\n- {'S08': 'test', 'S09': 'train', 'S19': 'test'}\n?                          ^^^^\n\n+ {'S08': 'test', 'S09': 'test', 'S19': 'test'}\n?                          ^^^\n"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_assignment"
+    ],
+    "failures": {
+      "tests.test_2_assignment.TestAssignment.test_strata_sizes": "AssertionError: {'US': 1, 'au': 3, 'in': 4, 'uk': 7, 'us': 6} != {'au': 3, 'in': 4, 'uk': 7, 'us': 7}\n- {'US': 1, 'au': 3, 'in': 4, 'uk': 7, 'us': 6}\n?  ---------                                 ^\n\n+ {'au': 3, 'in': 4, 'uk': 7, 'us': 7}\n?                                   ^\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestValidationSplit.test_val_minutes": "AssertionError: 1 != 1.66"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestValidationSplit.test_val_accent_mix": "AssertionError: {'i': 2, 'k': 2, 'n': 2, 's': 3, 'u': 5} != {'in': 2, 'uk': 2, 'us': 3}\n- {'i': 2, 'k': 2, 'n': 2, 's': 3, 'u': 5}\n+ {'in': 2, 'uk': 2, 'us': 3}"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_cleaning",
+      "test_2_assignment",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_cleaning.TestCleaning.test_consent_exclusions",
+      "tests.test_1_cleaning.TestCleaning.test_duration_exclusions",
+      "tests.test_2_assignment.TestAssignment.test_held_out_speakers_in_test",
+      "tests.test_2_assignment.TestAssignment.test_strata_sizes",
+      "tests.test_3_report.TestValidationSplit.test_val_accent_mix",
+      "tests.test_3_report.TestValidationSplit.test_val_minutes"
+    ]
+  }
+}

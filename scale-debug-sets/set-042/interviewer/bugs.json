@@ -1,0 +1,181 @@
+{
+  "id": "set-042",
+  "title": "Teleop episode QA: sync, frame gaps and task metrics",
+  "domain": "robotics_episodes",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "robolog",
+  "scenario": "Validate robot teleop episodes (missing streams, too few frames, camera frame gaps, camera/joint sync within an inclusive 20 ms window), then report per-task success and recorded time and fleet-level tag/operator counts.",
+  "verified": [
+    {
+      "file": "robolog/sync.py",
+      "symbol": "nearest_offset",
+      "why_correct": "bisect_left returns the insertion point, so the closest sample is either just before it (i - 1) or at it (i). The bounds check handles t before the first or after the last sample, and `gap < best` is fine because equal gaps give the same distance either way."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Sync window excludes the 20 ms boundary",
+      "type": "time-window-boundary",
+      "file": "robolog/sync.py",
+      "function": "sync_ratio",
+      "test": "test_1_validity.TestValidity.test_sync_ratios",
+      "old": "nearest_offset(t, joints) <= SYNC_TOLERANCE_MS",
+      "new": "nearest_offset(t, joints) < SYNC_TOLERANCE_MS",
+      "why": "Rule 4 makes the 20 ms window inclusive. With `<`, the three EP-03 camera frames whose nearest joint sample is exactly 20 ms away (around the joint dropouts at 400, 1200 and 2000 ms) count as unsynced.",
+      "unblocks": "test_sync_ratios",
+      "hints": [
+        "EP-03 is reported at 0.95. Look at its joint stream around 400 ms: which sample is nearest to that camera frame?",
+        "Check how sync_ratio decides that a frame is synced against README rule 4.",
+        "Use `<= SYNC_TOLERANCE_MS` in sync_ratio."
+      ],
+      "probes": [
+        "Why did EP-11, which sits right at the 0.9 threshold, keep its ratio?",
+        "Why does EP-03 stay valid with or without the fix?"
+      ],
+      "symptom": "test_1 test_sync_ratios: EP-03 shows sync_ratio 0.95 instead of 1.0 (it still counts as valid). Every other ratio matches."
+    },
+    {
+      "id": "B2",
+      "title": "fps counts frames instead of intervals",
+      "type": "off-by-one",
+      "file": "robolog/validity.py",
+      "function": "camera_stats",
+      "test": "test_1_validity.TestValidity.test_frame_rates",
+      "old": "    fps = round((frames - 1) / (duration_ms / 1000), 2)",
+      "new": "    fps = round(frames / (duration_ms / 1000), 2)",
+      "why": "duration is measured first frame to last frame, which spans frames \u2212 1 intervals. Dividing the frame count by it overstates the rate (60 frames over 2.36 s gives 25.42 instead of 25.0).",
+      "unblocks": "test_frame_rates",
+      "hints": [
+        "A 40 ms camera should be exactly 25 fps. Why does EP-01 show more?",
+        "Look at how fps is derived from frames and duration in camera_stats.",
+        "Use (frames - 1) / (duration_ms / 1000)."
+      ],
+      "probes": [
+        "Why does the error shrink for longer episodes?",
+        "Why didn't this change any episode's validity?"
+      ],
+      "symptom": "test_1 test_frame_rates: every fps is a little too high (EP-01 25.42, EP-02 25.46, EP-05 23.58 ...) instead of 25.0 / 23.11 etc."
+    },
+    {
+      "id": "B3",
+      "title": "Any non-blank success string counts as a success",
+      "type": "bool-from-string",
+      "file": "robolog/utils.py",
+      "function": "parse_bool",
+      "test": "test_2_tasks.TestTaskMetrics.test_success_rates",
+      "old": "    return clean(value).lower() in TRUTHY",
+      "new": "    return bool(clean(value))",
+      "why": "bool() of any non-empty string is True, so `false`, `False` and `No` are read as successes. Only the blank EP-09 cell stays False.",
+      "unblocks": "test_success_rates",
+      "hints": [
+        "pick shows a 1.0 success rate. Count the success column for the valid pick episodes.",
+        "Follow how the `success` cell becomes a bool.",
+        "parse_bool should return clean(value).lower() in TRUTHY."
+      ],
+      "probes": [
+        "Why was wipe's success rate unaffected?",
+        "Which other values in this CSV would bool() get right by accident?"
+      ],
+      "symptom": "test_2 test_success_rates: pick 1.0 and pour 1.0 instead of 0.6 and 0.0; place and wipe unchanged."
+    },
+    {
+      "id": "B4",
+      "title": "Recorded time floored to whole seconds",
+      "type": "integer-division",
+      "file": "robolog/metrics.py",
+      "function": "task_metrics",
+      "test": "test_2_tasks.TestTaskMetrics.test_recorded_seconds",
+      "old": "\"recorded_s\": round(recorded_ms / 1000, 2),",
+      "new": "\"recorded_s\": round(recorded_ms // 1000, 2),",
+      "why": "`//` floors the millisecond total to whole seconds before rounding, so 11070 ms becomes 11 instead of 11.07. round() can't bring the lost fraction back.",
+      "unblocks": "test_recorded_seconds",
+      "hints": [
+        "Every recorded_s value is a whole number. Is that plausible for 2.07 s episodes?",
+        "Look at the ms-to-seconds conversion in task_metrics.",
+        "Use recorded_ms / 1000, not //."
+      ],
+      "probes": [
+        "Why doesn't round(..., 2) rescue the value?",
+        "Where else in the code is milliseconds converted to seconds, and why is that one fine?"
+      ],
+      "symptom": "test_2 test_recorded_seconds: whole numbers {'pick': 11, 'place': 6, 'pour': 3, 'wipe': 3} instead of 11.07 / 6.12 / 3.5 / 3.94."
+    },
+    {
+      "id": "B5",
+      "title": "Blank tags split into an empty tag",
+      "type": "empty-split",
+      "file": "robolog/loader.py",
+      "function": "split_tags",
+      "test": "test_3_report.TestSummary.test_tag_counts",
+      "old": "    return [tag.strip() for tag in text.split(\";\")] if text else []",
+      "new": "    return [tag.strip() for tag in text.split(\";\")]",
+      "why": "`\"\".split(\";\")` is `[\"\"]`, not `[]`, so the three blank-tag episodes get one empty-string tag. tag_counts gains `\"\": 3` and untagged comes back empty.",
+      "unblocks": "test_tag_counts",
+      "hints": [
+        "Where does the empty-string key in tag_counts come from?",
+        "Look at what split_tags returns for a blank cell.",
+        "Return [] when the cleaned text is empty (`... if text else []`)."
+      ],
+      "probes": [
+        "Why did EP-07's single-space cell end up the same as the truly blank ones?",
+        "Would `if tag.strip()` inside the comprehension also work? Is it equivalent?"
+      ],
+      "symptom": "test_3 test_tag_counts: tag_counts has an extra '' key with count 3 (and untagged would be empty)."
+    },
+    {
+      "id": "B6",
+      "title": "Operator counts include rejected episodes",
+      "type": "counting-wrong-subset",
+      "file": "robolog/report.py",
+      "function": "summarize",
+      "test": "test_3_report.TestSummary.test_operator_counts",
+      "old": "    operators = Counter(ep.operator for ep in valid)",
+      "new": "    operators = Counter(ep.operator for ep in episodes)",
+      "why": "The counter runs over every episode instead of the valid subset, so the four rejected episodes are credited to alice, bob and carol.",
+      "unblocks": "test_operator_counts",
+      "hints": [
+        "carol shows 3 episodes, but only one of hers is valid.",
+        "Compare which list each Counter in summarize iterates over.",
+        "Count over `valid`, not `episodes`."
+      ],
+      "probes": [
+        "Why was dave's count right anyway?",
+        "Which summary field is meant to look at invalid episodes, and how does it get them?"
+      ],
+      "symptom": "test_3 test_operator_counts: {'alice': 5, 'bob': 4, 'carol': 3, 'dave': 4} instead of {'alice': 4, 'bob': 3, 'carol': 1, 'dave': 4}."
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What is the flow inside build_report()?",
+      "a": "`load_episodes` reads episodes.csv into `Episode` objects, `load_streams` reads streams.json into `{episode_id: {sensor: sorted timestamps}}`, `evaluate_all` turns each episode into `EpisodeStats`, then `task_metrics` and `summarize` build the task table and the summary."
+    },
+    {
+      "q": "How does load_streams key the streams?",
+      "a": "By `norm_episode(item[\"episode\"])` (trim + upper-case) and then by the sensor name trimmed and lower-cased. Timestamps are converted to int and sorted."
+    },
+    {
+      "q": "What does nearest_offset return?",
+      "a": "The absolute distance in ms from `t` to the closest value in the sorted `samples` list, looking at the neighbours either side of the bisect insertion point. It returns None for an empty list."
+    },
+    {
+      "q": "In what order does evaluate() check the rejection reasons?",
+      "a": "missing_stream (no camera or no joints), then too_short (`frames < MIN_FRAMES`, 20), then frame_gap (`max_gap > MAX_GAP_MS`, 150), then unsynced (`sync_ratio < MIN_SYNC_RATIO`, 0.9). If none match, `valid` is set to True."
+    },
+    {
+      "q": "What does camera_stats return for a stream?",
+      "a": "A tuple `(frames, duration_ms, fps, max_gap)`: the count, last minus first timestamp, the computed frame rate rounded to 2 decimals and the largest consecutive difference. With fewer than 2 frames it returns `(frames, 0, None, None)`."
+    },
+    {
+      "q": "Which episodes does task_metrics look at?",
+      "a": "Only episodes whose `stats[ep.id].valid` is True, grouped by `ep.task`. Tasks are emitted in sorted order."
+    },
+    {
+      "q": "What data does summarize work from?",
+      "a": "It builds `valid` from the episodes list, then uses Counters for tags, operators and rejection reasons. The rejection Counter reads from `stats.values()` filtered to invalid ones."
+    }
+  ]
+}

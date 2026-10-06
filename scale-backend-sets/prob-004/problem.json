@@ -1,0 +1,15 @@
+{
+  "id": "prob-004",
+  "title": "Annotation Task Leasing Service",
+  "topics": [
+    "leases",
+    "task-state-machine",
+    "consensus-quality"
+  ],
+  "mode": "fastapi",
+  "difficulty": "medium",
+  "starter": "repo",
+  "planted_bugs": true,
+  "package": "app",
+  "kind": "service"
+}

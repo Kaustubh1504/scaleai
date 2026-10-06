@@ -1,0 +1,193 @@
+{
+  "id": "set-012",
+  "title": "Async embeddings batch sync with usage pagination",
+  "domain": "endpoint_client",
+  "length": "FULL",
+  "difficulty": "easy",
+  "format": "one_to_one",
+  "package": "vecbatch",
+  "scenario": "An asyncio client embeds help-centre articles in batches under a concurrency limit, retries transient errors with Retry-After, classifies malformed responses, then pages through usage records (after=<last_id>) and reports token spend and near-duplicate articles.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_requests",
+      "test_2_results",
+      "test_3_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "vecbatch/transport.py",
+      "symbol": "_send",
+      "why_correct": "HTTPError is caught and turned into a normal Response with the real status and headers, so 4xx/5xx reach the retry logic instead of raising. Network errors (URLError) are deliberately left to propagate."
+    },
+    {
+      "file": "vecbatch/pipeline.py",
+      "symbol": "make_batches",
+      "why_correct": "`range(0, len(docs), size)` with `docs[start:start + size]` covers every document exactly once and allows a short final batch; `enumerate(..., start=1)` gives b01, b02, ... as the spec requires."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "One retry too few",
+      "type": "retry-off-by-one",
+      "file": "vecbatch/retry.py",
+      "function": "send_with_retries",
+      "test": "test_1_requests.TestRequests.test_1_attempts_per_batch",
+      "old": "or attempts > max_retries:",
+      "new": "or attempts >= max_retries:",
+      "symptom": "test_1_attempts_per_batch fails: b04 (always 503) gets 2 attempts instead of 3. Every other batch matches.",
+      "why": "max_retries is the number of retries, so the total allowed is max_retries + 1 attempts. `>=` stops after max_retries attempts in total.",
+      "unblocks": "test_1_attempts_per_batch.",
+      "hints": [
+        "Only the batch that never recovers has the wrong number of attempts. How many should it get with max_retries = 2?",
+        "Look at the stop condition in retry.send_with_retries.",
+        "`attempts >= max_retries` should be `attempts > max_retries`."
+      ],
+      "probes": [
+        "Why were b02 and b03 unaffected by this?",
+        "If the condition used a zero-based attempt index instead of a count, how would the comparison change?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Backoff sleep never awaited",
+      "type": "missing-await",
+      "file": "vecbatch/retry.py",
+      "function": "send_with_retries",
+      "test": "test_1_requests.TestRequests.test_2_retry_after_honoured",
+      "old": "        await asyncio.sleep(retry_delay(response, attempts - 1, backoff_seconds))",
+      "new": "        asyncio.sleep(retry_delay(response, attempts - 1, backoff_seconds))",
+      "symptom": "test_2_retry_after_honoured fails: b02's second attempt arrives about 0.33 s after the first, although the 429 carried Retry-After: 1 (the 0.33 s is only time spent queued behind other batches). A 'coroutine ... was never awaited' RuntimeWarning appears.",
+      "why": "Calling asyncio.sleep() without await only creates a coroutine object, which is thrown away. Nothing waits, so the retry goes out immediately and ignores Retry-After (Python also prints 'coroutine ... was never awaited').",
+      "unblocks": "test_2_retry_after_honoured.",
+      "hints": [
+        "The retry for b02 arrives far sooner than its Retry-After header allows. Is the job waiting at all?",
+        "Look at how the delay is applied in retry.py. Check the warnings in the test output.",
+        "Add `await` before `asyncio.sleep(...)`."
+      ],
+      "probes": [
+        "Why does the code still run without an error when the await is missing?",
+        "Why would time.sleep() here be a poor fix in an asyncio program?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Semaphore created but never acquired",
+      "type": "semaphore-unused",
+      "file": "vecbatch/client.py",
+      "function": "EmbeddingClient._post",
+      "test": "test_1_requests.TestRequests.test_3_concurrency_limit",
+      "old": "        async with self.semaphore:\n            return await request(",
+      "new": "        return await request(",
+      "symptom": "test_3_concurrency_limit fails: the server saw 8 requests in flight at once instead of at most 2.",
+      "why": "The semaphore is built in __init__ with max_concurrency, but no request acquires it, so gather() starts every batch at once.",
+      "unblocks": "test_3_concurrency_limit.",
+      "hints": [
+        "The server saw far more simultaneous requests than max_concurrency. What is supposed to limit them?",
+        "Find where self.semaphore is created, then look for where it is used.",
+        "Wrap the request in `_post` with `async with self.semaphore:`."
+      ],
+      "probes": [
+        "Why is the semaphore taken per attempt rather than around the whole send_with_retries call?",
+        "Would the results still be correct without the limit? Why does the limit matter against a real API?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "ValueError handler shadows JSONDecodeError",
+      "type": "exception-order",
+      "file": "vecbatch/client.py",
+      "function": "EmbeddingClient.embed_batch",
+      "test": "test_2_results.TestResults.test_4_failed_documents",
+      "old": "        except json.JSONDecodeError:\n            return BatchResult(batch.batch_id, \"bad_json\", attempts, http_status=response.status)\n        except ValueError:\n            return BatchResult(batch.batch_id, \"invalid\", attempts, http_status=response.status)",
+      "new": "        except ValueError:\n            return BatchResult(batch.batch_id, \"invalid\", attempts, http_status=response.status)\n        except json.JSONDecodeError:\n            return BatchResult(batch.batch_id, \"bad_json\", attempts, http_status=response.status)",
+      "symptom": "test_4_failed_documents fails: d09 and d10 (batch b05, whose body is cut-off JSON) are reported as 'invalid' instead of 'bad_json'.",
+      "why": "json.JSONDecodeError is a subclass of ValueError. except clauses are tried top to bottom, so the ValueError handler catches the decode error first and the bad_json branch can never run.",
+      "unblocks": "test_4_failed_documents.",
+      "hints": [
+        "d09 and d10 come back invalid, but their batch body was not even valid JSON. Which branch handles that?",
+        "Look at the order of the except clauses in embed_batch.",
+        "Put `except json.JSONDecodeError` before `except ValueError`."
+      ],
+      "probes": [
+        "How would you find out that JSONDecodeError is a ValueError without reading the docs?",
+        "Name another standard-library pair where this ordering matters (hint: urllib)."
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Usage cursor taken from the first record of the page",
+      "type": "pagination-cursor",
+      "file": "vecbatch/pipeline.py",
+      "function": "collect_usage",
+      "test": "test_3_report.TestReport.test_5_total_tokens",
+      "old": "        after = page[\"last_id\"]",
+      "new": "        after = page[\"first_id\"]",
+      "symptom": "test_5_total_tokens fails: total_tokens is 252 instead of 121, because overlapping usage pages are counted again.",
+      "why": "`after=first_id` asks for everything after the first record of the page just read, so the next page repeats all but one of its records. Pages overlap and tokens are counted several times.",
+      "unblocks": "test_5_total_tokens.",
+      "hints": [
+        "total_tokens is far higher than the usage the server recorded. Look at which records come back on each page.",
+        "Look at the cursor collect_usage sends for the next page.",
+        "Use `page[\"last_id\"]`, not `page[\"first_id\"]`."
+      ],
+      "probes": [
+        "Why did the loop still end instead of running forever?",
+        "How could the client detect duplicate records even if the cursor was mishandled?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Near-duplicates listed least similar first",
+      "type": "sort-direction",
+      "file": "vecbatch/similarity.py",
+      "function": "near_duplicates",
+      "test": "test_3_report.TestReport.test_6_near_duplicates",
+      "old": "key=lambda p: (-p[2], p[0], p[1]))",
+      "new": "key=lambda p: (p[2], p[0], p[1]))",
+      "symptom": "test_6_near_duplicates fails: the three pairs come back in reverse order, [d02,d11,0.945] first and [d03,d12,1.0] last.",
+      "why": "The sort key uses the similarity ascending, but the spec wants the most similar pair first. The docstring still says most similar first.",
+      "unblocks": "test_6_near_duplicates.",
+      "hints": [
+        "The right pairs are listed, but in reverse. What decides the order?",
+        "Look at the sort key at the end of similarity.near_duplicates.",
+        "Negate the similarity: `key=lambda p: (-p[2], p[0], p[1])`."
+      ],
+      "probes": [
+        "Why is `reverse=True` not an exact replacement for negating the similarity here?",
+        "d01/d09 are 0.981 similar. Why are they not in the list?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() do end to end?",
+      "a": "It calls `asyncio.run(pipeline.run(...))`, which loads the config and documents, splits them into batches with `make_batches`, embeds every batch through `asyncio.gather` over `client.embed_batch`, and then calls `collect_usage`. build_report then maps each document to its batch status, collects vectors of embedded documents, sums usage tokens and calls `near_duplicates`."
+    },
+    {
+      "q": "How does transport.request make an HTTP call without blocking the event loop?",
+      "a": "It runs the synchronous `_send` (urllib) in a worker thread via `asyncio.to_thread`. `_send` returns a `Response(status, headers, text)` for both 2xx and HTTP error statuses; network errors raise."
+    },
+    {
+      "q": "Where is the concurrency limit configured and created?",
+      "a": "`max_concurrency` comes from config.json (2 in the data). `EmbeddingClient.__init__` creates `self.semaphore = asyncio.Semaphore(config.max_concurrency)`; `_post` is the method that sends each attempt's POST."
+    },
+    {
+      "q": "What does send_with_retries return, and how is the delay chosen?",
+      "a": "It returns a tuple `(response, attempts)`. `retry_delay` uses the `Retry-After` header as seconds when present, otherwise `backoff_seconds * 2 ** attempt` with the zero-based attempt passed in."
+    },
+    {
+      "q": "What can parse_embeddings raise?",
+      "a": "`json.loads` raises `json.JSONDecodeError` when the body is not JSON. It raises `ValueError` itself when `data` is missing, has the wrong number of items, a vector has the wrong length, or the indexes don't cover 0..n-1."
+    },
+    {
+      "q": "What does the mock server return from /v1/usage?",
+      "a": "Records whose id is greater than the `after` query value (string comparison on ids like u001), at most `limit` of them, plus `first_id` and `last_id` of the returned rows and `has_more`, which is true when more records remain beyond this page."
+    },
+    {
+      "q": "How does the mock server script each batch?",
+      "a": "`SCRIPT` maps batch id to a list of responses served in order, the last one repeating. b02 gets a 429 with Retry-After 0.3 then succeeds, b03 a 500 then success, b04 is always 503, b05 returns a cut-off JSON body, b07 returns one embedding too few, and the rest succeed. Every 200 adds a usage record."
+    }
+  ]
+}

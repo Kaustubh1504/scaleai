@@ -1,0 +1,188 @@
+{
+  "id": "set-034",
+  "title": "Sliding-window rate limits and token overage billing",
+  "domain": "rate_limit_billing",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "multi",
+  "package": "meterbill",
+  "scenario": "Replay a day of per-tenant API requests through a sliding-window limiter (plan limits, overrides, 0 = suspended), tally allowed/billable usage, and invoice overage tokens with half-up cent rounding.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_limits",
+      "test_2_usage",
+      "test_3_invoices"
+    ]
+  },
+  "verified": [
+    {
+      "file": "meterbill/usage.py",
+      "symbol": "billable",
+      "why_correct": "It looks like it should exclude 4xx responses as well, but README rule 5 bills client errors and only drops 5xx, so `status < 500` is exactly the rule. tally() only calls it for allowed requests."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Window left in milliseconds",
+      "type": "ms-vs-s",
+      "file": "meterbill/plans.py",
+      "function": "load_plans",
+      "old": "            window=int(spec[\"window_ms\"]) / 1000,",
+      "new": "            window=int(spec[\"window_ms\"]),",
+      "symptom": "Test 1 test_throttled_requests: acme [a04, a05, a06], cove [c03, c04], fern [f04, f05, f06], gale [g05, g06]. Test 2: acme allowed 3, billable tokens acme 1200 / fern 1800 / gale 8000. Test 3: acme 0.08, fern 0.32, gale 0.75; total 5.61.",
+      "why": "Plan.window is compared with ages in seconds, but window_ms is milliseconds. Without the /1000 the window is 60,000 s (almost 17 hours), so every allowed request of the day stays in the window.",
+      "unblocks": "Most of the throttling in Test 1, plus the allowed counts and tokens for acme, cove, fern and gale. Exposes B2.",
+      "hints": [
+        "acme's 10:03 request is throttled though the previous ones are minutes old. How long does the window seem to be?",
+        "Check the units of Plan.window against what age_seconds returns.",
+        "load_plans must divide window_ms by 1000."
+      ],
+      "probes": [
+        "Why was bolt's next-day traffic unaffected by this?",
+        "Where else would you look for unit mismatches in this codebase?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Request exactly one window old counted as inside",
+      "type": "time-window-boundary",
+      "file": "meterbill/limiter.py",
+      "function": "SlidingWindowLimiter.allow",
+      "old": "if age_seconds(ts, prev) < window]",
+      "new": "if age_seconds(ts, prev) <= window]",
+      "masked_by": [
+        "B1"
+      ],
+      "symptom": "Only visible after B1 is fixed. Test 1: acme throttled [a04] instead of [a05]. Test 2: acme billable tokens 1900. Test 3: acme overage 900, amount 0.36, total 8.31.",
+      "why": "The window is (t - window, t], so a request exactly 60 s old has dropped out. `<=` keeps it, so acme's a04 (exactly 60 s after a01) sees 3 recent requests and is throttled, which then frees a slot for a05.",
+      "unblocks": "acme's rows in Tests 1-3.",
+      "hints": [
+        "acme now throttles a04 instead of a05. How far apart are a01 and a04?",
+        "Read rule 3 about the window boundary, then the filter in allow().",
+        "Use `age_seconds(ts, prev) < window`."
+      ],
+      "probes": [
+        "Why was this invisible while the window was in milliseconds?",
+        "fern's f06 is also exactly 60 s after f02, yet it wasn't affected. Why?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Override of 0 falls back to the plan limit",
+      "type": "falsy-zero",
+      "file": "meterbill/plans.py",
+      "function": "effective_limit",
+      "old": "    return plan.limit if override is None else override",
+      "new": "    return override or plan.limit",
+      "symptom": "Test 1 test_effective_limits: t-echo 5 instead of 0, and echo throttles nothing. Test 2: echo allowed 2, tokens 7000, by_endpoint {/v1/chat: 2}. Test 3: echo overage 2000, amount 0.50, total 8.77.",
+      "why": "`override or plan.limit` treats a parsed 0 like a missing override, so the suspended tenant gets the growth plan's 5 requests per window.",
+      "unblocks": "echo's rows in all three tests.",
+      "hints": [
+        "t-echo has a limit_override. What does README rule 1 say it means?",
+        "Look at how effective_limit chooses between the override and the plan.",
+        "Return `plan.limit if override is None else override`."
+      ],
+      "probes": [
+        "Why did t-cove's override of 2 work even with this code?",
+        "What would a blank override have produced if the code used `int(text or 0)`?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "timedelta.seconds drops the days",
+      "type": "timedelta-seconds",
+      "file": "meterbill/utils.py",
+      "function": "age_seconds",
+      "old": "    return (now - then).total_seconds()",
+      "new": "    return (now - then).seconds",
+      "symptom": "Test 1: bolt throttled [b06, b07] (its next-day requests). Test 2: bolt (5, 2), tokens 10000, chat 4 / embed 1. Test 3: bolt overage 5000, amount 1.25, total 7.09.",
+      "why": "`.seconds` is only the seconds component (0-86399) and ignores `.days`. bolt's requests a day apart look 10-50 s old, so the next-day burst is throttled as if it continued the previous day's window.",
+      "unblocks": "bolt's rows in all three tests.",
+      "hints": [
+        "bolt's b06 and b07 are a full day after its other traffic. Why would they be throttled?",
+        "Look at how the age of a previous request is computed.",
+        "Use `.total_seconds()`, not `.seconds`."
+      ],
+      "probes": [
+        "What would `.seconds` return for a negative timedelta of -10 seconds?",
+        "Why did all of the other tenants come out right?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Endpoint counter shared by every tenant",
+      "type": "shared-class-attribute",
+      "file": "meterbill/usage.py",
+      "function": "TenantUsage",
+      "old": "    billable_tokens = 0\n\n    def __init__(self, tenant_id):\n        self.tenant_id = tenant_id\n        self.by_endpoint = Counter()",
+      "new": "    billable_tokens = 0\n    by_endpoint = Counter()\n\n    def __init__(self, tenant_id):\n        self.tenant_id = tenant_id",
+      "symptom": "Test 2 test_by_endpoint only: every tenant shows the same inflated counts (chat 40, embed 24 in a full run). The counter is shared across tenants and across build_report() calls, so the numbers depend on how many times the report was built.",
+      "why": "A Counter defined on the class is one object shared by all instances, and `row.by_endpoint[...] += 1` mutates it in place. The int counters are fine because `+=` on an int rebinds an instance attribute.",
+      "unblocks": "test_by_endpoint.",
+      "hints": [
+        "Every tenant shows the same endpoint counts. Where does each tenant's counter come from?",
+        "Look at the attributes of TenantUsage.",
+        "Create the Counter in __init__: self.by_endpoint = Counter()."
+      ],
+      "probes": [
+        "Why do allowed/throttled/billable_tokens behave correctly as class attributes?",
+        "Would by_endpoint = {} at class level behave differently?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Banker's rounding on invoice amounts",
+      "type": "float-rounding",
+      "file": "meterbill/billing.py",
+      "function": "charge",
+      "old": "    return amount.quantize(CENT, rounding=ROUND_HALF_UP)",
+      "new": "    return round(amount, 2)",
+      "visible_only_in": [
+        "test_3_invoices"
+      ],
+      "symptom": "Test 3 only: test_invoice_amounts shows bolt 2.42 and gale 2.92 (should be 2.43 / 2.93); total 8.25 instead of 8.27.",
+      "why": "round() on a Decimal uses the context's ROUND_HALF_EVEN, so 2.425 → 2.42 and 2.925 → 2.92. The README rounds halves up.",
+      "unblocks": "test_invoice_amounts and the total.",
+      "hints": [
+        "bolt and gale are each one cent short. What are their unrounded amounts?",
+        "Look at how charge() rounds to the cent.",
+        "Use amount.quantize(CENT, rounding=ROUND_HALF_UP)."
+      ],
+      "probes": [
+        "Why were acme, cove and dune unaffected?",
+        "Would float arithmetic have given 2.93 for gale? Why or why not?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What order does build_report() run things in?",
+      "a": "It loads plans, then tenants (resolving each tenant's limit with effective_limit), then requests for known tenants. `limiter.run` returns an allowed/throttled decision per request id, `usage.tally` builds a TenantUsage per tenant, and `billing.invoice` turns each usage into an invoice. `billing.total` sums the amounts."
+    },
+    {
+      "q": "What units is Plan.window in, and where is it set?",
+      "a": "The dataclass comment says seconds. It is set in `plans.load_plans` from the plan's `window_ms` value in plans.json."
+    },
+    {
+      "q": "How does SlidingWindowLimiter.allow decide?",
+      "a": "It takes the tenant's stored list of previously allowed timestamps, keeps those whose `age_seconds(ts, prev)` passes the window comparison, and throttles if the kept list has at least `tenant.limit` entries. Otherwise it appends `ts` and stores the kept list as the new history."
+    },
+    {
+      "q": "In what order does run() feed requests to the limiter?",
+      "a": "`sorted(requests, key=lambda r: r.ts)`. Python's sort is stable, so equal timestamps keep the order they were loaded in."
+    },
+    {
+      "q": "What does TenantUsage hold?",
+      "a": "Class-level defaults for `allowed`, `throttled` and `billable_tokens`, plus the attributes set in `__init__`. `tally` increments the counters and the per-endpoint counts for each request."
+    },
+    {
+      "q": "How is an invoice amount computed?",
+      "a": "`overage` subtracts the plan's included tokens (floored at 0) and `charge` multiplies by `price_per_1k` as a Decimal, divides by 1000 and rounds to cents. The report converts the Decimal to a string."
+    },
+    {
+      "q": "Where does price_per_1k come from when plans.json has it as a JSON number?",
+      "a": "`load_plans` does `Decimal(str(spec[\"price_per_1k\"]))`, so 0.15 becomes Decimal('0.15') rather than the binary float's expansion."
+    }
+  ]
+}

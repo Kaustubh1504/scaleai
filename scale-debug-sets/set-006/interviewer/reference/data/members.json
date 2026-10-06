@@ -1,0 +1,12 @@
+[
+  {"id": "ann-01", "name": "Asha Rao", "role": "annotator", "active": true},
+  {"id": " ANN-02", "name": "Ben Ortiz", "role": "Annotator", "active": true},
+  {"id": "ann-03 ", "name": "Chen Wei", "role": "annotator", "active": true},
+  {"id": "ann-04", "name": "Dara Kim", "role": "annotator", "active": false},
+  {"id": "Ann-05", "name": "Eli Novak", "role": "annotator"},
+  {"id": "rev-01", "name": "Femi Ade", "role": "reviewer", "active": true},
+  {"id": "REV-02", "name": "Gita Shah", "role": " reviewer", "active": true},
+  {"id": "rev-03", "name": "Hugo Lind", "role": "reviewer", "active": false},
+  {"id": "lead-01", "name": "Ines Park", "role": "lead", "active": true},
+  {"id": "lead-02", "name": "Jon Berg", "role": "LEAD", "active": true}
+]

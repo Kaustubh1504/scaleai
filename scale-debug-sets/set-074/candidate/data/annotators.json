@@ -1,0 +1,12 @@
+[
+  {"id": "a01", "name": "Rhea Kapoor", "active": true},
+  {"id": "A02", "name": "Owen Hart", "active": "yes"},
+  {"id": "a03", "name": "Mina Sato", "active": 1},
+  {"id": "a04", "name": "Luis Prado", "active": true},
+  {"id": "a05 ", "name": "Tess Malone", "active": true},
+  {"id": "a06", "name": "Yusuf Kaya", "active": "TRUE"},
+  {"id": "a07", "name": "Ines Moreau", "active": true},
+  {"id": "a08", "name": "Pavel Novak", "active": true},
+  {"id": "a09", "name": "Grace Obi", "active": "no"},
+  {"id": "a10", "name": "Sven Berg", "active": false}
+]

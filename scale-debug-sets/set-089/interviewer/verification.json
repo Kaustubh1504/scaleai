@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_scores"
+    ],
+    "failures": {
+      "tests.test_1_scores.TestScores.test_1_mid_table_composites": "AssertionError: {'puffin': (0.75, 60.0), 'otter': (0.7333, 72.0), 'orca': (0.7167, 52.0)} != {'puffin': (0.75, 60.0), 'otter': (0.7333, 72.0), 'orca': (0.7, 48.0)}\n- {'orca': (0.7167, 52.0), 'otter': (0.7333, 72.0), 'puffin': (0.75, 60.0)}\n?              ---  ^^\n\n+ {'orca': (0.7, 48.0), 'otter': (0.7333, 72.0), 'puffin': (0.75, 60.0)}\n?                ^^\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_leaderboard"
+    ],
+    "failures": {
+      "tests.test_2_leaderboard.TestLeaderboard.test_2_final_standings": "AssertionError: Lists differ: ['kel[13 chars], 'puffin', 'otter', 'orca', 'heron', 'lynx', 'wren', 'marten'] != ['kel[13 chars], 'puffin', 'otter', 'orca', 'lynx', 'heron', 'wren', 'marten']\n\nFirst differing element 5:\n'heron'\n'lynx'\n\n  ['kelp',\n   'narwhal',\n   'puffin',\n   'otter',\n   'orca',\n+  'lynx',\n   'heron',\n-  'lynx',\n   'wren',\n   'marten']"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_leaderboard"
+    ],
+    "failures": {
+      "tests.test_2_leaderboard.TestLeaderboard.test_3_benchmark_stats": "AssertionError: {'cod[73 chars]ms': 8, 'leader': 'kelp', 'best': 200.0}, 'rea[109 chars]0.0}} != {'cod[73 chars]ms': 7, 'leader': 'kelp', 'best': 200.0}, 'rea[109 chars]0.0}}\n  {'coding': {'best': 50.0, 'leader': 'puffin', 'teams': 8},\n-  'latency_ms': {'best': 200.0, 'leader': 'kelp', 'teams': 8},\n?                                                           ^\n\n+  'latency_ms': {'best': 200.0, 'leader': 'kelp', 'teams': 7},\n?                                                           ^\n\n-  'reasoning': {'best': 80.0, 'leader': 'narwhal', 'teams': 9},\n?                                            "
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_scores",
+      "test_2_leaderboard"
+    ],
+    "failing_tests": [
+      "tests.test_1_scores.TestScores.test_1_mid_table_composites",
+      "tests.test_2_leaderboard.TestLeaderboard.test_2_final_standings",
+      "tests.test_2_leaderboard.TestLeaderboard.test_3_benchmark_stats"
+    ]
+  }
+}

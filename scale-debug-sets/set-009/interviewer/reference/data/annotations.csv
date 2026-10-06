@@ -1,0 +1,39 @@
+doc_id,annotator,start,end,label,quote
+d01,ann-a,0,10,PER, Maria Lopez
+d01,ann-a ,32,37,LOC,Boston
+D02,Ann-A,33,39,LOC,Nairobi
+ d04,ann-a,32,40,LOC,Cupertino
+d05,ann-a ,45,57,ORG,African Union
+D07,Ann-A,40,45,LOC, Berlin
+d10,ann-a,0,4,ORG,Nokia
+d01,ann-b,0,10,per, Maria Lopez
+d01,ann-b,35,40,LOC,Boston
+D02,ann-b,33,39,loc,Nairobi
+ d04,ann-b,32,40,LOC,Cupertino
+D07,ann-b,0,6,org,Siemens
+d08,ann-b,0,8,PER, Ana Silva
+d01,ann-c,0,4,PER, Maria
+D02,ann-c,4,12,ORG,Red Cross
+d05,ann-c,0,4,ORG,Lagos
+d06,ann-c,4,11,PER,Chen Wei
+d08,ann-c,14,22,PER,Rui Costa
+d10,ann-c,0,4,ORG, Nokia
+d01,Ann-A,19,27,ORG,Acme Corp
+D02,ann-a,4,12,ORG,Red Cross
+d04,ann-a ,0,7,PER, Tim Cook
+d05,Ann-A,0,4,LOC,Lagos
+D07,ann-a,0,6,ORG,Siemens
+d08,ann-a ,0,8,PER,Ana Silva
+d10,Ann-A,10,17,ORG,Ericsson
+d01,ANN-B,19,27,ORG,Acme Corp
+D02,ANN-B,4,12,ORG,Red Cross
+d04,ANN-B,0,7,PER, Tim Cook
+d05,ANN-B,0,4,LOC,Lagos
+D07,ANN-B,40,45,LOC,Berlin
+d10,ANN-B,10,17,ORG,Ericsson
+d01, ann-c,22,30,LOC,Acme Corp
+ d04, ann-c,0,7,PER,Tim Cook
+d05, ann-c,45,57,ORG, African Union
+d08, ann-c,0,8,PER,Ana Silva
+d10, ann-c,0,17,ORG,Nokia and Ericsson
+d10, ann-c,10,17,ORG,Ericsson

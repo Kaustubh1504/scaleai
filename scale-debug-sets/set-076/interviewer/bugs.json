@@ -1,0 +1,186 @@
+{
+  "id": "set-076",
+  "title": "Async embedding backfill: concurrency cap, retries, commit, paged index check",
+  "domain": "endpoint_client",
+  "length": "FULL",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "vecsync",
+  "scenario": "An asyncio client batches knowledge-base documents per collection, embeds them with a concurrency cap and retries, commits the job, then pages through the vector index to check coverage. Test 3 is the report (index coverage and requeue list).",
+  "verified": [
+    {
+      "file": "vecsync/transport.py",
+      "symbol": "perform_request",
+      "why_correct": "Returning error statuses as a Response instead of raising looks like it ignores HTTP failures, but the retry layer and interpret() both branch on response.status. Raising here would make retries impossible."
+    },
+    {
+      "file": "vecsync/loader.py",
+      "symbol": "make_batches",
+      "why_correct": "`-(-len(docs) // size)` is ceiling division, so a 7-document collection gives 3 batches and the slices cover every document exactly once. sorted() is stable, so equal dates keep file order as the spec requires."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Semaphore created but never acquired",
+      "type": "semaphore-unused",
+      "file": "vecsync/client.py",
+      "function": "EmbeddingClient.embed_batch",
+      "test": "test_1_requests.TestRequests.test_concurrency_limit",
+      "old": "        async with self._slots:",
+      "new": "        async with asyncio.Semaphore(self.config.max_concurrency):",
+      "symptom": "Test 1 test_concurrency_limit: `8 != 2`. The server saw all 8 batches in flight at once. Every result and report field is still correct.",
+      "why": "A new Semaphore is built on every call, so each batch acquires its own private semaphore and never waits. The shared `self._slots` from __init__ is never used, and all 8 batches hit the server at once.",
+      "unblocks": "test_concurrency_limit",
+      "hints": [
+        "The server saw more simultaneous requests than max_concurrency. What is supposed to stop that?",
+        "Look at how embed_batch limits concurrency, and which semaphore object each call waits on.",
+        "`async with asyncio.Semaphore(...)` makes a fresh semaphore per call. Use the shared `self._slots`."
+      ],
+      "probes": [
+        "Why does a semaphore only limit anything if every task shares the same instance?",
+        "Why did every result still come out right with no concurrency limit at all?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "One attempt short on persistent 5xx",
+      "type": "retry-off-by-one",
+      "file": "vecsync/retry.py",
+      "function": "send_with_retries",
+      "test": "test_1_requests.TestRequests.test_attempts_per_batch",
+      "old": "    for attempt in range(max_retries + 1):",
+      "new": "    for attempt in range(max_retries):",
+      "symptom": "Test 1 test_attempts_per_batch: policies-01 shows 3 attempts instead of 4. Its result is still failed/503 and the backoff delays are unchanged.",
+      "why": "max_retries counts retries, not attempts, so the loop needs max_retries + 1 iterations. With range(max_retries) a batch that keeps failing gets only 3 attempts. The last sleep still happens, so the backoff list looks unchanged.",
+      "unblocks": "test_attempts_per_batch",
+      "hints": [
+        "Only policies-01 has the wrong attempt count. What is special about it?",
+        "Count how many times the retry loop calls do_request when every response is 503.",
+        "range(max_retries) should be range(max_retries + 1)."
+      ],
+      "probes": [
+        "Why were the recorded backoff delays identical with and without this change?",
+        "Why didn't faq-02 (two 429s, then 200) lose its success?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Retry-After: 0 replaced by exponential backoff",
+      "type": "falsy-zero",
+      "file": "vecsync/retry.py",
+      "function": "backoff_delay",
+      "test": "test_2_batches.TestBatches.test_backoff_delays",
+      "old": "    hint = parse_retry_after(response.headers)\n    if hint is not None:\n        return hint\n    return base * (2 ** attempt)",
+      "new": "    return parse_retry_after(response.headers) or base * (2 ** attempt)",
+      "symptom": "Test 2 test_backoff_delays: `[0.5, 0.5, 0.5, 1.0, 1.0, 2.0] != [0.0, 0.0, 0.5, 0.5, 1.0, 2.0]`. faq-02 waits 0.5 and 1.0 although the server sent `Retry-After: 0`.",
+      "why": "parse_retry_after returns 0.0 for `Retry-After: 0`, and `0.0 or ...` falls through to the exponential formula. faq-02 waits 0.5 and 1.0 instead of 0 and 0.",
+      "unblocks": "test_backoff_delays",
+      "hints": [
+        "Which batch got Retry-After headers from the server, and what did it wait?",
+        "Look at how backoff_delay picks between the header and the formula.",
+        "`hint or formula` treats 0.0 as missing. Check `hint is not None` instead."
+      ],
+      "probes": [
+        "Why is None the right sentinel here and 0.0 not?",
+        "What would `Retry-After: abc` produce, and does that match the spec?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Commit coroutine never awaited",
+      "type": "missing-await",
+      "file": "vecsync/runner.py",
+      "function": "run_job",
+      "test": "test_2_batches.TestBatches.test_job_committed",
+      "old": "    await client.commit(accepted, documents_ok)",
+      "new": "    client.commit(accepted, documents_ok)",
+      "symptom": "Test 2 test_job_committed: `[] != [{'job_id': 'backfill-0412', 'accepted': [...], 'documents': 10}]`. The server never receives a commit, and a 'coroutine ... was never awaited' RuntimeWarning is printed.",
+      "why": "Calling an async function only creates a coroutine object. Without await it never runs, so no commit request is sent. Python just prints a 'coroutine was never awaited' RuntimeWarning.",
+      "unblocks": "test_job_committed",
+      "hints": [
+        "The server never received a commit. Does run_job ever actually send one?",
+        "Look at the commit call in run_job and compare it with the other client calls there.",
+        "client.commit(...) is missing `await`."
+      ],
+      "probes": [
+        "Why doesn't a missing await raise an error here?",
+        "Where in the test output could you have spotted this without reading the code?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Index offset advanced by requested page size",
+      "type": "pagination-cursor",
+      "file": "vecsync/index.py",
+      "function": "collect_index",
+      "test": "test_3_report.TestReport.test_index_coverage",
+      "old": "        offset += len(items)",
+      "new": "        offset += client.config.page_size",
+      "symptom": "Test 3 test_index_coverage: faq shows `{'stored': 6, 'missing': ['faq-004', 'faq-005']}` instead of `{'stored': 9, 'missing': []}`. The other collections are correct.",
+      "why": "The service caps pages at 3 items even though the client asks for 5, so stepping the offset by 5 skips ids 4-5 of every page. Only faq has more than one page, so only faq loses vectors.",
+      "unblocks": "test_index_coverage",
+      "hints": [
+        "Only faq is short, and the missing ids are in the middle of the sorted list. What does the server do with limit=5?",
+        "Look at how collect_index works out the next offset.",
+        "Advance by len(items), not client.config.page_size."
+      ],
+      "probes": [
+        "Why were policies, changelog and pricing unaffected?",
+        "Why is a cursor or next-token API safer than client-computed offsets?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Requeue statuses listed as strings",
+      "type": "enum-vs-string",
+      "file": "vecsync/models.py",
+      "function": "REQUEUE_STATUSES",
+      "test": "test_3_report.TestReport.test_requeue",
+      "old": "REQUEUE_STATUSES = (BatchStatus.FAILED, BatchStatus.REJECTED)",
+      "new": "REQUEUE_STATUSES = (\"failed\", \"rejected\")",
+      "symptom": "Test 3 test_requeue: `[] != ['chg-201', 'chg-202', 'chg-203', 'pol-101', ...]`. Nothing is requeued, even though counts shows 2 failed and 1 rejected.",
+      "why": "BatchStatus is a plain Enum, so BatchStatus.FAILED == \"failed\" is False and nothing matches. The counts still look right because they compare `.value`.",
+      "unblocks": "test_requeue",
+      "hints": [
+        "Two batches failed and one was rejected, yet requeue is empty. Follow how requeue picks batches.",
+        "Look at what r.status holds and what REQUEUE_STATUSES contains.",
+        "In models.py, use (BatchStatus.FAILED, BatchStatus.REJECTED) instead of the raw strings."
+      ],
+      "probes": [
+        "Would this have worked if BatchStatus subclassed str? Why?",
+        "Why did `counts` come out right while requeue did not?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What happens inside run_job, step by step?",
+      "a": "It loads config, keeps only enabled collections, loads documents (collecting skipped ids), builds batches with make_batches, and starts every embed_batch with asyncio.gather. Then it builds the accepted list from OK results, calls client.commit, and finally calls collect_index once per collection that had a batch."
+    },
+    {
+      "q": "How does the mock server decide what to return for a batch?",
+      "a": "SCRIPT maps a batch_id to a list of (status, headers, dims_override) steps, served in order with the last step repeating. Batches not in SCRIPT always get 200. It sleeps 30 ms per embeddings request and tracks the peak number of requests being handled at once in max_in_flight."
+    },
+    {
+      "q": "How does the vectors listing endpoint page its results?",
+      "a": "It sorts the collection's stored ids, applies offset and min(limit, MAX_PAGE) where MAX_PAGE is 3, and returns {items, has_more}, where has_more is offset + len(items) < total. Seeded vectors (faq-legacy-1/2, pol-100) are included."
+    },
+    {
+      "q": "What does the sleep recorder in the tests capture?",
+      "a": "tests/_harness.py passes a SleepRecorder as `sleep`. It is an async callable that appends each delay to `delays` and returns at once, so the tests never really wait. EmbeddingClient stores it as self.sleep and passes it to send_with_retries."
+    },
+    {
+      "q": "What does parse_retry_after return?",
+      "a": "It scans the headers case-insensitively for Retry-After. A numeric value comes back as a float clamped at 0.0 or more, a non-numeric value as None, and a missing header as None."
+    },
+    {
+      "q": "How is a batch classified as ok, failed or rejected?",
+      "a": "client.interpret: a non-200 final response is FAILED with that status. A 200 is OK when `data` has one entry per input document and every embedding length equals the collection's dimensions, otherwise REJECTED."
+    },
+    {
+      "q": "What is BatchStatus and where is REQUEUE_STATUSES used?",
+      "a": "BatchStatus is a plain enum.Enum with values ok/failed/rejected, defined in models.py with REQUEUE_STATUSES just below it. reports.build_report uses REQUEUE_STATUSES as a membership test on r.status to build the requeue list."
+    }
+  ]
+}

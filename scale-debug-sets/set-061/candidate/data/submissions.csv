@@ -1,0 +1,35 @@
+annotator_id,task_id,answer,duration_s,submitted_at
+A05,T1,Customer asks for refund of duplicate charge,20,2026-04-02 09:00
+A04,t1,Refund requested for duplicate charge.,140,04/02/2026 09:05
+A01,T1,Customer wants a refund for being charged twice,130,2026-04-02T09:10:00
+a08,T1,refund requested for  duplicate charge,135,2026-04-02 09:12
+A03,T1,refund,15s,2026-04-02 09:14
+A02, T1 ,"Double charge, wants money back",120,04/02/2026 09:20
+A06,T1,Charged twice; requesting refund,110,2026-04-02 09:31
+A11,T1,refund requested for duplicate charge,5,2026-04-02 09:33
+A04,T2,Shipping delay complaint,2:10,2026-04-03 10:00
+A08,T2,shipping delay complaint!,125,2026-04-03 10:02
+A01,t2,"Package is late, customer upset",150,04/03/2026 10:05
+A05,T2,late,25,2026-04-03 10:06
+A05,T2,late,10,2026-03-28 09:00
+A03,T2,Order hasn't arrived yet,100,2026-04-03T10:15:00
+A02,T2,Late delivery,,2026-04-03 10:20
+A07,T2,Asks where the order is,95s,2026-04-03 10:22
+ A08 ,T3,Account locked after password reset,160,2026-04-04 08:00
+A04,T3,account locked after password reset.,150,2026-04-04 08:04
+ a03,T3,Locked out,20,04/04/2026 08:05
+A01,T3,Cannot log in after resetting password,170,2026-04-04 08:10
+A05,t3,Login problem after reset,140,2026-04-04T08:12:00
+A06,T3,,90,2026-04-04 08:20
+A02,T3,Can't access account,30,2026-04-04 08:25
+A08,T4,Wants to cancel subscription,100,2026-04-05 14:00
+A04,T4,wants to cancel  subscription,105,2026-04-05 14:03
+A01,T4,Cancellation request for monthly plan,115,04/05/2026 14:05
+A05,T4,Cancel subscription request,120,2026-04-05 14:09
+A07,T4,Requests cancellation,,2026-04-05 14:12
+A02,T4,Cancel plan,,2026-04-05 14:15
+A01,T5,Positive feedback about support,60,2026-04-06 11:00
+A02,t5,positive feedback about support.,65,2026-04-06 11:04
+A07,T5,Thanks the agent,1:05,2026-04-06T11:06:00
+A03,T5,Praise,70,2026-04-06 11:10
+A10,T5,positive feedback about support,40,2026-04-06 11:12

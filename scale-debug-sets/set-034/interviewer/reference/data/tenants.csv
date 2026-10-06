@@ -1,0 +1,11 @@
+tenant_id,plan,limit_override
+t-acme,starter,
+t-bolt,growth,
+T-Cove,Starter,2
+t-dune,scale,
+t-echo,growth,0
+ t-fern,starter,
+t-gale,GROWTH, 4
+t-hive,scale,
+t-iris,starter,
+t-jade,growth,

@@ -1,0 +1,27 @@
+req_id,ts,client,endpoint,sku,region,currency
+r01,2026-09-20 08:00:00,acme,quote,SKU-1,US,USD
+r02,2026-09-20T08:01:00,birch,quote,sku-1,us,usd
+r03,2026-09-20 08:02:30,cobalt,quote,SKU-2,EU,EUR
+r04,2026-09-20 08:04:00,Birch,quote,SKU-2,EU,GBP
+r05,2026-09-20 08:08:00,cobalt,Quote,SKU-2,EU,GBP
+r06,2026-09-20 08:10:00,dune,catalog,SKU-3,US,USD
+r07,2026-09-20 08:30:00,acme,catalog,SKU-3,US,USD
+r08,2026-09-20T08:50:00,birch,catalog,sku-3,US,USD
+r09,1789894800000,cobalt,catalog,SKU-4,APAC,USD
+r10,2026-09-20 10:00:00,dune,catalog,SKU-4,APAC,USD
+R11,2026-09-20 10:05:00,acme,quote,SKU-9,US,USD
+r12,2026-09-20 10:06:00,birch,quote,SKU-5,US,USD
+r13,2026-09-20 10:09:00,DUNE ,quote,SKU-5,US,USD
+r14,2026-09-20 10:11:00,cobalt,quote,SKU-5,EU,EUR
+r15,2026-09-20 11:00:00,ember,quote,SKU-6,US,USD
+r16,2026-09-20 11:03:00,ember,quote,SKU-6,US,USD
+r17,2026-09-20 08:20:00, acme,quote,SKU-1,US,USD
+r18,2026-09-20 08:22:00,cobalt,quote,SKU-1,US,USD
+r19,2026-09-21 09:00:00,cobalt,quote,SKU-2,EU,USD
+r20,2026-09-21 09:02:00,birch,quote,sku-2,eu,USD
+r21,2026-09-21 09:10:00,dune,catalog,SKU-3,US,USD
+r22,2026-09-21T09:15:00,acme,catalog,SKU-4,APAC,USD
+r23,2026-09-21 09:27:00,birch,quote,sku-6,us,usd
+r24,1789983000000,ember,quote,SKU-6,US,USD
+r25,2026-09-21 09:25:00,cobalt,quote,SKU-3,EU,EUR
+r26,2026-09-21 09:26:00,juno,quote,SKU-3,APAC,USD

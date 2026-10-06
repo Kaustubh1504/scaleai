@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_concurrency_limit": "AssertionError: 7 not less than or equal to 2"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_backoff_waits": "AssertionError: Lists differ: [] != [0.01, 0.05, 0.05, 0.1, 0.1]\n\nSecond list contains 5 additional elements.\nFirst extra element 0:\n0.01\n\n- []\n+ [0.01, 0.05, 0.05, 0.1, 0.1]"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_batches"
+    ],
+    "failures": {
+      "tests.test_2_batches.TestBatches.test_batch_outcomes": "AssertionError: {'faq[105 chars]': ('ok', 422, 1), 'policies-01': ('failed', 5[33 chars], 1)} != {'faq[105 chars]': ('failed', 422, 1), 'policies-01': ('failed[37 chars], 1)}\n  {'faq-01': ('ok', 200, 1),\n   'faq-02': ('ok', 200, 2),\n   'faq-03': ('ok', 200, 1),\n   'kb-01': ('ok', 200, 3),\n-  'kb-02': ('ok', 422, 1),\n?             ^^\n\n+  'kb-02': ('failed', 422, 1),\n?             ^^^^^^\n\n   'policies-01': ('failed', 503, 3),\n   'policies-02': ('ok', 200, 1)}"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_batches"
+    ],
+    "failures": {
+      "tests.test_2_batches.TestBatches.test_vectors": "AssertionError: {'f01[321 chars]1': [0.4838, 0.1478, 0.0672, 0.86], 'k02': [0.[104 chars]388]} != {'f01[321 chars]1': [36.0, 11.0, 5.0, 64.0], 'k02': [34.0, 12.[82 chars]388]}\n  {'f01': [0.5149, 0.1335, 0.1144, 0.839],\n   'f02': [0.5251, 0.175, 0.0955, 0.8274],\n   'f03': [0.478, 0.1487, 0.0956, 0.8604],\n   'f04': [0.5597, 0.1544, 0.0772, 0.8105],\n   'f06': [0.6356, 0.2311, 0.1445, 0.7223],\n   'f07': [0.8296, 0.3111, 0.2074, 0.4148],\n   'f08': [0.6322, 0.2371, 0.0988, 0.731],\n   'f09': [0.9605, 0.2101, 0.1801, 0.03],\n-  'k01': [0.4838, 0.1478, 0.0672, 0.86],\n-  'k02': [0.357, 0.126, 0.0525, 0.9"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_total_tokens": "AssertionError: 31 != 63"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_by_collection": "AssertionError: {'faq': {'docs': 54, 'embedded': 36}, 'kb': {'docs': 54, '[52 chars] 36}} != {'faq': {'docs': 8, 'embedded': 8}, 'kb': {'docs': 6, 'emb[46 chars]: 1}}\n- {'faq': {'docs': 54, 'embedded': 36},\n?                  ^^              ^^\n\n+ {'faq': {'docs': 8, 'embedded': 8},\n?                  ^              ^\n\n-  'kb': {'docs': 54, 'embedded': 36},\n?                 ^^               -\n\n+  'kb': {'docs': 6, 'embedded': 3},\n?                 ^\n\n-  'policies': {'docs': 54, 'embedded': 36}}\n?                       -               ^^\n\n+  'policies': {'docs': 4, 'embedded': 1}}\n?           "
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_requests",
+      "test_2_batches",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_requests.TestRequests.test_backoff_waits",
+      "tests.test_1_requests.TestRequests.test_concurrency_limit",
+      "tests.test_2_batches.TestBatches.test_batch_outcomes",
+      "tests.test_2_batches.TestBatches.test_vectors",
+      "tests.test_3_report.TestReport.test_by_collection",
+      "tests.test_3_report.TestReport.test_total_tokens"
+    ]
+  }
+}

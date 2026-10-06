@@ -1,0 +1,47 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_image_review",
+      "test_2_annotator_summary"
+    ],
+    "failures": {
+      "tests.test_1_image_review.TestImageReview.test_flagged_for_re_review": "AssertionError: Lists differ: ['img[22 chars]', 'img_02/chen', 'img_04/alice', 'img_05/bob'] != ['img[22 chars]', 'img_02/chen', 'img_03/alice', 'img_04/alice', 'img_05/bob']\n\nFirst differing element 3:\n'img_04/alice'\n'img_03/alice'\n\nSecond list contains 1 additional elements.\nFirst extra element 5:\n'img_05/bob'\n\n- ['img_01/chen', 'img_02/bob', 'img_02/chen', 'img_04/alice', 'img_05/bob']\n+ ['img_01/chen',\n+  'img_02/bob',\n+  'img_02/chen',\n+  'img_03/alice',\n+  'img_04/alice',\n+  'img_05/bob']",
+      "tests.test_1_image_review.TestImageReview.test_per_image_counts": "AssertionError: {'img[368 chars]tp': 1, 'fp': 0, 'fn': 0, 'recall': 1.0}, 'img[462 chars]1.0}} != {'img[368 chars]tp': 0, 'fp': 1, 'fn': 1, 'recall': 0.0}, 'img[462 chars]1.0}}\n  {'img_01/alice': {'fn': 0, 'fp': 0, 'recall': 1.0, 'tp': 2},\n   'img_01/bob': {'fn': 0, 'fp': 0, 'recall': 1.0, 'tp': 2},\n   'img_01/chen': {'fn': 1, 'fp': 1, 'recall': 0.5, 'tp': 1},\n   'img_02/alice': {'fn': 0, 'fp': 0, 'recall': 1.0, 'tp': 2},\n   'img_02/bob': {'fn': 1, 'fp': 0, 'recall': 0.5, 'tp': 1},\n   'img_02/chen': {'fn': 1, 'fp': 0, 'recall': 0.5, 'tp': 1},\n-  'img_03/alice': {'fn': 0, 'fp': 0, 'recall': 1.0",
+      "tests.test_2_annotator_summary.TestAnnotatorSummary.test_summary": "AssertionError: {'ali[20 chars]tp': 9, 'fp': 0, 'fn': 1, 'precision': 1.0, 'r[175 chars].75}} != {'ali[20 chars]tp': 8, 'fp': 1, 'fn': 2, 'precision': 0.889, [177 chars].75}}\n- {'alice': {'fn': 1,\n?                  ^\n\n+ {'alice': {'fn': 2,\n?                  ^\n\n-            'fp': 0,\n?                  ^\n\n+            'fp': 1,\n?                  ^\n\n             'images': 5,\n-            'precision': 1.0,\n?                         ^ ^\n\n+            'precision': 0.889,\n?                         ^ ^^^\n\n-            'recall': 0.9,\n?                        ^\n\n+            'recall': 0.8,\n?          "
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_image_review",
+      "test_2_annotator_summary"
+    ],
+    "failures": {
+      "tests.test_1_image_review.TestImageReview.test_exact_box_is_a_match": "AssertionError: {'tp': 2, 'fp': -1, 'fn': -1, 'recall': 2.0} != {'tp': 1, 'fp': 0, 'fn': 0, 'recall': 1.0}\n- {'fn': -1, 'fp': -1, 'recall': 2.0, 'tp': 2}\n?        ^^        ^^            ^          ^\n\n+ {'fn': 0, 'fp': 0, 'recall': 1.0, 'tp': 1}\n?        ^        ^            ^          ^\n",
+      "tests.test_1_image_review.TestImageReview.test_flagged_for_re_review": "AssertionError: Lists differ: [] != ['img_01/chen', 'img_02/bob', 'img_02/chen[43 chars]bob']\n\nSecond list contains 6 additional elements.\nFirst extra element 0:\n'img_01/chen'\n\n- []\n+ ['img_01/chen',\n+  'img_02/bob',\n+  'img_02/chen',\n+  'img_03/alice',\n+  'img_04/alice',\n+  'img_05/bob']",
+      "tests.test_1_image_review.TestImageReview.test_per_image_counts": "AssertionError: {'img[131 chars]tp': 2, 'fp': 0, 'fn': 0, 'recall': 1.0}, 'img[709 chars]1.0}} != {'img[131 chars]tp': 1, 'fp': 1, 'fn': 1, 'recall': 0.5}, 'img[699 chars]1.0}}\n  {'img_01/alice': {'fn': 0, 'fp': 0, 'recall': 1.0, 'tp': 2},\n   'img_01/bob': {'fn': 0, 'fp': 0, 'recall': 1.0, 'tp': 2},\n-  'img_01/chen': {'fn': 0, 'fp': 0, 'recall': 1.0, 'tp': 2},\n?                        ^        ^            ^ ^        ^\n\n+  'img_01/chen': {'fn': 1, 'fp': 1, 'recall': 0.5, 'tp': 1},\n?                        ^        ^            ^ ^        ^\n\n   'img_02/alice': {'fn': 0, 'fp': 0, 'recall': 1.0, ",
+      "tests.test_2_annotator_summary.TestAnnotatorSummary.test_summary": "AssertionError: {'ali[20 chars]tp': 11, 'fp': -2, 'fn': -1, 'precision': 1.22[189 chars]125}} != {'ali[20 chars]tp': 8, 'fp': 1, 'fn': 2, 'precision': 0.889, [177 chars].75}}\n- {'alice': {'fn': -1,\n?                  ^^\n\n+ {'alice': {'fn': 2,\n?                  ^\n\n-            'fp': -2,\n?                  ^^\n\n+            'fp': 1,\n?                  ^\n\n             'images': 5,\n-            'precision': 1.222,\n?                         ^ ^^^\n\n+            'precision': 0.889,\n?                         ^ ^^^\n\n-            'recall': 1.1,\n?                      ^ ^\n\n+            'recall': 0.8,\n?  "
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_annotator_summary"
+    ],
+    "failures": {
+      "tests.test_2_annotator_summary.TestAnnotatorSummary.test_images_reviewed": "AssertionError: {'alice': 1, 'bob': 1, 'chen': 1} != {'alice': 5, 'bob': 6, 'chen': 4}\n- {'alice': 1, 'bob': 1, 'chen': 1}\n?           ^         ^          ^\n\n+ {'alice': 5, 'bob': 6, 'chen': 4}\n?           ^         ^          ^\n",
+      "tests.test_2_annotator_summary.TestAnnotatorSummary.test_summary": "AssertionError: {'alice': {'images': 1, 'tp': 3, 'fp': 0, 'fn': 0, 'precision'[183 chars]1.0}} != {'alice': {'images': 5, 'tp': 8, 'fp': 1, 'fn': 2, 'precision'[186 chars].75}}\n- {'alice': {'fn': 0,\n?                  ^\n\n+ {'alice': {'fn': 2,\n?                  ^\n\n-            'fp': 0,\n-            'images': 1,\n-            'precision': 1.0,\n-            'recall': 1.0,\n-            'tp': 3},\n-  'bob': {'fn': 0,\n-          'fp': 1,\n-          'images': 1,\n-          'precision': 0.0,\n-          'recall': 1.0,\n-          'tp': 0},\n-  'chen': {'fn': 0,\n-           'fp': 1,\n+            'fp': 1,\n?"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_image_review",
+      "test_2_annotator_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_image_review.TestImageReview.test_exact_box_is_a_match",
+      "tests.test_1_image_review.TestImageReview.test_flagged_for_re_review",
+      "tests.test_1_image_review.TestImageReview.test_per_image_counts",
+      "tests.test_2_annotator_summary.TestAnnotatorSummary.test_images_reviewed",
+      "tests.test_2_annotator_summary.TestAnnotatorSummary.test_summary"
+    ]
+  }
+}

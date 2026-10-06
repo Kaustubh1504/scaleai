@@ -1,0 +1,186 @@
+{
+  "id": "set-010",
+  "title": "Tenant rate-limit audit and token invoices",
+  "domain": "rate_limit_billing",
+  "length": "FULL",
+  "difficulty": "easy",
+  "format": "one_to_one",
+  "package": "meterbill",
+  "scenario": "Replay a request sample through a per-tenant sliding-window limiter (retry-after in seconds), aggregate a month of metered token usage, and price invoices with per-1k overage blocks and plan-default discounts.",
+  "verified": [
+    {
+      "file": "meterbill/usage.py",
+      "symbol": "in_period",
+      "why_correct": "`row.day < end` looks like it drops the last day of the month, but `end` from period_bounds is the first day of the next month, so 30 April is included and 1 May is not."
+    },
+    {
+      "file": "meterbill/loader.py",
+      "symbol": "parse_day",
+      "why_correct": "It accepts exactly the two date formats in the README, with month/day order for the slash format."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Retry-after left in milliseconds",
+      "type": "ms-vs-s",
+      "file": "meterbill/limiter.py",
+      "function": "replay",
+      "test": "test_1_throttle.TestThrottle.test_retry_after",
+      "old": "            throttled[req.request_id] = (oldest + WINDOW_MS - req.ts_ms) / 1000",
+      "new": "            throttled[req.request_id] = oldest + WINDOW_MS - req.ts_ms",
+      "symptom": "Test 1 test_retry_after: {'R07': 35000, 'R11': 52000, 'R17': 55000, 'R22': 1} instead of {'R07': 35.0, 'R11': 52.0, 'R17': 55.0, 'R22': 0.001}.",
+      "why": "Timestamps and WINDOW_MS are milliseconds, but retry_after_s is specified in seconds. Without the `/ 1000` every value is 1000 times too large.",
+      "unblocks": "test_1_throttle.TestThrottle.test_retry_after.",
+      "hints": [
+        "R07 should be able to retry in 35 seconds. What number do you get, and what unit is it?",
+        "Look at how replay computes the retry-after value.",
+        "Divide the millisecond difference by 1000."
+      ],
+      "probes": [
+        "Why did the list of throttled requests stay right?",
+        "How would naming the variable `retry_after_ms` vs `_s` have helped here?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Request exactly 60 s old still counted",
+      "type": "time-window-boundary",
+      "file": "meterbill/limiter.py",
+      "function": "replay",
+      "test": "test_1_throttle.TestThrottle.test_throttled_requests",
+      "old": "        recent = [t for t in allowed[req.tenant] if req.ts_ms - t < WINDOW_MS]",
+      "new": "        recent = [t for t in allowed[req.tenant] if req.ts_ms - t <= WINDOW_MS]",
+      "symptom": "Test 1 test_throttled_requests: R03 (initech) is throttled too: ['R03', 'R07', 'R11', ...].",
+      "why": "initech's R03 arrives exactly 60 000 ms after R01. The spec says that request no longer counts, so only R02 is in the window and R03 is allowed. With `<=` R01 still counts and R03 is throttled.",
+      "unblocks": "test_1_throttle.TestThrottle.test_throttled_requests.",
+      "hints": [
+        "R03 is throttled. Look at initech's timestamps.",
+        "Compare the window test in replay with README rule 2.",
+        "Use `req.ts_ms - t < WINDOW_MS`."
+      ],
+      "probes": [
+        "Why did no other tenant change?",
+        "What test data would you add to pin down both sides of this boundary?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "groupby over unsorted rows",
+      "type": "groupby-misuse",
+      "file": "meterbill/usage.py",
+      "function": "by_endpoint",
+      "test": "test_2_usage.TestUsage.test_by_endpoint",
+      "old": "    rows = sorted(rows, key=lambda r: (r.tenant, r.endpoint))\n    out = defaultdict(dict)",
+      "new": "    out = defaultdict(dict)",
+      "symptom": "Test 2 test_by_endpoint: endpoint totals hold only the last day's tokens, e.g. acme chat 50000 instead of 150000, globex chat 400000 / embed 140000. monthly_tokens is still right.",
+      "why": "itertools.groupby only groups consecutive equal keys. usage.csv is in date order, so the same (tenant, endpoint) shows up as several groups, and each assignment overwrites the last, leaving only the final day's tokens.",
+      "unblocks": "test_2_usage.TestUsage.test_by_endpoint.",
+      "hints": [
+        "by_endpoint is too low for acme chat, but monthly_tokens is right. How do the two differ?",
+        "Look at how by_endpoint groups rows.",
+        "Sort the rows by (tenant, endpoint) before calling groupby."
+      ],
+      "probes": [
+        "Why are initech and wonka still right with the bug?",
+        "How would a defaultdict(int) with `+=` avoid the problem altogether?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Explicit 0% discount replaced by plan default",
+      "type": "falsy-zero",
+      "file": "meterbill/config.py",
+      "function": "load_config",
+      "test": "test_3_invoices.TestInvoices.test_discounts",
+      "old": "            discount_pct=pct if pct is not None else plan.default_discount_pct,",
+      "new": "            discount_pct=pct or plan.default_discount_pct,",
+      "symptom": "Test 3 test_discounts: umbrella gets a 15.95 discount instead of 0.0.",
+      "why": "`pct or default` treats an explicit 0.0 like a missing value. umbrella is on enterprise (default 5%) with discount_pct 0, so it gets a 15.95 discount it should not have. tyrell is also 0 but on pro, whose default is 0, so it looks fine.",
+      "unblocks": "test_3_invoices.TestInvoices.test_discounts.",
+      "hints": [
+        "umbrella has a discount, but config.json says 0. Where is the discount decided?",
+        "Look at how load_config falls back to the plan's default.",
+        "Use `pct if pct is not None else plan.default_discount_pct`."
+      ],
+      "probes": [
+        "Why is tyrell (also 0) unaffected?",
+        "Why did umbrella stay in the top three anyway?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Overage blocks rounded instead of ceiled",
+      "type": "float-rounding",
+      "file": "meterbill/billing.py",
+      "function": "invoice",
+      "test": "test_3_invoices.TestInvoices.test_overage",
+      "old": "    blocks = math.ceil(excess / 1000)",
+      "new": "    blocks = round(excess / 1000)",
+      "symptom": "Test 3 test_overage: acme's overage is 4.8 instead of 5.2.",
+      "why": "The spec bills every started block of 1 000 tokens. `round(12.3)` is 12, so acme's 12 300 excess tokens are billed as 12 blocks (4.80) instead of 13 (5.20). Every other tenant's excess is a whole number of thousands.",
+      "unblocks": "test_3_invoices.TestInvoices.test_overage.",
+      "hints": [
+        "Only acme's overage is off, by one block's price. What is acme's excess?",
+        "Look at how invoice turns excess tokens into blocks.",
+        "Use math.ceil(excess / 1000)."
+      ],
+      "probes": [
+        "What would round() do for an excess of 500 500 tokens?",
+        "Why is it safer to bill in integer blocks than to multiply the raw excess by a per-token price?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Top tenants sorted ascending",
+      "type": "sort-direction",
+      "file": "meterbill/report.py",
+      "function": "top_tenants",
+      "test": "test_3_invoices.TestInvoices.test_top_tenants",
+      "old": "    ranked = sorted(invoices.items(), key=lambda kv: (-kv[1][\"total\"], kv[0]))",
+      "new": "    ranked = sorted(invoices.items(), key=lambda kv: (kv[1][\"total\"], kv[0]))",
+      "symptom": "Test 3 test_top_tenants: ['initech', 'wayne', 'wonka'] instead of ['hooli', 'globex', 'umbrella'].",
+      "why": "Without the minus sign the sort is ascending, so the first three are the cheapest invoices, not the most expensive.",
+      "unblocks": "test_3_invoices.TestInvoices.test_top_tenants.",
+      "hints": [
+        "The 'top' tenants have the smallest totals.",
+        "Look at the sort key in top_tenants.",
+        "Negate the total: `(-kv[1][\"total\"], kv[0])`."
+      ],
+      "probes": [
+        "Why negate the total instead of passing reverse=True here?",
+        "With reverse=True, what would happen to the tenant-id tie-break?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() call, and in what order?",
+      "a": "`config.load_config` returns the billing period and Tenant objects (each holding its Plan). `limiter.replay` runs over `loader.load_requests`. `loader.load_usage` feeds `usage.monthly_tokens` and `usage.by_endpoint`. `billing.invoice` runs per tenant on its monthly tokens, and `report.top_tenants` ranks the invoices."
+    },
+    {
+      "q": "What units does the limiter work in?",
+      "a": "`ts_ms` is an int in milliseconds as read from requests.csv, and `WINDOW_MS` is 60 000. The window filter and the retry-after value are both computed from those numbers inside `replay`."
+    },
+    {
+      "q": "Which requests go into the `allowed` lists in replay?",
+      "a": "Only requests that were not throttled: the else branch appends `req.ts_ms` to that tenant's list. `recent` is rebuilt from that list for each request."
+    },
+    {
+      "q": "How is a tenant's discount_pct decided?",
+      "a": "`load_config` parses the raw value with `_pct`, which returns None for null, missing or blank strings and a float otherwise, then picks between that value and the plan's `default_discount_pct` when building the Tenant."
+    },
+    {
+      "q": "What does by_endpoint do with the rows?",
+      "a": "It keeps rows inside the billing period, groups them with `itertools.groupby` on `(tenant, endpoint)`, sums each group's tokens into `out[tenant][endpoint]`, and returns the dicts sorted by key."
+    },
+    {
+      "q": "How is an invoice computed?",
+      "a": "`invoice` takes excess = tokens minus included_tokens (floored at 0), converts it to a number of 1k blocks, multiplies by overage_per_1k, adds base_fee, applies discount_pct, and rounds overage, discount and total to 2 decimals."
+    },
+    {
+      "q": "What does in_period compare?",
+      "a": "`start <= row.day < end`, where `period_bounds` returns the first day of the billing month and the first day of the following month."
+    }
+  ]
+}

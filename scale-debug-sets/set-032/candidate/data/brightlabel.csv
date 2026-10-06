@@ -1,0 +1,14 @@
+task_id,email,label,submitted,duration_s,tags,batch
+T008,k.osei@brightlabel.com,pos,2026-03-03 08:15,50,sentiment,b2
+T014,k.osei@brightlabel.com,mixed,2026-03-02 11:00,41,long,b4
+T015,R.Diaz@brightlabel.com,neu,2026-03-02 11:05,39,short;long,b4
+T002,r.diaz@brightlabel.com,neg,2026-03-04 10:00,44,sentiment;sarcasm,b1
+T016,k.osei@brightlabel.com,positive,2026-03-04 10:30,25,,b4
+T017,k.osei@brightlabel.com,Pos ,03/04/2026 10:40,12,short,b4
+T018,r.diaz@brightlabel.com,neg,2026-03-04 11:00,31,long;tmp:qa,b5
+T019,r.diaz@brightlabel.com ,neg,2026-03-04 11:10,29,sentiment,b5
+T020,k.osei.brightlabel.com,pos,2026-03-04 11:20,30,,b5
+T021,r.diaz@brightlabel.com,neutral,2026-03-04 11:30,33,short,
+t009,k.osei@brightlabel.com,neutral,2026-03-02 08:00,30,long;short,b5
+T022,r.diaz@brightlabel.com,neg,2026-03-05 09:00,27,sarcasm,b5
+T023,k.osei@brightlabel.com,pos,yesterday,20,,b5

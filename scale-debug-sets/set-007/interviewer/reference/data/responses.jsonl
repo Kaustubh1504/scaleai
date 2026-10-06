@@ -1,0 +1,36 @@
+{"id": "r01", "model": "Atlas-7B ", "item_id": "q01", "output": "The answer is clear from the options.\nAnswer: B", "latency_ms": 910}
+{"id": "r02", "model": "atlas-7b", "item_id": "q02", "output": "Let me work through it step by step.\nanswer: (D)", "latency_ms": 880}
+{"id": "r03", "model": "atlas-7b", "item_id": "Q03", "output": "First pass: Answer: (A)\nRe-checking the second clue changes things.\nFinal Answer: C", "latency_ms": 1020}
+{"id": "r04", "model": "atlas-7b", "item_id": "q04", "output": "Eliminating the others leaves one choice. ANSWER: C.", "latency_ms": 870}
+{"id": "r05", "model": "atlas-7b", "item_id": "q05", "output": "The answer is clear from the options.\nAnswer: A", "latency_ms": "930"}
+{"id": "r06", "model": "ATLAS-7b", "item_id": "q06", "output": "I am not able to determine this from the passage.", "latency_ms": 900}
+{"id": "r07", "model": "atlas-7b", "item_id": "q07", "output": "Let me work through it step by step.\nanswer: (D)", "latency_ms": 860}
+{"id": "r08", "model": "atlas-7b", "item_id": "q08", "output": "The answer is clear from the options.\nAnswer: A", "latency_ms": 940}
+{"id": "r09", "model": "atlas-7b", "item_id": " q09", "output": "Eliminating the others leaves one choice. ANSWER: B.", "latency_ms": 890}
+{"id": "r10", "model": "atlas-7b", "item_id": "q10", "output": "The answer is clear from the options.\nAnswer: A", "latency_ms": 850}
+{"id": "r11", "model": "atlas-7b", "item_id": "q11", "output": "Let me work through it step by step.\nanswer: (D)", "latency_ms": 880}
+{"id": "r12", "model": "atlas-7b", "item_id": "q12", "output": "Answer: D\nDouble-checked, so the final answer: D", "latency_ms": 880}
+{"id": "r13", "model": "borealis-13b", "item_id": "q01", "output": "Eliminating the others leaves one choice. ANSWER: B.", "latency_ms": 800}
+{"id": "r14", "model": "borealis-13b", "item_id": "q02", "output": "The answer is clear from the options.\nAnswer: A", "latency_ms": 860}
+{"id": "r15", "model": "Borealis-13B", "item_id": "q03", "output": "Let me work through it step by step.\nanswer: (A)", "latency_ms": 820}
+{"id": "r16", "model": "borealis-13b", "item_id": "Q04", "output": "The answer is clear from the options.\nAnswer: C", "latency_ms": 900}
+{"id": "r17", "model": "borealis-13b", "item_id": "q05", "output": "Eliminating the others leaves one choice. ANSWER: B.", "latency_ms": 830}
+{"id": "r18", "model": "borealis-13b", "item_id": "q06", "output": "The answer is clear from the options.\nAnswer: B", "latency_ms": "870"}
+{"id": "r19", "model": "borealis-13b", "item_id": "q07", "output": "Let me work through it step by step.\nanswer: (D)", "latency_ms": 810}
+{"id": "r20", "model": "borealis-13b", "item_id": "q08", "output": "The answer is clear from the options.\nAnswer: C", "latency_ms": 880}
+{"id": "r21", "model": "borealis-13b", "item_id": "q09", "output": "I am not able to determine this from the passage.", "latency_ms": 900}
+{"id": "r22", "model": " borealis-13b", "item_id": "q10", "output": "Eliminating the others leaves one choice. ANSWER: A.", "latency_ms": 840}
+{"id": "r23", "model": "borealis-13b", "item_id": "q11", "output": "First pass: Answer: (B)\nRe-checking the second clue changes things.\nFinal Answer: C", "latency_ms": 860}
+{"id": "r24", "model": "borealis-13b", "item_id": "q12", "output": "The answer is clear from the options.\nAnswer: A", "latency_ms": 830}
+{"id": "r25", "model": "cirrus-3b", "item_id": "q01", "output": "The answer is clear from the options.\nAnswer: A", "latency_ms": 400}
+{"id": "r26", "model": "cirrus-3b", "item_id": "q02", "output": "Eliminating the others leaves one choice. ANSWER: D.", "latency_ms": 420}
+{"id": "r27", "model": "cirrus-3b", "item_id": "q03", "output": "The answer is clear from the options.\nAnswer: A", "latency_ms": 380}
+{"id": "r28", "model": "Cirrus-3b", "item_id": "q04", "output": "Let me work through it step by step.\nanswer: (B)", "latency_ms": 410}
+{"id": "r29", "model": "cirrus-3b", "item_id": "q05", "output": "The answer is clear from the options.\nAnswer: A", "latency_ms": 390}
+{"id": "r30", "model": "cirrus-3b", "item_id": "q06", "output": "Eliminating the others leaves one choice. ANSWER: B.", "latency_ms": 400}
+{"id": "r31", "model": "cirrus-3b", "item_id": "q07", "output": "The answer is clear from the options.\nAnswer: C", "latency_ms": 430}
+{"id": "r32", "model": "cirrus-3b", "item_id": "q08", "output": "Let me work through it step by step.\nanswer: (C)", "latency_ms": 370}
+{"id": "r33", "model": "CIRRUS-3B", "item_id": "q09", "output": "The answer is clear from the options.\nAnswer: B", "latency_ms": 400}
+{"id": "r34", "model": "cirrus-3b", "item_id": "q10", "output": "Eliminating the others leaves one choice. ANSWER: C.", "latency_ms": 410}
+{"id": "r35", "model": "cirrus-3b", "item_id": "q11", "output": "First pass: Answer: (A)\nRe-checking the second clue changes things.\nFinal Answer: C", "latency_ms": 420}
+{"id": "r36", "model": "cirrus-3b", "item_id": "q12", "output": "I am not able to determine this from the passage.", "latency_ms": 400}

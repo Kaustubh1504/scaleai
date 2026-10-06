@@ -1,0 +1,193 @@
+{
+  "id": "set-036",
+  "title": "Async embedding indexer: concurrency, retries, upserts",
+  "domain": "endpoint_client",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "vecsync",
+  "scenario": "An asyncio client embeds a document corpus in concurrent batches against a local embeddings endpoint (bounded concurrency, 429/5xx retries), upserts every vector into a vector index, and reports token usage and near-duplicate documents.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_requests",
+      "test_2_results",
+      "test_3_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "vecsync/loader.py",
+      "symbol": "batched",
+      "why_correct": "range(0, len(items), size) steps through every start index and items[i:i + size] clamps at the end of the list, so the last short batch (d17, d18) is kept and nothing is duplicated."
+    },
+    {
+      "file": "vecsync/retry.py",
+      "symbol": "wait_time",
+      "why_correct": "Retry-After wins when present; otherwise backoff * 2 ** attempt. ** binds tighter than *, so this is backoff * (2 ** attempt): 0.5, 1.0, 2.0 for attempts 0, 1, 2, exactly as the README says."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Fresh semaphore per batch",
+      "type": "semaphore-unused",
+      "file": "vecsync/client.py",
+      "function": "EmbeddingClient.embed_batch",
+      "test": "test_1_requests.TestRequests.test_concurrency_limit",
+      "old": "        async with self.limit:\n            response = await send_with_retries(",
+      "new": "        async with asyncio.Semaphore(self.config.max_concurrency):\n            response = await send_with_retries(",
+      "symptom": "Test 1 test_concurrency_limit: AssertionError 5 not less than or equal to 2. The server saw all five embedding batches in flight at once.",
+      "why": "Each call builds its own Semaphore(2), so every batch acquires a semaphore nobody else shares. All five batches hit the server at once. The shared self.limit created in __init__ is what bounds concurrency across calls.",
+      "unblocks": "Test 1 test_concurrency_limit.",
+      "hints": [
+        "The server saw more than 2 requests in flight. Where is the limit supposed to be enforced?",
+        "Compare how embed_batch and upsert acquire their limit.",
+        "Use the shared self.limit in embed_batch instead of constructing a Semaphore there."
+      ],
+      "probes": [
+        "Why does a semaphore created inside the coroutine never block anything?",
+        "The semaphore is held while the retry loop sleeps. Is that what you want? What changes if it is released between attempts?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "One attempt short of max_retries + 1",
+      "type": "retry-off-by-one",
+      "file": "vecsync/retry.py",
+      "function": "send_with_retries",
+      "test": "test_1_requests.TestRequests.test_attempts_per_batch",
+      "old": "    for attempt in range(policy.max_retries + 1):",
+      "new": "    for attempt in range(policy.max_retries):",
+      "symptom": "Test 1 test_attempts_per_batch: batch 2 was tried 3 times instead of 4 ({0: 1, 1: 2, 2: 3, ...}). Its result is still a 503 failure, so nothing else changes.",
+      "why": "max_retries counts retries, not attempts: one initial try plus 3 retries is 4 requests. The batch fails either way (it always gets 503), so only the attempt count shows it. The loop still sleeps after its last attempt, which is why the recorded waits look the same.",
+      "unblocks": "Test 1 test_attempts_per_batch.",
+      "hints": [
+        "Batch 2 always gets 503. How many times does the README say it should be tried?",
+        "Look at the loop bound in send_with_retries.",
+        "Use range(policy.max_retries + 1)."
+      ],
+      "probes": [
+        "With the off-by-one, the client slept after its final attempt. Why didn't the waits test catch that?",
+        "If batch 2 had succeeded on its 4th attempt, which other tests would have failed?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Backoff sleep never awaited",
+      "type": "missing-await",
+      "file": "vecsync/retry.py",
+      "function": "send_with_retries",
+      "test": "test_1_requests.TestRequests.test_backoff_waits",
+      "old": "            await sleep(wait_time(response, policy, attempt))",
+      "new": "            sleep(wait_time(response, policy, attempt))",
+      "symptom": "Test 1 test_backoff_waits: the recorded waits are [] instead of [0.5, 0.5, 1.0, 2.0, 2.0], and the run prints RuntimeWarning: coroutine ... was never awaited. Retries still happen (attempt counts are right).",
+      "why": "Calling an async function without await only creates a coroutine object; its body never runs, so no delay happens (and the test's recorder never sees it). Python prints a 'coroutine was never awaited' RuntimeWarning.",
+      "unblocks": "Test 1 test_backoff_waits.",
+      "hints": [
+        "The recorder saw no waits at all, but retries did happen. Is the sleep reached?",
+        "Look at how send_with_retries calls sleep. Scroll up in the test output for a RuntimeWarning.",
+        "Put await in front of sleep(...)."
+      ],
+      "probes": [
+        "Against the real API, what would the server have seen with this line as it was?",
+        "How would you make the tests fail loudly on 'coroutine was never awaited' warnings?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Rejected upserts counted as stored",
+      "type": "gather-hides-failures",
+      "file": "vecsync/pipeline.py",
+      "function": "index_vectors",
+      "test": "test_2_results.TestResults.test_index_results",
+      "old": "        if isinstance(result, Exception):\n            run.rejected.append(doc_id)",
+      "new": "        if result is None:\n            run.rejected.append(doc_id)",
+      "symptom": "Test 2 test_index_results: {\"stored\": 14, \"rejected\": []} instead of {\"stored\": 13, \"rejected\": [\"d07\"]}, although the server answered d07 with 409.",
+      "why": "With return_exceptions=True, gather puts the UpsertError object into the results list instead of raising it. A failed upsert is never None, so the exception is stored as if it were a version number and d07's 409 disappears.",
+      "unblocks": "Test 2 test_index_results.",
+      "hints": [
+        "The server answered d07 with 409. Where does that error go after gather returns?",
+        "What does asyncio.gather(..., return_exceptions=True) put in the results list for a failed coroutine?",
+        "Check isinstance(result, Exception) instead of result is None."
+      ],
+      "probes": [
+        "What would happen to the whole run if return_exceptions were False?",
+        "embed_documents re-raises unexpected exceptions but index_vectors does not. Which behaviour would you choose here and why?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Average tokens floored",
+      "type": "integer-division",
+      "file": "vecsync/reports.py",
+      "function": "summarize",
+      "test": "test_3_report.TestReport.test_tokens_per_doc",
+      "old": "        \"tokens_per_doc\": round(run.total_tokens / embedded, 2) if embedded else None,",
+      "new": "        \"tokens_per_doc\": run.total_tokens // embedded if embedded else None,",
+      "symptom": "Test 3 test_tokens_per_doc: 14 != 14.86.",
+      "why": "// is floor division, so 208 tokens over 14 documents gives 14 instead of 14.857, and the 2-decimal rounding is lost too.",
+      "unblocks": "Test 3 test_tokens_per_doc.",
+      "hints": [
+        "208 / 14 is not a whole number. Why is the report showing an int?",
+        "Look at the tokens_per_doc line in reports.py.",
+        "Use round(run.total_tokens / embedded, 2)."
+      ],
+      "probes": [
+        "Why is the denominator embedded documents rather than all 18 loaded documents?",
+        "What would // give for negative numbers, and why does that matter in other reports?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Similarity rounded before the threshold check",
+      "type": "float-rounding",
+      "file": "vecsync/similarity.py",
+      "function": "near_duplicates",
+      "test": "test_3_report.TestReport.test_near_duplicates",
+      "old": "        sim = cosine(vectors[a], vectors[b])",
+      "new": "        sim = round(cosine(vectors[a], vectors[b]), 2)",
+      "symptom": "Test 3 test_near_duplicates: an extra pair [\"d15\", \"d16\", 0.95] appears; its real similarity is 0.9477, below the 0.95 threshold.",
+      "why": "d15/d16 have cosine 0.9477. Rounded to 2 decimals that becomes 0.95, which passes the >= 0.95 threshold. The README compares the unrounded value and only rounds the reported number (to 3 decimals).",
+      "unblocks": "Test 3 test_near_duplicates.",
+      "hints": [
+        "Compute the cosine for d15 and d16 yourself. Is it at least 0.95?",
+        "Look at where near_duplicates rounds.",
+        "Compare the raw cosine with the threshold; round only when appending."
+      ],
+      "probes": [
+        "Why does d05/d14 still report 0.98 either way?",
+        "When is it safe to round a value before comparing it?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report do, end to end?",
+      "a": "It loads config.json and documents.csv, builds an EmbeddingClient, and runs run_pipeline inside asyncio.run. run_pipeline embeds all batches concurrently with asyncio.gather, then upserts every returned vector with another gather. The report has the embedded doc ids, failed batches, index results and a summary."
+    },
+    {
+      "q": "How are documents batched and numbered?",
+      "a": "load_documents returns the latest version of each doc_id (blank text skipped), sorted by id. batched() slices that list into chunks of batch_size (4). The chunk's position becomes metadata.batch in the request body, which the mock server uses to pick its scripted response."
+    },
+    {
+      "q": "What does the mock server send for each batch?",
+      "a": "Batch 0 and 3: 200. Batch 1: 429 with Retry-After 2, then 200. Batch 2: 503 every time. Batch 4: 500, then 200. Successful responses list the embeddings in reverse order, each with its input index, plus usage.prompt_tokens (number of words)."
+    },
+    {
+      "q": "How does the test harness observe concurrency and waits?",
+      "a": "The mock server counts requests in flight (each embeddings call takes 40 ms) and keeps the maximum in peak_in_flight. tests/helpers.py passes a Waits object as the client's sleep: an async callable that appends each requested delay and returns immediately."
+    },
+    {
+      "q": "Where is the concurrency limit created?",
+      "a": "EmbeddingClient.__init__ creates self.limit = asyncio.Semaphore(config.max_concurrency). embed_batch and upsert each wrap their HTTP work in an `async with` block."
+    },
+    {
+      "q": "What happens when the index refuses a vector?",
+      "a": "The server returns 409 for d07. client.upsert raises UpsertError for any non-200. index_vectors gathers all upserts with return_exceptions=True and sorts each result into run.rejected or run.stored."
+    },
+    {
+      "q": "How is a near duplicate decided?",
+      "a": "similarity.near_duplicates compares every pair of embedded documents (sorted ids) with cosine similarity and keeps pairs at or above similarity_threshold (0.95), appending [doc_a, doc_b, similarity rounded to 3 decimals]."
+    }
+  ]
+}

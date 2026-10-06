@@ -1,0 +1,9 @@
+{
+  "model": "judge-large-2",
+  "system_prompt": "You are a strict grader. Reply with a JSON object containing score (0-10) and passed.",
+  "max_tokens": 200,
+  "temperature": 0,
+  "max_retries": 3,
+  "backoff_seconds": 0,
+  "page_size": 3
+}

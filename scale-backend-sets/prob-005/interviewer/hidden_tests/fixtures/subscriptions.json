@@ -1,0 +1,5 @@
+[
+  {"id": "sub_all", "url": "http://hooks.test/sub_all", "secret": "whsec_all_1f3a", "event_types": ["*"]},
+  {"id": "sub_tasks", "url": "http://hooks.test/sub_tasks", "secret": "whsec_tasks_9b0e",
+   "event_types": ["task.completed", "task.failed"]}
+]

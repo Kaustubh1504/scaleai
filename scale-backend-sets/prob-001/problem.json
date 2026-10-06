@@ -1,0 +1,17 @@
+{
+  "id": "prob-001",
+  "title": "Support Ticket Ingestion & LLM Triage",
+  "topics": [
+    "file-ingestion",
+    "llm-classification",
+    "llm-retries-backoff",
+    "llm-output-validation"
+  ],
+  "mode": "fastapi",
+  "difficulty": "medium",
+  "starter": "skeleton",
+  "planted_bugs": false,
+  "package": "app",
+  "variant_of": "reported real problem: file upload -> JSON, then LLM classification",
+  "kind": "service"
+}

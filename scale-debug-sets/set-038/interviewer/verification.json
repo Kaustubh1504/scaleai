@@ -1,0 +1,100 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_routing",
+      "test_2_backends",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_api_routes": "AssertionError: {'R01[131 chars]'api-3', 'R18': 'api-2', 'R19': 'api-3', 'R21'[37 chars]i-3'} != {'R01[131 chars]'api-1', 'R18': 'api-2', 'R19': 'api-1', 'R21'[37 chars]i-3'}\n  {'R01': 'api-1',\n   'R02': 'api-2',\n   'R03': 'api-3',\n   'R04': 'api-1',\n   'R09': 'api-2',\n   'R10': 'api-3',\n   'R12': 'api-1',\n   'R13': 'api-2',\n-  'R14': 'api-3',\n?              ^\n\n+  'R14': 'api-1',\n?              ^\n\n   'R18': 'api-2',\n-  'R19': 'api-3',\n?              ^\n\n+  'R19': 'api-1',\n?              ^\n\n   'R21': 'api-1',\n   'R22': 'api-2',\n   'R26': 'api-3'}",
+      "tests.test_2_backends.TestBackends.test_busy_ms": "AssertionError: {'api-1': 2700, 'api-2': 1650, 'api-3': 1650, 'bt-1[44 chars] 400} != {'api-1': 3350, 'api-2': 1650, 'api-3': 1000, 'bt-1[44 chars] 400}\n- {'api-1': 2700,\n?           ^^^\n\n+ {'api-1': 3350,\n?           ^^^\n\n   'api-2': 1650,\n-  'api-3': 1650,\n?            ^^\n\n+  'api-3': 1000,\n?            ^^\n\n   'bt-1': 2450,\n   'bt-3': 1000,\n   'st-1': 2050,\n   'st-2': 400}",
+      "tests.test_2_backends.TestBackends.test_peak_connections": "AssertionError: {'api-1': 2, 'api-2': 2, 'api-3': 2, 'bt-1': 2, 'bt-3': 1, 'st-1': 1, 'st-2': 1} != {'api-1': 3, 'api-2': 2, 'api-3': 1, 'bt-1': 2, 'bt-3': 1, 'st-1': 1, 'st-2': 1}\n- {'api-1': 2, 'api-2': 2, 'api-3': 2, 'bt-1': 2, 'bt-3': 1, 'st-1': 1, 'st-2': 1}\n?           ^                       ^\n\n+ {'api-1': 3, 'api-2': 2, 'api-3': 1, 'bt-1': 2, 'bt-3': 1, 'st-1': 1, 'st-2': 1}\n?           ^                       ^\n",
+      "tests.test_2_backends.TestBackends.test_served": "AssertionError: {'api-1': 4, 'api-2': 5, 'api-3': 5, 'api-4': 0, 'b[58 chars]': 0} != {'api-1': 6, 'api-2': 5, 'api-3': 3, 'api-4': 0, 'b[58 chars]': 0}\n- {'api-1': 4,\n?           ^\n\n+ {'api-1': 6,\n?           ^\n\n   'api-2': 5,\n-  'api-3': 5,\n?           ^\n\n+  'api-3': 3,\n?           ^\n\n   'api-4': 0,\n   'bt-1': 4,\n   'bt-2': 0,\n   'bt-3': 3,\n   'st-1': 3,\n   'st-2': 2,\n   'st-3': 0}",
+      "tests.test_3_report.TestReport.test_utilization": "AssertionError: {'api-1': 0.22, 'api-2': 0.201, 'api-3': 0.201, 'bt-1'[46 chars].098} != {'api-1': 0.272, 'api-2': 0.201, 'api-3': 0.122, 'bt-1[47 chars].098}\n- {'api-1': 0.22,\n+ {'api-1': 0.272,\n?              +\n\n   'api-2': 0.201,\n-  'api-3': 0.201,\n?              ^^\n\n+  'api-3': 0.122,\n?             + ^\n\n   'bt-1': 0.199,\n   'bt-3': 0.244,\n   'st-1': 0.5,\n   'st-2': 0.098}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_routing",
+      "test_2_backends",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_api_routes": "AssertionError: {'R01[19 chars]'api-1', 'R03': 'api-2', 'R04': 'api-3', 'R09'[149 chars]i-1'} != {'R01[19 chars]'api-2', 'R03': 'api-3', 'R04': 'api-1', 'R09'[149 chars]i-3'}\nDiff is 926 characters long. Set self.maxDiff to None to see it.",
+      "tests.test_1_routing.TestRouting.test_batch_routes": "AssertionError: {'R06[17 chars] 'bt-1', 'R11': 'bt-1', 'R17': 'bt-1', 'R20': [32 chars]t-1'} != {'R06[17 chars] 'bt-3', 'R11': 'bt-1', 'R17': 'bt-1', 'R20': [32 chars]t-1'}\n  {'R06': 'bt-1',\n-  'R07': 'bt-1',\n?             ^\n\n+  'R07': 'bt-3',\n?             ^\n\n   'R11': 'bt-1',\n   'R17': 'bt-1',\n-  'R20': 'bt-1',\n?             ^\n\n+  'R20': 'bt-3',\n?             ^\n\n-  'R24': 'bt-1',\n?             ^\n\n+  'R24': 'bt-3',\n?             ^\n\n   'R25': 'bt-1'}",
+      "tests.test_2_backends.TestBackends.test_busy_ms": "AssertionError: {'api-1': 3050, 'api-2': 1150, 'api-3': 1800, 'bt-1'[29 chars] 400} != {'api-1': 3350, 'api-2': 1650, 'api-3': 1000, 'bt-1'[43 chars] 400}\n- {'api-1': 3050,\n?            ^\n\n+ {'api-1': 3350,\n?            ^\n\n-  'api-2': 1150,\n?            ^\n\n+  'api-2': 1650,\n?            ^\n\n-  'api-3': 1800,\n?            ^\n\n+  'api-3': 1000,\n?            ^\n\n-  'bt-1': 3450,\n?          ^\n\n+  'bt-1': 2450,\n?          ^\n\n+  'bt-3': 1000,\n   'st-1': 2050,\n   'st-2': 400}",
+      "tests.test_2_backends.TestBackends.test_peak_connections": "AssertionError: {'api-1': 3, 'api-2': 2, 'api-3': 1, 'bt-1': 2, 'st-1': 1, 'st-2': 1} != {'api-1': 3, 'api-2': 2, 'api-3': 1, 'bt-1': 2, 'bt-3': 1, 'st-1': 1, 'st-2': 1}\n- {'api-1': 3, 'api-2': 2, 'api-3': 1, 'bt-1': 2, 'st-1': 1, 'st-2': 1}\n+ {'api-1': 3, 'api-2': 2, 'api-3': 1, 'bt-1': 2, 'bt-3': 1, 'st-1': 1, 'st-2': 1}\n?                                                +++++++++++\n",
+      "tests.test_2_backends.TestBackends.test_served": "AssertionError: {'api-1': 9, 'api-2': 3, 'api-3': 2, 'api-4': 0, 'b[58 chars]': 0} != {'api-1': 6, 'api-2': 5, 'api-3': 3, 'api-4': 0, 'b[58 chars]': 0}\n- {'api-1': 9,\n?           ^\n\n+ {'api-1': 6,\n?           ^\n\n-  'api-2': 3,\n?           ^\n\n+  'api-2': 5,\n?           ^\n\n-  'api-3': 2,\n?           ^\n\n+  'api-3': 3,\n?           ^\n\n   'api-4': 0,\n-  'bt-1': 7,\n?          ^\n\n+  'bt-1': 4,\n?          ^\n\n   'bt-2': 0,\n-  'bt-3': 0,\n?          ^\n\n+  'bt-3': 3,\n?          ^\n\n   'st-1': 3,\n   'st-2': 2,\n   'st-3': 0}",
+      "tests.test_3_report.TestReport.test_utilization": "AssertionError: {'api-1': 0.248, 'api-2': 0.14, 'api-3': 0.22, 'bt-1':[29 chars].098} != {'api-1': 0.272, 'api-2': 0.201, 'api-3': 0.122, 'bt-1[47 chars].098}\n- {'api-1': 0.248,\n?              ^^\n\n+ {'api-1': 0.272,\n?              ^^\n\n-  'api-2': 0.14,\n?              -\n\n+  'api-2': 0.201,\n?             ++\n\n-  'api-3': 0.22,\n+  'api-3': 0.122,\n?             +\n\n-  'bt-1': 0.28,\n?            ^^\n\n+  'bt-1': 0.199,\n?            ^^^\n\n+  'bt-3': 0.244,\n   'st-1': 0.5,\n   'st-2': 0.098}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_routing",
+      "test_2_backends",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_api_routes": "AssertionError: {'R01[142 chars]18': None, 'R19': 'api-1', 'R21': 'api-1', 'R2[23 chars]i-3'} != {'R01[142 chars]18': 'api-2', 'R19': 'api-1', 'R21': 'api-1', [26 chars]i-3'}\n  {'R01': 'api-1',\n   'R02': 'api-2',\n   'R03': 'api-3',\n   'R04': 'api-1',\n   'R09': 'api-2',\n   'R10': 'api-3',\n   'R12': 'api-1',\n   'R13': 'api-2',\n   'R14': 'api-1',\n-  'R18': None,\n+  'R18': 'api-2',\n   'R19': 'api-1',\n   'R21': 'api-1',\n   'R22': 'api-2',\n   'R26': 'api-3'}",
+      "tests.test_2_backends.TestBackends.test_busy_ms": "AssertionError: {'api[16 chars]2': 1400, 'api-3': 1000, 'bt-1': 2450, 'bt-3':[28 chars] 400} != {'api[16 chars]2': 1650, 'api-3': 1000, 'bt-1': 2450, 'bt-3':[28 chars] 400}\n  {'api-1': 3350,\n-  'api-2': 1400,\n?            ^^\n\n+  'api-2': 1650,\n?            ^^\n\n   'api-3': 1000,\n   'bt-1': 2450,\n   'bt-3': 1000,\n   'st-1': 2050,\n   'st-2': 400}",
+      "tests.test_2_backends.TestBackends.test_peak_connections": "AssertionError: {'api-1': 3, 'api-2': 1, 'api-3': 1, 'bt-1': 2, 'bt-3': 1, 'st-1': 1, 'st-2': 1} != {'api-1': 3, 'api-2': 2, 'api-3': 1, 'bt-1': 2, 'bt-3': 1, 'st-1': 1, 'st-2': 1}\n- {'api-1': 3, 'api-2': 1, 'api-3': 1, 'bt-1': 2, 'bt-3': 1, 'st-1': 1, 'st-2': 1}\n?                       ^\n\n+ {'api-1': 3, 'api-2': 2, 'api-3': 1, 'bt-1': 2, 'bt-3': 1, 'st-1': 1, 'st-2': 1}\n?                       ^\n",
+      "tests.test_2_backends.TestBackends.test_served": "AssertionError: {'api-1': 6, 'api-2': 4, 'api-3': 3, 'api-4': 0, 'bt-1': 4, 'bt[46 chars]': 0} != {'api-1': 6, 'api-2': 5, 'api-3': 3, 'api-4': 0, 'bt-1': 4, 'bt[46 chars]': 0}\n  {'api-1': 6,\n-  'api-2': 4,\n?           ^\n\n+  'api-2': 5,\n?           ^\n\n   'api-3': 3,\n   'api-4': 0,\n   'bt-1': 4,\n   'bt-2': 0,\n   'bt-3': 3,\n   'st-1': 3,\n   'st-2': 2,\n   'st-3': 0}",
+      "tests.test_3_report.TestReport.test_by_pool": "AssertionError: {'api': 13, 'batch': 7, 'static': 5} != {'api': 14, 'batch': 7, 'static': 5}\n- {'api': 13, 'batch': 7, 'static': 5}\n?          ^\n\n+ {'api': 14, 'batch': 7, 'static': 5}\n?          ^\n",
+      "tests.test_3_report.TestReport.test_totals": "AssertionError: Tuples differ: (25, 2, 0.074) != (26, 1, 0.037)\n\nFirst differing element 0:\n25\n26\n\n- (25, 2, 0.074)\n?   ^  ^      -\n\n+ (26, 1, 0.037)\n?   ^  ^     +\n",
+      "tests.test_3_report.TestReport.test_utilization": "AssertionError: {'api[18 chars]': 0.171, 'api-3': 0.122, 'bt-1': 0.199, 'bt-3[32 chars].098} != {'api[18 chars]': 0.201, 'api-3': 0.122, 'bt-1': 0.199, 'bt-3[32 chars].098}\n  {'api-1': 0.272,\n-  'api-2': 0.171,\n?             ^^\n\n+  'api-2': 0.201,\n?             ^^\n\n   'api-3': 0.122,\n   'bt-1': 0.199,\n   'bt-3': 0.244,\n   'st-1': 0.5,\n   'st-2': 0.098}"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_1_routing",
+      "test_2_backends",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_api_routes": "AssertionError: {'R01[67 chars]'api-1', 'R10': 'api-2', 'R12': 'api-1', 'R13'[98 chars]i-2'} != {'R01[67 chars]'api-2', 'R10': 'api-3', 'R12': 'api-1', 'R13'[101 chars]i-3'}\n  {'R01': 'api-1',\n   'R02': 'api-2',\n   'R03': 'api-3',\n   'R04': 'api-1',\n-  'R09': 'api-1',\n?              ^\n\n+  'R09': 'api-2',\n?              ^\n\n-  'R10': 'api-2',\n?              ^\n\n+  'R10': 'api-3',\n?              ^\n\n   'R12': 'api-1',\n   'R13': 'api-2',\n   'R14': 'api-1',\n   'R18': 'api-2',\n-  'R19': None,\n+  'R19': 'api-1',\n   'R21': 'api-1',\n-  'R22': 'api-1',\n?              ^\n\n+  'R22': 'api-2',\n?              ^",
+      "tests.test_1_routing.TestRouting.test_static_routes": "AssertionError: {'R05[20 chars]t-2', 'R15': 'st-2', 'R16': None, 'R23': 'st-1', 'R27': 'st-1'} != {'R05[20 chars]t-2', 'R15': 'st-1', 'R16': 'st-2', 'R23': 'st-1', 'R27': None}\n  {'R05': 'st-1',\n   'R08': 'st-2',\n-  'R15': 'st-2',\n?             ^\n\n+  'R15': 'st-1',\n?             ^\n\n-  'R16': None,\n+  'R16': 'st-2',\n   'R23': 'st-1',\n-  'R27': 'st-1'}\n+  'R27': None}",
+      "tests.test_2_backends.TestBackends.test_busy_ms": "AssertionError: {'api-1': 3600, 'api-2': 1650, 'api-3': 500, 'bt-1':[42 chars] 400} != {'api-1': 3350, 'api-2': 1650, 'api-3': 1000, 'bt-1'[43 chars] 400}\n- {'api-1': 3600,\n?            ^^\n\n+ {'api-1': 3350,\n?            ^^\n\n   'api-2': 1650,\n-  'api-3': 500,\n?           ^\n\n+  'api-3': 1000,\n?           ^^\n\n   'bt-1': 2450,\n   'bt-3': 1000,\n-  'st-1': 1850,\n?          ^^\n\n+  'st-1': 2050,\n?          ^^\n\n   'st-2': 400}",
+      "tests.test_2_backends.TestBackends.test_served": "AssertionError: {'api-1': 7, 'api-2': 5, 'api-3': 1, 'api-4': 0, 'b[58 chars]': 0} != {'api-1': 6, 'api-2': 5, 'api-3': 3, 'api-4': 0, 'b[58 chars]': 0}\n- {'api-1': 7,\n?           ^\n\n+ {'api-1': 6,\n?           ^\n\n   'api-2': 5,\n-  'api-3': 1,\n?           ^\n\n+  'api-3': 3,\n?           ^\n\n   'api-4': 0,\n   'bt-1': 4,\n   'bt-2': 0,\n   'bt-3': 3,\n   'st-1': 3,\n   'st-2': 2,\n   'st-3': 0}",
+      "tests.test_3_report.TestReport.test_by_pool": "AssertionError: {'api': 13, 'batch': 7, 'static': 5} != {'api': 14, 'batch': 7, 'static': 5}\n- {'api': 13, 'batch': 7, 'static': 5}\n?          ^\n\n+ {'api': 14, 'batch': 7, 'static': 5}\n?          ^\n",
+      "tests.test_3_report.TestReport.test_totals": "AssertionError: Tuples differ: (25, 2, 0.074) != (26, 1, 0.037)\n\nFirst differing element 0:\n25\n26\n\n- (25, 2, 0.074)\n?   ^  ^      -\n\n+ (26, 1, 0.037)\n?   ^  ^     +\n",
+      "tests.test_3_report.TestReport.test_utilization": "AssertionError: {'api-1': 0.293, 'api-2': 0.201, 'api-3': 0.061, 'bt-1[49 chars].098} != {'api-1': 0.272, 'api-2': 0.201, 'api-3': 0.122, 'bt-1[47 chars].098}\n- {'api-1': 0.293,\n?              ^^\n\n+ {'api-1': 0.272,\n?              ^^\n\n   'api-2': 0.201,\n-  'api-3': 0.061,\n?             --\n\n+  'api-3': 0.122,\n?              ++\n\n   'bt-1': 0.199,\n   'bt-3': 0.244,\n-  'st-1': 0.451,\n?            - -\n\n+  'st-1': 0.5,\n   'st-2': 0.098}"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_1_routing",
+      "test_2_backends",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_batch_routes": "AssertionError: {'R06[17 chars] 'bt-1', 'R11': 'bt-3', 'R17': 'bt-1', 'R20': [32 chars]t-3'} != {'R06[17 chars] 'bt-3', 'R11': 'bt-1', 'R17': 'bt-1', 'R20': [32 chars]t-1'}\n  {'R06': 'bt-1',\n-  'R07': 'bt-1',\n?             ^\n\n+  'R07': 'bt-3',\n?             ^\n\n-  'R11': 'bt-3',\n?             ^\n\n+  'R11': 'bt-1',\n?             ^\n\n   'R17': 'bt-1',\n   'R20': 'bt-3',\n-  'R24': 'bt-1',\n?             ^\n\n+  'R24': 'bt-3',\n?             ^\n\n-  'R25': 'bt-3'}\n?             ^\n\n+  'R25': 'bt-1'}\n?             ^\n",
+      "tests.test_2_backends.TestBackends.test_busy_ms": "AssertionError: {'api[32 chars]': 1000, 'bt-1': 3000, 'bt-3': 650, 'st-1': 2050, 'st-2': 400} != {'api[32 chars]': 1000, 'bt-1': 2450, 'bt-3': 1000, 'st-1': 2050, 'st-2': 400}\n  {'api-1': 3350,\n   'api-2': 1650,\n   'api-3': 1000,\n+  'bt-1': 2450,\n-  'bt-1': 3000,\n?      ^   ^\n\n+  'bt-3': 1000,\n?      ^   ^\n\n-  'bt-3': 650,\n   'st-1': 2050,\n   'st-2': 400}",
+      "tests.test_3_report.TestReport.test_utilization": "AssertionError: {'api[38 chars].122, 'bt-1': 0.244, 'bt-3': 0.159, 'st-1': 0.5, 'st-2': 0.098} != {'api[38 chars].122, 'bt-1': 0.199, 'bt-3': 0.244, 'st-1': 0.5, 'st-2': 0.098}\n  {'api-1': 0.272,\n   'api-2': 0.201,\n   'api-3': 0.122,\n+  'bt-1': 0.199,\n-  'bt-1': 0.244,\n?      ^\n\n+  'bt-3': 0.244,\n?      ^\n\n-  'bt-3': 0.159,\n   'st-1': 0.5,\n   'st-2': 0.098}"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_by_pool": "AssertionError: {'api': 14, 'batch': 7, 'static': 6} != {'api': 14, 'batch': 7, 'static': 5}\n- {'api': 14, 'batch': 7, 'static': 6}\n?                                   ^\n\n+ {'api': 14, 'batch': 7, 'static': 5}\n?                                   ^\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_routing",
+      "test_2_backends",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_routing.TestRouting.test_api_routes",
+      "tests.test_1_routing.TestRouting.test_batch_routes",
+      "tests.test_1_routing.TestRouting.test_static_routes",
+      "tests.test_2_backends.TestBackends.test_busy_ms",
+      "tests.test_2_backends.TestBackends.test_peak_connections",
+      "tests.test_2_backends.TestBackends.test_served",
+      "tests.test_3_report.TestReport.test_by_pool",
+      "tests.test_3_report.TestReport.test_utilization"
+    ]
+  }
+}

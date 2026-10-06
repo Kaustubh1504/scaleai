@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_assignment"
+    ],
+    "failures": {
+      "tests.test_1_assignment.TestAssignment.test_1_emea_projects": "AssertionError: {'PR-01': ['E-03', 'E-01', 'E-02'], 'PR-02': ['E-03', 'E-01']} != {'PR-01': ['E-01', 'E-02'], 'PR-02': ['E-01', 'E-02']}\n- {'PR-01': ['E-03', 'E-01', 'E-02'], 'PR-02': ['E-03', 'E-01']}\n?            --------                           --------\n\n+ {'PR-01': ['E-01', 'E-02'], 'PR-02': ['E-01', 'E-02']}\n?                                             ++++++++\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_assignment"
+    ],
+    "failures": {
+      "tests.test_1_assignment.TestAssignment.test_2_apac_projects": "AssertionError: Lists differ: ['P-02', 'P-03'] != ['P-01', 'P-02']\n\nFirst differing element 0:\n'P-02'\n'P-01'\n\n- ['P-02', 'P-03']\n+ ['P-01', 'P-02']"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_3_skill_gaps_for_americas_skills": "AssertionError: {'math': 1, 'spanish': 3} != {'math': 1, 'spanish': 0}\n- {'math': 1, 'spanish': 3}\n?                        ^\n\n+ {'math': 1, 'spanish': 0}\n?                        ^\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_assignment",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_assignment.TestAssignment.test_1_emea_projects",
+      "tests.test_1_assignment.TestAssignment.test_2_apac_projects",
+      "tests.test_2_report.TestReport.test_3_skill_gaps_for_americas_skills"
+    ]
+  }
+}

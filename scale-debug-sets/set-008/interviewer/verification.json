@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_records"
+    ],
+    "failures": {
+      "tests.test_1_records.TestRecords.test_lineage": "AssertionError: {'ash[17 chars]or_a:', 'vendor_b:B-201'], 'ben@lab.io': ['ven[69 chars]a:']} != {'ash[17 chars]or_a:A-101', 'vendor_b:B-201'], 'ben@lab.io': [84 chars]10']}\n- {'asha@lab.io': ['vendor_a:', 'vendor_b:B-201'],\n+ {'asha@lab.io': ['vendor_a:A-101', 'vendor_b:B-201'],\n?                            +++++\n\n-  'ben@lab.io': ['vendor_a:', 'vendor_b:B-202', 'vendor_c:C-307'],\n+  'ben@lab.io': ['vendor_a:A-102', 'vendor_b:B-202', 'vendor_c:C-307'],\n?                           +++++\n\n-  'jon@lab.io': ['vendor_a:']}\n+  'jon@lab.io': ['vendor_a:A-110']}\n?                           +++++\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_records"
+    ],
+    "failures": {
+      "tests.test_1_records.TestRecords.test_skills": "AssertionError: {'ash[18 chars]n', 'python', 'spark', 'sql'], 'ben@lab.io': [[147 chars]: []} != {'ash[18 chars]n', 'spark', 'sql'], 'ben@lab.io': ['nlp', 'py[104 chars]: []}\n- {'asha@lab.io': ['python', 'python', 'spark', 'sql'],\n?                            ----------\n\n+ {'asha@lab.io': ['python', 'spark', 'sql'],\n-  'ben@lab.io': ['nlp', 'nlp', 'nlp', 'python', 'sql'],\n?                       --------------\n\n+  'ben@lab.io': ['nlp', 'python', 'sql'],\n-  'chen@lab.io': ['nlp', 'python', 'python', 'vision'],\n?                                  ----------\n\n+  'chen@lab.io': ['nlp', 'python', 'v"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_cleaning"
+    ],
+    "failures": {
+      "tests.test_2_cleaning.TestCleaning.test_notes": "AssertionError: {'asha@lab.io': ['name_from_email', 'rate_m[3065 chars]il']} != {'lena@lab.io': ['name_from_email'], 'raj@l[56 chars]il']}\nDiff is 6070 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_cleaning"
+    ],
+    "failures": {
+      "tests.test_2_cleaning.TestCleaning.test_rates": "AssertionError: {'ash[153 chars]: 19.0, 'lena@lab.io': 21.0, 'pia@lab.io': 0.0[119 chars]21.0} != {'ash[153 chars]: 19.5, 'lena@lab.io': 21.0, 'pia@lab.io': 0.0[119 chars]21.0}\n  {'asha@lab.io': 24.0,\n   'ben@lab.io': 32.0,\n   'chen@lab.io': 26.0,\n   'femi@lab.io': 27.0,\n   'gita@lab.io': 28.0,\n   'ines@lab.io': 24.0,\n   'jon@lab.io': 35.0,\n-  'kai@lab.io': 19.0,\n?                   ^\n\n+  'kai@lab.io': 19.5,\n?                   ^\n\n   'lena@lab.io': 21.0,\n   'pia@lab.io': 0.0,\n   'quinn@lab.io': 23.0,\n   'raj@lab.io': None,\n   'tara@lab.io': 22.0,\n   'vik@lab.io': 25.0,\n   'wen@lab.io': 24.0,\n "
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_rejected_by_reason": "AssertionError: {'invalid_value': 8} != {'invalid_value': 5, 'missing_field': 3}\n- {'invalid_value': 8}\n+ {'invalid_value': 5, 'missing_field': 3}"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_countries": "AssertionError: {'GB': 1, 'IN': 2, 'UNKNOWN': 1, 'US': 3, '[70 chars]': 1} != {'CA': 1, 'GB': 4, 'IN': 3, 'SE': 1, 'UNKNOWN': 1, 'US': 6}\n+ {'CA': 1, 'GB': 4, 'IN': 3, 'SE': 1, 'UNKNOWN': 1, 'US': 6}\n- {'GB': 1,\n-  'IN': 2,\n-  'UNKNOWN': 1,\n-  'US': 3,\n-  'United States': 2,\n-  'ca': 1,\n-  'gb': 1,\n-  'india': 1,\n-  'se': 1,\n-  'uk': 2,\n-  'us': 1}"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_records",
+      "test_2_cleaning",
+      "test_3_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_records.TestRecords.test_lineage",
+      "tests.test_1_records.TestRecords.test_skills",
+      "tests.test_2_cleaning.TestCleaning.test_notes",
+      "tests.test_2_cleaning.TestCleaning.test_rates",
+      "tests.test_3_summary.TestSummary.test_countries",
+      "tests.test_3_summary.TestSummary.test_rejected_by_reason"
+    ]
+  }
+}

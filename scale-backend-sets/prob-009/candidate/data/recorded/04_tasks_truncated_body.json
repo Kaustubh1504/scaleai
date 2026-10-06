@@ -1,0 +1,11 @@
+{
+  "request": "GET /v1/projects/prj_02/tasks?limit=3",
+  "status": 200,
+  "headers": {
+    "date": "Wed, 01 May 2024 08:00:00 GMT",
+    "x-ratelimit-limit": "4",
+    "x-ratelimit-remaining": "0",
+    "x-ratelimit-reset": "1714550410"
+  },
+  "body": "{\"data\": [{\"id\": \"tsk_0005\", \"project_id\": \"prj_02\", \"status\": \"in_progress\", \"priority\": \"2\", \"is_gold\": false, \"gold_label\": null, \"payload\": {\"image_url\": \"https://cdn.example.com/img/00005.jpg\", \"dimensions\": {\"width\": 1920, \"height\": 720}}, \"tags\": [\"urban\"], \"reward_cents\": 20, \"created_at\": \"2024-04-10T15:51:10Z\", \"completed_at\": null, \"updated_at\": \"2024-04-10T15:51:10Z\"}, {\"id\": \"tsk_0008\", \"project_id\": \"prj_02\", \"status\": \"rejected\", \"priority\": \"2\", \"is_gold\": false, \"gold_label\": null, \"payload\": {\"image_url\": \"https://cdn.example.com/img/00008.jpg\", \"dimensions\": {\"width\": 1920, \"height\": 720}}, \"tags\": [], \"reward_cents\": 20, \"created_at\": \"2024-03-27T00:33:40Z\", \"completed_at\": null, \"updated_at\": \"2024-03-27T00:33:40Z\"}, {\"id\": \"tsk_0020\", \"project_id\": \"prj_02\","
+}

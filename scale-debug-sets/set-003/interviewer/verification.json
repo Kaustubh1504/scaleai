@@ -1,0 +1,56 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_dispatch",
+      "test_2_final_state"
+    ],
+    "failures": {
+      "tests.test_1_dispatch.TestDispatch.test_dispatch_log": "AssertionError: Lists differ: [['20[23 chars]'A-106'], ['2026-04-01 08:01', 'w2', 'A-102'],[291 chars]09']] != [['20[23 chars]'A-101'], ['2026-04-01 08:01', 'w2', 'A-103'],[291 chars]09']]\n\nFirst differing element 0:\n['2026-04-01 08:00', 'w1', 'A-106']\n['2026-04-01 08:00', 'w1', 'A-101']\n\n- [['2026-04-01 08:00', 'w1', 'A-106'],\n?                                  ^\n\n+ [['2026-04-01 08:00', 'w1', 'A-101'],\n?                                  ^\n\n-  ['2026-04-01 08:01', 'w2', 'A-102'],\n?                                  ^\n\n+  ['2026-04-01 08:01', 'w2', 'A-103'],\n?                                  ^",
+      "tests.test_1_dispatch.TestDispatch.test_first_lease_gets_most_urgent_task": "AssertionError: Lists differ: ['2026-04-01 08:00', 'w1', 'A-106'] != ['2026-04-01 08:00', 'w1', 'A-101']\n\nFirst differing element 2:\n'A-106'\n'A-101'\n\n- ['2026-04-01 08:00', 'w1', 'A-106']\n?                                 ^\n\n+ ['2026-04-01 08:00', 'w1', 'A-101']\n?                                 ^\n",
+      "tests.test_2_final_state.TestFinalState.test_attempts": "AssertionError: {'A-101': 0, 'A-102': 3, 'A-103': 0, 'A-104': 3, 'A[64 chars]': 0} != {'A-101': 1, 'A-102': 1, 'A-103': 1, 'A-104': 1, 'A[64 chars]': 2}\n- {'A-101': 0,\n?           ^\n\n+ {'A-101': 1,\n?           ^\n\n-  'A-102': 3,\n?           ^\n\n+  'A-102': 1,\n?           ^\n\n-  'A-103': 0,\n?           ^\n\n+  'A-103': 1,\n?           ^\n\n-  'A-104': 3,\n?           ^\n\n+  'A-104': 1,\n?           ^\n\n   'A-105': 0,\n-  'A-106': 2,\n?           ^\n\n+  'A-106': 1,\n?           ^\n\n   'A-107': 0,\n-  'A-108': 1,\n?           ^\n\n+  'A-108': 2,\n?           ^\n\n   'A-109': 1,\n-  'A-110': 0}\n?           ^\n\n+  'A-110': ",
+      "tests.test_2_final_state.TestFinalState.test_completed_by": "AssertionError: {'w1': 1} != {'w1': 3, 'w2': 2, 'w5': 1}\n- {'w1': 1}\n+ {'w1': 3, 'w2': 2, 'w5': 1}",
+      "tests.test_2_final_state.TestFinalState.test_dead_letter": "AssertionError: Lists differ: ['A-102', 'A-104', 'A-106'] != ['A-110']\n\nFirst differing element 0:\n'A-102'\n'A-110'\n\nFirst list contains 2 additional elements.\nFirst extra element 1:\n'A-104'\n\n- ['A-102', 'A-104', 'A-106']\n+ ['A-110']",
+      "tests.test_2_final_state.TestFinalState.test_rejected_completions": "AssertionError: Lists differ: [['2026-04-01 08:05', 'w2', 'A-103'], ['2026-04-01 08:10',[270 chars]99']] != [['2026-04-01 08:41', 'w3', 'A-110'], ['2026-04-02 08:46',[85 chars]99']]\n\nFirst differing element 0:\n['2026-04-01 08:05', 'w2', 'A-103']\n['2026-04-01 08:41', 'w3', 'A-110']\n\nFirst list contains 5 additional elements.\nFirst extra element 4:\n['2026-04-01 08:52', 'w1', 'A-102']\n\n- [['2026-04-01 08:05', 'w2', 'A-103'],\n-  ['2026-04-01 08:10', 'w1', 'A-101'],\n-  ['2026-04-01 08:41', 'w3', 'A-110'],\n? ^\n\n+ [['2026-04-01 08:41', 'w3', 'A-110'],\n? ^\n\n-  ['2026-04-01 08:47', 'w5', 'A-106'],\n-  [",
+      "tests.test_2_final_state.TestFinalState.test_status": "AssertionError: {'A-101': 'pending', 'A-102': 'dead', 'A-103': 'pend[131 chars]ing'} != {'A-101': 'done', 'A-102': 'done', 'A-103': 'done', [122 chars]ead'}\n- {'A-101': 'pending',\n?            ^ -----\n\n+ {'A-101': 'done',\n?            ^^^\n\n-  'A-102': 'dead',\n?              --\n\n+  'A-102': 'done',\n?             ++\n\n-  'A-103': 'pending',\n?            ^ -----\n\n+  'A-103': 'done',\n?            ^^^\n\n-  'A-104': 'dead',\n?              --\n\n+  'A-104': 'done',\n?             ++\n\n   'A-105': 'pending',\n-  'A-106': 'dead',\n?              --\n\n+  'A-106': 'done',\n?             ++\n\n   'A-107': 'pending',\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_final_state"
+    ],
+    "failures": {
+      "tests.test_2_final_state.TestFinalState.test_completed_by": "AssertionError: {'w1': 3, 'w2': 2, 'w4': 1, 'w5': 1} != {'w1': 3, 'w2': 2, 'w5': 1}\n- {'w1': 3, 'w2': 2, 'w4': 1, 'w5': 1}\n?                   ---------\n\n+ {'w1': 3, 'w2': 2, 'w5': 1}",
+      "tests.test_2_final_state.TestFinalState.test_dead_letter": "AssertionError: Lists differ: [] != ['A-110']\n\nSecond list contains 1 additional elements.\nFirst extra element 0:\n'A-110'\n\n- []\n+ ['A-110']",
+      "tests.test_2_final_state.TestFinalState.test_rejected_completions": "AssertionError: Lists differ: [['20[42 chars]-02 09:20', 'w3', 'A-108'], ['2026-04-02 09:36[13 chars]99']] != [['20[42 chars]-02 08:46', 'w4', 'A-110'], ['2026-04-02 09:20[50 chars]99']]\n\nFirst differing element 1:\n['2026-04-02 09:20', 'w3', 'A-108']\n['2026-04-02 08:46', 'w4', 'A-110']\n\nSecond list contains 1 additional elements.\nFirst extra element 3:\n['2026-04-02 09:36', 'w4', 'A-999']\n\n  [['2026-04-01 08:41', 'w3', 'A-110'],\n+  ['2026-04-02 08:46', 'w4', 'A-110'],\n   ['2026-04-02 09:20', 'w3', 'A-108'],\n   ['2026-04-02 09:36', 'w4', 'A-999']]",
+      "tests.test_2_final_state.TestFinalState.test_status": "AssertionError: {'A-1[111 chars]pending', 'A-108': 'done', 'A-109': 'pending', 'A-110': 'done'} != {'A-1[111 chars]pending', 'A-108': 'done', 'A-109': 'pending', 'A-110': 'dead'}\n  {'A-101': 'done',\n   'A-102': 'done',\n   'A-103': 'done',\n   'A-104': 'done',\n   'A-105': 'pending',\n   'A-106': 'done',\n   'A-107': 'pending',\n   'A-108': 'done',\n   'A-109': 'pending',\n-  'A-110': 'done'}\n?             --\n\n+  'A-110': 'dead'}\n?              ++\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_dispatch",
+      "test_2_final_state"
+    ],
+    "failures": {
+      "tests.test_1_dispatch.TestDispatch.test_dispatch_log": "AssertionError: Lists differ: [['20[244 chars] 'A-110'], ['2026-04-02 08:50', 'w3', 'A-104'][70 chars]08']] != [['20[244 chars] 'A-104'], ['2026-04-02 08:50', 'w3', 'A-108'][70 chars]09']]\n\nFirst differing element 6:\n['2026-04-02 08:45', 'w2', 'A-110']\n['2026-04-02 08:45', 'w2', 'A-104']\n\n  [['2026-04-01 08:00', 'w1', 'A-101'],\n   ['2026-04-01 08:01', 'w2', 'A-103'],\n   ['2026-04-01 08:06', 'w3', 'A-110'],\n   ['2026-04-01 08:40', 'w4', 'A-110'],\n   ['2026-04-01 08:45', 'w5', 'A-106'],\n   ['2026-04-01 08:50', 'w1', 'A-102'],\n-  ['2026-04-02 08:45', 'w2', 'A-110'],\n?                             ",
+      "tests.test_2_final_state.TestFinalState.test_attempts": "AssertionError: {'A-1[36 chars]04': 2, 'A-105': 0, 'A-106': 1, 'A-107': 0, 'A[28 chars]': 3} != {'A-1[36 chars]04': 1, 'A-105': 0, 'A-106': 1, 'A-107': 0, 'A[28 chars]': 2}\n  {'A-101': 1,\n   'A-102': 1,\n   'A-103': 1,\n-  'A-104': 2,\n?           ^\n\n+  'A-104': 1,\n?           ^\n\n   'A-105': 0,\n   'A-106': 1,\n   'A-107': 0,\n-  'A-108': 1,\n?           ^\n\n+  'A-108': 2,\n?           ^\n\n-  'A-109': 0,\n?           ^\n\n+  'A-109': 1,\n?           ^\n\n-  'A-110': 3}\n?           ^\n\n+  'A-110': 2}\n?           ^\n",
+      "tests.test_2_final_state.TestFinalState.test_completed_by": "AssertionError: {'w1': 2, 'w2': 1, 'w5': 1} != {'w1': 3, 'w2': 2, 'w5': 1}\n- {'w1': 2, 'w2': 1, 'w5': 1}\n?        ^        ^\n\n+ {'w1': 3, 'w2': 2, 'w5': 1}\n?        ^        ^\n",
+      "tests.test_2_final_state.TestFinalState.test_rejected_completions": "AssertionError: Lists differ: [['20[79 chars]-02 08:59', 'w2', 'A-104'], ['2026-04-02 09:20[87 chars]99']] != [['20[79 chars]-02 09:20', 'w3', 'A-108'], ['2026-04-02 09:36[13 chars]99']]\n\nFirst differing element 2:\n['2026-04-02 08:59', 'w2', 'A-104']\n['2026-04-02 09:20', 'w3', 'A-108']\n\nFirst list contains 2 additional elements.\nFirst extra element 4:\n['2026-04-02 09:30', 'w1', 'A-108']\n\n  [['2026-04-01 08:41', 'w3', 'A-110'],\n   ['2026-04-02 08:46', 'w4', 'A-110'],\n-  ['2026-04-02 08:59', 'w2', 'A-104'],\n   ['2026-04-02 09:20', 'w3', 'A-108'],\n-  ['2026-04-02 09:30', 'w1', 'A-108'],\n   ['2026",
+      "tests.test_2_final_state.TestFinalState.test_status": "AssertionError: {'A-1[52 chars]4': 'pending', 'A-105': 'pending', 'A-106': 'd[77 chars]ead'} != {'A-1[52 chars]4': 'done', 'A-105': 'pending', 'A-106': 'done[71 chars]ead'}\n  {'A-101': 'done',\n   'A-102': 'done',\n   'A-103': 'done',\n-  'A-104': 'pending',\n?            ^ -----\n\n+  'A-104': 'done',\n?            ^^^\n\n   'A-105': 'pending',\n   'A-106': 'done',\n   'A-107': 'pending',\n-  'A-108': 'pending',\n?            ^ -----\n\n+  'A-108': 'done',\n?            ^^^\n\n   'A-109': 'pending',\n   'A-110': 'dead'}"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_dispatch",
+      "test_2_final_state"
+    ],
+    "failing_tests": [
+      "tests.test_1_dispatch.TestDispatch.test_dispatch_log",
+      "tests.test_1_dispatch.TestDispatch.test_first_lease_gets_most_urgent_task",
+      "tests.test_2_final_state.TestFinalState.test_attempts",
+      "tests.test_2_final_state.TestFinalState.test_completed_by",
+      "tests.test_2_final_state.TestFinalState.test_dead_letter",
+      "tests.test_2_final_state.TestFinalState.test_rejected_completions",
+      "tests.test_2_final_state.TestFinalState.test_status"
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+comparison_id,round,prompt_id,model_a,model_b,preference,rater,skipped
+c01,1,p01,m-alpha,m-beta,a,r01,false
+c02,1,p02,m-gamma,m-delta,A,r02,
+c03,1,p03,m-alpha,m-eps,a,r03,no
+c04,2,p04,m-beta,m-gamma,tie,r01,false
+c05,2,p05,m-delta,m-eps,a,r04,false
+c06,2,p06,M-Alpha,m-gamma,a,r05,FALSE
+c07,3,p07,m-beta,m-delta,a,r02,false
+c08,3,p08,m-gamma,m-eps,b,r06,false
+c09,3,p09,m-alpha,m-delta,a,r07,true
+c10,4,p10,m-beta,m-eps,a,r08,false
+c11,4,p11,m-alpha,m-beta, b,r03,false
+c12,4,p12,m-delta,m-gamma,b,r09,false
+c13,5,p13,m-eps,m-alpha,b,r01,false
+c14,5,p14,m-gamma,m-beta,tie,r10,false
+c15,5,p15,m-delta,m-alpha,B,r04,false
+c16,6,p16,m-beta,m-eps,a,r05,
+c17,6,p17,m-gamma,m-alpha,b,r06,false
+c18,6,p18,m-delta,m-beta,?,r07,false
+c19,7,p19,m-alpha,m-alpha ,a,r08,false
+c20,7,p20,m-eps,m-delta,Tie,r09,false
+c21,7,p21,m-beta,m-alpha,tie,R02,false
+c22,8,p22,m-gamma,m-delta,a,r03,false
+c23,8,p23,m-alpha,m-eps,a,r99,false
+c24,8,p24,m-beta,m-gamma,a,r04,false
+c25,9,p25,m-delta,m-eps,b,r05,false
+c26,9,p26,m-alpha,m-gamma,tie,r06,yes
+c27,9,p27,m-beta,m-delta,a,r01,0
+c28,10,p28,m-gamma,m-alpha,b,r07,false
+c29,10,p29,m-eps,m-beta,b,r08,false
+c30,10,p30,m-alpha,m-delta,a,r09,false
+c31,11,p31,m-gamma,m-eps,a,r10,false
+c32,11,p32,m-beta,m-alpha,b,r02,false
+c33,11,p33,m-delta,m-gamma,b,r03,false
+c34,12,p34,m-alpha,m-beta,a,r04,false
+c35,12,p35,m-eps,m-gamma,b,r05,false
+c36,12,p36,m-delta,m-beta,b,r06,false

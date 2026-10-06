@@ -1,0 +1,13 @@
+contributor_id,name,region,weekly_hours,active
+C01,Ana Lima,amer,20,yes
+C02,Bo Berg,emea,10,yes
+C03,Cy Duval,EMEA,,yes
+C04,Di Tran,apac,15,Y
+C05,Ed Kim,apac,25,yes
+C06,Flo Hart,amer,0,yes
+C07,Gil Roth,emea,12,no
+C08,Hal Ito,amer,8,yes
+C09,Ivy Moss, EMEA ,10,true
+c10,Jo Wu,apac,6,yes
+C11,Kai Lund,amer,10,1
+C12,Lu Fern,emea,5,yes

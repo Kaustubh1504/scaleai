@@ -1,0 +1,13 @@
+{"model": "alpha", "item": "I01", "attempt": 1, "status": "ok", "output": "Answer: B"}
+{"model": "alpha", "item": "I02", "attempt": 1, "status": "ok", "output": "Let me think step by step. Option A looks tempting, but the answer is (c)."}
+{"model": "alpha", "item": "I03", "attempt": 1, "status": "timeout", "output": "Request timed out after 30s"}
+{"model": "alpha", "item": "I03", "attempt": 2, "status": "ok", "output": "{\"answer\": \"A\", \"confidence\": 0.8}"}
+{"model": "alpha", "item": "I04", "attempt": 1, "status": "ok", "output": "D"}
+{"model": "alpha", "item": "I05", "attempt": 1, "status": "ok", "output": "The answer is A."}
+{"model": "alpha", "item": "I06", "attempt": 1, "status": "ok", "output": "First guess: answer is A. On reflection, Answer = B"}
+{"model": "alpha", "item": "I07", "attempt": 1, "status": "cached", "output": "Answer: C"}
+{"model": "alpha", "item": "I08", "attempt": 1, "status": "ok", "output": "Let me think step by step. Option A looks tempting, but the answer is (a)."}
+{"model": "alpha", "item": "I09", "attempt": 1, "status": "ok", "output": "{\"answer\": \"D\", \"confidence\": 0.8}"}
+{"model": "alpha", "item": "I10", "attempt": 1, "status": "ok", "output": "D"}
+{"model": "alpha", "item": "I11", "attempt": 1, "status": "ok", "output": "The answer is A."}
+{"model": "alpha", "item": "I12", "attempt": 1, "status": "ok", "output": "First guess: answer is A. On reflection, Answer = D"}

@@ -1,0 +1,79 @@
+{
+  "request": "GET /v1/projects/prj_01/tasks?limit=3",
+  "status": 200,
+  "headers": {
+    "date": "Wed, 01 May 2024 08:00:00 GMT",
+    "x-ratelimit-limit": "4",
+    "x-ratelimit-remaining": "0",
+    "x-ratelimit-reset": "1714550410"
+  },
+  "body": {
+    "data": [
+      {
+        "id": "tsk_0002",
+        "project_id": "prj_01",
+        "status": "completed",
+        "priority": 5,
+        "is_gold": false,
+        "gold_label": null,
+        "payload": {
+          "image_url": "https://cdn.example.com/img/00002.jpg",
+          "dimensions": {
+            "width": 640,
+            "height": 720
+          }
+        },
+        "tags": [
+          "night",
+          "urban"
+        ],
+        "reward_cents": 20,
+        "created_at": "2024-03-29T11:58:45Z",
+        "completed_at": "2024-03-29T20:06:45Z",
+        "updated_at": "2024-03-29T20:06:45Z"
+      },
+      {
+        "id": "tsk_0016",
+        "project_id": "prj_01",
+        "status": "completed",
+        "priority": 5,
+        "is_gold": true,
+        "gold_label": "animal",
+        "payload": {
+          "image_url": "https://cdn.example.com/img/00016.jpg",
+          "dimensions": {
+            "width": 1280,
+            "height": 1080
+          }
+        },
+        "tags": [],
+        "reward_cents": 12,
+        "created_at": "2024-04-18T06:43:26Z",
+        "completed_at": "2024-04-18T10:12:26Z",
+        "updated_at": "2024-04-18T10:12:26Z"
+      },
+      {
+        "id": "tsk_0027",
+        "project_id": "prj_01",
+        "status": "completed",
+        "priority": 5,
+        "is_gold": false,
+        "gold_label": null,
+        "payload": {
+          "image_url": "https://cdn.example.com/img/00027.jpg",
+          "dimensions": null
+        },
+        "tags": [
+          "blurry",
+          "night",
+          "urban"
+        ],
+        "reward_cents": 35,
+        "created_at": "2024-04-17T16:39:00Z",
+        "completed_at": "2024-04-17T17:37:00Z",
+        "updated_at": "2024-04-17T17:37:00Z"
+      }
+    ],
+    "next_cursor": "eyJyIjogInRhc2tzIiwgImsiOiBbInRza18wMDI3IiwgInRza18wMDI3Il19"
+  }
+}

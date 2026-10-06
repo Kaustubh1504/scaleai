@@ -1,0 +1,111 @@
+{
+  "id": "set-007",
+  "title": "Multiple-choice eval scorer with weighted accuracy",
+  "domain": "llm_eval_scoring",
+  "length": "MINI",
+  "difficulty": "easy",
+  "format": "one_to_one",
+  "package": "evalscore",
+  "scenario": "Extract the final answer letter from raw model outputs, flag missing or changed answers, grade against weighted gold items, and rank three models on a leaderboard with a latency tie-break.",
+  "verified": [
+    {
+      "file": "evalscore/parsing.py",
+      "symbol": "last_answer",
+      "why_correct": "Taking `matches[-1]` looks like it might skip the model's first answer, but README rule 2 says the last tag is the answer. r03, r23 and r35 revise themselves and are graded on the final letter."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Flag list is a shared default",
+      "type": "mutable-default",
+      "file": "evalscore/parsing.py",
+      "function": "parse_output",
+      "test": "test_1_grading.TestGrading.test_flags",
+      "old": "def parse_output(text, flags=None):\n    \"\"\"Return (answer letter or None, flags) for one model output.\"\"\"\n    flags = [] if flags is None else flags",
+      "new": "def parse_output(text, flags=[]):\n    \"\"\"Return (answer letter or None, flags) for one model output.\"\"\"",
+      "symptom": "Test 1 test_flags: every response, including clean ones like r01, has the same six-entry list ['multiple_answers', 'no_answer', 'no_answer', 'multiple_answers', 'multiple_answers', 'no_answer'].",
+      "why": "A default value is evaluated once, when the function is defined. Every call that doesn't pass `flags` appends to the same list, and every graded response holds a reference to it, so all 36 responses end up with all six flags.",
+      "unblocks": "test_1_grading.TestGrading.test_flags.",
+      "hints": [
+        "Every response has the same flags, including clean ones like r01. Where do the flag lists come from?",
+        "Look at the signature of parse_output.",
+        "Use `flags=None` and create a new list inside the function when it is None."
+      ],
+      "probes": [
+        "Why do all responses show the full list, not just the ones parsed after the first flag?",
+        "Why are answers and correctness unaffected?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Category counter fed a string",
+      "type": "counter-misuse",
+      "file": "evalscore/scoring.py",
+      "function": "model_stats",
+      "test": "test_2_report.TestReport.test_by_category",
+      "old": "                by_category[r[\"category\"]] += 1",
+      "new": "                by_category.update(r[\"category\"])",
+      "symptom": "Test 2 test_by_category: keys are single letters ({'a': 6, 'c': 2, 'd': 3, 'e': 3, 'g': 5, ...}) instead of logic/math/reading.",
+      "why": "`Counter.update` iterates its argument, and iterating a string yields its characters. Each correct response adds one count per letter of `math`, `logic` or `reading` instead of one count for the category.",
+      "unblocks": "test_2_report.TestReport.test_by_category.",
+      "hints": [
+        "by_category has single letters as keys. What produced them?",
+        "Look at how model_stats fills the category Counter.",
+        "Use `by_category[r[\"category\"]] += 1` (or `update([category])`)."
+      ],
+      "probes": [
+        "What would `Counter(\"logic\")` return?",
+        "Why did accuracy stay correct while this was happening?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Accuracy ties broken by name only",
+      "type": "wrong-tie-break",
+      "file": "evalscore/reports.py",
+      "function": "leaderboard",
+      "test": "test_2_report.TestReport.test_leaderboard",
+      "old": "    ranked = sorted(stats.items(), key=lambda kv: (-kv[1][\"accuracy\"], kv[1][\"mean_latency_ms\"], kv[0]))",
+      "new": "    ranked = sorted(stats.items(), key=lambda kv: (-kv[1][\"accuracy\"], kv[0]))",
+      "symptom": "Test 2 test_leaderboard: ['atlas-7b', 'borealis-13b', 'cirrus-3b'] instead of ['borealis-13b', 'atlas-7b', 'cirrus-3b'].",
+      "why": "atlas-7b and borealis-13b both score 0.7. The spec breaks that tie on lower mean latency (borealis, 850.0 ms) before name, but the sort key skips latency and goes straight to the name.",
+      "unblocks": "test_2_report.TestReport.test_leaderboard.",
+      "hints": [
+        "The top two models have the same accuracy. How should the tie be broken?",
+        "Compare the leaderboard sort key with README rule 6.",
+        "Add `kv[1][\"mean_latency_ms\"]` between accuracy and name in the key."
+      ],
+      "probes": [
+        "Why is accuracy negated but latency not?",
+        "Which test would you add so a missing tie-break is caught even if names happen to sort the same way?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() return and in what order does it compute things?",
+      "a": "It loads items.csv into a dict keyed by lower-cased item id and responses.jsonl into a list, calls `scoring.grade` to build a per-response dict, `scoring.model_stats` to aggregate per model, and `reports.leaderboard` to rank the models. The report has `responses`, `models` and `leaderboard` keys."
+    },
+    {
+      "q": "What does ANSWER_TAG match?",
+      "a": "Case-insensitive `answer:` followed by optional whitespace, an optional `(`, one letter A-D (captured) and an optional `)`. `findall` returns the captured letters in order of appearance."
+    },
+    {
+      "q": "How is the flags value for one response produced?",
+      "a": "`grade` calls `parse_output(resp.output)` with no second argument and stores the returned flags object in that response's row. parse_output appends `no_answer` or `multiple_answers` to the flags it is working with."
+    },
+    {
+      "q": "What is by_category, exactly?",
+      "a": "A `collections.Counter` created per model in `model_stats`. It is filled from the rows where `correct` is True and then converted to a plain dict sorted by key."
+    },
+    {
+      "q": "How are latency strings like \"930\" handled?",
+      "a": "`load_responses` passes `latency_ms` through `_clean` (str + strip) and then `int()`, so both numbers and numeric strings become ints."
+    },
+    {
+      "q": "What does leaderboard() sort on?",
+      "a": "It sorts `stats.items()` (model name, stats dict) with a tuple key built from the stats and the name, and returns just the model names in that order."
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_replay"
+    ],
+    "failures": {
+      "tests.test_1_replay.TestReplay.test_expired_leases": "AssertionError: Lists differ: [['08[27 chars]8:02:40', 'w02', 'K05'], ['08:05:40', 'w02', '[113 chars]04']] != [['08[27 chars]8:02:30', 'w02', 'K05'], ['08:05:40', 'w02', '[113 chars]04']]\n\nFirst differing element 1:\n['08:02:40', 'w02', 'K05']\n['08:02:30', 'w02', 'K05']\n\n  [['08:02:30', 'w05', 'K12'],\n-  ['08:02:40', 'w02', 'K05'],\n?          ^\n\n+  ['08:02:30', 'w02', 'K05'],\n?          ^\n\n   ['08:05:40', 'w02', 'K07'],\n   ['08:08:30', 'w05', 'K06'],\n   ['08:09:40', 'w01', 'K07'],\n   ['08:12:00', 'w10', 'K09'],\n   ['12:00:00', 'w03', 'K04']]"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_replay"
+    ],
+    "failures": {
+      "tests.test_1_replay.TestReplay.test_rejected_events": "AssertionError: Lists differ: [['08[129 chars]2', 'not_holder'], ['08:06:20', 'w02', 'nack',[226 chars]er']] != [['08[129 chars]2', 'closed'], ['08:06:20', 'w02', 'nack', 'K0[218 chars]er']]\n\nFirst differing element 2:\n['08:04:00', 'w01', 'ack', 'K02', 'not_holder']\n['08:04:00', 'w01', 'ack', 'K02', 'closed']\n\nDiff is 721 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_mean_ack_seconds": "AssertionError: {'audio': 336, 'ocr': 136, 'review': 160} != {'audio': 336.7, 'ocr': 136.7, 'review': 160.0}\n- {'audio': 336, 'ocr': 136, 'review': 160}\n+ {'audio': 336.7, 'ocr': 136.7, 'review': 160.0}\n?              ++            ++               ++\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_replay",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_replay.TestReplay.test_expired_leases",
+      "tests.test_1_replay.TestReplay.test_rejected_events",
+      "tests.test_2_report.TestReport.test_mean_ack_seconds"
+    ]
+  }
+}

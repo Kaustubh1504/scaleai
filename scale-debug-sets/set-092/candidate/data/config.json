@@ -1,0 +1,11 @@
+{
+  "model": "embed-large-3",
+  "dimensions": 2,
+  "batch_size": 3,
+  "max_concurrency": 2,
+  "max_retries": 2,
+  "backoff_seconds": 0.5,
+  "page_size": 4,
+  "price_per_1k_tokens": 0.13,
+  "as_of": "2026-09-15"
+}

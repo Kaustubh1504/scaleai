@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_staffing"
+    ],
+    "failures": {
+      "tests.test_1_staffing.TestStaffing.test_assignments": "AssertionError: {'P01[107 chars]6': ['K13', 'K11'], 'P07': ['K08'], 'P08': ['K[73 chars]08']} != {'P01[107 chars]6': [], 'P07': [], 'P08': ['K01'], 'P09': ['K1[51 chars]: []}\n  {'P01': ['K02', 'K03'],\n   'P02': ['K04'],\n   'P03': ['K09', 'K13'],\n   'P04': ['K13', 'K03', 'K07'],\n   'P05': ['K06'],\n-  'P06': ['K13', 'K11'],\n+  'P06': [],\n-  'P07': ['K08'],\n?          -----\n\n+  'P07': [],\n   'P08': ['K01'],\n   'P09': ['K11', 'K08'],\n   'P10': [],\n   'P11': ['K03', 'K07'],\n-  'P12': ['K08']}\n?          -----\n\n+  'P12': []}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_courses"
+    ],
+    "failures": {
+      "tests.test_2_courses.TestCourseCoverage.test_course_holders": "AssertionError: {'CODE-300': 13, 'LANG-ES': 13, 'MED-200': 13, 'QA-101': 13} != {'CODE-300': 4, 'LANG-ES': 3, 'MED-200': 6, 'QA-101': 9}\n- {'CODE-300': 13, 'LANG-ES': 13, 'MED-200': 13, 'QA-101': 13}\n?              ^^             -              ^^            ^^\n\n+ {'CODE-300': 4, 'LANG-ES': 3, 'MED-200': 6, 'QA-101': 9}\n?              ^                           ^            ^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_courses"
+    ],
+    "failures": {
+      "tests.test_2_courses.TestCourseCoverage.test_most_demanded": "AssertionError: 'MED-200' != 'QA-101'\n- MED-200\n+ QA-101\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_staffing",
+      "test_2_courses"
+    ],
+    "failing_tests": [
+      "tests.test_1_staffing.TestStaffing.test_assignments",
+      "tests.test_2_courses.TestCourseCoverage.test_course_holders",
+      "tests.test_2_courses.TestCourseCoverage.test_most_demanded"
+    ]
+  }
+}

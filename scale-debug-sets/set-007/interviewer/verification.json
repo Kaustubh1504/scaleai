@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_grading"
+    ],
+    "failures": {
+      "tests.test_1_grading.TestGrading.test_flags": "AssertionError: {'r01': ['multiple_answers', 'no_answer', 'no[3838 chars]er']} != {'r03': ['multiple_answers'], 'r06': ['no_ans[103 chars]er']}\nDiff is 6362 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_by_category": "AssertionError: {'atlas-7b': {'a': 6, 'c': 2, 'd': 3, 'e': 3, 'g': 5, 'h[298 chars]: 2}} != {'atlas-7b': {'logic': 2, 'math': 3, 'reading': 3}, 'bor[97 chars]: 2}}\nDiff is 1171 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_leaderboard": "AssertionError: Lists differ: ['atlas-7b', 'borealis-13b', 'cirrus-3b'] != ['borealis-13b', 'atlas-7b', 'cirrus-3b']\n\nFirst differing element 0:\n'atlas-7b'\n'borealis-13b'\n\n- ['atlas-7b', 'borealis-13b', 'cirrus-3b']\n+ ['borealis-13b', 'atlas-7b', 'cirrus-3b']"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_grading",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_grading.TestGrading.test_flags",
+      "tests.test_2_report.TestReport.test_by_category",
+      "tests.test_2_report.TestReport.test_leaderboard"
+    ]
+  }
+}

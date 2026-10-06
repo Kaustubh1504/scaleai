@@ -1,0 +1,11 @@
+worker_id,pool,status
+w01,cpu,active
+W02,CPU,Active
+w03,cpu,draining
+w04,gpu, active
+w05,gpu,offline
+w06,io,active
+w07,cpu,offline
+w08,mem,active
+w09,mem,active 
+w10,mem,offline

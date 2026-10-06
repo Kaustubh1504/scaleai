@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_ingest"
+    ],
+    "failures": {
+      "tests.test_1_ingest.TestIngest.test_skipped_rows": "AssertionError: {'malformed': [], 'unknown_tenant': ['gw2-0008', 'gw2-0015']} != {'malformed': ['gw1-0010', 'gw2-0012'], 'unknown_tenant'[22 chars]15']}\n+ {'malformed': ['gw1-0010', 'gw2-0012'],\n- {'malformed': [], 'unknown_tenant': ['gw2-0008', 'gw2-0015']}\n? -----------------\n\n+  'unknown_tenant': ['gw2-0008', 'gw2-0015']}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_ingest"
+    ],
+    "failures": {
+      "tests.test_1_ingest.TestIngest.test_same_instant_keeps_log_order": "AssertionError: Lists differ: ['gw1-0011', 'gw2-0011', 'gw1-0012', 'gw2-0010'] != ['gw2-0011', 'gw1-0011', 'gw2-0010', 'gw1-0012']\n\nFirst differing element 0:\n'gw1-0011'\n'gw2-0011'\n\n- ['gw1-0011', 'gw2-0011', 'gw1-0012', 'gw2-0010']\n+ ['gw2-0011', 'gw1-0011', 'gw2-0010', 'gw1-0012']"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_limits"
+    ],
+    "failures": {
+      "tests.test_2_limits.TestRateLimits.test_rejected_requests": "AssertionError: Lists differ: ['gw1-0005', 'gw2-0004', 'gw2-0005', 'gw2-0006'] != ['gw1-0005', 'gw2-0005', 'gw2-0006']\n\nFirst differing element 1:\n'gw2-0004'\n'gw2-0005'\n\nFirst list contains 1 additional elements.\nFirst extra element 3:\n'gw2-0006'\n\n- ['gw1-0005', 'gw2-0004', 'gw2-0005', 'gw2-0006']\n?              ------------\n\n+ ['gw1-0005', 'gw2-0005', 'gw2-0006']"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_limits"
+    ],
+    "failures": {
+      "tests.test_2_limits.TestRateLimits.test_retry_after_hints": "AssertionError: {'gw2-0005': 2.0, 'gw2-0006': 1.0} != {'gw2-0005': 1.75, 'gw2-0006': 0.75}\n- {'gw2-0005': 2.0, 'gw2-0006': 1.0}\n?              ^ ^              ^ ^\n\n+ {'gw2-0005': 1.75, 'gw2-0006': 0.75}\n?              ^ ^^              ^ ^^\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_invoices"
+    ],
+    "failures": {
+      "tests.test_3_invoices.TestInvoices.test_subtotals": "AssertionError: {'acm[34 chars]3': 2180, 'cinder/2026-02': 4925, 'cinder/2026[80 chars]1900} != {'acm[34 chars]3': 2220, 'cinder/2026-02': 4950, 'cinder/2026[80 chars]1900}\n  {'acme/2026-03': 5050,\n-  'borealis/2026-03': 2180,\n?                       ^^\n\n+  'borealis/2026-03': 2220,\n?                       ^^\n\n-  'cinder/2026-02': 4925,\n?                      -\n\n+  'cinder/2026-02': 4950,\n?                       +\n\n-  'cinder/2026-03': 6240,\n?                      ^^\n\n+  'cinder/2026-03': 6258,\n?                      ^^\n\n   'dunmore/2026-03': 1900,\n   'garnet/2026-03': 4900,\n   'halcyon/2026-0"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_invoices"
+    ],
+    "failures": {
+      "tests.test_3_invoices.TestInvoices.test_discounted_total": "AssertionError: 4292 != 4293"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_ingest",
+      "test_2_limits",
+      "test_3_invoices"
+    ],
+    "failing_tests": [
+      "tests.test_1_ingest.TestIngest.test_same_instant_keeps_log_order",
+      "tests.test_1_ingest.TestIngest.test_skipped_rows",
+      "tests.test_2_limits.TestRateLimits.test_rejected_requests",
+      "tests.test_2_limits.TestRateLimits.test_retry_after_hints",
+      "tests.test_3_invoices.TestInvoices.test_discounted_total",
+      "tests.test_3_invoices.TestInvoices.test_subtotals"
+    ]
+  }
+}

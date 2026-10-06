@@ -1,0 +1,11 @@
+{
+  "request": "GET /v1/projects?page=2&per_page=10",
+  "status": 200,
+  "headers": {
+    "date": "Wed, 01 May 2024 08:00:00 GMT",
+    "x-ratelimit-limit": "4",
+    "x-ratelimit-remaining": "2",
+    "x-ratelimit-reset": "1714550410"
+  },
+  "body": "{\"results\": [{\"id\": \"prj_11\", \"name\": \"Initech image bbox 11\", \"customer\": {\"id\": \"cus_03\", \"name\": \"Initech Vision\", \"tier\": \"startup\"}, \"status\": \"active\", \"task_type\": \"image_bbox\", \"settings\": {\"redundancy\": 3, \"gold_ratio\": 0.0, \"labels\": [\"car\", \"pedestrian\", \"cyclist\", \"sign\"]}, \"created_at\": \"2024-03-04T09:57:00Z\", \"updated_at\": \"2024-03-28T09:57:00Z\"}, {\"id\": \"prj_12\", \"name\": \"Umbrella image bbox 12\", \"customer\": {\"id\": \"cus_04\", \"name\": \"Umbrella Labs\", \"tier\": \"enterprise\"}, \"status\": \"active\", \"task"
+}

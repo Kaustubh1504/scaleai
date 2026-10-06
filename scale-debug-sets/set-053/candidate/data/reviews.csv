@@ -1,0 +1,20 @@
+image,box_id,label,x_min,y_min,x_max,y_max
+img-01,b1,car,102,100,302,200
+img-01,B2,Person,400,150,440,252
+img-01,,sign,600,-5,630,20
+img-02,b3,car,50,200,200,280
+img-02,b4,light,300,40,330,70
+img-02,,person,500,300,540,400
+img-03,b5,person,0,120,50,260
+img-03,b6,car,210,220,380,310
+img-04,b7,bike,520,300,600,360
+img-04,,sign,10,10,40,
+img-05,b8,pallet,101,100,119.5,140
+img-05,b9,forklift,600,200,800,350
+img-06,B11,person,52,48,92,140
+IMG-07,b12,Forklift ,10,10,310,210
+img-07,,pallet,400,300,450,350
+img-08,b13,crate,700,500,790,590
+img-08,b14,pallet,100,100,160,160
+img-09,b15,car,585,300,660,360
+img-10,,forklift,100,100,300,300

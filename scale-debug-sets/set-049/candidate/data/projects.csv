@@ -1,0 +1,11 @@
+project_id,priority,region,skill,min_level,seats,hours_per_seat,status
+PR-01,5,emea,python,6,3,10,open
+PR-02,2,emea,Python,4,2,10,open
+PR-03,4,apac,sql,7,2,8,open
+PR-04,5,amer,spanish,5,2,10,open
+PR-05,3,amer,math,5,2,10,open
+pr-06,1,any,math,7,1,5,open
+PR-07,4,amer,spanish,4,3,10,on_hold
+PR-08,2,AMER,math,9,1,5,open
+PR-09,1,apac,sql,6,2,8,on_hold
+PR-10,3,emea,python,5,1,10, On_Hold

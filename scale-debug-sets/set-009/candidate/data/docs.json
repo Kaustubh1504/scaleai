@@ -1,0 +1,42 @@
+[
+  {
+    "doc_id": "d01",
+    "text": "Maria Lopez joined Acme Corp in Boston last May."
+  },
+  {
+    "doc_id": "D02",
+    "text": "The Red Cross opened a clinic in Nairobi."
+  },
+  {
+    "doc_id": "d03",
+    "text": "Rain is expected over the weekend."
+  },
+  {
+    "doc_id": " d04",
+    "text": "Tim Cook spoke at Apple Park in Cupertino."
+  },
+  {
+    "doc_id": "d05",
+    "text": "Lagos and Accra signed a trade deal with the African Union."
+  },
+  {
+    "doc_id": "d06",
+    "text": "Dr. Chen Wei leads the lab at Tsinghua University."
+  },
+  {
+    "doc_id": "D07",
+    "text": "Siemens moved its office from Munich to Berlin."
+  },
+  {
+    "doc_id": "d08",
+    "text": "Ana Silva met Rui Costa in Lisbon."
+  },
+  {
+    "doc_id": "d09",
+    "text": "The Louvre in Paris reopened on Monday."
+  },
+  {
+    "doc_id": "d10",
+    "text": "Nokia and Ericsson compete in Finland and Sweden."
+  }
+]

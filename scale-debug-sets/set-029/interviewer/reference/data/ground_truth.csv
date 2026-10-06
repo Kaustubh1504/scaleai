@@ -1,0 +1,12 @@
+gt_id,image_id,label,x1,y1,x2,y2
+g01,img-1,person,0,0,100,200
+g02,IMG-1,Person,20,0,120,200
+g03,IMG-2,car,50,50,250,150
+G04,IMG-2,sign,300,20,340,60
+g05,img-3,person,100,100,160,260
+g06,IMG-3, car ,200,150,400,260
+g07,IMG-4,sign,10,10,50,50
+g08,IMG-4,sign,60,10,100,50
+g09,IMG-6,person,0,0,50,100
+g10,IMG-6,SIGN,200,200,230,230
+g11,IMG-5,car,,,,

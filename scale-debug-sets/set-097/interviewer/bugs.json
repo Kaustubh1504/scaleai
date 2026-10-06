@@ -1,0 +1,116 @@
+{
+  "id": "set-097",
+  "title": "Hour-capped pod staffing with course recency",
+  "domain": "contributor_assignment",
+  "length": "MINI",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "podstaff",
+  "scenario": "Staff ten projects by descending priority number. Contributors can take several projects while weekly hours last; eligibility needs locale, hours, and every listed course passed on the most recent attempt. The report lists multi-project contributors and course demand.",
+  "verified": [
+    {
+      "file": "podstaff/rules.py",
+      "symbol": "latest_results",
+      "why_correct": "The `>=` looks like it should be `>`, but rule 1 says that on equal dates the attempt further down the file counts, so a later row with the same date must replace the earlier one. C15's code-301 fail/pass on 2026-02-01 depends on it: with `>` C15 would lose P07 and P10."
+    },
+    {
+      "file": "podstaff/rules.py",
+      "symbol": "rank_key",
+      "why_correct": "Negating the rating gives highest-first inside an ascending sort, `date.max` puts blank join dates last, and the id is the final tie-break: exactly rule 5. It looks like it could invert the order, but it doesn't."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Only the first required course is checked",
+      "type": "early-return",
+      "file": "podstaff/rules.py",
+      "function": "missing_course",
+      "test": "test_1_assignment.TestAssignment.test_chat_safety",
+      "old": "            return course\n    return None",
+      "new": "            return course\n        return None",
+      "symptom": "Test 1 test_chat_safety: P02 gets ['C01', 'C04'] instead of ['C01', 'C10']. Every other project is unchanged.",
+      "why": "`return None` sits inside the for loop, so missing_course returns after looking at the first course only. C04 has core-101 but their latest safety-201 attempt is a fail, and they become eligible for P02 and outrank C10 on rating. P08 is unaffected because it lists pii-110 first, and nobody without core-101 holds pii-110.",
+      "unblocks": "test_1_assignment.TestAssignment.test_chat_safety",
+      "hints": [
+        "Look up C04 in courses.csv. Which P02 course do they hold right now?",
+        "Look at how missing_course walks the project's course list.",
+        "The `return None` is indented into the loop; dedent it so every course is checked."
+      ],
+      "probes": [
+        "P08 also lists two courses. Why did it come out right with the early return in place?",
+        "C04 is free again after the fix. Why doesn't that change any later project?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Rating 0 replaced by the default",
+      "type": "falsy-zero",
+      "file": "podstaff/loader.py",
+      "function": "load_contributors",
+      "test": "test_1_assignment.TestAssignment.test_spanish_qa",
+      "old": "                rating=DEFAULT_RATING if rating is None else rating,",
+      "new": "                rating=rating or DEFAULT_RATING,",
+      "symptom": "Test 1 test_spanish_qa: P05 gets ['C03', 'C05'] instead of ['C03', 'C16'].",
+      "why": "`rating or DEFAULT_RATING` treats C05's real rating of 0 as missing and gives them 3.0, which ranks them above C16 (2.8) and C09 (2.5). Only a blank cell should get the default.",
+      "unblocks": "test_1_assignment.TestAssignment.test_spanish_qa",
+      "hints": [
+        "C05 is on probation with a rating of 0. Why would they be picked ahead of C16?",
+        "Look at how the loader applies the default rating.",
+        "`rating or DEFAULT_RATING` turns 0.0 into 3.0; use `DEFAULT_RATING if rating is None else rating`."
+      ],
+      "probes": [
+        "Why did C11 (blank rating) behave the same before and after the fix?",
+        "Why didn't C16 losing P05 change P09 or P10?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Project list shared by every contributor",
+      "type": "shared-class-attribute",
+      "file": "podstaff/models.py",
+      "function": "Contributor",
+      "test": "test_2_report.TestReport.test_multi_project_contributors",
+      "old": "    \"\"\"One row of contributors.csv plus the running state of a staffing pass.\"\"\"\n\n    def __init__(self, cid, name, locale, weekly_hours, rating, active, joined):\n        self.id = cid\n        self.name = name\n        self.locale = locale\n        self.rating = rating\n        self.active = active\n        self.joined = joined\n        self.hours_left = weekly_hours\n        self.courses = {}\n        self.projects = []\n",
+      "new": "    \"\"\"One row of contributors.csv plus the running state of a staffing pass.\"\"\"\n\n    projects = []\n\n    def __init__(self, cid, name, locale, weekly_hours, rating, active, joined):\n        self.id = cid\n        self.name = name\n        self.locale = locale\n        self.rating = rating\n        self.active = active\n        self.joined = joined\n        self.hours_left = weekly_hours\n        self.courses = {}\n",
+      "symptom": "Test 2 test_multi_project_contributors: all 16 contributors appear, inactive and unstaffed ones included, each with the same long list of every pick made so far (it keeps growing with each build_report call in the test run). The assignments themselves are correct.",
+      "why": "`projects = []` is a class attribute, so every Contributor's `self.projects.append(...)` writes into one shared list. Hours are tracked per instance, so staffing still works and only the report built from `projects` is affected.",
+      "unblocks": "test_2_report.TestReport.test_multi_project_contributors",
+      "hints": [
+        "Even C07, who is inactive, shows up in multi_project. Where does that list come from?",
+        "Look at where a Contributor's `projects` list is created.",
+        "Remove the class-level `projects = []` and set `self.projects = []` in __init__."
+      ],
+      "probes": [
+        "Why did hours_left keep working per contributor when projects didn't?",
+        "Why would the list have grown even further if build_report ran twice in one process?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What happens inside build_report, in order?",
+      "a": "It loads contributors, attaches each contributor's latest course results with `rules.attach_courses`, loads projects, runs `assigner.staff`, computes course demand from the projects, and builds the report dict (assignments, open_seats, multi_project, course_demand, top_course)."
+    },
+    {
+      "q": "How does staff() choose people for one project?",
+      "a": "For projects with seats > 0 it filters all contributors with `is_eligible`, sorts them by `rank_key`, and takes the first `seats`. Each pick subtracts `hours_per_seat` from `hours_left`, appends the project id to `contributor.projects`, and adds the contributor id to the project's list."
+    },
+    {
+      "q": "What does is_eligible check, and in what order?",
+      "a": "Active flag first, then the locale (only if the project has one), then `missing_course(contributor, project.courses)` must be None, and finally `hours_left >= hours_per_seat`."
+    },
+    {
+      "q": "Where do contributor.courses values come from?",
+      "a": "`attach_courses` calls `latest_results` on every CourseResult row and stores `result` (a lower-cased string such as 'pass' or 'fail') under `contributors[cid].courses[course]`, skipping ids that aren't in contributors.csv."
+    },
+    {
+      "q": "How is multi_project built?",
+      "a": "From each Contributor object's `projects` list after staffing: contributors sorted by id, kept if `len(c.projects) >= 2`, with the list sorted."
+    },
+    {
+      "q": "How does the loader handle a blank rating?",
+      "a": "`_number` returns None for a blank cell and a float otherwise. The rating passed to Contributor is then derived from that value and the module-level `DEFAULT_RATING` (3.0)."
+    }
+  ]
+}

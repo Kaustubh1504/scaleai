@@ -1,0 +1,11 @@
+{
+  "defaults": {
+    "priority": 5,
+    "label_map": {"pos": "positive", "neg": "negative", "+": "positive", "-": "negative"}
+  },
+  "vendors": {
+    "acme": {"file": "acme.csv", "priority": 1},
+    "brightlabel": {"file": "brightlabel.csv", "priority": 2, "label_map": {"mixed": "neutral", "neu": "neutral"}},
+    "Cortex": {"file": "cortex.json", "priority": 3, "label_map": {"meh": "neutral"}}
+  }
+}

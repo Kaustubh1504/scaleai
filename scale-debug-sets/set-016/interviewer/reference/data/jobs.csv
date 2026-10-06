@@ -1,0 +1,15 @@
+job_id,name,priority,depends_on,max_retries,submitted_at,enabled,duration_s
+J01,extract_orders,5,,1,2026-06-01 08:00,true,300
+ j02,extract_users,5,,,2026-06-01 07:30,yes,240
+J03,extract_events,3,,2,01/06/2026 08:15,TRUE,420
+J04,clean_orders,4,J01,,2026-06-01T08:05:00,true,180
+J05,ping_warehouse,9,,0,2026-06-01 09:00,Y,30
+J06,join_orders_users,4, j04; J02,1,2026-06-01 08:10,true,600
+J07,build_features,2,J03,1,02/06/2026 06:00,true,900
+J08,dedupe_events,3,j03 ,,2026-06-01 08:20,1,200
+J09,train_model,2,J07;J06,2,2026-06-01 08:30,true,1200
+J10,export_features,1,J07,,2026-06-01 08:40, true,150
+J11,daily_report,1,J06 ;J08,,2026-06-01 08:45,true,120
+J12,legacy_sync,7,,1,2026-06-01 05:00,false,60
+J13,backfill_2025,6,,,31/05/2026 22:00,no,500
+J14,refresh_dashboards,1,J11,0,2026-06-01T09:30:00,,90

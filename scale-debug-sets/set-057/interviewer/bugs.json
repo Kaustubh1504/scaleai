@@ -1,0 +1,111 @@
+{
+  "id": "set-057",
+  "title": "NER span adjudication: legacy offsets, voting, overlaps",
+  "domain": "ner_spans",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "spanmerge",
+  "scenario": "Annotator NER spans from two tools (legacy: 1-based inclusive; v2: 0-based exclusive) are converted, trimmed, voted on (2 distinct annotators needed), and overlap-resolved by votes then length. Test 2 checks summary counts.",
+  "verified": [
+    {
+      "file": "spanmerge/spans.py",
+      "symbol": "trim_span",
+      "why_correct": "`text[end - 1]` looks like an off-by-one, but end is exclusive, so the last character of the span is at end - 1. Both loops stop when start meets end, so an all-whitespace span collapses to empty and is dropped by make_span."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Legacy end shifted as if it were 1-based exclusive",
+      "type": "span-offset-off-by-one",
+      "file": "spanmerge/loader.py",
+      "function": "to_zero_based",
+      "test": "test_1_adjudication.TestAdjudication.test_legacy_tool_offsets",
+      "old": "        return start - 1, end\n",
+      "new": "        return start - 1, end - 1\n",
+      "symptom": "test_1_adjudication.test_legacy_tool_offsets: D04 comes out as [[13, 17, 'LOC', 'Pari'], [37, 43, 'DATE', '12 Jun']]; every legacy span is one character short and Lima is missing.",
+      "why": "A 1-based inclusive end is numerically the same as a 0-based exclusive end, so only start needs shifting. Subtracting 1 from end too cuts the last character off every legacy span (Paris -> Pari), which also breaks agreement with the v2 annotator.",
+      "unblocks": "test_legacy_tool_offsets.",
+      "hints": [
+        "Every D04 entity is one character short. Which tool produced D04's spans?",
+        "Work the README's Paris example through to_zero_based by hand.",
+        "Only start moves: return start - 1, end."
+      ],
+      "probes": [
+        "Why did Lima disappear entirely instead of just losing a character?",
+        "Why is a 1-based inclusive end equal to a 0-based exclusive end?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Equal-vote overlaps not ranked by length",
+      "type": "wrong-tie-break",
+      "file": "spanmerge/resolve.py",
+      "function": "resolve_doc",
+      "test": "test_1_adjudication.TestAdjudication.test_overlapping_spans",
+      "old": "    for ent in sorted(entities, key=lambda e: (-e.votes, -e.length, e.start)):",
+      "new": "    for ent in sorted(entities, key=lambda e: (-e.votes, e.start)):",
+      "symptom": "test_1_adjudication.test_overlapping_spans: D02's first entity is [4, 10, 'PER', 'Morgan'] instead of [4, 18, 'ORG', 'Morgan Stanley'].",
+      "why": "Morgan Stanley (ORG) and Morgan (PER) both have 2 votes and the same start. Without the length key the stable sort keeps the candidates' offset order, where the shorter span comes first, so PER 'Morgan' is kept.",
+      "unblocks": "test_overlapping_spans.",
+      "hints": [
+        "D02 keeps 'Morgan' as PER. How many votes did each overlapping candidate get?",
+        "Look at the ranking key in resolve_doc against the README overlap rule.",
+        "Add -e.length between votes and start in the sort key."
+      ],
+      "probes": [
+        "Why did the shorter span win rather than an arbitrary one?",
+        "Why didn't named_entities change even though the label did?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "`== \"PER\" or \"ORG\"` counts every entity",
+      "type": "or-precedence",
+      "file": "spanmerge/reports.py",
+      "function": "build_report",
+      "test": "test_2_summary.TestSummary.test_named_entities",
+      "old": "if ent[2] == \"PER\" or ent[2] == \"ORG\")",
+      "new": "if ent[2] == \"PER\" or \"ORG\")",
+      "symptom": "test_2_summary.test_named_entities: 14 != 6 (every kept entity is counted).",
+      "why": "`ent[2] == \"PER\" or \"ORG\"` parses as `(ent[2] == \"PER\") or \"ORG\"`, and the non-empty string is always truthy, so LOC and DATE entities are counted too.",
+      "unblocks": "test_named_entities.",
+      "hints": [
+        "named_entities equals the total entity count. Is that plausible?",
+        "Look at the condition in the named_entities sum.",
+        "Compare against both labels: ent[2] in (\"PER\", \"ORG\")."
+      ],
+      "probes": [
+        "How does Python group `a == b or c`?",
+        "Why didn't any Test 1 assertion notice?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What is the flow inside build_report()?",
+      "a": "`load_docs` builds doc_id -> text, `read_spans` turns spans.csv rows into cleaned Span objects, `candidates` groups them by (doc, start, end, label) and keeps groups with at least MIN_VOTES distinct annotators, then `resolve_doc` picks the non-overlapping entities for each doc. The summary is computed from the resolved entities."
+    },
+    {
+      "q": "What does read_spans skip?",
+      "a": "Rows whose doc id (trimmed, upper-cased) is not in docs.json, rows where start or end isn't an integer, and anything for which make_span returns None (bad label, out-of-bounds offsets, empty after trimming)."
+    },
+    {
+      "q": "What does to_zero_based return for each tool?",
+      "a": "For `legacy` it returns a shifted `(start, end)` pair computed in its `if` branch; for any other tool it returns the inputs unchanged."
+    },
+    {
+      "q": "How are votes counted in candidates()?",
+      "a": "A dict keyed by (doc_id, start, end, label) holds a set of annotator ids, so repeat marks by the same (lower-cased) annotator count once. Groups are iterated in sorted key order, so each doc's candidate list is in (start, end, label) order."
+    },
+    {
+      "q": "What counts as an overlap?",
+      "a": "`_overlaps(a, b)` is `a.start < b.end and b.start < a.end` on exclusive ends, so spans that only touch (one ends where the other starts) do not overlap."
+    },
+    {
+      "q": "What does the annotators field count?",
+      "a": "The number of distinct lower-cased annotator ids among the spans returned by read_spans, i.e. after cleaning but before voting."
+    }
+  ]
+}

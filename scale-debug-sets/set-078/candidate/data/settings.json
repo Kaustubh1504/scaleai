@@ -1,0 +1,11 @@
+{
+  "as_of": "2026-06-12 18:00",
+  "claim_ttl_minutes": 90,
+  "max_rework": 2,
+  "projects": {
+    "alpha": {"paused": false},
+    "beta": {"paused": "yes"},
+    "gamma": {},
+    "Delta ": {"paused": true}
+  }
+}

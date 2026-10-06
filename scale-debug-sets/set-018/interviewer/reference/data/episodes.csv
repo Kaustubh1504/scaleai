@@ -1,0 +1,13 @@
+episode_id,robot_id,operator,task,recorded_on,success,notes
+EP01,RB-01,ana,pick_place,2026-07-01,true,
+ep02, rb-02,Ben,pick_place,07/01/2026,false,dropped cup
+EP03,RB-03,ana,fold_towel,02 Jul 2026,TRUE,
+EP04,rb-01,chen,fold_towel,2026-07-02,true,operator stopped early
+EP05,RB-04,ben,pick_place,07/02/2026,yes,
+EP06,RB-05,dana,Stack_Blocks,2026-07-03,true,
+ Ep07,RB-06,chen,stack_blocks,03 Jul 2026,false,
+EP08,RB-02,ana,pick_place,2026-07-03,true,camera stutter
+EP09,RB-07,dana,fold_towel,07/04/2026,true,
+EP10,RB-08,ben,stack_blocks,2026-07-04,True,
+EP11,RB-09,ana,pick_place,04 Jul 2026,no,
+EP12,RB-10,chen,Fold_Towel ,2026-07-05,false,

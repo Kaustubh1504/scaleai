@@ -1,0 +1,14 @@
+[
+  {"id": "Q01", "category": "math", "answer": "A", "weight": 1},
+  {"id": "q02", "category": "Math", "answer": "c", "weight": 2},
+  {"id": " Q03", "category": "logic", "answer": "B", "weight": "1"},
+  {"id": "Q04", "category": "logic ", "answer": "D", "weight": 1},
+  {"id": "Q05", "category": "reading", "answer": "A", "weight": 1.5},
+  {"id": "Q06", "category": "reading", "answer": "B"},
+  {"id": "q07", "category": "math", "answer": "D", "weight": ""},
+  {"id": "Q08", "category": "LOGIC", "answer": "C", "weight": 1},
+  {"id": "Q09", "category": "reading", "answer": " a", "weight": 1},
+  {"id": "Q10", "category": "math", "answer": "B", "weight": "2.0"},
+  {"id": "Q11", "category": "logic", "answer": "A", "weight": 1},
+  {"id": "Q12 ", "category": "reading", "answer": "C", "weight": 1}
+]

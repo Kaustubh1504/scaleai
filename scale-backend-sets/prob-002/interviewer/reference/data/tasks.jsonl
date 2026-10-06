@@ -1,0 +1,15 @@
+{"id": "ingest-001", "priority": 5, "payload": {"id": "ingest-001", "kind": "ingest"}}
+{"id": "label-001", "priority": 1}
+{"id": "label-002", "priority": 1}
+{"id": "export-001", "priority": 9, "payload": {"id": "export-001", "kind": "export"}}
+{"id": "label-003"}
+{"id": "poison-001", "priority": 3, "payload": {"id": "poison-001", "poison": true}}
+{"id": "cleanup-001", "priority": -2}
+not json at all
+{"id": 42, "priority": 1}
+{"id": "label-004", "priority": "high"}
+{"id": "label-005", "priority": true}
+["label-006", 1]
+
+{"id": "label-002", "priority": 7}
+{"id": "label-007", "priority": 1, "payload": {"id": "label-007", "kind": "label"}}

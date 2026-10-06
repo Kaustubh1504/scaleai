@@ -1,0 +1,49 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_image_matching",
+      "test_2_model_summary"
+    ],
+    "failures": {
+      "tests.test_1_image_matching.TestImageMatching.test_yolo_images": "AssertionError: {'img[86 chars]tp': 0, 'fp': 1, 'fn': 1}, 'img-04': {'tp': 0,[248 chars]: 0}} != {'img[86 chars]tp': 1, 'fp': 0, 'fn': 0}, 'img-04': {'tp': 1,[248 chars]: 0}}\n  {'img-01': {'fn': 0, 'fp': 0, 'tp': 1},\n   'img-02': {'fn': 1, 'fp': 0, 'tp': 1},\n-  'img-03': {'fn': 1, 'fp': 1, 'tp': 0},\n?                   ^        ^        ^\n\n+  'img-03': {'fn': 0, 'fp': 0, 'tp': 1},\n?                   ^        ^        ^\n\n-  'img-04': {'fn': 1, 'fp': 1, 'tp': 0},\n?                   ^        ^        ^\n\n+  'img-04': {'fn': 0, 'fp': 0, 'tp': 1},\n?                   ^        ^        ^\n\n   'img-0",
+      "tests.test_2_model_summary.TestModelSummary.test_auto_accept": "AssertionError: {'det[77 chars]', 'img-05', 'img-07', 'img-08', 'img-09']} != {'det[77 chars]', 'img-03', 'img-04', 'img-05', 'img-07', 'img-08', 'img-09']}\n  {'detr-v2': ['img-01', 'img-02', 'img-04', 'img-06', 'img-08'],\n-  'yolo-s': ['img-01', 'img-05', 'img-07', 'img-08', 'img-09']}\n+  'yolo-s': ['img-01',\n+             'img-03',\n+             'img-04',\n+             'img-05',\n+             'img-07',\n+             'img-08',\n+             'img-09']}",
+      "tests.test_2_model_summary.TestModelSummary.test_best_model": "AssertionError: 'detr-v2' != 'yolo-s'\n- detr-v2\n+ yolo-s\n",
+      "tests.test_2_model_summary.TestModelSummary.test_yolo_totals": "AssertionError: Tuples differ: (8, 2, 4, 0.8, 0.667, 0.727) != (10, 0, 2, 1.0, 0.833, 0.909)\n\nFirst differing element 0:\n8\n10\n\n- (8, 2, 4, 0.8, 0.667, 0.727)\n+ (10, 0, 2, 1.0, 0.833, 0.909)"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_image_matching",
+      "test_2_model_summary"
+    ],
+    "failures": {
+      "tests.test_1_image_matching.TestImageMatching.test_yolo_images": "AssertionError: {'img-01': {'tp': 0, 'fp': 1, 'fn': 0}, 'img-02': {'tp': 0,[326 chars]: 0}} != {'img-01': {'tp': 1, 'fp': 0, 'fn': 0}, 'img-02': {'tp': 1,[326 chars]: 0}}\n- {'img-01': {'fn': 0, 'fp': 1, 'tp': 0},\n?                            ^        ^\n\n+ {'img-01': {'fn': 0, 'fp': 0, 'tp': 1},\n?                            ^        ^\n\n-  'img-02': {'fn': 0, 'fp': 1, 'tp': 0},\n?                   ^        ^        ^\n\n+  'img-02': {'fn': 1, 'fp': 0, 'tp': 1},\n?                   ^        ^        ^\n\n   'img-03': {'fn': 0, 'fp': 0, 'tp': 1},\n-  'img-04': {'fn': 0, 'fp': 1, 'tp': 0},\n?            ",
+      "tests.test_2_model_summary.TestModelSummary.test_auto_accept": "AssertionError: {'detr-v2': [], 'yolo-s': []} != {'detr-v2': ['img-01', 'img-02', 'img-04', 'img-06', '[86 chars]09']}\n- {'detr-v2': [], 'yolo-s': []}\n+ {'detr-v2': ['img-01', 'img-02', 'img-04', 'img-06', 'img-08'],\n+  'yolo-s': ['img-01',\n+             'img-03',\n+             'img-04',\n+             'img-05',\n+             'img-07',\n+             'img-08',\n+             'img-09']}",
+      "tests.test_2_model_summary.TestModelSummary.test_best_model": "AssertionError: 'detr-v2' != 'yolo-s'\n- detr-v2\n+ yolo-s\n",
+      "tests.test_2_model_summary.TestModelSummary.test_yolo_totals": "AssertionError: Tuples differ: (3, 7, 0, 0.3, 1.0, 0.462) != (10, 0, 2, 1.0, 0.833, 0.909)\n\nFirst differing element 0:\n3\n10\n\n- (3, 7, 0, 0.3, 1.0, 0.462)\n+ (10, 0, 2, 1.0, 0.833, 0.909)"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_image_matching",
+      "test_2_model_summary"
+    ],
+    "failures": {
+      "tests.test_1_image_matching.TestImageMatching.test_yolo_images": "AssertionError: {'img[86 chars]tp': 0, 'fp': 1, 'fn': 1}, 'img-04': {'tp': 1,[248 chars]: 0}} != {'img[86 chars]tp': 1, 'fp': 0, 'fn': 0}, 'img-04': {'tp': 1,[248 chars]: 0}}\n  {'img-01': {'fn': 0, 'fp': 0, 'tp': 1},\n   'img-02': {'fn': 1, 'fp': 0, 'tp': 1},\n-  'img-03': {'fn': 1, 'fp': 1, 'tp': 0},\n?                   ^        ^        ^\n\n+  'img-03': {'fn': 0, 'fp': 0, 'tp': 1},\n?                   ^        ^        ^\n\n   'img-04': {'fn': 0, 'fp': 0, 'tp': 1},\n   'img-05': {'fn': 0, 'fp': 0, 'tp': 2},\n   'img-06': {'fn': 1, 'fp': 0, 'tp': 1},\n   'img-07': {'fn': 0, 'fp': 0, 'tp': 1},\n   'img",
+      "tests.test_2_model_summary.TestModelSummary.test_auto_accept": "AssertionError: {'det[77 chars]', 'img-04', 'img-05', 'img-07', 'img-08', 'img-09']} != {'det[77 chars]', 'img-03', 'img-04', 'img-05', 'img-07', 'img-08', 'img-09']}\n  {'detr-v2': ['img-01', 'img-02', 'img-04', 'img-06', 'img-08'],\n-  'yolo-s': ['img-01', 'img-04', 'img-05', 'img-07', 'img-08', 'img-09']}\n+  'yolo-s': ['img-01',\n+             'img-03',\n+             'img-04',\n+             'img-05',\n+             'img-07',\n+             'img-08',\n+             'img-09']}",
+      "tests.test_2_model_summary.TestModelSummary.test_yolo_totals": "AssertionError: Tuples differ: (9, 1, 3, 0.9, 0.75, 0.818) != (10, 0, 2, 1.0, 0.833, 0.909)\n\nFirst differing element 0:\n9\n10\n\n- (9, 1, 3, 0.9, 0.75, 0.818)\n+ (10, 0, 2, 1.0, 0.833, 0.909)"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_image_matching",
+      "test_2_model_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_image_matching.TestImageMatching.test_yolo_images",
+      "tests.test_2_model_summary.TestModelSummary.test_auto_accept",
+      "tests.test_2_model_summary.TestModelSummary.test_best_model",
+      "tests.test_2_model_summary.TestModelSummary.test_yolo_totals"
+    ]
+  }
+}

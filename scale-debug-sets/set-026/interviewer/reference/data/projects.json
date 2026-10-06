@@ -1,0 +1,5 @@
+{
+  "Chat": {"min_votes": 3, "agreement": 0.75},
+  "email": {"min_votes": 2, "agreement": 0.6},
+  "reviews ": {"min_votes": 4, "agreement": 0.5}
+}

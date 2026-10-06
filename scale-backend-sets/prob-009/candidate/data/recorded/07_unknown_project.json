@@ -1,0 +1,10 @@
+{
+  "request": "GET /v1/projects/prj_99/tasks?limit=25",
+  "status": 404,
+  "headers": {
+    "date": "Wed, 01 May 2024 08:00:02 GMT"
+  },
+  "body": {
+    "error": "not_found"
+  }
+}

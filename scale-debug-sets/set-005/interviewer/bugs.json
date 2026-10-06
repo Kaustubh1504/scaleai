@@ -1,0 +1,126 @@
+{
+  "id": "set-005",
+  "title": "Bounding-box QA: IoU matching and annotator recall",
+  "domain": "bbox_qa",
+  "length": "MINI",
+  "difficulty": "easy",
+  "format": "multi",
+  "package": "boxqa",
+  "scenario": "Match annotator boxes to ground truth per image (same label, IoU >= 0.5, greedy best-first), using inclusive pixel coordinates. Flag image/annotator pairs with recall < 0.8 and summarise per annotator.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_image_review",
+      "test_2_annotator_summary"
+    ]
+  },
+  "verified": [
+    {
+      "file": "boxqa/matching.py",
+      "symbol": "greedy_match",
+      "why_correct": "Sorting (-iou, i, j) ascending gives best IoU first, with ties going to the earlier annotator box and then the earlier ground-truth box, which is exactly the spec. The `>=` threshold is also the spec. It looks like the obvious place for a matching problem, but it has none."
+    },
+    {
+      "file": "boxqa/loader.py",
+      "symbol": "within_cutoff",
+      "why_correct": "`<=` keeps annotations submitted on the cutoff day, which the spec requires ('on or before'). Alice's img_05 rows are dated exactly 2026-05-10 and must count."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Box area computed with exclusive coordinates",
+      "type": "iou-inclusive-exclusive",
+      "file": "boxqa/geometry.py",
+      "function": "area",
+      "old": "    return (box.x_max - box.x_min + 1) * (box.y_max - box.y_min + 1)",
+      "new": "    return (box.x_max - box.x_min) * (box.y_max - box.y_min)",
+      "symptom": "Test 1: img_03/alice counts as a TP (recall 1.0) and is no longer flagged. Its dog box only half-overlaps the ground truth (true IoU 0.43). Test 2: alice shows tp 9, fp 0, fn 1.",
+      "why": "The coordinates are inclusive, so a box covers x_max \u2212 x_min + 1 pixels. The intersection uses +1 but the area doesn't, so the union shrinks and IoU is inflated. For small boxes 0.43 becomes 0.59, which clears the 0.5 threshold.",
+      "unblocks": "Test 1 img_03/alice and the flagged list.",
+      "hints": [
+        "Work out img_03/alice's IoU by hand from the CSV. Is it above 0.5?",
+        "Compare area() and intersection() in geometry.py. Do they count pixels the same way?",
+        "area() needs + 1 on both width and height: (x_max - x_min + 1) * (y_max - y_min + 1)."
+      ],
+      "probes": [
+        "Why did the large boxes on img_01 and img_05 still match correctly with the broken area?",
+        "If the data were in exclusive coordinates (x_max is one past the last pixel), which functions would change?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Matched-box sets shared across image/annotator pairs",
+      "type": "state-not-reset",
+      "file": "boxqa/evaluate.py",
+      "function": "evaluate",
+      "old": "    for (image_id, annotator), preds in sorted(preds_by_key.items()):\n        gts = gt_by_image.get(image_id, [])\n        matched_pred, matched_gt = set(), set()\n",
+      "new": "    matched_pred, matched_gt = set(), set()\n    for (image_id, annotator), preds in sorted(preds_by_key.items()):\n        gts = gt_by_image.get(image_id, [])\n",
+      "symptom": "Test 1: the first pairs (img_01/alice, img_01/bob) are right, then counts drift into impossible values: img_03/bob shows tp 2, fp -1, fn -1, recall 2.0, and the flagged list comes back empty. Test 2: precision and recall go above 1.",
+      "why": "matched_pred/matched_gt hold box indices, which restart at 0 for every image. Created once outside the loop, they keep indices from earlier pairs, so each pair's TP/FP/FN is computed from everything matched so far.",
+      "unblocks": "Test 1 per-image counts, and most of Test 2.",
+      "hints": [
+        "The first result is right and later ones drift. What carries over between iterations?",
+        "Look at where evaluate creates its per-pair bookkeeping.",
+        "Move `matched_pred, matched_gt = set(), set()` inside the for loop."
+      ],
+      "probes": [
+        "Why was the very first image/annotator pair still correct?",
+        "If the sets held Box objects instead of indices, would the bug still show? (Hint: frozen dataclasses with equal fields compare equal.)"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "groupby over unsorted results",
+      "type": "groupby-misuse",
+      "file": "boxqa/reports.py",
+      "function": "annotator_summary",
+      "old": "    ordered = sorted(results, key=lambda r: r.annotator)\n    for annotator, group in groupby(ordered, key=lambda r: r.annotator):",
+      "new": "    for annotator, group in groupby(results, key=lambda r: r.annotator):",
+      "visible_only_in": [
+        "test_2_annotator_summary"
+      ],
+      "symptom": "Test 2 only: every annotator shows images: 1 with only their last image's numbers (alice = img_05 only, bob = img_06 only, chen = img_05 only).",
+      "why": "itertools.groupby only groups consecutive items. Results are sorted by image first, so each annotator shows up in many short runs, and each run overwrites summary[annotator].",
+      "unblocks": "Test 2.",
+      "hints": [
+        "Every annotator reviewed 1 image? Check that against Test 1's keys.",
+        "Look at what order annotator_summary receives results in, and what groupby assumes.",
+        "Sort by annotator before groupby (or accumulate into a dict)."
+      ],
+      "probes": [
+        "Why does the output look plausible (no crash, sensible precision) even though it's wrong?",
+        "How would a defaultdict accumulator avoid this whole class of problem?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report do?",
+      "a": "It loads ground truth (`image_id -> [Box]`) and annotations (`(image_id, annotator) -> [Box]`, after the cutoff filter), runs `evaluate.evaluate` to get one `ImageResult` per image/annotator pair, then builds the `images` dict, the `flagged` list and `annotator_summary`."
+    },
+    {
+      "q": "What does geometry.intersection return for two boxes that share exactly one pixel column?",
+      "a": "Width = `min(x_max) - max(x_min) + 1` = 1, so the intersection is 1 \u00d7 the overlapping height, not 0. Non-overlapping boxes give a negative width or height, which is clamped to 0."
+    },
+    {
+      "q": "How does greedy_match choose between competing pairs?",
+      "a": "It collects `(-iou, pred_index, gt_index)` for every same-label pair with IoU \u2265 0.5 and sorts ascending. That gives the highest IoU first, with ties going to the lower pred index, then the lower gt index. It then accepts pairs whose pred and gt are both still unused."
+    },
+    {
+      "q": "How is the review cutoff applied?",
+      "a": "`load_annotations` parses `submitted` with `parse_date` and skips the row unless `within_cutoff(date)`, which is `date <= REVIEW_CUTOFF` (2026-05-10)."
+    },
+    {
+      "q": "How are rows with a blank coordinate handled?",
+      "a": "`_box` returns `None` if any of the four coordinate cells is empty after stripping, and both loaders skip `None` rows. So bob's img_05 car with a blank `y_min` is simply not counted."
+    },
+    {
+      "q": "In what order does annotator_summary receive results?",
+      "a": "`evaluate` iterates `sorted(preds_by_key.items())`, so results are ordered by the `(image_id, annotator)` key: all of img_01's annotators, then img_02's, and so on."
+    },
+    {
+      "q": "What recall does an image with no ground truth get?",
+      "a": "`ImageResult.recall` returns 1.0 when TP + FN is 0, so such a pair (e.g. img_06/bob) is never flagged, though its boxes still count as FP."
+    }
+  ]
+}

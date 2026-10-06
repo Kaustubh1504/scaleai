@@ -1,0 +1,193 @@
+{
+  "id": "set-088",
+  "title": "Batch cluster day planner with retries and dependencies",
+  "domain": "job_scheduler",
+  "length": "FULL",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "batchsched",
+  "scenario": "Simulate a day of a batch cluster minute by minute: four worker pools, priority 5 = most urgent, dependencies, scripted attempt failures with linear retry backoff. The report covers makespan, pool slots/utilisation and the longest wait (including a backlog job from two days earlier).",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_intake",
+      "test_2_schedule",
+      "test_3_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "batchsched/timeutil.py",
+      "symbol": "parse_duration",
+      "why_correct": "The regex accepts a number with an optional h/m/s unit. `// 60` on seconds looks lossy, but every seconds value in the data is a whole number of minutes, and the spec says everything is in whole minutes. A bare number is minutes, as the README says."
+    },
+    {
+      "file": "batchsched/retry.py",
+      "symbol": "backoff_delay",
+      "why_correct": "Backoff is linear by spec (`retry_backoff \u00d7 attempts made so far`), so `base * attempts` is right even though exponential backoff is what most people expect."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Dependency ids not upper-cased",
+      "type": "id-normalization",
+      "file": "batchsched/deps.py",
+      "function": "parse_deps",
+      "test": "test_1_intake.TestIntake.test_1_dependencies",
+      "old": "    return [norm_job(part) for part in clean(raw).split(\";\") if part.strip()]",
+      "new": "    return [part.strip() for part in clean(raw).split(\";\") if part.strip()]",
+      "symptom": "test_1_dependencies fails: G03 is missing from the dependency map (expected G03: ['G01']). Every schedule test still passes.",
+      "why": "G03's dependency is written ` g01`. Without `norm_job` it stays `g01`, which is not an accepted job id, so `resolve_deps` drops it. The schedule doesn't change, because gpu has one slot and G01 already holds it until G03 could start.",
+      "unblocks": "test_1_dependencies.",
+      "hints": [
+        "G03 has no dependencies in the intake, but jobs.csv lists one. What is different about how it is written?",
+        "Follow depends_on from the CSV through parse_deps and resolve_deps.",
+        "parse_deps should apply norm_job to each piece, not just strip()."
+      ],
+      "probes": [
+        "Why did G03 still start after G01 even with the dependency gone?",
+        "What data change would turn this into a visible scheduling difference?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Least urgent job dispatched first",
+      "type": "sort-direction",
+      "file": "batchsched/simulator.py",
+      "function": "queue_key",
+      "test": "test_2_schedule.TestSchedule.test_2_cpu_lane",
+      "old": "    return (-job.priority, submit_offset[job.id], job.id)",
+      "new": "    return (job.priority, submit_offset[job.id], job.id)",
+      "symptom": "test_2_cpu_lane fails: C01 runs 08:00-08:40 and C02 (priority 5) waits until 08:40-09:00. Expected C02 08:00-08:20 and C01 08:20-09:00.",
+      "why": "Priority 5 is the most urgent, so the sort has to be descending on priority. Ascending dispatches C01 (2) and C03 (3) at 08:00 and leaves C02 (5) until 08:40. The other lanes never have two jobs of different priority competing for a slot, so only cpu changes.",
+      "unblocks": "test_2_cpu_lane.",
+      "hints": [
+        "C02 is the most urgent job but starts last. What decides dispatch order?",
+        "Read queue_key and README rule 7 together. Don't trust the comment.",
+        "queue_key should return (-job.priority, ...)."
+      ],
+      "probes": [
+        "Why did the mem, io and gpu lanes come out the same with this bug?",
+        "cpu busy minutes and makespan didn't change. Why?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "One retry too few",
+      "type": "retry-off-by-one",
+      "file": "batchsched/retry.py",
+      "function": "should_retry",
+      "test": "test_2_schedule.TestSchedule.test_3_io_lane",
+      "old": "    return attempts <= max_retries",
+      "new": "    return attempts < max_retries",
+      "symptom": "test_3_io_lane fails: I01 is failed after 1 attempt (ends 08:15), I02 is blocked, and I03 runs 08:30-08:40. Expected I01 succeeded on attempt 2 at 08:35.",
+      "why": "`attempts` includes the attempt that just failed, so a job with max_retries 1 must retry after attempt 1 (1 <= 1). With `<`, I01 is marked failed after its first attempt, I02 becomes blocked, and I03 moves up to 08:30.",
+      "unblocks": "test_3_io_lane.",
+      "hints": [
+        "I01 has max_retries 1 and attempts.csv says its second attempt is ok. How many attempts did it get?",
+        "Look at the retry decision after a failed attempt.",
+        "should_retry should be `attempts <= max_retries`."
+      ],
+      "probes": [
+        "Why is I02's state `blocked` rather than `failed` or `pending`?",
+        "G02 also fails. Why did its result not change with this bug?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "max_retries 0 replaced by the default",
+      "type": "falsy-zero",
+      "file": "batchsched/loader.py",
+      "function": "load_jobs",
+      "test": "test_2_schedule.TestSchedule.test_4_gpu_lane",
+      "old": "                max_retries=int(retries) if retries else DEFAULT_RETRIES,",
+      "new": "                max_retries=int(retries or 0) or DEFAULT_RETRIES,",
+      "symptom": "test_4_gpu_lane fails: G02 shows ('failed', 3, 'w04', '08:50', '09:35'). Expected 1 attempt ending 09:00.",
+      "why": "`int('0') or DEFAULT_RETRIES` treats an explicit 0 as missing, so G02 gets 2 retries. It still ends `failed` (all three scripted attempts fail), but with 3 attempts and an end of 09:35.",
+      "unblocks": "test_4_gpu_lane.",
+      "hints": [
+        "G02 failed in both versions. What else in its row is different?",
+        "How many times may G02 run according to jobs.csv and README rule 8? Where is that value read?",
+        "In load_jobs, use `int(retries) if retries else DEFAULT_RETRIES` so 0 stays 0."
+      ],
+      "probes": [
+        "The test is in the schedule file, but the cause is in the loader. How did you trace it back?",
+        "Why didn't G02's extra attempts change the makespan?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Wait loses whole days",
+      "type": "timedelta-seconds",
+      "file": "batchsched/report.py",
+      "function": "wait_minutes",
+      "test": "test_3_report.TestReport.test_5_longest_wait",
+      "old": "    return int((started - job.submitted_at).total_seconds() // 60)",
+      "new": "    return (started - job.submitted_at).seconds // 60",
+      "symptom": "test_5_longest_wait fails: {'job': 'M04', 'minutes': 60} instead of {'job': 'M01', 'minutes': 2890}.",
+      "why": "`timedelta.seconds` is only the seconds part of the duration, not counting whole days. M01 was submitted on 09/29 and waited 2 days 10 minutes, but `.seconds` gives 600 s, so M04's 60 minutes looks like the longest wait.",
+      "unblocks": "test_5_longest_wait.",
+      "hints": [
+        "M01 was submitted two days before day_start. How long did it wait, and what does the report say instead?",
+        "Look at how the wait is converted to minutes.",
+        "Use total_seconds() instead of .seconds in wait_minutes."
+      ],
+      "probes": [
+        "For what kinds of wait does `.seconds` give the right answer?",
+        "Why didn't the simulation itself suffer from the same problem for M01?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Inactive workers counted as slots",
+      "type": "counting-wrong-subset",
+      "file": "batchsched/pools.py",
+      "function": "capacity",
+      "test": "test_3_report.TestReport.test_6_pool_capacity",
+      "old": "    return Counter(w.pool for w in workers if w.active)",
+      "new": "    return Counter(w.pool for w in workers)",
+      "symptom": "test_6_pool_capacity fails: slots {'cpu': 4, 'gpu': 2, 'io': 1, 'mem': 3}. Expected {'cpu': 2, 'gpu': 1, 'io': 1, 'mem': 2}.",
+      "why": "Slots are active workers only. capacity() counts every worker in the roster, including draining and offline ones, so the report shows cpu 4 / gpu 2 / mem 3 and halves cpu utilization. The scheduler is unaffected because PoolTable filters active workers itself.",
+      "unblocks": "test_6_pool_capacity.",
+      "hints": [
+        "cpu shows 4 slots, but the schedule only ever used w01 and w02.",
+        "The report and the scheduler work out slots in different places. Compare them.",
+        "capacity() needs `if w.active`."
+      ],
+      "probes": [
+        "Why did the schedule tests pass even though slot counting was off?",
+        "io has the same count with or without the filter. Why?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What happens inside simulate() at each minute?",
+      "a": "First every running attempt whose end equals t is finished in job-id order: its worker is released, a Run is recorded, and the outcome from attempts.csv (default `ok`) decides succeeded / retry / failed. Then queued jobs with a failed or blocked dependency are marked blocked (repeated until nothing changes). Finally eligible jobs are sorted with queue_key and each takes `table.free_worker(pool)` if there is one."
+    },
+    {
+      "q": "Where are job submission times turned into simulation minutes?",
+      "a": "In simulate: `submit[job.id] = max(0, to_offset(day_start, job.submitted_at))`. to_offset uses total_seconds() // 60, so a job submitted before day_start is clamped to minute 0."
+    },
+    {
+      "q": "What does load_jobs do with depends_on?",
+      "a": "Each row's depends_on string goes through `parse_deps`, which splits on ';' and skips blank pieces. After all rows are read, `resolve_deps` removes any id that is not one of the accepted job ids, and the jobs are rebuilt with the filtered tuple."
+    },
+    {
+      "q": "How is the retry backoff applied?",
+      "a": "When an attempt fails and should_retry(attempts, max_retries) is true, the job goes back to `queued` with `ready_at = t + backoff_delay(attempts, backoff)`; config `retry_backoff` '300s' parses to 5 minutes."
+    },
+    {
+      "q": "Which workers can PoolTable hand out?",
+      "a": "Its constructor keeps only workers with `active` True, sorted by id. free_worker returns the first one in the requested pool that is not in `busy`."
+    },
+    {
+      "q": "Where does the report's slots number come from?",
+      "a": "pool_report calls `capacity(workers)` from pools.py on the full worker list loaded from workers.csv, and indexes it by each name from pool_names."
+    },
+    {
+      "q": "How is longest_wait chosen?",
+      "a": "For every job that has a first_start, wait_minutes converts first_start back to a datetime and subtracts submitted_at. The minimum by (-minutes, job id) is returned as {job, minutes}."
+    }
+  ]
+}

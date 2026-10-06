@@ -1,0 +1,120 @@
+{
+  "id": "set-059",
+  "title": "Preference leaderboard: position swaps, Elo, contested prompts",
+  "domain": "rlhf_preferences",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "multi",
+  "package": "prefrank",
+  "scenario": "Pairwise rater judgements (some from a legacy UI that swapped positions) are cleaned, deduped per rater/prompt/pair, and turned into win rates, Elo (K=32) and a list of contested prompts. Test 2 is the leaderboard and disagreement list.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_ratings",
+      "test_2_leaderboard"
+    ]
+  },
+  "verified": [
+    {
+      "file": "prefrank/ratings.py",
+      "symbol": "expected",
+      "why_correct": "The exponent (rb - ra) looks reversed, but when ra > rb it is negative, 10**negative < 1 and the result is above 0.5, so the stronger player is favoured, as the Elo formula in the README says."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Comparison rater ids not lower-cased",
+      "type": "id-normalization",
+      "file": "prefrank/loader.py",
+      "function": "read_comparisons",
+      "old": "            rater = row[\"rater\"].strip().lower()",
+      "new": "            rater = row[\"rater\"].strip()",
+      "symptom": "Both files fail. Test 1: used is 18 instead of 22; atlas-7b shows 11 games / 7 wins; Elo becomes borealis 966.8, cirrus-2 987.4, drift-xl 1009.7. Test 2: leaderboard swaps borealis and cirrus-2, and contested is ['p03', 'p04'] (p06 and p10 missing).",
+      "why": "The registry ids are lower-cased but comparison rater ids are only trimmed, so every 'R07' row fails the `rater not in qualified` check and is silently dropped.",
+      "unblocks": "used, win rates and Elo in Test 1, and p06/p10 in contested. Exposes B2.",
+      "hints": [
+        "used is 18, not 22. Which rows went missing, and what do they have in common?",
+        "Compare how rater ids are cleaned in load_raters and read_comparisons.",
+        "Lower-case the comparison rater: row[\"rater\"].strip().lower()."
+      ],
+      "probes": [
+        "Why is r07 in the qualified set even though raters.json has a trailing space?",
+        "Why were these rows dropped silently instead of raising an error?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "swapped = \"false\" treated as swapped",
+      "type": "bool-from-string",
+      "file": "prefrank/loader.py",
+      "function": "read_comparisons",
+      "old": "            swapped = row[\"swapped\"].strip().lower() in TRUE_WORDS",
+      "new": "            swapped = bool(row[\"swapped\"].strip())",
+      "masked_by": [
+        "B1"
+      ],
+      "symptom": "Only visible after B1 is fixed. Test 1: used stays 22, but atlas-7b shows 9 wins (win_rate 0.731) and Elo shifts (borealis 956.5, cirrus-2 984.6, drift-xl 1004.0). Test 2: leaderboard swaps borealis and cirrus-2, and contested is ['p03', 'p04', 'p08', 'p10'] (p08 instead of p06).",
+      "why": "bool() of any non-empty string is True, so R07's rows marked 'false'/'False' get their winner flipped. Blank cells still give False, so only the rater who fills the column is affected.",
+      "unblocks": "Test 1 win rates and Elo, and p06 in contested.",
+      "hints": [
+        "Look at R07's p06 and p08 rows. Who should have won each?",
+        "Look at how the swapped column is interpreted.",
+        "Use row[\"swapped\"].strip().lower() in TRUE_WORDS."
+      ],
+      "probes": [
+        "Why was this invisible until rater ids were fixed?",
+        "Why did R07's 'true'/'TRUE' rows come out right even with this change?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "groupby over unsorted comparisons",
+      "type": "groupby-misuse",
+      "file": "prefrank/reports.py",
+      "function": "contested",
+      "old": "groupby(sorted(comparisons, key=_group_key), key=_group_key)",
+      "new": "groupby(comparisons, key=_group_key)",
+      "visible_only_in": [
+        "test_2_leaderboard"
+      ],
+      "symptom": "Test 2 test_contested_prompts only: ['p04', 'p10'] instead of ['p03', 'p04', 'p06', 'p10']. Test 1 and the leaderboard pass.",
+      "why": "itertools.groupby only groups adjacent items. The comparisons are in time order, so p03's and p06's judgements are split by other rows into separate one-item groups and their disagreement is never seen.",
+      "unblocks": "test_contested_prompts.",
+      "hints": [
+        "p04 and p10 are found but p03 isn't. Where are p03's rows in the kept list?",
+        "Look at how contested() groups comparisons.",
+        "Sort by _group_key before calling groupby."
+      ],
+      "probes": [
+        "Why did p04 and p10 still come out right?",
+        "What would a dict/defaultdict version look like, and why doesn't it need sorting?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report do?",
+      "a": "load_raters returns the set of qualified rater ids; read_comparisons filters and resolves rows to Comparison objects; latest_only dedupes and returns them in (created_at, row) order; then elo, win_rates and contested are computed from that list, and the leaderboard is sorted from the Elo dict."
+    },
+    {
+      "q": "What does a Comparison look like?",
+      "a": "prompt_id, rater, pair (the two model ids as a sorted tuple), winner (a model id, or None for a tie), created_at (datetime) and row (the CSV line number, header = 1)."
+    },
+    {
+      "q": "How does read_comparisons decide which rows to keep?",
+      "a": "It cleans the rater id and the winner letter, and skips the row if the rater is not in the qualified set or the letter isn't a/b/tie. It then reads the swapped flag, flips a<->b if set, and maps the letter to model_a/model_b (tie -> None)."
+    },
+    {
+      "q": "How does latest_only break ties between duplicate judgements?",
+      "a": "It keys by (rater, prompt_id, pair) and replaces the stored comparison when (created_at, row) is greater, so later times win and, at equal times, the later CSV row wins."
+    },
+    {
+      "q": "How is Elo updated per comparison?",
+      "a": "With a, b = c.pair, score_a is 1, 0 or 0.5, delta = K * (score_a - expected(Ra, Rb)), then Ra += delta and Rb -= delta. Ratings start at 1000 via a defaultdict and are rounded to 1 decimal at the end."
+    },
+    {
+      "q": "How does contested() group comparisons?",
+      "a": "It uses itertools.groupby with the key (prompt_id, pair) and adds the prompt id when a group's set of winners has more than one value (None counts as a value)."
+    }
+  ]
+}

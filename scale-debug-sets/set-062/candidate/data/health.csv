@@ -1,0 +1,11 @@
+at,worker_id,state
+12:00:02,cen-3,down
+12:00:04,North-3,healthy
+12:00:05,east-2,Healthy
+12:00:06,cen-3,healthy
+12:00:06.000,west-2,draining
+12:00:08.250,gpu-99,down
+12:00:09.500,EAST-3,down
+12:00:09.900,cen-1,degraded
+12:00:09.950,cen-1,healthy
+12:00:10,west-1,degraded

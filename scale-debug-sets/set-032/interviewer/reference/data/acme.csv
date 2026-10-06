@@ -1,0 +1,15 @@
+﻿batch,task_id,email,label,submitted,duration_s,tags
+b1,T001,a.lee@acme.io,pos,2026-03-02 09:00,40,sentiment;short
+B1 ,t002,  M.Khan@Acme.io,neg,03/02/2026 09:10,35,sentiment
+b1,T003,j.ruiz@acme.io,neutral,2026-03-02T09:20:00,0,sentiment;long
+b1,T004,bad-email,pos,2026-03-02 09:30,22,short
+b2,T005,a.lee@acme.io,pos,02.03.2026 10:00,51,tmp:qa;tmp:review;short
+b2,T006,m.khan@acme.io,-,2026-03-02 10:05,30,
+b2,,a.lee@acme.io,pos,2026-03-02 10:10,30,short
+b2,T007,j.ruiz@acme.io,neg,2026-03-03 08:00,,long
+b2,T008,j.ruiz@acme.io,pos,2026-03-03 08:15,45,sentiment;sarcasm
+,T009,a.lee@acme.io,neutral,2026-03-03 08:30,33,long
+b3,T010,m.khan@acme.io,pos,13/03/2026 09:00,20,
+b3,T011,a.lee@acme.io,neg,2026-03-03 09:00,-5,short
+b3, T012,m.khan@acme.io,pos,2026-03-03 09:10,28,Sentiment ; SHORT
+b3,T013,,pos,,30,

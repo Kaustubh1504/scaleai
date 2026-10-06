@@ -1,0 +1,21 @@
+comparison_id,prompt_id,model_a,model_b,winner,annotator,rated_at
+c01,p01,Atlas-7B,borealis-13b,a,ann_kim,2026-04-01 09:10
+c02,p01,cirrus-70b,atlas-7b,A,ann_lee,04/01/2026 09:40
+c03,p02,borealis-13b,cirrus-70b,b,ANN_KIM,2026-04-01T10:05:00
+c04,p02, ATLAS-7b ,cirrus-70b,tie,ann_raj,2026-04-01 11:00
+c05,p03,delta-3b,atlas-7b,b,ann_lee,2026-04-01 11:30
+c06,p03,cirrus-70b,borealis-13b,both_bad,ann_raj,04/01/2026 12:15
+c08,p04,borealis-13b,atlas-7b,Draw,Ann_Lee ,2026-04-02T09:20:00
+c07,p04,ember-8x7b,cirrus-70b,b,ann_kim,2026-04-02 08:50
+c09,p05,zephyr-1b,atlas-7b,a,ann_kim,2026-04-02 09:45
+c10,p05,cirrus-70b,delta-3b,a,ann_raj,04/02/2026 10:30
+c11,p06,atlas-7b,ember-8x7b,,ann_lee,2026-04-02 11:05
+c12,p06,Ember-8x7B,borealis-13b,a,ann_raj,2026-04-02 13:10
+c13,p07,Cirrus-70B,atlas-7b,a,ann_kim,2026-04-03 09:00
+c14,p07,borealis-13b,delta-3b, b ,ann_lee,04/03/2026 09:35
+c15,p08,atlas-7b,borealis-13b,BOTH_BAD,ann_kim,2026-04-03T10:10:00
+c16,p08,ember-8x7b,atlas-7b,tie,ann_raj,2026-04-03 11:45
+c17,p09,cirrus-70b,borealis-13b,a,ANN_LEE,2026-04-03 14:20
+c18,p09,atlas-7b,cirrus-70b,b,ann_raj,04/04/2026 08:30
+c19,p10,ember-8x7b,cirrus-70b,both_bad,ann_kim,2026-04-04 09:15
+c20,p10,borealis-13b,atlas-7b,a,ann_lee,2026-04-04T10:00:00

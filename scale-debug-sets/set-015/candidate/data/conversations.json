@@ -1,0 +1,71 @@
+[
+  {"id": "c01", "source": "vendor-a", "tags": "math",
+   "messages": [
+     {"role": "system", "content": "You are a careful math tutor."},
+     {"role": "user", "content": "What is 12 times 9?"},
+     {"role": "assistant", "content": "12 times 9 is 108."}
+   ]},
+  {"id": "C02", "source": "vendor-b", "tags": "code, python",
+   "messages": [
+     {"role": "human", "content": "How do I reverse a list in Python?"},
+     {"role": "gpt", "content": "Use slicing: my_list[::-1] returns a reversed copy."}
+   ]},
+  {"id": "c03", "source": "vendor-a", "tags": "math",
+   "messages": [
+     {"role": "user", "content": "What is 7 minus 7? Reply with just the number."},
+     {"role": "assistant", "content": 0}
+   ]},
+  {"id": "c04", "source": " Vendor-B", "tags": "",
+   "messages": [
+     {"role": "user", "content": "Translate to French:"},
+     {"role": "user", "content": "Good morning, everyone."},
+     {"role": "assistant", "content": "Bonjour à tous."}
+   ]},
+  {"id": "c05", "source": "vendor-c", "tags": "chat",
+   "messages": [
+     {"role": "system", "content": "You are a friendly travel assistant."},
+     {"role": "user", "content": "I want to visit Japan in spring. Where should I start?"},
+     {"role": "assistant", "content": "Tokyo and Kyoto are popular choices because the cherry blossoms peak in early April."},
+     {"role": "user", "content": "How many days do I need?"},
+     {"role": "assistant", "content": "Plan at least ten days to see both cities without rushing."}
+   ]},
+  {"id": "c06", "source": "vendor-c", "tags": "chat, long",
+   "messages": [
+     {"role": "user", "content": "Write a detailed paragraph about the history of the printing press, covering Gutenberg, movable type, the spread of print shops across Europe, and the effect on literacy."},
+     {"role": "assistant", "content": "The printing press, developed by Johannes Gutenberg around 1440, combined movable metal type with an adapted screw press, and within fifty years print shops had spread to hundreds of European cities, making books cheaper and literacy far more common."}
+   ]},
+  {"id": "c07", "source": "vendor-b", "tags": " Code ",
+   "messages": [
+     {"role": "user", "content": "List the files in the current folder."},
+     {"role": "tool", "content": "main.py README.md"},
+     {"role": "assistant", "content": "There are two files: main.py and README.md."}
+   ]},
+  {"id": "c08", "source": "vendor-a", "tags": "",
+   "messages": [
+     {"role": "user", "content": "Summarise the plot of Hamlet."},
+     {"role": "assistant", "content": "A prince seeks revenge for his father's murder."},
+     {"role": "user", "content": "And Macbeth?"}
+   ]},
+  {"id": "c09", "source": "vendor-c", "tags": "safety",
+   "messages": [
+     {"role": "user", "content": "Tell me a joke."},
+     {"role": "system", "content": "Keep every answer family friendly."},
+     {"role": "assistant", "content": "Why did the scarecrow win an award? He was outstanding in his field."}
+   ]},
+  {"id": "c10", "source": "vendor-a", "tags": "chat",
+   "messages": [
+     {"role": "user", "content": "Hello?"},
+     {"role": "assistant", "content": "   "}
+   ]},
+  {"id": "c11", "source": "VENDOR-C", "tags": "math,  ",
+   "messages": [
+     {"role": " USER ", "content": "  Is 91 a prime number?  "},
+     {"role": "Assistant", "content": "No. 91 is 7 times 13."}
+   ]},
+  {"id": "c12", "source": "vendor-b", "tags": "code",
+   "messages": [
+     {"role": "system", "content": "Answer in one sentence."},
+     {"role": "user", "content": "What does HTTP status 404 mean?"},
+     {"role": "bot", "content": "The server could not find the requested resource."}
+   ]}
+]

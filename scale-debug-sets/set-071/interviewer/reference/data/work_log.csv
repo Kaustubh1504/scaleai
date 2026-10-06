@@ -1,0 +1,33 @@
+entry_id,contributor_id,task_type,units,status,completed_at
+E001,C01,bbox,40,approved,2026-09-28 09:15
+e002,c01,polygon,10,approved,09/29/2026 14:00
+E003,C01,bbox,12,rejected,2026-09-30 10:00
+E004,C02,transcription,15,approved,2026-10-01 11:30
+E005,C02 ,ranking,33,auto-approved,30 Sep 2026 16:45
+E006,C02,bbox,20,pending,2026-10-02 08:00
+E007,C03,ranking,50,approved,2026-10-04 23:59
+E008,C03,bbox,30,approved,2026-10-05 00:10
+E009,C03,transcription,5,Approved,2026-09-27 22:00
+E010,C04,polygon,25,approved,2026-10-03 13:00
+E011,C04,bbox,9,rejected,10/03/2026 15:20
+E012,C05,bbox,50,approved,2026-09-29 09:00
+E013,C06,transcription,20,approved,2026-09-29 10:30
+E014,C06,ranking,7,auto-approved,01 Oct 2026 12:00
+E015,c07,bbox,30,approved,2026-10-02 17:40
+E016,C07,bbox,30,pending,2026-10-03 09:05
+E017,C08,polygon,8,approved,10/01/2026 08:30
+E018,C08,transcription,11,rejected,2026-10-01 09:30
+E019,C09,ranking,40,approved,2026-09-30 13:10
+E020,C09,bbox,18,Auto-Approved,2026-10-02 14:00
+E021,C10,ranking,5,approved,2026-10-04 08:00
+E022,C10,bbox,4,rejected,2026-10-04 09:00
+E023,C12,transcription,30,approved,2026-09-28 18:00
+E024,C12,polygon,3,approved,02 Oct 2026 10:15
+E025,C06,bbox,15,approved,2026-10-01 16:00
+E025,C06,bbox,16,approved,2026-10-01 16:00
+E026,c09,qa-review,10,approved,2026-10-01 11:00
+E027,C11,bbox,30,approved,2026-09-30 15:00
+E028,C07,ranking,9,REJECTED,2026-10-03 11:00
+E029,C01,ranking,21,approved,2026-10-04 20:30
+E030,C04,transcription,6, approved ,2026-10-02 07:45
+E031,C08,bbox,11,pending,2026-09-28 12:00

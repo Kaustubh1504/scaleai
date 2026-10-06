@@ -1,0 +1,12 @@
+{
+  "defaults": {
+    "fractions": {"val": 20, "test": 20},
+    "min_quality": 0.5,
+    "blocked_licenses": ["proprietary", "Unknown"]
+  },
+  "datasets": {
+    "intent": {"file": "intent.csv", "pins": {"in-d02": "test"}},
+    "toxicity": {"file": "toxicity.csv", "fractions": {"test": 30}, "pins": {" TOX-D05": "Test"}},
+    "summaries": {"file": "summaries.csv", "min_quality": 0.3}
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "models": "embed-s, embed-l ",
+  "batch_size": 3,
+  "max_concurrency": 2,
+  "max_retries": 2,
+  "backoff_seconds": 0.1,
+  "page_size": 5
+}

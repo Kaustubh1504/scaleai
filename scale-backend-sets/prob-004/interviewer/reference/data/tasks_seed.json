@@ -1,0 +1,19 @@
+{
+  "tasks": [
+    {"id": "rev-001", "data": {"text": "Arrived in two days and works perfectly."}, "labels": ["positive", "negative", "neutral"]},
+    {"id": "rev-002", "data": {"text": "The strap broke after a week."}, "labels": ["positive", "negative", "neutral"]},
+    {"id": "rev-003", "data": {"text": "It is a phone case. It holds the phone."}, "labels": ["positive", "negative", "neutral"]},
+    {"id": "rev-004", "data": {"text": "Great price, terrible battery life."}, "labels": ["positive", "negative", "neutral"]},
+    {"data": {"text": "No id on this one: the service generates it."}, "labels": ["positive", "negative", "neutral"]},
+    {"id": "img-001", "data": {"image_url": "https://cdn.example.com/frames/0001.jpg"}, "labels": ["car", "truck", "bus", "none"]},
+    {"id": "img-002", "data": {"image_url": "https://cdn.example.com/frames/0002.jpg"}, "labels": ["car", "truck", "bus", "none"]},
+    {"id": "img-003", "data": {"image_url": "https://cdn.example.com/frames/0003.jpg"}, "labels": ["car", "truck", "bus", "none"], "priority": "high"},
+    {"id": "rev-002", "data": {"text": "Duplicate of an id earlier in this batch."}, "labels": ["positive", "negative"]},
+    {"id": "rev-005", "data": {"text": "No labels to choose from."}, "labels": []},
+    {"id": "rev-006", "data": "data must be an object, not a string", "labels": ["positive", "negative"]},
+    {"id": "../etc/passwd", "data": {"text": "Id with path characters."}, "labels": ["positive", "negative"]},
+    {"id": "rev-007", "data": {"text": "Repeated label."}, "labels": ["positive", "positive"]},
+    {"id": "rev-008", "labels": ["positive", "negative"]},
+    "not even an object"
+  ]
+}

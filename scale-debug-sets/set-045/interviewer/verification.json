@@ -1,0 +1,50 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_quotes",
+      "test_2_summary"
+    ],
+    "failures": {
+      "tests.test_1_quotes.TestQuotes.test_hits": "AssertionError: Lists differ: ['R02', 'R03', 'R05', 'R06', 'R08', 'R09', 'R14', 'R[41 chars]R25'] != ['R02', 'R06', 'R08', 'R09', 'R16', 'R17', 'R20', 'R[13 chars]R25']\n\nFirst differing element 1:\n'R03'\n'R06'\n\nFirst list contains 4 additional elements.\nFirst extra element 10:\n'R21'\n\n+ ['R02', 'R06', 'R08', 'R09', 'R16', 'R17', 'R20', 'R21', 'R24', 'R25']\n- ['R02',\n-  'R03',\n-  'R05',\n-  'R06',\n-  'R08',\n-  'R09',\n-  'R14',\n-  'R16',\n-  'R18',\n-  'R20',\n-  'R21',\n-  'R23',\n-  'R24',\n-  'R25']",
+      "tests.test_1_quotes.TestQuotes.test_prices": "AssertionError: {'R01[26 chars]: 0.4, 'R04': 2.2, 'R05': 1.98, 'R06': 0.4, 'R[247 chars] 0.6} != {'R01[26 chars]: 0.44, 'R04': 2.2, 'R05': 1.8, 'R06': 0.4, 'R[249 chars] 0.6}\n  {'R01': 0.45,\n   'R02': 0.5,\n-  'R03': 0.4,\n+  'R03': 0.44,\n?            +\n\n   'R04': 2.2,\n-  'R05': 1.98,\n?           -\n\n+  'R05': 1.8,\n   'R06': 0.4,\n   'R07': 0.05,\n   'R08': 0.45,\n   'R09': 0.05,\n   'R10': 1.6,\n   'R11': 0.05,\n   'R12': 0.09,\n   'R13': 0.09,\n-  'R14': 1.6,\n+  'R14': 1.76,\n?           +\n\n   'R15': 0.6,\n-  'R16': 0.54,\n?            -\n\n+  'R16': 0.495,\n?           ++\n\n-  'R17': 2.4,\n?           ^\n\n+  '",
+      "tests.test_2_summary.TestSummary.test_origin_calls": "AssertionError: 12 != 16",
+      "tests.test_2_summary.TestSummary.test_stale_served": "AssertionError: Lists differ: ['R03', 'R05', 'R08', 'R14', 'R16', 'R18', 'R23'] != ['R08', 'R17']\n\nFirst differing element 0:\n'R03'\n'R08'\n\nFirst list contains 5 additional elements.\nFirst extra element 2:\n'R08'\n\n- ['R03', 'R05', 'R08', 'R14', 'R16', 'R18', 'R23']\n+ ['R08', 'R17']",
+      "tests.test_2_summary.TestSummary.test_tenants": "AssertionError: {'acm[23 chars]ts': 4, 'spend': 6.354}, 'globex': {'requests'[81 chars].88}} != {'acm[23 chars]ts': 3, 'spend': 6.129}, 'globex': {'requests'[81 chars].76}}\nDiff is 670 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_quotes",
+      "test_2_summary"
+    ],
+    "failures": {
+      "tests.test_1_quotes.TestQuotes.test_hits": "AssertionError: Lists differ: ['R02', 'R06', 'R08', 'R09', 'R10', 'R16', 'R17', 'R20', 'R21', 'R24', 'R25'] != ['R02', 'R06', 'R08', 'R09', 'R16', 'R17', 'R20', 'R21', 'R24', 'R25']\n\nFirst differing element 4:\n'R10'\n'R16'\n\nFirst list contains 1 additional elements.\nFirst extra element 10:\n'R25'\n\n- ['R02', 'R06', 'R08', 'R09', 'R10', 'R16', 'R17', 'R20', 'R21', 'R24', 'R25']\n?                              -------\n\n+ ['R02', 'R06', 'R08', 'R09', 'R16', 'R17', 'R20', 'R21', 'R24', 'R25']",
+      "tests.test_2_summary.TestSummary.test_origin_calls": "AssertionError: 15 != 16",
+      "tests.test_2_summary.TestSummary.test_tenants": "AssertionError: {'acm[92 chars]': 6.86}, 'initech': {'requests': 7, 'hits': 4, 'spend': 6.76}} != {'acm[92 chars]': 6.86}, 'initech': {'requests': 7, 'hits': 3, 'spend': 6.76}}\n  {'acme': {'hits': 3, 'requests': 9, 'spend': 6.129},\n   'globex': {'hits': 4, 'requests': 10, 'spend': 6.86},\n-  'initech': {'hits': 4, 'requests': 7, 'spend': 6.76}}\n?                      ^\n\n+  'initech': {'hits': 3, 'requests': 7, 'spend': 6.76}}\n?                      ^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_quotes",
+      "test_2_summary"
+    ],
+    "failures": {
+      "tests.test_1_quotes.TestQuotes.test_hits": "AssertionError: Lists differ: ['R02', 'R06', 'R08', 'R09', 'R13', 'R16', 'R17', 'R20', 'R21', 'R24', 'R25'] != ['R02', 'R06', 'R08', 'R09', 'R16', 'R17', 'R20', 'R21', 'R24', 'R25']\n\nFirst differing element 4:\n'R13'\n'R16'\n\nFirst list contains 1 additional elements.\nFirst extra element 10:\n'R25'\n\n- ['R02', 'R06', 'R08', 'R09', 'R13', 'R16', 'R17', 'R20', 'R21', 'R24', 'R25']\n?                              -------\n\n+ ['R02', 'R06', 'R08', 'R09', 'R16', 'R17', 'R20', 'R21', 'R24', 'R25']",
+      "tests.test_2_summary.TestSummary.test_origin_calls": "AssertionError: 15 != 16",
+      "tests.test_2_summary.TestSummary.test_tenants": "AssertionError: {'acm[23 chars]ts': 4, 'spend': 6.129}, 'globex': {'requests'[81 chars].76}} != {'acm[23 chars]ts': 3, 'spend': 6.129}, 'globex': {'requests'[81 chars].76}}\n- {'acme': {'hits': 4, 'requests': 9, 'spend': 6.129},\n?                   ^\n\n+ {'acme': {'hits': 3, 'requests': 9, 'spend': 6.129},\n?                   ^\n\n   'globex': {'hits': 4, 'requests': 10, 'spend': 6.86},\n   'initech': {'hits': 3, 'requests': 7, 'spend': 6.76}}"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_quotes",
+      "test_2_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_quotes.TestQuotes.test_hits",
+      "tests.test_1_quotes.TestQuotes.test_prices",
+      "tests.test_2_summary.TestSummary.test_origin_calls",
+      "tests.test_2_summary.TestSummary.test_stale_served",
+      "tests.test_2_summary.TestSummary.test_tenants"
+    ]
+  }
+}

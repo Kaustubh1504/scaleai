@@ -1,0 +1,193 @@
+{
+  "id": "set-066",
+  "title": "Teleop episode QA: units, sync tolerance, frame gaps",
+  "domain": "robotics_episodes",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "multi",
+  "package": "episodekit",
+  "scenario": "Validate robot-arm teleop episodes (robot in service, both streams present, enough frames, no camera gaps, camera/joint sync within 20 ms) and summarise the accepted ones. The frame-gap unit slip rejects nearly everything and hides the sync-boundary slip.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_streams",
+      "test_2_validity",
+      "test_3_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "episodekit/sync.py",
+      "symbol": "nearest_offset",
+      "why_correct": "bisect_left gives the insertion point, so the nearest sample is either just before or just at it; the slice [i-1:i+1] (clamped at 0) holds exactly those neighbours and also handles t before the first or after the last sample."
+    },
+    {
+      "file": "episodekit/streams.py",
+      "symbol": "to_ms",
+      "why_correct": "round(value * 1000) looks like it could drift on floats such as 12.1, but rounding to the nearest integer absorbs the 1e-12 error, which is exactly the 'convert, then round' rule in the README. Callers already lower-case and trim the unit."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Re-sent camera frames counted twice",
+      "type": "missing-dedupe",
+      "file": "episodekit/streams.py",
+      "function": "load_streams",
+      "old": "        stamps = sorted({to_ms(t, unit) for t in rec[\"t\"]})",
+      "new": "        stamps = sorted(to_ms(t, unit) for t in rec[\"t\"])",
+      "symptom": "Test 1 test_camera_stats: EP-09 shows frames 8 instead of 7 (duration and max gap unchanged). Nothing else fails.",
+      "why": "A generator instead of a set comprehension keeps duplicate timestamps, so the re-sent 3100 ms frame in EP-09 is counted as a second frame (README: a repeated timestamp counts once).",
+      "unblocks": "Test 1 camera stats.",
+      "hints": [
+        "EP-09 has one frame more than expected. Look at its raw timestamps in streams.json.",
+        "Look at how load_streams turns the raw list into timestamps_ms.",
+        "sorted(to_ms(t, unit) for t in ...) keeps duplicates; use a set comprehension: sorted({to_ms(t, unit) for t in rec['t']})."
+      ],
+      "probes": [
+        "Why didn't the duplicate frame change EP-09's max_gap_ms or validity?",
+        "Joint streams go through the same code. What would a duplicate joint sample do to the sync ratio?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Episode robot ids not lower-cased",
+      "type": "id-normalization",
+      "file": "episodekit/loader.py",
+      "function": "load_episodes",
+      "old": "                robot_id=norm_robot(row[\"robot_id\"]),",
+      "new": "                robot_id=clean(row[\"robot_id\"]),",
+      "symptom": "Test 2: EP-03 and EP-13 are rejected as robot_unavailable, so valid shrinks to 6 episodes. Test 3: robot_unavailable 4, valid 6, pick/place 2 each, mean_sync_ratio 0.955, valid_duration_s 3.2.",
+      "why": "The registry keys are lower-cased by norm_robot, but episode robot ids are only trimmed, so 'ARM-03' and 'ARM-09' miss the lookup and the episodes look like they were recorded on unknown robots.",
+      "unblocks": "Test 2 for EP-03 and EP-13.",
+      "hints": [
+        "EP-03 and EP-13 are rejected as robot_unavailable. Are their robots in robots.json?",
+        "Compare how robot ids are normalised in load_robots and load_episodes.",
+        "load_episodes uses clean(row['robot_id']); it should use norm_robot()."
+      ],
+      "probes": [
+        "Why did EP-14 (' arm-10') survive even though its id also needed cleaning?",
+        "Why is it safer to normalise ids in one helper used by both loaders?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Frame period computed in seconds",
+      "type": "ms-vs-s",
+      "file": "episodekit/validity.py",
+      "function": "max_gap_allowed",
+      "old": "    period_ms = 1000 / robot.rate_hz",
+      "new": "    period_ms = 1 / robot.rate_hz",
+      "symptom": "Test 2: no episode is valid; every episode that reaches the gap check (10 of them) is rejected as frame_gap. Test 3: valid 0, empty task/day counts, invalid_reasons frame_gap 10, mean_sync_ratio None, valid_duration_s 0.0.",
+      "why": "1 / rate_hz is the period in seconds (0.1 for 10 Hz), but camera gaps are in milliseconds, so the allowed gap becomes 0.2 ms and every episode that reaches the gap check is rejected as frame_gap.",
+      "unblocks": "Most of Test 2 and Test 3, and it exposes B4.",
+      "hints": [
+        "Every episode that has enough frames is rejected as frame_gap, even ones with perfectly regular 100 ms frames.",
+        "Look at how the allowed gap is derived from rate_hz.",
+        "period_ms = 1 / rate_hz is seconds; use 1000 / robot.rate_hz."
+      ],
+      "probes": [
+        "Why were EP-04, EP-06, EP-10 and EP-12 unaffected?",
+        "Why did the sync-tolerance problem only show up after this fix?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Sync tolerance made exclusive",
+      "type": "time-window-boundary",
+      "file": "episodekit/sync.py",
+      "function": "sync_ratio",
+      "old": "    synced = sum(1 for t in camera if nearest_offset(joints, t) <= SYNC_TOLERANCE_MS)",
+      "new": "    synced = sum(1 for t in camera if nearest_offset(joints, t) < SYNC_TOLERANCE_MS)",
+      "masked_by": [
+        "B3"
+      ],
+      "symptom": "Only visible after B3 is fixed. Test 2: EP-07 is rejected as desync. Test 3: valid 7, desync 2, pick 2, 2026-04-03 count 2, (mean_sync_ratio, valid_duration_s) = (0.962, 3.7).",
+      "why": "The README counts a joint sample exactly 20 ms away as synced. With `<`, EP-07's two 20 ms frames are unsynced, its ratio drops to 0.75 and it is rejected as desync.",
+      "unblocks": "Test 2 (EP-07) and the Test 3 counts.",
+      "hints": [
+        "EP-07 is rejected as desync. Work out the offset of each camera frame to its nearest joint sample.",
+        "Two frames are exactly 20 ms off. Check the comparison in sync_ratio against the README.",
+        "Use nearest_offset(joints, t) <= SYNC_TOLERANCE_MS."
+      ],
+      "probes": [
+        "Why was this invisible while the frame period was in seconds?",
+        "nearest_offset is marked VERIFIED. How did you confirm the problem wasn't there?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Exactly 6 frames treated as too short",
+      "type": "off-by-one",
+      "file": "episodekit/validity.py",
+      "function": "check_episode",
+      "old": "    if stats[\"frames\"] < MIN_FRAMES:",
+      "new": "    if stats[\"frames\"] <= MIN_FRAMES:",
+      "symptom": "Test 2: EP-05 (exactly 6 frames) is rejected as too_short. Test 3: valid 7, too_short 2, stack 1, 2026-04-03 count 2, (0.962, 3.9).",
+      "why": "The spec rejects fewer than 6 frames; `<=` also rejects EP-05, which has exactly 6.",
+      "unblocks": "Test 2 (EP-05) and Test 3 stack/day counts.",
+      "hints": [
+        "EP-05 is rejected as too_short. How many frames does it have?",
+        "Compare the too_short check with README check 3.",
+        "Use stats['frames'] < MIN_FRAMES."
+      ],
+      "probes": [
+        "Which other episode sits near this boundary, and why is it still correctly rejected?",
+        "What single data row would you add to guard this boundary in tests?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Reason counter updated with a string",
+      "type": "counter-misuse",
+      "file": "episodekit/reports.py",
+      "function": "summarize",
+      "old": "            reasons[r.reason] += 1",
+      "new": "            reasons.update(r.reason)",
+      "visible_only_in": [
+        "test_3_report"
+      ],
+      "symptom": "Test 3 test_invalid_reasons only: the dict has single-letter keys ('_': 5, 'a': 9, 'b': 4, ...) instead of reason names.",
+      "why": "Counter.update() iterates its argument, so a reason string is counted letter by letter instead of as one key.",
+      "unblocks": "Test 3 invalid_reasons.",
+      "hints": [
+        "invalid_reasons has single-letter keys. Where could letters come from?",
+        "Look at how summarize adds each invalid episode's reason to the Counter.",
+        "reasons.update(r.reason) counts characters; use reasons[r.reason] += 1."
+      ],
+      "probes": [
+        "What would reasons.update([r.reason]) have done?",
+        "Why did Tests 1 and 2 never notice this?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() do, step by step?",
+      "a": "It loads the robot registry (load_robots), the de-duplicated episodes (load_episodes) and the camera/joints streams keyed by (episode_id, sensor) (load_streams). Then it runs validity.check_episode on every episode and passes the results to summarize. camera and joint_samples are built straight from the streams."
+    },
+    {
+      "q": "How does check_episode decide the reason?",
+      "a": "It looks up the robot and both streams, computes camera_stats, then returns at the first failing check in this order: robot_unavailable, missing_stream, too_short (frame count vs MIN_FRAMES = 6), frame_gap (max_gap_ms vs max_gap_allowed(robot)), desync (sync_ratio vs MIN_SYNC_RATIO = 0.8). The sync ratio is only computed for episodes that reach the last check."
+    },
+    {
+      "q": "What does nearest_offset return?",
+      "a": "The absolute difference in milliseconds between t and the closest timestamp in the sorted list. It uses bisect_left and compares the samples at positions i-1 and i."
+    },
+    {
+      "q": "How are stream units handled?",
+      "a": "load_streams trims and lower-cases `unit` (blank becomes 'ms') and calls to_ms on every value, which multiplies 's' values by 1000 and rounds everything to an int. Streams for sensors other than camera and joints are skipped."
+    },
+    {
+      "q": "Which episode row wins when an id appears twice in episodes.csv?",
+      "a": "load_episodes builds a dict keyed by episode_id from the rows in file order, so a later row overwrites an earlier one, while the dict keeps the position where the id first appeared. EP-02 appears twice; the second row has task 'place'."
+    },
+    {
+      "q": "What is in the summary and where does it come from?",
+      "a": "reports.summarize gets the list of EpisodeResult objects. It counts valid results by task and by recorded_at date, collects reasons of invalid results into a Counter, averages sync_ratio over valid results and sums their duration_ms."
+    },
+    {
+      "q": "What frame rate does each robot have?",
+      "a": "robots.json gives rate_hz: 10 Hz for most arms, 20 Hz for arm-03, 15 Hz for arm-06, 25 Hz for arm-10 and 30 Hz for arm-08. arm-04 and arm-08 are inactive, and arm-11 is not in the registry."
+    }
+  ]
+}

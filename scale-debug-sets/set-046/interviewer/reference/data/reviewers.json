@@ -1,0 +1,12 @@
+[
+  {"id": "r-01", "languages": ["en"], "capacity": 2, "active": true},
+  {"id": "r-02", "languages": ["en"], "capacity": 3, "active": false},
+  {"id": "R-03", "languages": "en", "capacity": 1},
+  {"id": "r-04", "languages": ["ja"], "capacity": 2, "active": true},
+  {"id": "R-05", "languages": ["de"], "capacity": "3", "active": true},
+  {"id": " r-06", "languages": "en, ", "capacity": "", "active": true},
+  {"id": "r-07", "languages": ["DE"], "capacity": 0, "active": true},
+  {"id": "r-08", "languages": ["es"], "capacity": 2, "active": false},
+  {"id": "r-09", "languages": "fr", "capacity": 1, "active": true},
+  {"id": "r-10", "languages": ["es"], "active": true}
+]

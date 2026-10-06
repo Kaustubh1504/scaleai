@@ -1,0 +1,186 @@
+{
+  "id": "set-068",
+  "title": "Async embedding backfill: concurrency cap, retries, index matching",
+  "domain": "endpoint_client",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "embedclient",
+  "scenario": "An asyncio client batches documents to a mock embeddings endpoint behind a semaphore, retries transient errors with Retry-After/backoff, matches response items by index, and summarises norms and token usage.",
+  "verified": [
+    {
+      "file": "embedclient/retry.py",
+      "symbol": "retry_delay",
+      "why_correct": "Header names are lower-cased before the lookup, so 'Retry-After' is found whatever the case; float() accepts the fractional '0.3'; and backoff_s * 2 ** attempt with attempt starting at 0 is exactly the README formula (0.05, then 0.1)."
+    },
+    {
+      "file": "embedclient/transport.py",
+      "symbol": "send_sync",
+      "why_correct": "urlopen raises HTTPError for 4xx/5xx; catching it and returning a Response with err.code keeps the status for the retry logic instead of turning it into an exception."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "datetime serialised with str()",
+      "type": "json-serialization",
+      "file": "embedclient/payloads.py",
+      "function": "_encode_value",
+      "test": "test_1_requests.TestRequests.test_request_body",
+      "old": "        return value.isoformat()",
+      "new": "        return str(value)",
+      "symptom": "Test 1 test_request_body: metadata.newest_update is '2026-04-03 08:15:00' instead of '2026-04-03T08:15:00'. Everything else in the body matches.",
+      "why": "str(datetime) uses a space between date and time ('2026-04-03 08:15:00'), not the ISO 8601 'T' form the README requires for newest_update.",
+      "unblocks": "test_request_body.",
+      "hints": [
+        "Compare the newest_update the server received with the README example character by character.",
+        "json.dumps can't encode datetime itself. Look at the `default` hook passed in encode_body.",
+        "_encode_value returns str(value); return value.isoformat()."
+      ],
+      "probes": [
+        "Why does json.dumps need a default hook at all here?",
+        "What would happen if newest_update were a date instead of a datetime?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Fresh semaphore per batch",
+      "type": "semaphore-unused",
+      "file": "embedclient/client.py",
+      "function": "EmbeddingClient.embed_batch",
+      "test": "test_1_requests.TestRequests.test_concurrency_limit",
+      "old": "        async with self._limit:",
+      "new": "        async with asyncio.Semaphore(self.config.max_concurrency):",
+      "symptom": "Test 1 test_concurrency_limit: '7 not less than or equal to 2'. The server saw all 7 batches in flight at once. All results are unchanged.",
+      "why": "Each call builds its own semaphore, so every batch acquires a private one immediately. The shared self._limit is created but never used, and all 7 batches hit the server at once.",
+      "unblocks": "test_concurrency_limit.",
+      "hints": [
+        "The server saw more than 2 requests at the same time. What is supposed to cap that?",
+        "Find where a semaphore is acquired in client.py, and which semaphore it is.",
+        "Use the shared `async with self._limit:` created in __init__."
+      ],
+      "probes": [
+        "Why didn't any result change when the cap was missing?",
+        "Why must the semaphore wrap the whole retry loop, not just one attempt?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Retry loop one attempt short",
+      "type": "retry-off-by-one",
+      "file": "embedclient/retry.py",
+      "function": "send_with_retries",
+      "test": "test_2_retries.TestRetries.test_attempts_per_batch",
+      "old": "    for attempt in range(max_retries + 1):",
+      "new": "    for attempt in range(max_retries):",
+      "symptom": "Test 2 test_attempts_per_batch: b04 gets 2 attempts (server-side and reported) instead of 3. Its final status is still failed/503.",
+      "why": "max_retries counts retries, so there are max_retries + 1 attempts. range(max_retries) stops after 2 attempts for b04, which always returns 503.",
+      "unblocks": "test_attempts_per_batch.",
+      "hints": [
+        "b04 always gets 503. How many times should it be tried with max_retries = 2?",
+        "Look at the loop bounds in send_with_retries.",
+        "Loop over range(max_retries + 1)."
+      ],
+      "probes": [
+        "Why did b02 and b06 still succeed with one attempt fewer?",
+        "With the short loop, what does the last iteration do after b04's final 503?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Backoff sleep not awaited",
+      "type": "missing-await",
+      "file": "embedclient/retry.py",
+      "function": "send_with_retries",
+      "test": "test_2_retries.TestRetries.test_retry_after_respected",
+      "old": "        await asyncio.sleep(retry_delay(response, attempt, backoff_s))",
+      "new": "        asyncio.sleep(retry_delay(response, attempt, backoff_s))",
+      "symptom": "Test 2 test_retry_after_respected: the two b02 requests are about 0.09 s apart ('0.09 not greater than or equal to 0.3'). A 'coroutine ... was never awaited' RuntimeWarning is printed.",
+      "why": "Calling asyncio.sleep() without await only creates a coroutine object, which is thrown away; nothing waits, so b02 is retried right after the 429 despite Retry-After: 0.3. Python logs 'coroutine ... was never awaited'.",
+      "unblocks": "test_retry_after_respected.",
+      "hints": [
+        "The two b02 requests are less than 0.3 s apart. Did the client wait at all?",
+        "Run the tests and read the warnings. Then look at the sleep in send_with_retries.",
+        "Write `await asyncio.sleep(...)`."
+      ],
+      "probes": [
+        "Why didn't the missing wait change the number of attempts or the final status?",
+        "Why is time.sleep() the wrong fix inside a coroutine?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Embeddings matched by position",
+      "type": "wrong-field",
+      "file": "embedclient/client.py",
+      "function": "EmbeddingClient._outcome",
+      "test": "test_3_report.TestReport.test_doc_norms",
+      "old": "        for item in response.body[\"data\"]:\n            doc = batch[\"docs\"][item[\"index\"]]",
+      "new": "        for doc, item in zip(batch[\"docs\"], response.body[\"data\"]):",
+      "symptom": "Test 3 test_doc_norms: sup-01 shows 10.77 and sup-04 shows 6.403 (swapped). sup-03 and every other document are correct.",
+      "why": "zip pairs documents with items by position, but the README says items can arrive in any order and must be matched by their `index` field. b03's items come back reversed, so sup-01 and sup-04 swap vectors.",
+      "unblocks": "test_doc_norms.",
+      "hints": [
+        "sup-01 and sup-04 have each other's norms. What is special about batch b03?",
+        "Look at how _outcome assigns each response item to a document.",
+        "Use doc = batch['docs'][item['index']] instead of zipping by position."
+      ],
+      "probes": [
+        "Why did sup-03 come out right anyway?",
+        "Why didn't the summary change?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "tokens_per_doc floor-divided",
+      "type": "integer-division",
+      "file": "embedclient/reports.py",
+      "function": "summarize",
+      "test": "test_3_report.TestReport.test_summary",
+      "old": "        \"tokens_per_doc\": round(total_tokens / len(embedded), 2) if embedded else None,",
+      "new": "        \"tokens_per_doc\": round(total_tokens // len(embedded), 2) if embedded else None,",
+      "symptom": "Test 3 test_summary: tokens_per_doc is 6 instead of 6.93. The other summary fields match.",
+      "why": "// is floor division, so 104 / 15 = 6.93 becomes 6 before rounding.",
+      "unblocks": "test_summary.",
+      "hints": [
+        "tokens_per_doc is a whole number. Should it be?",
+        "Look at how summarize computes it.",
+        "Use / instead of //."
+      ],
+      "probes": [
+        "Why does round(\u2026, 2) not save you here?",
+        "Which input would make the two versions agree?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What happens inside build_report()?",
+      "a": "It runs run_backfill with asyncio.run: load_config, load_documents, make_batches, then EmbeddingClient.embed_all, which gathers embed_batch for every batch. The outcomes are turned into the batches and docs dicts, and summarize builds the summary."
+    },
+    {
+      "q": "How does a request reach the server?",
+      "a": "embed_batch encodes the body with payloads.encode_body (json.dumps with a default hook for datetimes), then calls send_with_retries with a lambda that awaits transport.post. post runs the blocking send_sync in a worker thread via asyncio.to_thread."
+    },
+    {
+      "q": "What does send_with_retries return?",
+      "a": "A tuple (last Response, number of attempts). It stops at the first status outside TRANSIENT, or when the attempt counter reaches max_retries, and sleeps for retry_delay(...) between attempts."
+    },
+    {
+      "q": "What does the mock server do for each batch id?",
+      "a": "SCRIPT in tests/mock_server.py: b01/b07 succeed, b02 gets 429 with Retry-After 0.3 and then 200, b03 succeeds with its data items reversed, b04 always returns 503, b05 returns 400, b06 returns 500 and then 200. Every request takes about 0.08 s and the server tracks max_in_flight."
+    },
+    {
+      "q": "Where is the concurrency limit set up?",
+      "a": "EmbeddingClient.__init__ creates self._limit = asyncio.Semaphore(config.max_concurrency); config.json sets max_concurrency to 2. embed_batch acquires a semaphore around the call to send_with_retries."
+    },
+    {
+      "q": "How is a document's norm computed?",
+      "a": "client.vector_norm takes the square root of the sum of squared components and rounds to 3 decimals. build_report applies it to the vector stored for each doc id in the outcome's `vectors` dict."
+    },
+    {
+      "q": "Where does tokens_per_doc come from?",
+      "a": "summarize adds up outcome['tokens'] (usage.total_tokens for ok batches, 0 for failed ones) and divides by the number of embedded documents, rounded to 2 decimals."
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_examples",
+      "test_2_summary"
+    ],
+    "failures": {
+      "tests.test_1_examples.TestExamples.test_example_tags": "AssertionError: {'c01[20 chars]': [''], 'c03': ['shipping', 'returns'], 'c05'[77 chars]ng']} != {'c01[20 chars]': ['general'], 'c03': ['shipping', 'returns'][87 chars]ng']}\n  {'c01': ['billing'],\n-  'c02': [''],\n+  'c02': ['general'],\n?           +++++++\n\n   'c03': ['shipping', 'returns'],\n   'c05': ['returns'],\n-  'c08': ['coding', 'billing', ''],\n?                             ----\n\n+  'c08': ['coding', 'billing'],\n-  'c09': [''],\n+  'c09': ['general'],\n?           +++++++\n\n   'c10': ['shipping']}",
+      "tests.test_2_summary.TestSummary.test_tag_counts": "AssertionError: {'': 3, 'billing': 2, 'coding': 1, 'returns': 2, 'shipping': 2} != {'billing': 2, 'coding': 1, 'general': 2, 'returns': 2, 'shipping': 2}\n- {'': 3, 'billing': 2, 'coding': 1, 'returns': 2, 'shipping': 2}\n?  -------\n\n+ {'billing': 2, 'coding': 1, 'general': 2, 'returns': 2, 'shipping': 2}\n?                            ++++++++++++++\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_examples",
+      "test_2_summary"
+    ],
+    "failures": {
+      "tests.test_1_examples.TestExamples.test_example_ids": "AssertionError: Lists differ: ['c01', 'c02', 'c03', 'c05', 'c07', 'c08', 'c09', 'c10'] != ['c01', 'c02', 'c03', 'c05', 'c08', 'c09', 'c10']\n\nFirst differing element 4:\n'c07'\n'c08'\n\nFirst list contains 1 additional elements.\nFirst extra element 7:\n'c10'\n\n- ['c01', 'c02', 'c03', 'c05', 'c07', 'c08', 'c09', 'c10']\n?                              -------\n\n+ ['c01', 'c02', 'c03', 'c05', 'c08', 'c09', 'c10']",
+      "tests.test_1_examples.TestExamples.test_example_tags": "AssertionError: {'c01[86 chars], 'c07': ['coding'], 'c08': ['coding', 'billin[40 chars]ng']} != {'c01[86 chars], 'c08': ['coding', 'billing'], 'c09': ['gener[21 chars]ng']}\n  {'c01': ['billing'],\n   'c02': ['general'],\n   'c03': ['shipping', 'returns'],\n   'c05': ['returns'],\n-  'c07': ['coding'],\n   'c08': ['coding', 'billing'],\n   'c09': ['general'],\n   'c10': ['shipping']}",
+      "tests.test_1_examples.TestExamples.test_token_counts": "AssertionError: {'c01[20 chars]03': 86, 'c05': 33, 'c07': 69, 'c08': 54, 'c09': 35, 'c10': 73} != {'c01[20 chars]03': 59, 'c05': 33, 'c08': 54, 'c09': 35, 'c10': 47}\n+ {'c01': 33, 'c02': 34, 'c03': 59, 'c05': 33, 'c08': 54, 'c09': 35, 'c10': 47}\n- {'c01': 33,\n-  'c02': 34,\n-  'c03': 86,\n-  'c05': 33,\n-  'c07': 69,\n-  'c08': 54,\n-  'c09': 35,\n-  'c10': 73}",
+      "tests.test_1_examples.TestExamples.test_truncated_examples": "AssertionError: 0 != 2",
+      "tests.test_2_summary.TestSummary.test_example_count": "AssertionError: 8 != 7",
+      "tests.test_2_summary.TestSummary.test_rejections": "AssertionError: {'c04': 'excluded', 'c06': 'no_pair', 'c11': 'excluded'} != {'c04': 'excluded', 'c06': 'no_pair', 'c07': 'too_long', 'c11': 'excluded'}\n- {'c04': 'excluded', 'c06': 'no_pair', 'c11': 'excluded'}\n+ {'c04': 'excluded', 'c06': 'no_pair', 'c07': 'too_long', 'c11': 'excluded'}\n?                                       +++++++++++++++++++\n",
+      "tests.test_2_summary.TestSummary.test_tag_counts": "AssertionError: {'billing': 2, 'coding': 2, 'general': 2, 'returns': 2, 'shipping': 2} != {'billing': 2, 'coding': 1, 'general': 2, 'returns': 2, 'shipping': 2}\n- {'billing': 2, 'coding': 2, 'general': 2, 'returns': 2, 'shipping': 2}\n?                          ^\n\n+ {'billing': 2, 'coding': 1, 'general': 2, 'returns': 2, 'shipping': 2}\n?                          ^\n",
+      "tests.test_2_summary.TestSummary.test_total_tokens": "AssertionError: 417 != 295"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_examples",
+      "test_2_summary"
+    ],
+    "failures": {
+      "tests.test_1_examples.TestExamples.test_token_counts": "AssertionError: {'c01': 33, 'c02': 34, 'c03': 59, 'c05': 33, 'c08': 54, 'c09': 35, 'c10': 55} != {'c01': 33, 'c02': 34, 'c03': 59, 'c05': 33, 'c08': 54, 'c09': 35, 'c10': 47}\n- {'c01': 33, 'c02': 34, 'c03': 59, 'c05': 33, 'c08': 54, 'c09': 35, 'c10': 55}\n?                                                                           ^^\n\n+ {'c01': 33, 'c02': 34, 'c03': 59, 'c05': 33, 'c08': 54, 'c09': 35, 'c10': 47}\n?                                                                           ^^\n",
+      "tests.test_1_examples.TestExamples.test_truncated_examples": "AssertionError: 4 != 2",
+      "tests.test_2_summary.TestSummary.test_total_tokens": "AssertionError: 303 != 295"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_examples",
+      "test_2_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_examples.TestExamples.test_example_ids",
+      "tests.test_1_examples.TestExamples.test_example_tags",
+      "tests.test_1_examples.TestExamples.test_token_counts",
+      "tests.test_1_examples.TestExamples.test_truncated_examples",
+      "tests.test_2_summary.TestSummary.test_example_count",
+      "tests.test_2_summary.TestSummary.test_rejections",
+      "tests.test_2_summary.TestSummary.test_tag_counts",
+      "tests.test_2_summary.TestSummary.test_total_tokens"
+    ]
+  }
+}

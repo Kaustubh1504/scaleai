@@ -1,0 +1,18 @@
+{
+  "default_threshold": 0.8,
+  "legacy_models": ["Guard-v1"],
+  "labels": [
+    {"label": "self_harm", "severity": 5, "threshold": null, "sensitive": true},
+    {"label": "violent_threat", "severity": 5, "threshold": 0.95},
+    {"label": "hate_speech", "severity": 4, "threshold": 0.9},
+    {"label": "harassment", "severity": 4, "threshold": 0.85},
+    {"label": "graphic_violence", "severity": 3, "threshold": 0.9},
+    {"label": "adult", "severity": 3, "threshold": null},
+    {"label": "misinformation", "severity": 3, "threshold": 0.9, "sensitive": true},
+    {"label": "spam", "severity": 2, "threshold": 0.75},
+    {"label": "low_quality", "severity": 2, "threshold": 0.6},
+    {"label": "promo", "severity": 1, "threshold": 0.0},
+    {"label": "off_topic", "severity": 1, "threshold": 0.5},
+    {"label": " Clean", "severity": 1, "threshold": 0.7}
+  ]
+}

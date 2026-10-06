@@ -1,0 +1,5 @@
+{
+  "pinned_test_docs": "doc-09",
+  "exclude_tags": "pii; minor",
+  "val_cap_per_label": 2
+}

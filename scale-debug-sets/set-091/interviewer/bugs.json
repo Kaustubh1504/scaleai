@@ -1,0 +1,116 @@
+{
+  "id": "set-091",
+  "title": "Workshop seat holds: hold window, tier priority, seats left",
+  "domain": "seat_reservation",
+  "length": "MINI",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "seatbook",
+  "scenario": "Settle a day of seat holds: a hold is live if confirmed within 15 minutes (inclusive), live holds are booked per session by tier (gold 3 > silver 2 > standard 1, higher wins) then time, and what doesn't fit is waitlisted. Test 2 reports seats left, fill rate and top member.",
+  "verified": [
+    {
+      "file": "seatbook/allocation.py",
+      "symbol": "priority_key",
+      "why_correct": "The minus on the rank looks like a flipped priority, but sorting ascending on -rank puts the highest rank (gold, 3) first, which is what the spec wants because the higher number is more important. Then earliest placed_at, then hold_id."
+    },
+    {
+      "file": "seatbook/loader.py",
+      "symbol": "parse_when",
+      "why_correct": "The `%d.%m.%Y` format looks like a day/month swap, but the README says the dotted format is day.month.year. It covers exactly the three listed formats and returns None for a blank cell."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "members.csv read without stripping the BOM",
+      "type": "csv-bom-encoding",
+      "file": "seatbook/loader.py",
+      "function": "read_rows",
+      "test": "test_1_allocation.TestAllocation.test_contested_sessions_follow_tier",
+      "old": "    with open(path, newline=\"\", encoding=\"utf-8-sig\") as fh:",
+      "new": "    with open(path, newline=\"\", encoding=\"utf-8\") as fh:",
+      "symptom": "Test 1 test_contested_sessions_follow_tier: A2 books H04+H05 and waitlists gold member m-07's H06; C2 books H16 and waitlists gold member m-12's H15. Seat totals are unchanged, so nothing else fails.",
+      "why": "With plain utf-8 the BOM stays glued to the first header, so the column is named '\\ufefftier'. row.get(\"tier\") returns None for every member, everyone falls back to standard, and contested sessions are ordered by time only.",
+      "unblocks": "test_contested_sessions_follow_tier.",
+      "hints": [
+        "In A2, gold member m-07 lost out to two standard members. What tier does the code think m-07 has?",
+        "Print the keys of one row read from members.csv. The README mentions something special about that file.",
+        "read_rows opens with encoding=\"utf-8\"; it needs \"utf-8-sig\" so the byte-order mark is dropped from the first header."
+      ],
+      "probes": [
+        "Why did sessions.csv and holds.csv load fine through the same helper?",
+        "Why did the code not crash, even though the tier column could not be found? Would row[\"tier\"] have been better here?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Confirmation at exactly 15 minutes treated as late",
+      "type": "time-window-boundary",
+      "file": "seatbook/holds.py",
+      "function": "is_confirmed",
+      "test": "test_1_allocation.TestAllocation.test_expired_holds",
+      "old": "    return hold.confirmed_at <= deadline",
+      "new": "    return hold.confirmed_at < deadline",
+      "symptom": "Test 1 test_expired_holds: H08 appears in the expired list (['H03', 'H08', 'H10', 'H17', 'H23']). B1's booked seats don't change because H08 was going to be waitlisted anyway.",
+      "why": "The spec says a confirmation at exactly 15 minutes is still in time. `<` makes the deadline itself exclusive, so H08 (placed 10:01, confirmed 10:16:00) expires.",
+      "unblocks": "test_expired_holds.",
+      "hints": [
+        "Compare H08 and H10 in holds.csv. How long after placing was each one confirmed?",
+        "Look at the comparison against the deadline in holds.py, next to README rule 1.",
+        "is_confirmed uses `<`; it should be `hold.confirmed_at <= deadline`."
+      ],
+      "probes": [
+        "Why didn't B1's booked list or seats_left change when H08 expired?",
+        "The H08 timestamps are in two different formats. Did that matter here, and how would you rule it out?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Counter subtraction drops sold-out sessions",
+      "type": "counter-misuse",
+      "file": "seatbook/reports.py",
+      "function": "summarize",
+      "test": "test_2_report.TestSummary.test_seats_left",
+      "old": "    seats_left = {sid: capacity[sid] - booked[sid] for sid in sorted(capacity)}",
+      "new": "    seats_left = dict(sorted((capacity - booked).items()))",
+      "symptom": "Test 2 test_seats_left: seats_left only lists A1, C2, D1, E1, E2. Every session with 0 seats left (A2, B1, B2, C1, D2) is missing.",
+      "why": "Counter subtraction keeps only positive results, so every session with 0 seats left (sold out or closed) disappears from seats_left. The spec wants every session listed.",
+      "unblocks": "test_seats_left.",
+      "hints": [
+        "Which sessions are missing from seats_left, and what do they have in common?",
+        "Look at how seats_left is built from the two Counters in reports.py.",
+        "`capacity - booked` drops counts <= 0. Build it per session: {sid: capacity[sid] - booked[sid] for sid in sorted(capacity)}."
+      ],
+      "probes": [
+        "What would `capacity - booked` do if a session were overbooked (negative seats left)?",
+        "Why do total_booked and fill_rate still come out right?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() do, step by step?",
+      "a": "It loads sessions, members and holds from data/, splits the holds into live and expired with `holds.split_holds`, runs `allocation.allocate` on the live holds, and then builds the per-session lists, the expired list and the summary from `reports.summarize`."
+    },
+    {
+      "q": "Which holds does load_holds drop, and does it log them?",
+      "a": "It skips any row whose `seats` is blank, whose cleaned session id is not in `sessions`, or whose cleaned member id is not in `members`. Nothing is logged; the rows simply never become Hold objects."
+    },
+    {
+      "q": "How does load_members read the tier column?",
+      "a": "It calls `clean(row.get(\"tier\")).lower()` and falls back to `\"standard\"` when that is empty. `clean` turns None into an empty string, so a missing key and a blank cell behave the same way."
+    },
+    {
+      "q": "What does read_rows return?",
+      "a": "A list of dicts from `csv.DictReader`, one per data row, keyed by the header names exactly as they appear in the file after decoding."
+    },
+    {
+      "q": "In allocate(), what happens when a hold does not fit?",
+      "a": "It is appended to the session's `waitlist` and the loop moves on to the next hold in priority order, so a later, smaller hold can still be booked."
+    },
+    {
+      "q": "How is top_member chosen?",
+      "a": "`per_member` sums booked seats per member over all sessions, and `min` with key `(-seats, member_id)` picks the largest total, with ties going to the lowest member id."
+    }
+  ]
+}

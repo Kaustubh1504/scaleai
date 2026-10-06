@@ -1,0 +1,22 @@
+doc_id,title,text
+D01,Labeling basics,Label every visible object in the frame
+d02,Occlusion,Partially hidden objects still get a box
+D03 ,Truncation,Objects cut off by the image edge are truncated
+D04,Small objects,Skip objects smaller than ten pixels
+D05,Night scenes,Use the brightness slider before labeling
+D06,Draft,
+D07,Reflections,Do not label reflections in mirrors or windows
+D08,Crowds,Label each person in a crowd separately
+D09,Vehicles,Trailers attached to trucks are one vehicle
+D10,Signs,Read the sign text and copy it exactly
+d03,Truncation (old),This older copy of the truncation rule is ignored
+D11,Animals,Pets on leashes belong to the animal class
+D12,Weather,Rain streaks are not objects
+D13,Blur,Motion blur does not change the box size
+D14,Groups,Use a group box only when instructed
+D15,Shadows,Shadows are never part of the box
+D16,Text overlays,Ignore watermarks and timestamps burned into video
+D17,Duplicates,Flag duplicate frames instead of labeling twice
+D18,Ambiguity,When unsure choose the more general class
+D19,Review,Reviewers may edit any box
+D20,Escalation,Escalate frames with sensitive content

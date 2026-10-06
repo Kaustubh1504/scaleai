@@ -1,0 +1,14 @@
+[
+  {"id": "a01", "tier": "expert", "active": true, "queues": ""},
+  {"id": "A02", "tier": "Expert", "active": "yes", "queues": "tox;quality"},
+  {"id": "a03", "tier": "standard", "active": true, "queues": "tox; spam;quality"},
+  {"id": "a04", "tier": "standard", "active": 1, "queues": ""},
+  {"id": "a05", "tier": "trainee", "active": true, "queues": "spam"},
+  {"id": "a06", "tier": "standard", "active": "no", "queues": "tox"},
+  {"id": "a07", "tier": "TRAINEE", "active": true, "queues": "quality"},
+  {"id": " a08", "tier": "expert", "active": "true", "queues": "spam;Quality"},
+  {"id": "a09", "tier": "standard", "active": true, "queues": "tox"},
+  {"id": "a10", "tier": "trainee", "active": "y", "queues": " "},
+  {"id": "a11", "tier": "standard", "active": "Yes", "queues": "quality"},
+  {"id": "a12", "tier": "expert", "active": false, "queues": ""}
+]

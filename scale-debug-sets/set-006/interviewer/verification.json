@@ -1,0 +1,92 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_lifecycle"
+    ],
+    "failures": {
+      "tests.test_1_lifecycle.TestLifecycle.test_transition_counts": "AssertionError: {'T01': 34, 'T02': 34, 'T03': 34, 'T04': 34, 'T05'[77 chars]: 34} != {'T01': 3, 'T02': 6, 'T03': 3, 'T04': 9, 'T05': 2,[65 chars]': 0}\n- {'T01': 34,\n?          -\n\n+ {'T01': 3,\n-  'T02': 34,\n?         ^^\n\n+  'T02': 6,\n?         ^\n\n-  'T03': 34,\n?          -\n\n+  'T03': 3,\n-  'T04': 34,\n?         ^^\n\n+  'T04': 9,\n?         ^\n\n-  'T05': 34,\n?         ^^\n\n+  'T05': 2,\n?         ^\n\n-  'T06': 34,\n?         ^^\n\n+  'T06': 1,\n?         ^\n\n-  'T07': 34,\n?         ^^\n\n+  'T07': 2,\n?         ^\n\n-  'T08': 34,\n?          -\n\n+  'T08': 3,\n-  'T09': 34,\n?         ^^\n\n+  'T09': 0,\n?         ^\n\n- "
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_lifecycle",
+      "test_2_people",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_1_lifecycle.TestLifecycle.test_final_states": "AssertionError: {'T01[76 chars]5': 'claimed', 'T06': 'claimed', 'T07': 'queue[90 chars]ued'} != {'T01[76 chars]5': 'submitted', 'T06': 'claimed', 'T07': 'que[92 chars]ued'}\n  {'T01': 'approved',\n   'T02': 'approved',\n   'T03': 'approved',\n   'T04': 'escalated',\n-  'T05': 'claimed',\n+  'T05': 'submitted',\n   'T06': 'claimed',\n   'T07': 'queued',\n   'T08': 'approved',\n   'T09': 'queued',\n   'T10': 'submitted',\n   'T11': 'approved',\n   'T12': 'queued'}",
+      "tests.test_1_lifecycle.TestLifecycle.test_invalid_events": "AssertionError: Lists differ: ['E12', 'E11', 'E17', 'E33', 'E36', 'E40', 'E38'] != ['E11', 'E17', 'E33', 'E36', 'E40', 'E38']\n\nFirst differing element 0:\n'E12'\n'E11'\n\nFirst list contains 1 additional elements.\nFirst extra element 6:\n'E38'\n\n- ['E12', 'E11', 'E17', 'E33', 'E36', 'E40', 'E38']\n?  -------\n\n+ ['E11', 'E17', 'E33', 'E36', 'E40', 'E38']",
+      "tests.test_1_lifecycle.TestLifecycle.test_transition_counts": "AssertionError: {'T01[38 chars]05': 1, 'T06': 1, 'T07': 2, 'T08': 3, 'T09': 0[26 chars]': 0} != {'T01[38 chars]05': 2, 'T06': 1, 'T07': 2, 'T08': 3, 'T09': 0[26 chars]': 0}\n  {'T01': 3,\n   'T02': 6,\n   'T03': 3,\n   'T04': 9,\n-  'T05': 1,\n?         ^\n\n+  'T05': 2,\n?         ^\n\n   'T06': 1,\n   'T07': 2,\n   'T08': 3,\n   'T09': 0,\n   'T10': 2,\n   'T11': 3,\n   'T12': 0}",
+      "tests.test_2_people.TestPeople.test_annotator_submissions": "AssertionError: {'ann-01': 4, 'ann-02': 3, 'ann-03': 3, 'ann-05': 0} != {'ann-01': 4, 'ann-02': 4, 'ann-03': 3, 'ann-05': 0}\n- {'ann-01': 4, 'ann-02': 3, 'ann-03': 3, 'ann-05': 0}\n?                         ^\n\n+ {'ann-01': 4, 'ann-02': 4, 'ann-03': 3, 'ann-05': 0}\n?                         ^\n",
+      "tests.test_3_summary.TestSummary.test_state_counts": "AssertionError: {'queued': 3, 'claimed': 2, 'submitted': 1, 'approved': 5, 'escalated': 1} != {'queued': 3, 'claimed': 1, 'submitted': 2, 'approved': 5, 'escalated': 1}\n- {'approved': 5, 'claimed': 2, 'escalated': 1, 'queued': 3, 'submitted': 1}\n?                            ^                                            ^\n\n+ {'approved': 5, 'claimed': 1, 'escalated': 1, 'queued': 3, 'submitted': 2}\n?                            ^                                            ^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_lifecycle",
+      "test_2_people",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_1_lifecycle.TestLifecycle.test_final_states": "AssertionError: {'T01': 'submitted', 'T02': 'submitted', 'T03': 's[174 chars]ued'} != {'T01': 'approved', 'T02': 'approved', 'T03': 'app[169 chars]ued'}\n- {'T01': 'submitted',\n-  'T02': 'submitted',\n-  'T03': 'submitted',\n+ {'T01': 'approved',\n+  'T02': 'approved',\n+  'T03': 'approved',\n-  'T04': 'submitted',\n?           ^^^^^\n\n+  'T04': 'escalated',\n?          + ^^^^\n\n   'T05': 'submitted',\n   'T06': 'claimed',\n   'T07': 'queued',\n-  'T08': 'submitted',\n+  'T08': 'approved',\n   'T09': 'queued',\n   'T10': 'submitted',\n-  'T11': 'submitted',\n+  'T11': 'approved',\n   'T12': 'queued'}",
+      "tests.test_1_lifecycle.TestLifecycle.test_invalid_events": "AssertionError: Lists differ: ['E5', 'E6', 'E14', 'E11', 'E13', 'E16', 'E1[96 chars]E39'] != ['E11', 'E17', 'E33', 'E36', 'E40', 'E38']\n\nFirst differing element 0:\n'E5'\n'E11'\n\nFirst list contains 15 additional elements.\nFirst extra element 6:\n'E17'\n\n+ ['E11', 'E17', 'E33', 'E36', 'E40', 'E38']\n- ['E5',\n-  'E6',\n-  'E14',\n-  'E11',\n-  'E13',\n-  'E16',\n-  'E17',\n-  'E21',\n-  'E23',\n-  'E22',\n-  'E24',\n-  'E25',\n-  'E31',\n-  'E30',\n-  'E32',\n-  'E33',\n-  'E36',\n-  'E34',\n-  'E40',\n-  'E38',\n-  'E39']",
+      "tests.test_1_lifecycle.TestLifecycle.test_rework_and_assignees": "AssertionError: {'T02': (0, 'ann-02'), 'T04': (0, 'ann-01'), 'T05'[51 chars]one)} != {'T02': (1, 'ann-02'), 'T04': (3, None), 'T05': (0[47 chars]one)}\n- {'T02': (0, 'ann-02'),\n?          ^\n\n+ {'T02': (1, 'ann-02'),\n?          ^\n\n-  'T04': (0, 'ann-01'),\n+  'T04': (3, None),\n   'T05': (0, 'ann-02'),\n   'T06': (0, 'ann-05'),\n   'T07': (0, None)}",
+      "tests.test_1_lifecycle.TestLifecycle.test_transition_counts": "AssertionError: {'T01': 2, 'T02': 2, 'T03': 2, 'T04': 2, 'T05': 2[66 chars]': 0} != {'T01': 3, 'T02': 6, 'T03': 3, 'T04': 9, 'T05': 2[66 chars]': 0}\n- {'T01': 2,\n?         ^\n\n+ {'T01': 3,\n?         ^\n\n-  'T02': 2,\n?         ^\n\n+  'T02': 6,\n?         ^\n\n-  'T03': 2,\n?         ^\n\n+  'T03': 3,\n?         ^\n\n-  'T04': 2,\n?         ^\n\n+  'T04': 9,\n?         ^\n\n   'T05': 2,\n   'T06': 1,\n   'T07': 2,\n-  'T08': 2,\n?         ^\n\n+  'T08': 3,\n?         ^\n\n   'T09': 0,\n   'T10': 2,\n-  'T11': 2,\n?         ^\n\n+  'T11': 3,\n?         ^\n\n   'T12': 0}",
+      "tests.test_2_people.TestPeople.test_annotator_approvals": "AssertionError: {'ann-01': 0, 'ann-02': 0, 'ann-03': 0, 'ann-05': 0} != {'ann-01': 1, 'ann-02': 2, 'ann-03': 2, 'ann-05': 0}\n- {'ann-01': 0, 'ann-02': 0, 'ann-03': 0, 'ann-05': 0}\n?            ^            ^            ^\n\n+ {'ann-01': 1, 'ann-02': 2, 'ann-03': 2, 'ann-05': 0}\n?            ^            ^            ^\n",
+      "tests.test_2_people.TestPeople.test_annotator_submissions": "AssertionError: {'ann-01': 3, 'ann-02': 3, 'ann-03': 2, 'ann-05': 0} != {'ann-01': 4, 'ann-02': 4, 'ann-03': 3, 'ann-05': 0}\n- {'ann-01': 3, 'ann-02': 3, 'ann-03': 2, 'ann-05': 0}\n?            ^            ^            ^\n\n+ {'ann-01': 4, 'ann-02': 4, 'ann-03': 3, 'ann-05': 0}\n?            ^            ^            ^\n",
+      "tests.test_2_people.TestPeople.test_reviewer_table": "AssertionError: {'rev[14 chars]ed': 0, 'rejected': 0}, 'rev-02': {'approved':[100 chars]: 0}} != {'rev[14 chars]ed': 2, 'rejected': 2}, 'rev-02': {'approved':[100 chars]: 0}}\nDiff is 690 characters long. Set self.maxDiff to None to see it.",
+      "tests.test_3_summary.TestSummary.test_avg_cycle_hours": "AssertionError: None != 24.5",
+      "tests.test_3_summary.TestSummary.test_first_pass_rate": "AssertionError: None != 0.8",
+      "tests.test_3_summary.TestSummary.test_open_by_queue": "AssertionError: {'audio': 4, 'image': 4, 'text': 4} != {'audio': 1, 'image': 2, 'text': 3}\n- {'audio': 4, 'image': 4, 'text': 4}\n?           ^           ^          ^\n\n+ {'audio': 1, 'image': 2, 'text': 3}\n?           ^           ^          ^\n",
+      "tests.test_3_summary.TestSummary.test_state_counts": "AssertionError: {'queued': 3, 'claimed': 1, 'submitted': 8, 'approved': 0, 'escalated': 0} != {'queued': 3, 'claimed': 1, 'submitted': 2, 'approved': 5, 'escalated': 1}\n- {'approved': 0, 'claimed': 1, 'escalated': 0, 'queued': 3, 'submitted': 8}\n?              ^                             ^                            ^\n\n+ {'approved': 5, 'claimed': 1, 'escalated': 1, 'queued': 3, 'submitted': 2}\n?              ^                             ^                            ^\n"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_1_lifecycle",
+      "test_2_people",
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_1_lifecycle.TestLifecycle.test_invalid_events": "AssertionError: Lists differ: ['E13', 'E17', 'E33', 'E36', 'E40', 'E38'] != ['E11', 'E17', 'E33', 'E36', 'E40', 'E38']\n\nFirst differing element 0:\n'E13'\n'E11'\n\n- ['E13', 'E17', 'E33', 'E36', 'E40', 'E38']\n?     ^\n\n+ ['E11', 'E17', 'E33', 'E36', 'E40', 'E38']\n?     ^\n",
+      "tests.test_2_people.TestPeople.test_reviewer_table": "AssertionError: {'ann-01': {'approved': 1, 'rejected': 0}, [290 chars]: 0}} != {'rev-01': {'approved': 2, 'rejected': 2}, [122 chars]: 0}}\n- {'ann-01': {'approved': 1, 'rejected': 0},\n-  'ann-02': {'approved': 0, 'rejected': 0},\n-  'ann-03': {'approved': 0, 'rejected': 0},\n-  'ann-05': {'approved': 0, 'rejected': 0},\n-  'lead-01': {'approved': 0, 'rejected': 1},\n? ^\n\n+ {'lead-01': {'approved': 0, 'rejected': 1},\n? ^\n\n   'lead-02': {'approved': 1, 'rejected': 0},\n   'rev-01': {'approved': 2, 'rejected': 2},\n-  'rev-02': {'approved': 1, 'rejected': 1}}\n?                         ^\n\n+  'rev-02': {",
+      "tests.test_3_summary.TestSummary.test_avg_cycle_hours": "AssertionError: 24.2 != 24.5"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_avg_cycle_hours": "AssertionError: 5.3 != 24.5"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_first_pass_rate": "AssertionError: 2.0 != 0.8"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_lifecycle",
+      "test_2_people",
+      "test_3_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_lifecycle.TestLifecycle.test_final_states",
+      "tests.test_1_lifecycle.TestLifecycle.test_invalid_events",
+      "tests.test_1_lifecycle.TestLifecycle.test_rework_and_assignees",
+      "tests.test_1_lifecycle.TestLifecycle.test_transition_counts",
+      "tests.test_2_people.TestPeople.test_annotator_approvals",
+      "tests.test_2_people.TestPeople.test_annotator_submissions",
+      "tests.test_2_people.TestPeople.test_reviewer_table",
+      "tests.test_3_summary.TestSummary.test_avg_cycle_hours",
+      "tests.test_3_summary.TestSummary.test_first_pass_rate",
+      "tests.test_3_summary.TestSummary.test_open_by_queue",
+      "tests.test_3_summary.TestSummary.test_state_counts"
+    ]
+  }
+}

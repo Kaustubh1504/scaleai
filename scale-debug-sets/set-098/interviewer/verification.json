@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_screening"
+    ],
+    "failures": {
+      "tests.test_1_screening.TestScreening.test_rejected_by_vendor": "AssertionError: {'ven[121 chars]abel', 'b-1019': 'unknown_annotator', 'b-1020'[313 chars]el'}} != {'ven[121 chars]abel'}, 'vendor_b': {'b-1019': 'unknown_annota[82 chars]el'}}\nDiff is 885 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_screening"
+    ],
+    "failures": {
+      "tests.test_1_screening.TestScreening.test_superseded": "AssertionError: Lists differ: ['A-003', 'b-1006'] != ['A-003', 'A-016']\n\nFirst differing element 1:\n'b-1006'\n'A-016'\n\n- ['A-003', 'b-1006']\n?            ^  --\n\n+ ['A-003', 'A-016']\n?            ^ +\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_consensus"
+    ],
+    "failures": {
+      "tests.test_2_consensus.TestConsensus.test_tox_items": "AssertionError: {'T01[113 chars]l': 'clean', 'agreement': 0.5, 'votes': 3}, 'T[149 chars]: 2}} != {'T01[113 chars]l': 'toxic', 'agreement': 0.5, 'votes': 3}, 'T[149 chars]: 2}}\n  {'T01': {'agreement': 0.714,\n           'label': 'toxic',\n           'status': 'accepted',\n           'votes': 3},\n-  'T02': {'agreement': 0.5, 'label': 'clean', 'status': 'escalated', 'votes': 3},\n?                                       ----\n\n+  'T02': {'agreement': 0.5, 'label': 'toxic', 'status': 'escalated', 'votes': 3},\n?                                      ++++\n\n   'T03': {'agreement': 0.75,\n           'label':"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_consensus"
+    ],
+    "failures": {
+      "tests.test_2_consensus.TestConsensus.test_spam_items": "AssertionError: {'S01[110 chars]l': 'phishing', 'agreement': 0.6, 'votes': 2},[155 chars]: 3}} != {'S01[110 chars]l': 'spam', 'agreement': 0.571, 'votes': 3}, '[153 chars]: 3}}\nDiff is 646 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestQualityReport.test_annotator_agreement": "AssertionError: {'a01[18 chars], 'a03': 0.5, 'a04': 1.0, 'a07': 1.0, 'a08': 0.0, 'a11': 0.667} != {'a01[18 chars], 'a03': 1.0, 'a04': 1.0, 'a07': 1.0, 'a08': 0.0, 'a11': 0.667}\n  {'a01': 1.0,\n   'a02': 1.0,\n-  'a03': 0.5,\n?          --\n\n+  'a03': 1.0,\n?         ++\n\n   'a04': 1.0,\n   'a07': 1.0,\n   'a08': 0.0,\n   'a11': 0.667}"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestQualityReport.test_contested": "AssertionError: Lists differ: ['Q01', 'Q02', 'Q03'] != ['Q01', 'Q02']\n\nFirst list contains 1 additional elements.\nFirst extra element 2:\n'Q03'\n\n- ['Q01', 'Q02', 'Q03']\n?              -------\n\n+ ['Q01', 'Q02']"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_screening",
+      "test_2_consensus",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_screening.TestScreening.test_rejected_by_vendor",
+      "tests.test_1_screening.TestScreening.test_superseded",
+      "tests.test_2_consensus.TestConsensus.test_spam_items",
+      "tests.test_2_consensus.TestConsensus.test_tox_items",
+      "tests.test_3_report.TestQualityReport.test_annotator_agreement",
+      "tests.test_3_report.TestQualityReport.test_contested"
+    ]
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_routing"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_toxicity_review_reasons": "AssertionError: {'T02[47 chars]4': 'no_confidence', 'T06': 'no_confidence', '[63 chars]nce'} != {'T02[47 chars]4': 'low_confidence', 'T06': 'no_confidence', [64 chars]nce'}\n  {'T02': 'low_confidence',\n   'T03': 'label_policy',\n-  'T04': 'no_confidence',\n?          ^\n\n+  'T04': 'low_confidence',\n?          ^ +\n\n   'T06': 'no_confidence',\n   'T08': 'sensitive',\n   'T09': 'low_confidence',\n   'T10': 'low_confidence'}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_routing"
+    ],
+    "failures": {
+      "tests.test_1_routing.TestRouting.test_caption_review_reasons": "AssertionError: {'C02': 'sensitive', 'C03': 'sensitive', 'C05': 'l[100 chars]nce'} != {'C02': 'low_confidence', 'C03': 'low_confidence',[115 chars]nce'}\n- {'C02': 'sensitive',\n-  'C03': 'sensitive',\n+ {'C02': 'low_confidence',\n+  'C03': 'low_confidence',\n   'C05': 'low_confidence',\n-  'C06': 'sensitive',\n+  'C06': 'low_confidence',\n   'C07': 'sensitive',\n   'C08': 'low_confidence',\n   'C09': 'low_confidence'}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_worklists"
+    ],
+    "failures": {
+      "tests.test_2_worklists.TestWorklists.test_mixed_priority_worklists": "AssertionError: {'r01': ['P08', 'P02', 'T06', 'P05'], 'r05': ['C03', 'C08']} != {'r01': ['T06', 'P05', 'P08', 'P02'], 'r05': ['C08', 'C03']}\n- {'r01': ['P08', 'P02', 'T06', 'P05'], 'r05': ['C03', 'C08']}\n+ {'r01': ['T06', 'P05', 'P08', 'P02'], 'r05': ['C08', 'C03']}"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_worklists"
+    ],
+    "failures": {
+      "tests.test_2_worklists.TestWorklists.test_equal_confidence_worklist": "AssertionError: Lists differ: ['C06', 'C09'] != ['C09', 'C06']\n\nFirst differing element 0:\n'C06'\n'C09'\n\n- ['C06', 'C09']\n+ ['C09', 'C06']"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_auto_accept_rate": "AssertionError: {'caption': 0.0, 'pii': 0.0, 'toxicity': 0.0} != {'caption': 0.3, 'pii': 0.375, 'toxicity': 0.3}\n- {'caption': 0.0, 'pii': 0.0, 'toxicity': 0.0}\n?               ^           ^                ^\n\n+ {'caption': 0.3, 'pii': 0.375, 'toxicity': 0.3}\n?               ^           ^^^                ^\n"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_mean_review_confidence": "AssertionError: 0.721 != 0.644"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_routing",
+      "test_2_worklists",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_routing.TestRouting.test_caption_review_reasons",
+      "tests.test_1_routing.TestRouting.test_toxicity_review_reasons",
+      "tests.test_2_worklists.TestWorklists.test_equal_confidence_worklist",
+      "tests.test_2_worklists.TestWorklists.test_mixed_priority_worklists",
+      "tests.test_3_report.TestReport.test_auto_accept_rate",
+      "tests.test_3_report.TestReport.test_mean_review_confidence"
+    ]
+  }
+}

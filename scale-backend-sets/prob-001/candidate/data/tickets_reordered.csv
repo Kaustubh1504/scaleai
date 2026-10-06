@@ -1,0 +1,2 @@
+customer_email,created_at,ticket_id,body,subject,priority
+zed@example.com,2024-07-01T00:00:00Z,R-1,The invoice is wrong.,Reordered columns,high

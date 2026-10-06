@@ -1,0 +1,112 @@
+{
+  "id": "set-049",
+  "title": "Weekly seat planner with skill levels and hour budgets",
+  "domain": "contributor_assignment",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "seatplan",
+  "scenario": "Open projects are staffed highest priority number first; each seat goes to the eligible contributor with the best skill level, then most hours left. The report lists unfilled seats, skill gaps over open projects, and utilisation.",
+  "design": {},
+  "verified": [
+    {
+      "file": "seatplan/assigner.py",
+      "symbol": "project_order",
+      "why_correct": "Sorting by `-p.priority` looks like a flipped sort, but this README says the higher number is more important, so descending is right; ties go to the lower id and only open projects are kept."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Status check always truthy",
+      "type": "or-precedence",
+      "file": "seatplan/rules.py",
+      "function": "is_available",
+      "test": "test_1_assignment.TestAssignment.test_1_emea_projects",
+      "old": "    return contributor.status in ELIGIBLE_STATUSES",
+      "new": "    return contributor.status == \"active\" or \"trial\"",
+      "symptom": "Test 1 test_1_emea_projects: PR-01 is ['E-03', 'E-01', 'E-02'] and PR-02 is ['E-03', 'E-01'] instead of ['E-01', 'E-02'] for both. The paused E-03 is staffed.",
+      "why": "This parses as `(status == 'active') or 'trial'`, and the non-empty string 'trial' is truthy, so every status passes. Paused E-03 (python 9) takes the top seat on PR-01 and PR-02.",
+      "unblocks": "test_1_emea_projects",
+      "hints": [
+        "E-03 is staffed. Check E-03's status.",
+        "Look at how is_available decides eligibility.",
+        "`status == 'active' or 'trial'` is always truthy; use `status in ELIGIBLE_STATUSES`."
+      ],
+      "probes": [
+        "Why didn't offboarded A-04 show up in any assignment?",
+        "What does `bool('active' == 'paused' or 'trial')` evaluate to, and why?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "skill_level gives up after the first skill",
+      "type": "early-return",
+      "file": "seatplan/rules.py",
+      "function": "skill_level",
+      "test": "test_1_assignment.TestAssignment.test_2_apac_projects",
+      "old": "            return level\n    return 0",
+      "new": "            return level\n        return 0",
+      "symptom": "Test 1 test_2_apac_projects: PR-03 is ['P-02', 'P-03'] instead of ['P-01', 'P-02']. P-01's sql:9 is not seen.",
+      "why": "With `return 0` inside the loop, only a contributor's first listed skill is ever checked. P-01 lists python before sql, so their sql level 9 reads as 0 and P-03 takes the seat instead.",
+      "unblocks": "test_2_apac_projects",
+      "hints": [
+        "P-01 has sql:9 but wasn't staffed on PR-03. What is different about how P-01's skills are written?",
+        "Trace skill_level for P-01 and 'sql'.",
+        "The `return 0` is indented inside the for loop; dedent it so it runs after the loop."
+      ],
+      "probes": [
+        "Why were the Americas projects unaffected even though A-01 and A-05 also list two skills?",
+        "How would you write a test that catches this directly?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Skill gaps count on-hold projects",
+      "type": "counting-wrong-subset",
+      "file": "seatplan/reports.py",
+      "function": "skill_gaps",
+      "test": "test_2_report.TestReport.test_3_skill_gaps_for_americas_skills",
+      "old": "    for project in project_order(projects):",
+      "new": "    for project in projects:",
+      "symptom": "Test 2 test_3_skill_gaps_for_americas_skills: spanish shows 3 unfilled seats instead of 0 (math is still 1).",
+      "why": "`unfilled` is computed for every project, including on-hold ones that are never staffed, so iterating all projects adds PR-07's three spanish seats (and PR-09/PR-10) to the gaps. The spec counts open projects only.",
+      "unblocks": "test_3_skill_gaps_for_americas_skills",
+      "hints": [
+        "Spanish shows 3 missing seats but every open spanish seat is filled. Where do 3 seats come from?",
+        "Which projects does skill_gaps loop over?",
+        "Loop over project_order(projects) (open projects only), not every project."
+      ],
+      "probes": [
+        "Why doesn't the `unfilled` section show PR-07 even though skill_gaps counts it?",
+        "Why did this not raise a KeyError for on-hold projects?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "How does staff() pick each seat?",
+      "a": "For each project from project_order it loops until the seats are filled: it builds a pool of contributors not already picked for this project who pass `can_take`, and takes the `min` by `(-skill_level, -remaining, id)`. The winner's hours_used goes up by hours_per_seat."
+    },
+    {
+      "q": "What does parse_skills return for 'math:6;spanish'?",
+      "a": "A list of (name, level) tuples in written order: [('math', 6), ('spanish', 1)]. Blank parts are skipped and names are lower-cased."
+    },
+    {
+      "q": "What checks are in can_take?",
+      "a": "`is_available(contributor)`, region equal to the contributor's or 'any', `skill_level(contributor, project.skill) >= project.min_level`, and `remaining >= hours_per_seat`, combined with `and`."
+    },
+    {
+      "q": "How is unfilled computed?",
+      "a": "In build_report, for every project in projects.csv: seats minus the number of ids in `assignments.get(project_id, [])`. The report's `unfilled` section is then limited to the ids in `assignments`."
+    },
+    {
+      "q": "Which contributors appear in utilisation?",
+      "a": "Those for which `is_available` is truthy and weekly_hours is non-zero, sorted by id, with hours_used / weekly_hours rounded to 2 decimals."
+    },
+    {
+      "q": "Is Contributor.remaining stored or computed?",
+      "a": "Computed: a property returning weekly_hours - hours_used, so it reflects seats already taken earlier in the run."
+    }
+  ]
+}

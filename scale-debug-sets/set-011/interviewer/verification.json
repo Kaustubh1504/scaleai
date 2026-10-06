@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_ratings"
+    ],
+    "failures": {
+      "tests.test_1_ratings.TestRatings.test_1_win_rates": "AssertionError: {'atlas-7b': (2, 4, 0.4), 'borealis-13b': (1, 3, 0.278), '[75 chars]0.5)} != {'atlas-7b': (2, 3, 0.35), 'borealis-13b': (1, 1, 0.167), [78 chars]375)}\n- {'atlas-7b': (2, 4, 0.4),\n?                  ^    ^\n\n+ {'atlas-7b': (2, 3, 0.35),\n?                  ^    ^^\n\n-  'borealis-13b': (1, 3, 0.278),\n?                      ^    ^ -\n\n+  'borealis-13b': (1, 1, 0.167),\n?                      ^    ^^\n\n-  'cirrus-70b': (7, 3, 0.85),\n?                    ^    ^\n\n+  'cirrus-70b': (7, 1, 0.75),\n?                    ^    ^\n\n   'delta-3b': (1, 0, 0.333),\n-  'ember-8x7b': (1, 2, 0.5)}\n?       "
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_ratings"
+    ],
+    "failures": {
+      "tests.test_1_ratings.TestRatings.test_2_elo_ratings": "AssertionError: {'atlas-7b': 969, 'borealis-13b': 951, 'cirrus-70b': 1094[33 chars]1000} != {'atlas-7b': 969.6, 'borealis-13b': 949.3, 'cirrus-70b': [43 chars]00.7}\n- {'atlas-7b': 969,\n+ {'atlas-7b': 969.6,\n?                 ++\n\n-  'borealis-13b': 951,\n?                   ^^\n\n+  'borealis-13b': 949.3,\n?                   ^^^^\n\n-  'cirrus-70b': 1094,\n+  'cirrus-70b': 1094.2,\n?                    ++\n\n-  'delta-3b': 986,\n+  'delta-3b': 986.1,\n?                 ++\n\n-  'ember-8x7b': 1000}\n+  'ember-8x7b': 1000.7}\n?                    ++\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_leaderboard"
+    ],
+    "failures": {
+      "tests.test_2_leaderboard.TestLeaderboard.test_3_leaderboard": "AssertionError: Lists differ: ['cirrus-70b', 'atlas-7b', 'borealis-13b'] != ['cirrus-70b', 'ember-8x7b', 'atlas-7b', 'borealis-13b']\n\nFirst differing element 1:\n'atlas-7b'\n'ember-8x7b'\n\nSecond list contains 1 additional elements.\nFirst extra element 3:\n'borealis-13b'\n\n- ['cirrus-70b', 'atlas-7b', 'borealis-13b']\n+ ['cirrus-70b', 'ember-8x7b', 'atlas-7b', 'borealis-13b']\n?                ++++++++++++++\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_ratings",
+      "test_2_leaderboard"
+    ],
+    "failing_tests": [
+      "tests.test_1_ratings.TestRatings.test_1_win_rates",
+      "tests.test_1_ratings.TestRatings.test_2_elo_ratings",
+      "tests.test_2_leaderboard.TestLeaderboard.test_3_leaderboard"
+    ]
+  }
+}

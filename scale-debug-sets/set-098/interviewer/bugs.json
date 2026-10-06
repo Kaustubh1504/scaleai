@@ -1,0 +1,186 @@
+{
+  "id": "set-098",
+  "title": "Two-vendor tiered consensus with deadlines",
+  "domain": "annotation_consensus",
+  "length": "FULL",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "quorum",
+  "scenario": "Votes for three moderation queues arrive from two vendors (CSV with ISO times, JSONL with Unix seconds). They are screened per vendor, deduped to each annotator's latest answer across vendors, and resolved by tier-weighted vote with expert tie-break and per-item deadlines. Test 3 checks the quality queue's annotator agreement and contested list.",
+  "verified": [
+    {
+      "file": "quorum/voting.py",
+      "symbol": "pick_label",
+      "why_correct": "min() over a negated key looks inverted, but (-weight, -expert votes, label) sorts the heaviest label first, then the one with the most expert votes, then alphabetical: exactly rule 9. The T02 symptom comes from the expert counts passed in, not from this function."
+    },
+    {
+      "file": "quorum/timeutil.py",
+      "symbol": "parse_timestamp",
+      "why_correct": "Stripping the trailing 'Z' and parsing naively looks lossy, but every vendor A and item time is UTC per the README, and from_epoch also returns naive UTC, so the two compare correctly."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Rejection dict as a mutable default",
+      "type": "mutable-default",
+      "file": "quorum/screening.py",
+      "function": "screen",
+      "test": "test_1_screening.TestScreening.test_rejected_by_vendor",
+      "old": "def screen(votes, items, annotators, queues, aliases, rejected=None):\n    \"\"\"Return (accepted votes with canonical labels, {vote_id: reason}).\"\"\"\n    rejected = {} if rejected is None else rejected\n",
+      "new": "def screen(votes, items, annotators, queues, aliases, rejected={}):\n    \"\"\"Return (accepted votes with canonical labels, {vote_id: reason}).\"\"\"\n",
+      "symptom": "Test 1 test_rejected_by_vendor: vendor_a and vendor_b both list all nine rejections (A-0xx and b-10xx together). Which votes count is unchanged, so every consensus result is still right.",
+      "why": "`rejected={}` is evaluated once, when the function is defined. Both screen() calls (and every later build_report) write into that same dict, so each vendor's 'own' rejections are the same shared object.",
+      "unblocks": "test_1_screening.TestScreening.test_rejected_by_vendor",
+      "hints": [
+        "Vendor A's rejections include b-10xx ids. How can vendor B's votes get into vendor A's dict?",
+        "Look at where screen() gets the dict it writes rejections into.",
+        "Default `rejected=None` and create `rejected = {} if rejected is None else rejected` inside the function."
+      ],
+      "probes": [
+        "Why did the accepted votes stay correct while the rejection dicts were shared?",
+        "Would the output have looked right if build_report only ever screened one vendor once?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Vendor B seconds treated as milliseconds",
+      "type": "ms-vs-s",
+      "file": "quorum/timeutil.py",
+      "function": "from_epoch",
+      "test": "test_1_screening.TestScreening.test_superseded",
+      "old": "    return datetime.fromtimestamp(seconds, tz=timezone.utc)",
+      "new": "    return datetime.fromtimestamp(seconds / 1000, tz=timezone.utc)",
+      "symptom": "Test 1 test_superseded: ['A-003', 'b-1006'] instead of ['A-003', 'A-016']. a03's S03 vote via vendor A is kept over their later vendor B vote. Consensus is unchanged because both votes say 'ham'.",
+      "why": "vendor_b.jsonl stores Unix seconds. Dividing by 1000 puts every vendor B vote in January 1970, so in the cross-vendor 'latest answer' rule the vendor A vote always looks newer.",
+      "unblocks": "test_1_screening.TestScreening.test_superseded",
+      "hints": [
+        "a03 answered S03 through both vendors. Which one was actually later?",
+        "Print a vendor B vote's submitted_at.",
+        "from_epoch divides by 1000; the field is already in seconds, so pass it straight to fromtimestamp."
+      ],
+      "probes": [
+        "Why did the S02 deadline not reject any vendor B votes while this was in place?",
+        "What kind of test data would have made this change consensus results too?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Tier compared with a string",
+      "type": "enum-vs-string",
+      "file": "quorum/voting.py",
+      "function": "expert_votes",
+      "test": "test_2_consensus.TestConsensus.test_tox_items",
+      "old": "    return sum(1 for v in votes if v.label == label and annotators[v.annotator_id].tier is Tier.EXPERT)",
+      "new": "    return sum(1 for v in votes if v.label == label and annotators[v.annotator_id].tier == \"expert\")",
+      "symptom": "Test 2 test_tox_items: T02 is labelled 'clean' instead of 'toxic'. Status and agreement are unchanged (escalated, 0.5).",
+      "why": "Tier is a plain Enum, so `Tier.EXPERT == \"expert\"` is False and every label gets 0 expert votes. T02 is a 3-3 weight tie in which the only expert voted toxic, and without the expert count the alphabetical fallback picks 'clean'.",
+      "unblocks": "test_2_consensus.TestConsensus.test_tox_items",
+      "hints": [
+        "T02's weights are tied. Which tie-break rule should decide it?",
+        "pick_label is VERIFIED. Check the expert counts it is given.",
+        "expert_votes compares tier with \"expert\"; compare with `is Tier.EXPERT`."
+      ],
+      "probes": [
+        "Q03 is also a weight tie. Why was it unaffected?",
+        "Would making Tier subclass str have hidden this? Is that a good fix?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Vote at the deadline excluded",
+      "type": "time-window-boundary",
+      "file": "quorum/voting.py",
+      "function": "within_window",
+      "test": "test_2_consensus.TestConsensus.test_spam_items",
+      "old": "vote.submitted_at <= item.closes_at",
+      "new": "vote.submitted_at < item.closes_at",
+      "symptom": "Test 2 test_spam_items: S02 comes out as phishing / 0.6 with 2 votes instead of spam / 0.571 with 3 votes.",
+      "why": "Rule 7 counts a vote submitted exactly at closes_at. With `<`, a04's 12:00 vote on S02 is dropped, and that flips the leading label.",
+      "unblocks": "test_2_consensus.TestConsensus.test_spam_items",
+      "hints": [
+        "S02 should have three counting votes. Which one is missing?",
+        "Compare A-013's time with S02's closes_at.",
+        "within_window uses `<`; it should be `vote.submitted_at <= item.closes_at`."
+      ],
+      "probes": [
+        "Why was A-015 excluded either way?",
+        "Name two other places in this report that silently depend on within_window."
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Agreement counts escalated items",
+      "type": "counting-wrong-subset",
+      "file": "quorum/scoring.py",
+      "function": "annotator_agreement",
+      "test": "test_3_report.TestQualityReport.test_annotator_agreement",
+      "old": "        if result is None or result.status != \"accepted\":",
+      "new": "        if result is None or result.label is None:",
+      "symptom": "Test 3 test_annotator_agreement: a03 shows 0.5 instead of 1.0 in the quality queue. Their 'fair' vote on escalated Q03 is being scored.",
+      "why": "Escalated items still carry a leading label, so filtering on `label is None` only skips pending items. The spec scores annotators only on accepted items.",
+      "unblocks": "test_3_report.TestQualityReport.test_annotator_agreement",
+      "hints": [
+        "a03 voted on Q03 and Q04 in the quality queue. Which of those should count?",
+        "Look at which results annotator_agreement skips.",
+        "Skip anything whose status isn't 'accepted': `result.status != \"accepted\"`."
+      ],
+      "probes": [
+        "Why did a02 and a08 keep the same score even though Q03 was being counted?",
+        "Why is it risky to use 'label is not None' as a stand-in for 'decided'?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "and/or precedence in contested filter",
+      "type": "or-precedence",
+      "file": "quorum/scoring.py",
+      "function": "contested",
+      "test": "test_3_report.TestQualityReport.test_contested",
+      "old": "if r.status == \"accepted\" and (r.agreement < CONTESTED_BELOW or r.expert_dissent))",
+      "new": "if r.status == \"accepted\" and r.agreement < CONTESTED_BELOW or r.expert_dissent)",
+      "symptom": "Test 3 test_contested: ['Q01', 'Q02', 'Q03'] instead of ['Q01', 'Q02']. Q03 is escalated, not accepted.",
+      "why": "`and` binds tighter than `or`, so the condition reads `(accepted and low agreement) or expert_dissent`. Q03 is escalated but has expert dissent, so it gets in.",
+      "unblocks": "test_3_report.TestQualityReport.test_contested",
+      "hints": [
+        "Q03 isn't accepted. What lets it into the contested list?",
+        "Read the boolean expression in contested() the way Python groups it.",
+        "Parenthesise: `r.status == \"accepted\" and (r.agreement < CONTESTED_BELOW or r.expert_dissent)`."
+      ],
+      "probes": [
+        "Why didn't pending items with no agreement crash the comparison?",
+        "Which other queue's contested list also changed, and why didn't any test catch it?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What is the pipeline inside build_report?",
+      "a": "Load annotators, config (weights, queues, aliases) and items. Read each vendor file and screen it separately with `screening.screen`. Concatenate the kept votes (vendor A first) and pass them to `latest_only`, then to `voting.resolve`. Finally build one `queue_report` per queue name."
+    },
+    {
+      "q": "What does vendor B's reader do with the `submitted` field?",
+      "a": "`read_vendor_b` passes `rec['submitted']` to `timeutil.from_epoch`, which builds a datetime with `datetime.fromtimestamp(..., tz=timezone.utc)` and strips the tzinfo so it can be compared with the naive datetimes from vendor A."
+    },
+    {
+      "q": "How does latest_only decide which vote is superseded?",
+      "a": "It walks the combined list keyed by (item_id, annotator_id). A vote whose submitted_at is >= the stored one replaces it, and the stored vote's id goes to `superseded`. Otherwise the new vote's id is superseded. It returns the surviving votes and the sorted superseded ids."
+    },
+    {
+      "q": "How are ties between labels resolved in decide()?",
+      "a": "decide builds `totals` (label → summed tier weight) and `experts` (label → `expert_votes(counted, annotators, label)`), then calls the VERIFIED `pick_label(totals, experts)`."
+    },
+    {
+      "q": "Which votes does decide() count?",
+      "a": "Only the item's votes for which `within_window(vote, item)` is true. Items without closes_at accept everything. The count of those votes is compared with `item.min_votes` (from items.csv, or the queue default when blank)."
+    },
+    {
+      "q": "What votes and results go into a queue's agreement table?",
+      "a": "`queue_report` passes the queue's results and the deduped votes on its items that are within the item window. `annotator_agreement` then skips results according to its status/label check, and counts per annotator how many remaining votes match `result.label`."
+    },
+    {
+      "q": "Where does an Annotator's tier come from, and what type is it?",
+      "a": "`registry.load_annotators` lower-cases the JSON `tier` string and converts it with `Tier(...)`, so it is a `models.Tier` Enum member (a plain Enum, not a str subclass). The weights dict in `load_config` is keyed by Tier members too."
+    }
+  ]
+}

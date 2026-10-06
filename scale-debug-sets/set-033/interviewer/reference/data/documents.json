@@ -1,0 +1,12 @@
+[
+  {"doc_id": "D01", "text": "Angela Merkel visited Paris on Monday."},
+  {"doc_id": "D02", "text": "Apple opened a new office in Austin."},
+  {"doc_id": "d03", "text": "Washington signed the treaty in Ghent."},
+  {"doc_id": "D04", "text": "The World Health Organization met in Geneva."},
+  {"doc_id": "D05", "text": "Serena Williams beat Naomi Osaka."},
+  {"doc_id": "D06", "text": "Toyota and Honda expanded in Ohio."},
+  {"doc_id": " D07", "text": "Maria Silva joined Petrobras in Rio."},
+  {"doc_id": "D08", "text": "Lagos is the largest city in Nigeria."},
+  {"doc_id": "D09", "text": "Bank of America hired Raj Patel."},
+  {"doc_id": "D10", "text": "The summit was hosted in Kyoto"}
+]

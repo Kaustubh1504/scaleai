@@ -1,0 +1,27 @@
+request_id,at,tenant,model,region
+R01,2026-08-01 10:00:00,acme,m-small,us
+R02,2026-08-01 10:00:30,globex,m-small,us
+R03,2026-08-01 10:01:00,initech,m-small,eu
+R04,2026-08-01 10:01:30,Globex,m-large,EU
+R05,2026-08-01 10:02:00,acme,m-large,us
+R06,08/01/2026 10:02:30,initech,m-small,us
+R07,2026-08-01 10:03:00,globex,m-tiny,us
+R08,2026-08-01 10:03:30,acme,M-Small,us
+R09,2026-08-01 10:03:45,globex,m-tiny,us
+R10,2026-08-01 10:04:00,initech,m-large,us
+R11,2026-08-01T10:04:10,globex,m-tiny, us
+R12,2026-08-01 10:04:20,acme,m-embed,us
+R13,2026-08-01 10:04:25,ACME,m-embed,us
+R14,2026-08-01 10:04:50,initech,m-large,eu
+R15,2026-08-01 10:05:20,globex,m-small,us
+R16,2026-08-01 10:05:30,acme,m-small,eu
+R17,2026-08-01 10:06:05,globex,m-large,eu
+R18,2026-08-01 10:06:10,initech,m-large,us
+R19,08/01/2026 10:07:00,acme,m-tiny,eu
+R20,2026-08-01 10:07:30,globex,m-tiny,eu
+R21,2026-08-01 10:08:00,initech,m-small,us
+R22,2026-08-01 10:08:30,acme,m-large,eu
+R23,2026-08-01 10:09:00,globex,m-small,eu
+R24,2026-08-01 10:09:30, initech ,m-small,
+R25,2026-08-01 10:10:00,acme,m-small,us
+R26,2026-08-01 10:10:40,globex,m-small,us

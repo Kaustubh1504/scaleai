@@ -1,0 +1,15 @@
+﻿sku,title,category,price,qty,updated_at,status
+ hm-100 ,Claw hammer 16oz,Tools,$24.99,12,2026-04-01,active
+DR-200,Cordless drill kit,tools,"$1,249.00",3,04/02/2026,
+pt-310,Exterior paint 1gal, paint,$38.50,20,2026-04-01T09:30:00,Active
+ ,Paint roller,paint,$6.25,40,2026-04-01,active
+LT-400,LED shop light,lighting,$45.00,8,2026-04-03,active
+PB-500,Pipe wrench,plumbing,$19.00,5,2026-04-01,active
+fs-600,Wood screws 200pk,Fasteners,$9.49,twelve,2026-04-02,active
+GD-700,Garden hose 50ft,garden,$32.00,15,2026-04-02,
+SF-800,Safety glasses,safety,$7.99,-2,2026-04-02,active
+EL-900,Outlet tester,electrical,$12.00,,2026-04-02,active
+HM-102,Rubber mallet,tools,$14.75,6,2026/04/02,active
+GD-701,Pruning shears,Garden,$21.40,9,03/30/2026,Discontinued
+st-110,Tool chest,storage,$189.00,2,2026-04-01,active
+PT-311,Primer 1qt,paint,$11.20,14,2026-03-28,active

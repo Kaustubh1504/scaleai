@@ -1,0 +1,186 @@
+{
+  "id": "set-040",
+  "title": "Batch job scheduler: queue order, blocked deps, team summary",
+  "domain": "job_scheduler",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "jobsim",
+  "scenario": "Event-driven simulation of a day of batch jobs on 2 workers: priority queue (higher number first), dependencies, scripted failures with retries, blocked jobs (missing deps, cycles), and a per-team / lateness / utilization summary.",
+  "verified": [
+    {
+      "file": "jobsim/timeparse.py",
+      "symbol": "parse_duration",
+      "why_correct": "The regex makes both parts optional, which looks like it would accept an empty string, but `not any(match.groups())` rejects that. Bare digits are minutes (m4's '30'), and '1h' / '45m' / '1h30m' all parse to the right minute counts."
+    },
+    {
+      "file": "jobsim/dag.py",
+      "symbol": "cycle_members",
+      "why_correct": "A DFS with open/done states; meeting an 'open' node means the path from that node to here is a cycle, so path[path.index(dep):] is exactly the cycle (c1, c2). Unknown deps are skipped here because missing_dep reports them. c3 depends on the cycle but is not on it, so it is not blocked; it ends up skipped."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Queue modified while iterating it",
+      "type": "mutate-while-iterating",
+      "file": "jobsim/scheduler.py",
+      "function": "simulate",
+      "test": "test_1_schedule.TestSchedule.test_morning_wave",
+      "old": "        for state in list(queue):",
+      "new": "        for state in queue:",
+      "symptom": "Test 1 test_morning_wave: m3 runs 06:00-06:30 on w2 and m2 waits until 06:30-07:15, although m2 (priority 5) outranks m3 (priority 3) and two workers were free at 06:00.",
+      "why": "queue.remove(state) inside the loop shifts the list, so the iterator skips the next element. At 06:00 m1 starts, m2 is skipped, and m3 takes w2. This only matters when two or more workers are free at once, which happens only at the start of the morning wave.",
+      "unblocks": "Test 1 test_morning_wave.",
+      "hints": [
+        "Two workers are free at 06:00 and m2 outranks m3. Why does m3 start first?",
+        "Look at the loop that starts queued jobs. What happens to the list while it is being walked?",
+        "Iterate over a copy: for state in list(queue)."
+      ],
+      "probes": [
+        "Why doesn't the afternoon wave show the same problem?",
+        "How else could you write this loop so that removal is safe?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Release time missing from the queue tie-break",
+      "type": "wrong-tie-break",
+      "file": "jobsim/models.py",
+      "function": "Job.queue_key",
+      "test": "test_1_schedule.TestSchedule.test_afternoon_wave",
+      "old": "        return (-self.priority, self.release, self.job_id)",
+      "new": "        return (-self.priority, self.job_id)",
+      "symptom": "Test 1 test_afternoon_wave: a2 starts at 13:42 on w2 and a3 at 14:00 on w1; it should be the other way round (a3 was released earlier, same priority).",
+      "why": "a2 and a3 are both priority 4. a3 was released at 13:05 and a2 at 13:10, so a3 should go first, but without release in the key the id decides and a2 wins.",
+      "unblocks": "Test 1 test_afternoon_wave.",
+      "hints": [
+        "At 13:42 one worker frees up. Which of a2 and a3 has waited longer?",
+        "Look at the key the queue is sorted by.",
+        "Put self.release between priority and job_id."
+      ],
+      "probes": [
+        "Why does a6 still start at 14:12 either way?",
+        "The docstring said 'earlier release' all along. How would you test the key directly?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Only the first dependency is checked",
+      "type": "early-return",
+      "file": "jobsim/dag.py",
+      "function": "missing_dep",
+      "test": "test_2_jobs.TestJobs.test_blocked",
+      "old": "            return dep\n    return None",
+      "new": "            return dep\n        return None",
+      "symptom": "Test 2 test_blocked: b1 is missing from blocked ({b2, c1, c2} only), and its status is skipped rather than blocked.",
+      "why": "The `return None` is inside the loop, so the function gives up after the first dependency. b1's first dep (m1) exists, so its missing second dep zz-missing is never seen; b1 is not blocked and just waits until it is skipped at the end of the day.",
+      "unblocks": "Test 2 test_blocked.",
+      "hints": [
+        "b1 depends on m1 and zz-missing. Why isn't it blocked?",
+        "Step through missing_dep for b1. How many dependencies does it look at?",
+        "Dedent `return None` so it runs after the loop."
+      ],
+      "probes": [
+        "Why does b1 end up 'skipped' instead of crashing the scheduler?",
+        "Why is b2 still reported correctly?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Event log shared between all jobs",
+      "type": "mutable-default",
+      "file": "jobsim/models.py",
+      "function": "JobState.__init__",
+      "test": "test_2_jobs.TestJobs.test_event_log",
+      "old": "    def __init__(self, job, events=None):\n        self.job = job\n        self.events = list(events or [])",
+      "new": "    def __init__(self, job, events=[]):\n        self.job = job\n        self.events = events",
+      "symptom": "Test 2 test_event_log: m5's log holds every event of the day (starts on both workers, the afternoon wave) instead of its own 4 entries.",
+      "why": "The default list is created once, when the function is defined. Every JobState built without events gets that same list, so each job's log holds the whole day's events.",
+      "unblocks": "Test 2 test_event_log.",
+      "hints": [
+        "m5's log contains starts on both workers and events from 13:00. Whose events are those?",
+        "Where does each JobState's events list come from?",
+        "Default to None and create a new list per instance."
+      ],
+      "probes": [
+        "Why does nothing else in the report change?",
+        "Why isn't events=list() as a default any better?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "groupby over unsorted jobs",
+      "type": "groupby-misuse",
+      "file": "jobsim/reports.py",
+      "function": "team_summary",
+      "test": "test_3_report.TestReport.test_teams",
+      "old": "    ordered = sorted(states.values(), key=lambda s: s.job.team)\n    for team, group in groupby(ordered, key=lambda s: s.job.team):",
+      "new": "    for team, group in groupby(states.values(), key=lambda s: s.job.team):",
+      "symptom": "Test 3 test_teams: etl shows jobs 2 / succeeded 0 / busy 0, ml/bi/ops show 1 job each with 0 busy; the real totals are bi 5/4/105, etl 6/4/205, ml 4/3/90, ops 3/0/10.",
+      "why": "itertools.groupby only groups consecutive items. In file order the teams are interleaved, so each team comes up several times and summary[team] is overwritten by its last run (e.g. etl ends up as just c1 and c2).",
+      "unblocks": "Test 3 test_teams.",
+      "hints": [
+        "etl has 6 jobs in jobs.csv. Which 2 did the summary count?",
+        "What does groupby assume about its input order?",
+        "Sort by team before grouping."
+      ],
+      "probes": [
+        "How would you write this with a dict / defaultdict instead?",
+        "Why can't you call len() on the group directly?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Finishing exactly at the deadline counted as late",
+      "type": "time-window-boundary",
+      "file": "jobsim/reports.py",
+      "function": "late_jobs",
+      "test": "test_3_report.TestReport.test_late",
+      "old": "s.end > s.job.deadline)",
+      "new": "s.end >= s.job.deadline)",
+      "symptom": "Test 3 test_late: [\"a6\", \"a9\"] instead of [\"a6\"]; a9 ends exactly at its 14:00 deadline.",
+      "why": "a9 ends at 14:00 with a 14:00 deadline. The README says that is on time; >= reports it as late.",
+      "unblocks": "Test 3 test_late.",
+      "hints": [
+        "When does a9 finish, and what is its deadline?",
+        "Look at the comparison in late_jobs.",
+        "Use s.end > s.job.deadline."
+      ],
+      "probes": [
+        "Which other comparisons in the package are boundary-sensitive?",
+        "If deadlines had seconds, would anything change?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report do?",
+      "a": "It reads the worker count from config.json, loads jobs.csv and failures.csv, computes blocked jobs with dag.blocked_jobs, runs scheduler.simulate, and turns the JobStates into the jobs / events / blocked / summary sections."
+    },
+    {
+      "q": "How does simulate move through time?",
+      "a": "`now` starts at the earliest release. Each step finishes running attempts with end <= now, adds newly ready jobs to `queue`, sorts it by Job.queue_key, starts queued jobs on free workers (lowest number first), then jumps to the next end time or future ready_at. When nothing is upcoming, any job still pending is marked skipped."
+    },
+    {
+      "q": "What does Job.queue_key return?",
+      "a": "A tuple that sorts ascending: it starts with -priority so higher priorities come first, followed by the remaining tie-break fields."
+    },
+    {
+      "q": "How are failures and retries handled?",
+      "a": "scheduler._finish checks whether the attempt number is in failures[job_id]. If it is, it logs fail@time and, when attempts <= max_retries, puts the job back to pending with ready_at = now + 10; otherwise the job is failed. Non-failing attempts log done@time and succeed."
+    },
+    {
+      "q": "What does JobState hold?",
+      "a": "The Job, an events list, status, attempts, ready_at, start/end/worker of the latest attempt, and busy (minutes across all attempts). log() appends to events."
+    },
+    {
+      "q": "How does blocked_jobs pick a reason?",
+      "a": "For each job it asks missing_dep for an unknown dependency; if one is found the reason is missing_dep:<id>. Otherwise, if the job is in cycle_members(jobs), the reason is cycle."
+    },
+    {
+      "q": "What shape is the team summary?",
+      "a": "team_summary returns {team: {jobs, succeeded, busy_min}}, built by grouping JobStates with itertools.groupby keyed on job.team."
+    }
+  ]
+}

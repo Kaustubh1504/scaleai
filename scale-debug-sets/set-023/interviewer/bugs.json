@@ -1,0 +1,117 @@
+{
+  "id": "set-023",
+  "title": "Contributor payout run with late penalties and FX",
+  "domain": "payouts",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "payroll",
+  "scenario": "Price accepted tasks (flat or per-minute), halve late submissions, convert each contributor's earnings to their payout currency or hold them below a minimum, and list the top contributors by task count. Test 2 checks the payout report.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_task_pay",
+      "test_2_payout_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "payroll/pricing.py",
+      "symbol": "base_pay",
+      "why_correct": "The `//` looks like an integer-division slip, but rule 2 says per-minute pay is rounded down to a whole cent, and multiplying before dividing keeps it exact."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Elapsed hours drop whole days",
+      "type": "timedelta-seconds",
+      "file": "payroll/utils.py",
+      "function": "hours_between",
+      "test": "test_1_task_pay.TestTaskPay.test_late_submissions",
+      "old": "    return (end - start).total_seconds() / 3600",
+      "new": "    return (end - start).seconds / 3600",
+      "symptom": "test_late_submissions fails: T106 pays 1150 and T121 pays 2700 (full price) instead of 575 and 1350. T113 is 45 either way.",
+      "why": "timedelta.seconds is only the seconds part after whole days are taken out. T106 (26 h) reads as 2 h and T121 (74 h) as 2 h, so neither is treated as late.",
+      "unblocks": "test_late_submissions",
+      "hints": [
+        "T106 and T121 were submitted days after assignment. Why are they paid in full?",
+        "Look at how the elapsed time between two timestamps is computed.",
+        "hours_between uses .seconds; use .total_seconds()."
+      ],
+      "probes": [
+        "Why was T113 (23 h 59 m) right with and without the fix?",
+        "What does timedelta(days=3, hours=2).seconds return, and why?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Currency conversion truncates",
+      "type": "float-rounding",
+      "file": "payroll/pricing.py",
+      "function": "to_local",
+      "test": "test_2_payout_report.TestPayoutReport.test_local_currency_payouts",
+      "old": "    return round(usd_cents * float(rates[\"currency_rates\"][currency]))",
+      "new": "    return int(usd_cents * float(rates[\"currency_rates\"][currency]))",
+      "symptom": "test_local_currency_payouts fails: C01 gets EUR 878 instead of 879, and C04 gets INR 116339 instead of 116340. Other currencies match.",
+      "why": "int() truncates. C01's 955 × 0.92 = 878.6 should round to 879, and C04's 1400 × 83.1 comes out as 116339.99999999999 in floating point, which truncates to 116339 instead of 116340.",
+      "unblocks": "test_local_currency_payouts",
+      "hints": [
+        "C04's payout is one rupee short. Multiply it out by hand.",
+        "Look at how a USD amount becomes a local amount.",
+        "to_local uses int(); the spec says round to nearest: round(...)."
+      ],
+      "probes": [
+        "Why is 1400 × 83.1 not exactly 116340 in Python?",
+        "Rule 2 floors and rule 5 rounds. How do you tell which applies where?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Counter.update on an id string",
+      "type": "counter-misuse",
+      "file": "payroll/reports.py",
+      "function": "build_report",
+      "test": "test_2_payout_report.TestPayoutReport.test_top_contributors",
+      "old": "        counts[task.contributor_id] += 1",
+      "new": "        counts.update(task.contributor_id)",
+      "symptom": "test_top_contributors fails: the list is [['C', 26], ['0', 22], ['1', 10]] instead of [['C06', 4], ['C02', 3], ['C04', 3]].",
+      "why": "Counter.update iterates its argument, so a string like 'C06' adds one count each for 'C', '0' and '6'. The top list ends up made of characters.",
+      "unblocks": "test_top_contributors",
+      "hints": [
+        "Look at the keys in top_contributors. Are they contributor ids?",
+        "How are tasks counted per contributor?",
+        "counts.update(cid) counts characters; use counts[task.contributor_id] += 1 (or update([cid]))."
+      ],
+      "probes": [
+        "What would counts.update([task.contributor_id]) do differently?",
+        "Why didn't earned totals have the same problem?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "Where is a task's pay computed?",
+      "a": "pricing.task_pay looks up the rule for the task type in rates['task_types'], calls base_pay, then compares hours_between(assigned_at, submitted_at) with late_after_hours and applies late_factor with round() when it is larger."
+    },
+    {
+      "q": "What does hours_between return?",
+      "a": "A float number of hours between two datetimes, computed from the difference `end - start` in utils.py."
+    },
+    {
+      "q": "Which tasks reach task_pay?",
+      "a": "build_report keeps tasks whose cleaned status is 'accepted' and whose contributor_id is in the roster loaded by load_contributors."
+    },
+    {
+      "q": "How does the min payout default work?",
+      "a": "load_contributors trims min_payout_usd_cents and uses DEFAULT_MIN_PAYOUT (1000) only if the trimmed text is empty; otherwise int() of the text, so '0' stays 0."
+    },
+    {
+      "q": "How is top_contributors built?",
+      "a": "build_report fills a collections.Counter named counts while it loops over accepted tasks, then sorts counts.items() by (-count, id) and keeps the first three."
+    },
+    {
+      "q": "What shape does rates.json have?",
+      "a": "A dict with late_after_hours, late_factor, currency_rates (currency -> rate, GBP stored as a string) and task_types (type -> either per_task_cents or hourly_cents)."
+    }
+  ]
+}

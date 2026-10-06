@@ -1,0 +1,21 @@
+ticket_id,customer_email,subject,body,created_at
+T-1001,ana@example.com,Double charge,I was charged twice for my subscription this month.,2024-05-01T09:15:00Z
+T-1002,ben@example.com,App crash,The mobile app crashes with an error when I open settings.,2024-05-01T10:02:00Z
+T-1003,cara@example.com,Locked out,I am locked out of my account and the password reset email never arrives.,2024-05-01T11:45:00+00:00
+T-1004,dev@example.com,Idea,It would be great to have a dark mode feature.,2024-05-02T08:00:00Z
+ T-1005 , eli@example.com ,  Hello  ,  Just saying thanks for the great support team!  ,2024-05-02T09:30:00Z
+T-1006,not-an-email,Refund,Please refund my last invoice.,2024-05-02T10:00:00Z
+T-1007,fay@example.com,,The export button is broken.,2024-05-02T11:00:00Z
+T-1008,gus@example.com,Invoice question,"Why does my invoice show two charges, one for $10 and one for $12?",2024-05-03T12:00:00Z
+T-1002,hal@example.com,Duplicate,This id was already used.,2024-05-03T13:00:00Z
+T-1009,ivy@example.com,Bad date,The page is broken.,yesterday
+T-1010,jon@example.com,Extra column,Body text,2024-05-03T14:00:00Z,surprise
+T-1011,kim@example.com,Short row
+
+,lee@example.com,No id,Missing the ticket id.,2024-05-04T09:00:00Z
+T-1012,max@example.com,Multi-line,"First line of the body.
+Second line asks about a refund for a payment.",2024-05-04T10:00:00Z
+T-1013,nia@example.com,Login,Two-factor login codes are not arriving so I cannot sign in.,2024-05-04T11:00:00Z
+T-1014,oli@example.com,Month 13,Something about pricing.,2024-13-01T00:00:00Z
+T-1015,pat@example.com,Café ☕,"Le paiement a échoué, merci de vérifier.",2024-05-05T08:00:00+02:00
+T-1016,quinn@example.com,Whitespace body,   ,2024-05-05T09:00:00Z

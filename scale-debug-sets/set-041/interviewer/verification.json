@@ -1,0 +1,48 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_leaderboard",
+      "test_2_teams"
+    ],
+    "failures": {
+      "tests.test_1_leaderboard.TestLeaderboard.test_full_rows": "AssertionError: Lists differ: [{'ra[24 chars]: 'c-01', 'name': 'Ava Brooks', 'score': 21, '[999 chars]: 1}] != [{'ra[24 chars]: 'c-12', 'name': 'Lia Romero', 'score': 23, '[1111 chars]: 1}]\n\nFirst differing element 0:\n{'ran[23 chars]: 'c-01', 'name': 'Ava Brooks', 'score': 21, '[27 chars]': 3}\n{'ran[23 chars]: 'c-12', 'name': 'Lia Romero', 'score': 23, '[27 chars]': 3}\n\nSecond list contains 1 additional elements.\nFirst extra element 10:\n{'rank': 11, 'contributor_id': 'c-07', 'name': 'Gus Ferreira', 'score': 4, 'tasks_solved': 1, 'attempts': 1}\n\n  [{'attempts': 3,\n+   'contributor_id': 'c-12',\n",
+      "tests.test_1_leaderboard.TestLeaderboard.test_order": "AssertionError: Lists differ: ['c-01', 'c-02', 'c-04', 'c-06', 'c-12', 'c-0[30 chars]-07'] != ['c-12', 'c-01', 'c-02', 'c-04', 'c-06', 'c-0[38 chars]-07']\n\nFirst differing element 0:\n'c-01'\n'c-12'\n\nSecond list contains 1 additional elements.\nFirst extra element 10:\n'c-07'\n\n- ['c-01', 'c-02', 'c-04', 'c-06', 'c-12', 'c-03', 'c-10', 'c-11', 'c-09', 'c-07']\n+ ['c-12',\n+  'c-01',\n+  'c-02',\n+  'c-04',\n+  'c-06',\n+  'c-03',\n+  'c-11',\n+  'c-10',\n+  'c-09',\n+  'c-08',\n+  'c-07']",
+      "tests.test_1_leaderboard.TestLeaderboard.test_scores": "AssertionError: {'c-01': 21, 'c-02': 14, 'c-04': 12, 'c-06': [64 chars]': 4} != {'c-12': 23, 'c-01': 21, 'c-02': 21, 'c-04': [80 chars]': 4}\n  {'c-01': 21,\n-  'c-02': 14,\n?           -\n\n+  'c-02': 21,\n?          +\n\n-  'c-03': 9,\n?          ^\n\n+  'c-03': 17,\n?          ^^\n\n-  'c-04': 12,\n?          -\n\n+  'c-04': 20,\n?           +\n\n-  'c-06': 12,\n?           ^\n\n+  'c-06': 19,\n?           ^\n\n   'c-07': 4,\n+  'c-08': 9,\n-  'c-09': 6,\n?          ^\n\n+  'c-09': 13,\n?          ^^\n\n-  'c-10': 8,\n?          ^\n\n+  'c-10': 13,\n?          ^^\n\n-  'c-11': 8,\n?          ^\n\n+  'c-11': 14,\n?          ^^\n\n-  'c-",
+      "tests.test_2_teams.TestTeams.test_summary": "AssertionError: {'sub[14 chars]ed': 17, 'contributors_ranked': 10, 'leader': [25 chars]ons'} != {'sub[14 chars]ed': 27, 'contributors_ranked': 11, 'leader': [25 chars]ons'}\n- {'contributors_ranked': 10,\n?                          ^\n\n+ {'contributors_ranked': 11,\n?                          ^\n\n-  'leader': 'c-01',\n?               -\n\n+  'leader': 'c-12',\n?                +\n\n-  'submissions_counted': 17,\n?                         ^\n\n+  'submissions_counted': 27,\n?                         ^\n\n   'top_team': 'Falcons'}",
+      "tests.test_2_teams.TestTeams.test_team_order": "AssertionError: Lists differ: ['Falcons', 'Otters', 'Lynx', 'Herons'] != ['Falcons', 'Herons', 'Otters', 'Lynx']\n\nFirst differing element 1:\n'Otters'\n'Herons'\n\n- ['Falcons', 'Otters', 'Lynx', 'Herons']\n+ ['Falcons', 'Herons', 'Otters', 'Lynx']",
+      "tests.test_2_teams.TestTeams.test_team_scores": "AssertionError: {'Falcons': (35, 3), 'Otters': (21, 3), 'Lynx': (18, 3), 'Herons': (17, 2)} != {'Falcons': (42, 3), 'Herons': (37, 2), 'Otters': (37, 3), 'Lynx': (32, 3)}\n- {'Falcons': (35, 3), 'Herons': (17, 2), 'Lynx': (18, 3), 'Otters': (21, 3)}\n?              ^^                 ^                ^^                 ^^\n\n+ {'Falcons': (42, 3), 'Herons': (37, 2), 'Lynx': (32, 3), 'Otters': (37, 3)}\n?              ^^                 ^                ^^                 ^^\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_leaderboard",
+      "test_2_teams"
+    ],
+    "failures": {
+      "tests.test_1_leaderboard.TestLeaderboard.test_full_rows": "AssertionError: Lists differ: [{'ra[95 chars]ts': 4}, {'rank': 2, 'contributor_id': 'c-01',[1040 chars]: 1}] != [{'ra[95 chars]ts': 3}, {'rank': 2, 'contributor_id': 'c-01',[1040 chars]: 1}]\n\nFirst differing element 0:\n{'ran[38 chars]': 'Lia Romero', 'score': 23, 'tasks_solved': 3, 'attempts': 4}\n{'ran[38 chars]': 'Lia Romero', 'score': 23, 'tasks_solved': 3, 'attempts': 3}\n\n- [{'attempts': 4,\n?               ^\n\n+ [{'attempts': 3,\n?               ^\n\n    'contributor_id': 'c-12',\n    'name': 'Lia Romero',\n    'rank': 1,\n    'score': 23,\n    'tasks_solved': 3},\n   {'attempts': 3,\n    'contributo",
+      "tests.test_2_teams.TestTeams.test_summary": "AssertionError: {'sub[14 chars]ed': 30, 'contributors_ranked': 11, 'leader': [25 chars]ons'} != {'sub[14 chars]ed': 27, 'contributors_ranked': 11, 'leader': [25 chars]ons'}\n  {'contributors_ranked': 11,\n   'leader': 'c-12',\n-  'submissions_counted': 30,\n?                         ^^\n\n+  'submissions_counted': 27,\n?                         ^^\n\n   'top_team': 'Falcons'}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_teams"
+    ],
+    "failures": {
+      "tests.test_2_teams.TestTeams.test_team_order": "AssertionError: Lists differ: ['Falcons', 'Otters', 'Herons', 'Lynx'] != ['Falcons', 'Herons', 'Otters', 'Lynx']\n\nFirst differing element 1:\n'Otters'\n'Herons'\n\n- ['Falcons', 'Otters', 'Herons', 'Lynx']\n+ ['Falcons', 'Herons', 'Otters', 'Lynx']"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_leaderboard",
+      "test_2_teams"
+    ],
+    "failing_tests": [
+      "tests.test_1_leaderboard.TestLeaderboard.test_full_rows",
+      "tests.test_1_leaderboard.TestLeaderboard.test_order",
+      "tests.test_1_leaderboard.TestLeaderboard.test_scores",
+      "tests.test_2_teams.TestTeams.test_summary",
+      "tests.test_2_teams.TestTeams.test_team_order",
+      "tests.test_2_teams.TestTeams.test_team_scores"
+    ]
+  }
+}

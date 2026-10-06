@@ -1,0 +1,51 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_spans",
+      "test_2_entities"
+    ],
+    "failures": {
+      "tests.test_1_spans.TestSpans.test_kept_span_counts": "AssertionError: {} != {'ann-a': 14, 'ann-b': 11, 'ann-c': 9}\n- {}\n+ {'ann-a': 14, 'ann-b': 11, 'ann-c': 9}",
+      "tests.test_1_spans.TestSpans.test_misaligned": "AssertionError: Lists differ: [('d01', 'ann-a', 'Acme Corp'), ('d01', 'ann-a', 'Bosto[1088 chars]on')] != [('d01', 'ann-b', 'Boston'), ('d01', 'ann-c', 'Acme Corp')]\n\nFirst differing element 0:\n('d01', 'ann-a', 'Acme Corp')\n('d01', 'ann-b', 'Boston')\n\nFirst list contains 36 additional elements.\nFirst extra element 2:\n('d01', 'ann-a', 'Maria Lopez')\n\nDiff is 1324 characters long. Set self.maxDiff to None to see it.",
+      "tests.test_1_spans.TestSpans.test_overlaps_resolved": "KeyError: 'ann-c'",
+      "tests.test_2_entities.TestEntities.test_docs_with_entities": "AssertionError: Lists differ: [] != ['d01', 'd02', 'd04', 'd05', 'd07', 'd08', 'd10']\n\nSecond list contains 7 additional elements.\nFirst extra element 0:\n'd01'\n\n- []\n+ ['d01', 'd02', 'd04', 'd05', 'd07', 'd08', 'd10']",
+      "tests.test_2_entities.TestEntities.test_entities": "AssertionError: {} != {'d01': [('Maria Lopez', 'PER', 0, 11, 2),[395 chars] 2)]}\n- {}\n+ {'d01': [('Maria Lopez', 'PER', 0, 11, 2), ('Acme Corp', 'ORG', 19, 28, 2)],\n+  'd02': [('Red Cross', 'ORG', 4, 13, 3), ('Nairobi', 'LOC', 33, 40, 2)],\n+  'd04': [('Tim Cook', 'PER', 0, 8, 3), ('Cupertino', 'LOC', 32, 41, 2)],\n+  'd05': [('Lagos', 'LOC', 0, 5, 3), ('African Union', 'ORG', 45, 58, 2)],\n+  'd07': [('Siemens', 'ORG', 0, 7, 2), ('Berlin', 'LOC', 40, 46, 2)],\n+  'd08': [('Ana Silva', 'PER', 0, 9, 3)],\n+  'd10': [('Ericsson', 'ORG', 10, 18, 2)]}",
+      "tests.test_2_entities.TestEntities.test_label_counts": "AssertionError: {} != {'LOC': 4, 'ORG': 5, 'PER': 3}\n- {}\n+ {'LOC': 4, 'ORG': 5, 'PER': 3}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_spans",
+      "test_2_entities"
+    ],
+    "failures": {
+      "tests.test_1_spans.TestSpans.test_kept_span_counts": "AssertionError: {'ann-a': 14, 'ann-b': 11, 'ann-c': 10} != {'ann-a': 14, 'ann-b': 11, 'ann-c': 9}\n- {'ann-a': 14, 'ann-b': 11, 'ann-c': 10}\n?                                     ^^\n\n+ {'ann-a': 14, 'ann-b': 11, 'ann-c': 9}\n?                                     ^\n",
+      "tests.test_1_spans.TestSpans.test_overlaps_resolved": "AssertionError: Lists differ: [[0, 18, 'ORG'], [10, 18, 'ORG']] != [[0, 18, 'ORG']]\n\nFirst list contains 1 additional elements.\nFirst extra element 1:\n[10, 18, 'ORG']\n\n- [[0, 18, 'ORG'], [10, 18, 'ORG']]\n+ [[0, 18, 'ORG']]",
+      "tests.test_2_entities.TestEntities.test_entities": "AssertionError: {'d01[374 chars]va', 'PER', 0, 9, 3)], 'd10': [('Ericsson', 'ORG', 10, 18, 3)]} != {'d01[374 chars]va', 'PER', 0, 9, 3)], 'd10': [('Ericsson', 'ORG', 10, 18, 2)]}\n  {'d01': [('Maria Lopez', 'PER', 0, 11, 2), ('Acme Corp', 'ORG', 19, 28, 2)],\n   'd02': [('Red Cross', 'ORG', 4, 13, 3), ('Nairobi', 'LOC', 33, 40, 2)],\n   'd04': [('Tim Cook', 'PER', 0, 8, 3), ('Cupertino', 'LOC', 32, 41, 2)],\n   'd05': [('Lagos', 'LOC', 0, 5, 3), ('African Union', 'ORG', 45, 58, 2)],\n   'd07': [('Siemens', 'ORG', 0, 7, 2), ('Berlin', 'LOC', 40, 46, 2)],\n   'd08': [('Ana Silva', 'PER', 0, 9, 3)],\n- "
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_entities"
+    ],
+    "failures": {
+      "tests.test_2_entities.TestEntities.test_docs_with_entities": "AssertionError: Lists differ: ['d01', 'd02'] != ['d01', 'd02', 'd04', 'd05', 'd07', 'd08', 'd10']\n\nSecond list contains 5 additional elements.\nFirst extra element 2:\n'd04'\n\n- ['d01', 'd02']\n+ ['d01', 'd02', 'd04', 'd05', 'd07', 'd08', 'd10']",
+      "tests.test_2_entities.TestEntities.test_entities": "AssertionError: {'d01[137 chars], 2)]} != {'d01[137 chars], 2)], 'd04': [('Tim Cook', 'PER', 0, 8, 3), ([249 chars] 2)]}\n  {'d01': [('Maria Lopez', 'PER', 0, 11, 2), ('Acme Corp', 'ORG', 19, 28, 2)],\n-  'd02': [('Red Cross', 'ORG', 4, 13, 3), ('Nairobi', 'LOC', 33, 40, 2)]}\n?                                                                        ^\n\n+  'd02': [('Red Cross', 'ORG', 4, 13, 3), ('Nairobi', 'LOC', 33, 40, 2)],\n?                                                                        ^\n\n+  'd04': [('Tim Cook', 'PER', 0, 8, 3), ('Cupertino', 'LOC', 32, 41, 2)],\n+  'd05': [('Lagos', 'L",
+      "tests.test_2_entities.TestEntities.test_label_counts": "AssertionError: {'LOC': 1, 'ORG': 2, 'PER': 1} != {'LOC': 4, 'ORG': 5, 'PER': 3}\n- {'LOC': 1, 'ORG': 2, 'PER': 1}\n?         ^         ^         ^\n\n+ {'LOC': 4, 'ORG': 5, 'PER': 3}\n?         ^         ^         ^\n"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_spans",
+      "test_2_entities"
+    ],
+    "failing_tests": [
+      "tests.test_1_spans.TestSpans.test_kept_span_counts",
+      "tests.test_1_spans.TestSpans.test_misaligned",
+      "tests.test_1_spans.TestSpans.test_overlaps_resolved",
+      "tests.test_2_entities.TestEntities.test_docs_with_entities",
+      "tests.test_2_entities.TestEntities.test_entities",
+      "tests.test_2_entities.TestEntities.test_label_counts"
+    ]
+  }
+}

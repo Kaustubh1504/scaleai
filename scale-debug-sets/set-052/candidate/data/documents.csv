@@ -1,0 +1,23 @@
+doc_id,collection,text,updated
+F01,faq,How do I reset my password?,2026-04-02
+f02,FAQ,Where can I download my invoices?,04/03/2026
+F03,faq,Can I change my billing email?,2026-04-01
+K01, kb ,Configuring single sign-on with Okta,2026-03-15
+F04,faq ,Which browsers are supported?,2026-04-05
+P01,policies,Data retention policy for audio files,1 Mar 2026
+k02,KB,Rotating API keys without downtime,2026-03-18
+F03,faq,Can I change the billing email on my account?,2026-04-09
+F05,faq,   ,2026-04-06
+F06,faq,Is there a mobile app?,2026-04-07
+K03,kb,Webhook signature verification,03/20/2026
+P02,Policies,Acceptable use policy,2026-02-11
+K04,kb,Exporting  audit logs to S3,2026-03-21
+F07,faq,How do I add a teammate?,2026-04-08
+K05,kb,Setting up SCIM provisioning,2026-03-22
+P03,policies,Subprocessor list and notification process,2026-02-20
+K06,kb,Troubleshooting rate limit errors,2026-03-25
+F08,faq,Do you offer academic discounts?,2026-04-10
+K02,kb,Rotating API keys,2026-03-01
+P04,policies,Incident response commitments,2026-02-25
+K07,kb,,2026-03-26
+F09,faq,What happens when my trial ends?,9 Apr 2026

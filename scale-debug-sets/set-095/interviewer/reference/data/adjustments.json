@@ -1,0 +1,15 @@
+{
+  "adjustments": [
+    {"contributor_id": "C-06", "amount": "2.50", "reason": "training bonus"},
+    {"contributor_id": "c-01", "amount": "(1.20)", "reason": "rework clawback"},
+    {"contributor_id": "C-02", "amount": "$5.00", "reason": "referral"},
+    {"contributor_id": "C-03 ", "amount": "0.25", "reason": "rounding credit"},
+    {"contributor_id": "C-04", "amount": "(0.60)", "reason": "duplicate task"},
+    {"contributor_id": "C-07", "amount": "1,000.00", "reason": "contest prize"},
+    {"contributor_id": "C-08", "amount": "1.00", "reason": "training bonus"},
+    {"contributor_id": "C-09", "amount": "(2.10)", "reason": "rework clawback"},
+    {"contributor_id": "C-10", "amount": "3.00", "reason": "survey"},
+    {"contributor_id": "C-05", "amount": "0.00", "reason": "placeholder"},
+    {"contributor_id": "C-99", "amount": "4.00", "reason": "unknown account"}
+  ]
+}

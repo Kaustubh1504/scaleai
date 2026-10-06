@@ -1,0 +1,31 @@
+contributor_id,course,result,taken_on
+C01,core-101,pass,2025-11-02
+c01,safety-201,pass,2025-12-01
+C02,CORE-101,pass,11/05/2025
+C02,safety-201,fail,2025-12-03
+C02,safety-201,pass,2026-01-15
+C02,code-301,pass,2026-01-20
+C03,core-101,PASS,2025-10-10
+C04,core-101,pass,2025-09-09
+C04,safety-201,pass,2025-10-01
+C04 ,safety-201,Fail,3 Feb 2026
+C05,core-101,pass,2026-01-25
+C09,core-101,pass,2025-08-08
+C09,audio-120,pass,2025-08-09
+C10,core-101,pass,2025-07-07
+C10,safety-201, pass,2025-07-20
+C11,core-101,pass,2025-12-12
+C11,pii-110,pass,2026-01-02
+C13,core-101,pass,2025-06-06
+C13,pii-110,pass,2025-06-20
+C13,code-301,pass,2025-06-30
+C14,core-101,pass,2025-12-24
+C14,audio-120,pass,2026-01-03
+C15,safety-201,pass,2025-10-15
+C15,core-101,pass,2025-10-15
+C15,code-301,fail,2026-02-01
+C15,code-301,pass,02/01/2026
+C15,audio-120,pass,2026-02-02
+C16,core-101,pass,2025-11-30
+C16,audio-120,fail,2026-01-10
+C08,audio-120,pass,2026-01-11

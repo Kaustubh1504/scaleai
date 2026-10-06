@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_schedule"
+    ],
+    "failures": {
+      "tests.test_1_schedule.TestSchedule.test_morning_wave": "AssertionError: {'m1'[145 chars] '06:30', 'end': '07:15', 'worker': 'w2'}, 'm3[279 chars]w1'}} != {'m1'[145 chars] '06:00', 'end': '06:45', 'worker': 'w2'}, 'm3[279 chars]w1'}}\n  {'m1': {'attempts': 1,\n          'end': '07:00',\n          'start': '06:00',\n          'status': 'succeeded',\n          'worker': 'w1'},\n   'm2': {'attempts': 1,\n-         'end': '07:15',\n?                  ^ ^\n\n+         'end': '06:45',\n?                  ^ ^\n\n-         'start': '06:30',\n?                      ^\n\n+         'start': '06:00',\n?                      ^\n\n          'status': 'succeeded',\n          'worker'"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_schedule"
+    ],
+    "failures": {
+      "tests.test_1_schedule.TestSchedule.test_afternoon_wave": "AssertionError: {'a9'[239 chars]': '14:00', 'end': '14:30', 'worker': 'w1'}, '[185 chars]w2'}} != {'a9'[239 chars]': '13:42', 'end': '14:12', 'worker': 'w2'}, '[185 chars]w2'}}\n  {'a1': {'attempts': 1,\n          'end': '13:42',\n          'start': '13:02',\n          'status': 'succeeded',\n          'worker': 'w2'},\n   'a2': {'attempts': 1,\n+         'end': '14:30',\n+         'start': '14:00',\n+         'status': 'succeeded',\n+         'worker': 'w1'},\n+  'a3': {'attempts': 1,\n          'end': '14:12',\n          'start': '13:42',\n          'status': 'succeeded',\n          'worker': 'w2'},\n-  'a3"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_jobs"
+    ],
+    "failures": {
+      "tests.test_2_jobs.TestJobs.test_blocked": "AssertionError: {'b2': 'missing_dep:ghost', 'c1': 'cycle', 'c2': 'cycle'} != {'b1': 'missing_dep:zz-missing', 'b2': 'miss[40 chars]cle'}\n- {'b2': 'missing_dep:ghost', 'c1': 'cycle', 'c2': 'cycle'}\n+ {'b1': 'missing_dep:zz-missing',\n+  'b2': 'missing_dep:ghost',\n+  'c1': 'cycle',\n+  'c2': 'cycle'}"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_jobs"
+    ],
+    "failures": {
+      "tests.test_2_jobs.TestJobs.test_event_log": "AssertionError: Lists differ: ['start@06:00/w1', 'start@06:00/w2', 'done@06:45',[777 chars]:40'] != ['start@07:00/w1', 'fail@07:20', 'start@07:35/w1', 'done@07:55']\n\nFirst differing element 0:\n'start@06:00/w1'\n'start@07:00/w1'\n\nFirst list contains 48 additional elements.\nFirst extra element 4:\n'done@07:00'\n\n+ ['start@07:00/w1', 'fail@07:20', 'start@07:35/w1', 'done@07:55']\n- ['start@06:00/w1',\n-  'start@06:00/w2',\n-  'done@06:45',\n-  'start@06:45/w2',\n-  'done@07:00',\n-  'start@07:00/w1',\n-  'done@07:15',\n-  'start@07:15/w2',\n-  'fail@07:20',\n-  'start@07:20/w1',\n-  'done@07:35',\n-  'start@07:"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_teams": "AssertionError: {'etl': {'jobs': 2, 'succeeded': 0, 'busy_m[154 chars]: 0}} != {'bi': {'jobs': 5, 'succeeded': 4, 'busy_mi[160 chars] 10}}\n- {'bi': {'busy_min': 0, 'jobs': 1, 'succeeded': 0},\n?                                ^               ^\n\n+ {'bi': {'busy_min': 105, 'jobs': 5, 'succeeded': 4},\n?                     + +          ^               ^\n\n-  'etl': {'busy_min': 0, 'jobs': 2, 'succeeded': 0},\n?                                 ^               ^\n\n+  'etl': {'busy_min': 205, 'jobs': 6, 'succeeded': 4},\n?                      + +          ^               ^\n\n-  'ml': {'busy_min': 0, 'job"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_late": "AssertionError: Lists differ: ['a6', 'a9'] != ['a6']\n\nFirst list contains 1 additional elements.\nFirst extra element 1:\n'a9'\n\n- ['a6', 'a9']\n+ ['a6']"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_schedule",
+      "test_2_jobs",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_schedule.TestSchedule.test_afternoon_wave",
+      "tests.test_1_schedule.TestSchedule.test_morning_wave",
+      "tests.test_2_jobs.TestJobs.test_blocked",
+      "tests.test_2_jobs.TestJobs.test_event_log",
+      "tests.test_3_report.TestReport.test_late",
+      "tests.test_3_report.TestReport.test_teams"
+    ]
+  }
+}

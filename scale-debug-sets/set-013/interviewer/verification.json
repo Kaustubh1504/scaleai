@@ -1,0 +1,44 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_annotators",
+      "test_2_summary"
+    ],
+    "failures": {
+      "tests.test_1_annotators.TestAnnotators.test_annotator_table": "AssertionError: {'ann[223 chars]ns': 3, 'fast_ratio': 0.333, 'flags': []}, 'an[391 chars] []}} != {'ann[223 chars]ns': 4, 'fast_ratio': 0.5, 'flags': ['speeding[399 chars] []}}\n  {'ann-01': {'fast_ratio': 0.0, 'flags': [], 'submissions': 3},\n   'ann-02': {'fast_ratio': 0.75, 'flags': ['speeding'], 'submissions': 4},\n   'ann-03': {'fast_ratio': 0.0, 'flags': ['copying'], 'submissions': 2},\n-  'ann-04': {'fast_ratio': 0.333, 'flags': [], 'submissions': 3},\n?                             ^^^                              ^\n\n+  'ann-04': {'fast_ratio': 0.5, 'flags': ['speeding'], 'submissions': 4},\n",
+      "tests.test_2_summary.TestSummary.test_flagged_annotators": "AssertionError: Lists differ: ['ann-02', 'ann-03', 'ann-05', 'ann-08', 'ann-09'] != ['ann-02', 'ann-03', 'ann-04', 'ann-05', 'ann-08', 'ann-09']\n\nFirst differing element 2:\n'ann-05'\n'ann-04'\n\nSecond list contains 1 additional elements.\nFirst extra element 5:\n'ann-09'\n\n- ['ann-02', 'ann-03', 'ann-05', 'ann-08', 'ann-09']\n+ ['ann-02', 'ann-03', 'ann-04', 'ann-05', 'ann-08', 'ann-09']\n?                      ++++++++++\n",
+      "tests.test_2_summary.TestSummary.test_rejected_submissions": "AssertionError: Lists differ: [] != ['s13']\n\nSecond list contains 1 additional elements.\nFirst extra element 0:\n's13'\n\n- []\n+ ['s13']"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_summary"
+    ],
+    "failures": {
+      "tests.test_2_summary.TestSummary.test_rejected_submissions": "AssertionError: Lists differ: [] != ['s13']\n\nSecond list contains 1 additional elements.\nFirst extra element 0:\n's13'\n\n- []\n+ ['s13']"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_1_annotators",
+      "test_2_summary"
+    ],
+    "failures": {
+      "tests.test_1_annotators.TestAnnotators.test_annotator_table": "AssertionError: {'ann[398 chars]s': ['copying']}, 'ann-07': {'submissions': 2,[233 chars] []}} != {'ann[398 chars]s': []}, 'ann-07': {'submissions': 2, 'fast_ra[224 chars] []}}\n  {'ann-01': {'fast_ratio': 0.0, 'flags': [], 'submissions': 3},\n   'ann-02': {'fast_ratio': 0.75, 'flags': ['speeding'], 'submissions': 4},\n   'ann-03': {'fast_ratio': 0.0, 'flags': ['copying'], 'submissions': 2},\n   'ann-04': {'fast_ratio': 0.5, 'flags': ['speeding'], 'submissions': 4},\n   'ann-05': {'fast_ratio': 0.0, 'flags': ['copying'], 'submissions': 2},\n-  'ann-06': {'fast_ratio': 0.0, 'flags': ['copying'], 'sub",
+      "tests.test_2_summary.TestSummary.test_copy_tasks": "AssertionError: {'T3'[21 chars]], 'T4': ['ann-06'], 'T5': ['ann-03', 'ann-08'[25 chars]08']} != {'T3'[21 chars]], 'T5': ['ann-03', 'ann-08'], 'T6': ['ann-05', 'ann-08']}\n  {'T3': ['ann-03', 'ann-05'],\n-  'T4': ['ann-06'],\n   'T5': ['ann-03', 'ann-08'],\n   'T6': ['ann-05', 'ann-08']}",
+      "tests.test_2_summary.TestSummary.test_flagged_annotators": "AssertionError: Lists differ: ['ann-02', 'ann-03', 'ann-04', 'ann-05', 'ann-06', 'ann-08', 'ann-09'] != ['ann-02', 'ann-03', 'ann-04', 'ann-05', 'ann-08', 'ann-09']\n\nFirst differing element 4:\n'ann-06'\n'ann-08'\n\nFirst list contains 1 additional elements.\nFirst extra element 6:\n'ann-09'\n\n- ['ann-02', 'ann-03', 'ann-04', 'ann-05', 'ann-06', 'ann-08', 'ann-09']\n?                                          ----------\n\n+ ['ann-02', 'ann-03', 'ann-04', 'ann-05', 'ann-08', 'ann-09']"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_annotators",
+      "test_2_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_annotators.TestAnnotators.test_annotator_table",
+      "tests.test_2_summary.TestSummary.test_copy_tasks",
+      "tests.test_2_summary.TestSummary.test_flagged_annotators",
+      "tests.test_2_summary.TestSummary.test_rejected_submissions"
+    ]
+  }
+}

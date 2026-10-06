@@ -1,0 +1,11 @@
+ Email ,Name,source_ref,Updated_At,hourly_rate,skills,country
+asha@lab.io,Asha R.,B-201,2026-04-03,24,python;Spark,US
+Ben@Lab.io,Ben Ortiz,B-202,2026-04-02,31,nlp;python,US
+kai@lab.io,Kai Moss,B-203,2026-04-02,156/day,,ca
+lena@lab.io,,B-204,2026-04-04,21,audio,uk
+,Mo Reyes,B-205,2026-04-01,20,nlp,US
+nina@lab.io,Nina Ito,B-206,yesterday,22,vision,JP
+omar@lab.io,Omar Haddad,B-207,2026-04-05,abc,nlp,US
+femi@lab.io,Femi Ade,B-208,04/04/2026,27,audio;NLP,GB
+pia@lab.io,Pia Lund,B-209,2026-04-06,0,python,se
+quinn@lab.io , Quinn Blake,B-210,2026-04-02T09:30:00,23,sql,USA

@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_dispatch"
+    ],
+    "failures": {
+      "tests.test_1_dispatch.TestDispatch.test_1_etl_schedule": "AssertionError: {'etl-1': ('00:15', '00:45'), 'etl-2': ('00:55', '01:15'[84 chars]55')} != {'etl-1': ('00:45', '01:15'), 'etl-2': ('00:00', '00:20'[84 chars]25')}\n- {'etl-1': ('00:15', '00:45'),\n-  'etl-2': ('00:55', '01:15'),\n? ^     ^        ^\n\n+ {'etl-1': ('00:45', '01:15'),\n? ^     ^        ^\n\n-  'etl-3': ('00:00', '00:15'),\n?       ^                 ^^\n\n+  'etl-2': ('00:00', '00:20'),\n?       ^                 ^^\n\n-  'etl-4': ('01:15', '01:40'),\n?       ^        ^\n\n+  'etl-3': ('01:25', '01:40'),\n?       ^        ^\n\n+  'etl-4': ('00:20', '00:45'),\n-  'etl-5': ('00:45', '00:55')}\n?        "
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_dispatch"
+    ],
+    "failures": {
+      "tests.test_1_dispatch.TestDispatch.test_2_training_outcomes": "AssertionError: {'trn-1': ('failed', 2, None), 'trn-2': ('blocked', 0[34 chars]20')} != {'trn-1': ('done', 3, '03:40'), 'trn-2': ('done', 1, [35 chars]20')}\n- {'trn-1': ('failed', 2, None),\n-  'trn-2': ('blocked', 0, None),\n+ {'trn-1': ('done', 3, '03:40'),\n+  'trn-2': ('done', 1, '04:10'),\n   'trn-3': ('done', 1, '01:20')}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_jobs"
+    ],
+    "failures": {
+      "tests.test_2_jobs.TestJobs.test_3_reports_dependencies": "AssertionError: {'rpt[39 chars]': ('blocked', None, None), 'rpt-3': ('done', [50 chars]00')} != {'rpt[39 chars]': ('done', '00:45', '01:00'), 'rpt-3': ('done[53 chars]00')}\n  {'rpt-1': ('done', '00:00', '00:45'),\n-  'rpt-2': ('blocked', None, None),\n+  'rpt-2': ('done', '00:45', '01:00'),\n   'rpt-3': ('done', '00:30', '00:50'),\n   'rpt-4': ('done', '00:50', '01:00')}"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_jobs"
+    ],
+    "failures": {
+      "tests.test_2_jobs.TestJobs.test_4_ops_wait_minutes": "AssertionError: {'ops-1': 150, 'ops-2': 50, 'ops-3': 0, 'ops-4': 20} != {'ops-1': 1590, 'ops-2': 50, 'ops-3': 0, 'ops-4': 20}\n- {'ops-1': 150, 'ops-2': 50, 'ops-3': 0, 'ops-4': 20}\n+ {'ops-1': 1590, 'ops-2': 50, 'ops-3': 0, 'ops-4': 20}\n?             +\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_5_attempts_for_etl_and_ops": "AssertionError: {'etl': 57, 'ops': 57} != {'etl': 5, 'ops': 5}\n- {'etl': 57, 'ops': 57}\n?          -          -\n\n+ {'etl': 5, 'ops': 5}"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_summary"
+    ],
+    "failures": {
+      "tests.test_3_summary.TestSummary.test_6_late_jobs": "AssertionError: Lists differ: ['ops-1', 'ops-2', 'ops-3'] != ['ops-2', 'ops-3']\n\nFirst differing element 0:\n'ops-1'\n'ops-2'\n\nFirst list contains 1 additional elements.\nFirst extra element 2:\n'ops-3'\n\n- ['ops-1', 'ops-2', 'ops-3']\n?  ---------\n\n+ ['ops-2', 'ops-3']"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_dispatch",
+      "test_2_jobs",
+      "test_3_summary"
+    ],
+    "failing_tests": [
+      "tests.test_1_dispatch.TestDispatch.test_1_etl_schedule",
+      "tests.test_1_dispatch.TestDispatch.test_2_training_outcomes",
+      "tests.test_2_jobs.TestJobs.test_3_reports_dependencies",
+      "tests.test_2_jobs.TestJobs.test_4_ops_wait_minutes",
+      "tests.test_3_summary.TestSummary.test_5_attempts_for_etl_and_ops",
+      "tests.test_3_summary.TestSummary.test_6_late_jobs"
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_assignment"
+    ],
+    "failures": {
+      "tests.test_1_assignment.TestAssignment.test_chat_safety": "AssertionError: Lists differ: ['C01', 'C04'] != ['C01', 'C10']\n\nFirst differing element 1:\n'C04'\n'C10'\n\n- ['C01', 'C04']\n?            -\n\n+ ['C01', 'C10']\n?           +\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_assignment"
+    ],
+    "failures": {
+      "tests.test_1_assignment.TestAssignment.test_spanish_qa": "AssertionError: Lists differ: ['C03', 'C05'] != ['C03', 'C16']\n\nFirst differing element 1:\n'C05'\n'C16'\n\n- ['C03', 'C05']\n?           ^^\n\n+ ['C03', 'C16']\n?           ^^\n"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_multi_project_contributors": "AssertionError: {'C01': ['P01', 'P01', 'P01', 'P01', 'P01', 'P01', 'P02', 'P[4111 chars]10']} != {'C01': ['P01', 'P02', 'P03'], 'C02': ['P01', 'P03'], 'C03':[64 chars]10']}\nDiff is 10555 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_assignment",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_assignment.TestAssignment.test_chat_safety",
+      "tests.test_1_assignment.TestAssignment.test_spanish_qa",
+      "tests.test_2_report.TestReport.test_multi_project_contributors"
+    ]
+  }
+}

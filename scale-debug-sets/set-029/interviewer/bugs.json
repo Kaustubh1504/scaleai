@@ -1,0 +1,122 @@
+{
+  "id": "set-029",
+  "title": "Box audit: xywh predictions, per-class thresholds, greedy matching",
+  "domain": "bbox_qa",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "boxaudit",
+  "scenario": "Annotator boxes exported as xywh are matched greedily (highest IoU first) to xyxy ground truth with per-class IoU thresholds; the report scores each annotator and gives per-class best-IoU localisation.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_matching",
+      "test_2_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "boxaudit/matching.py",
+      "symbol": "best_iou_per_gt",
+      "why_correct": "Pooling every annotator's predictions looks like a scoping slip, but the README defines localisation as the best IoU any annotator reaches, ignoring thresholds and matching. max(..., default=0.0) covers boxes nobody predicted (g10)."
+    },
+    {
+      "file": "boxaudit/loader.py",
+      "symbol": "xywh_to_xyxy",
+      "why_correct": "With exclusive right/bottom edges, x2 = x + w exactly. No ±1 is needed in this convention."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Matching takes the weakest overlap first",
+      "type": "sort-direction",
+      "file": "boxaudit/matching.py",
+      "function": "match",
+      "test": "test_1_matching.TestMatching.test_matches",
+      "old": "sorted(candidates(preds, gts), key=lambda c: c[0], reverse=True)",
+      "new": "sorted(candidates(preds, gts), key=lambda c: c[0])",
+      "symptom": "",
+      "why": "Greedy matching has to start with the best overlap. Ascending order lets the weakest qualifying pair claim a box first. On IMG-1 ann-1's p01/p02 swap targets, and on IMG-3 ann-3's p14 takes g06 ahead of p15. Each annotator ends up with the same number of matches, so the scores don't move.",
+      "unblocks": "test_1 test_matches.",
+      "hints": [
+        "Compare p01's IoU with g01 and with g02. Which pairing did the code choose?",
+        "Look at the order candidates are processed in match().",
+        "Sort with reverse=True (highest IoU first)."
+      ],
+      "probes": [
+        "Why are tp/fp/fn identical under both orders in this data?",
+        "Construct a case where the wrong order changes the tp count."
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Annotator ids not lower-cased",
+      "type": "id-normalization",
+      "file": "boxaudit/loader.py",
+      "function": "load_predictions",
+      "test": "test_2_report.TestReport.test_annotator_scores",
+      "old": "                annotator=clean(row[\"annotator\"]).lower(),\n",
+      "new": "                annotator=clean(row[\"annotator\"]),\n",
+      "symptom": "",
+      "why": "The IMG-2 rows are exported as 'ANN-3' (and one as 'Ann-2'), so without lower-casing they become separate annotators, each charged with every ground-truth box as a possible miss.",
+      "unblocks": "test_2 test_annotator_scores.",
+      "hints": [
+        "How many annotators does the report list, and how many should there be?",
+        "Compare how the loader cleans annotator ids with the README.",
+        "Add .lower() to the annotator id."
+      ],
+      "probes": [
+        "Why did matches not change even though the ids were split?",
+        "What data change would have made this alter the matches too?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Pixel-inclusive +1 in the intersection",
+      "type": "iou-inclusive-exclusive",
+      "file": "boxaudit/geometry.py",
+      "function": "iou",
+      "test": "test_2_report.TestReport.test_localization",
+      "old": "    iw = min(a.x2, b.x2) - max(a.x1, b.x1)\n    ih = min(a.y2, b.y2) - max(a.y1, b.y1)\n",
+      "new": "    iw = min(a.x2, b.x2) - max(a.x1, b.x1) + 1\n    ih = min(a.y2, b.y2) - max(a.y1, b.y1) + 1\n",
+      "symptom": "",
+      "why": "The +1 belongs to inclusive pixel indexing. Here x2 is exclusive and area() has no +1, so the intersection is inflated against the union: exact matches score above 1 and every overlap reads high. No pair crosses a threshold, so matching is unchanged.",
+      "unblocks": "test_2 test_localization.",
+      "hints": [
+        "Localisation is higher than it should be for every class. Compute IoU(p17, g07) by hand.",
+        "Check iou() against the coordinate convention in the README.",
+        "Remove the + 1 from iw and ih."
+      ],
+      "probes": [
+        "Why can this version produce an IoU above 1?",
+        "Why did no match decision change? Which pairs came closest to a threshold?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report compute, in order?",
+      "a": "It loads ground truth (xyxy) and predictions (xywh converted to xyxy), runs `match_all` to get pred→gt pairs, scores annotators from those pairs with `annotator_scores`, and computes `localization` from `best_iou_per_gt`, which doesn't use the pairs."
+    },
+    {
+      "q": "How does match_all group predictions?",
+      "a": "It groups predictions by `(image_id, annotator)` and ground truth by `image_id`, runs `match` for each group against that image's ground truth, and merges the resulting dicts."
+    },
+    {
+      "q": "What does candidates() return?",
+      "a": "A list of `(iou, pred_id, gt_id)` tuples for same-label pairs whose label is in THRESHOLDS and whose IoU is at least that label's threshold."
+    },
+    {
+      "q": "How are fn and recall computed?",
+      "a": "`fn` is the total number of ground-truth boxes minus that annotator's matched predictions, and recall is tp ÷ total ground-truth boxes, because every annotator is assigned every image."
+    },
+    {
+      "q": "Which rows does the loader skip?",
+      "a": "Rows where any of the coordinate columns is blank after trimming; `_numbers` returns None for them. In this data that's g11 and p23."
+    },
+    {
+      "q": "What shape is a Box?",
+      "a": "A frozen dataclass with `x1, y1, x2, y2` floats. `area` multiplies the clamped width and height, and `iou` returns 0.0 when the overlap width or height is not positive."
+    }
+  ]
+}

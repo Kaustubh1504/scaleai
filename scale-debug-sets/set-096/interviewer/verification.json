@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_cleaning"
+    ],
+    "failures": {
+      "tests.test_1_cleaning.TestCleaning.test_drop_reasons": "AssertionError: {'int[154 chars]8': 'incomplete', 'TX-14': 'low_quality', 'TX-[107 chars]ty'}} != {'int[154 chars]8': 'blocked_source', 'TX-14': 'low_quality', [111 chars]ty'}}\n  {'intent': {'IN-05': 'blocked_source',\n              'IN-09': 'low_quality',\n              'IN-14': 'blocked_source',\n              'IN-17': 'incomplete'},\n   'summaries': {'SM-04': 'blocked_source',\n                 'SM-08': 'incomplete',\n                 'SM-09': 'low_quality'},\n   'toxicity': {'TX-07': 'blocked_source',\n-               'TX-08': 'incomplete',\n?                         ^^  ^^^^^\n\n+               'TX-"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_cleaning"
+    ],
+    "failures": {
+      "tests.test_1_cleaning.TestCleaning.test_duplicates": "AssertionError: {'intent': {'IN-11': 'IN-03'}, 'toxicity': {'TX-13': 'TX-[33 chars]01'}} != {'intent': {'IN-03': 'IN-11'}, 'toxicity': {'TX-13': 'TX-[33 chars]01'}}\n- {'intent': {'IN-11': 'IN-03'},\n+ {'intent': {'IN-03': 'IN-11'},\n   'summaries': {'SM-11': 'SM-01'},\n   'toxicity': {'TX-13': 'TX-09'}}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_assignment"
+    ],
+    "failures": {
+      "tests.test_2_assignment.TestAssignment.test_intent_groups": "AssertionError: {'in-[58 chars]4': 'val', 'in-d05': 'train', 'in-d06': 'val',[14 chars]ain'} != {'in-[58 chars]4': 'train', 'in-d05': 'val', 'in-d06': 'train[14 chars]val'}\n  {'in-d01': 'train',\n   'in-d02': 'test',\n   'in-d03': 'train',\n-  'in-d04': 'val',\n-  'in-d05': 'train',\n?        ^\n\n+  'in-d04': 'train',\n?        ^\n\n-  'in-d06': 'val',\n?        ^\n\n+  'in-d05': 'val',\n?        ^\n\n-  'in-d07': 'train'}\n?        ^          ^\n\n+  'in-d06': 'train',\n?        ^          ^\n\n+  'in-d07': 'val'}"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_assignment"
+    ],
+    "failures": {
+      "tests.test_2_assignment.TestAssignment.test_toxicity_groups": "AssertionError: {'tox[24 chars]': 'test', 'tox-d03': 'train', 'tox-d05': 'val[54 chars]est'} != {'tox[24 chars]': 'train', 'tox-d03': 'val', 'tox-d05': 'test[53 chars]est'}\n  {'tox-d01': 'train',\n-  'tox-d02': 'test',\n-  'tox-d03': 'train',\n?         ^\n\n+  'tox-d02': 'train',\n?         ^\n\n-  'tox-d05': 'val',\n?         ^\n\n+  'tox-d03': 'val',\n?         ^\n\n+  'tox-d05': 'test',\n-  'tox-d06': 'train',\n?               ^^^^\n\n+  'tox-d06': 'test',\n?               ^^^\n\n   'tox-d07': 'val',\n   'tox-d09': 'test'}"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_targets": "AssertionError: {'int[73 chars] 4, 'test': 6}, 'summaries': {'train': 7, 'val': 2, 'test': 3}} != {'int[73 chars] 4, 'test': 6}, 'summaries': {'train': 8, 'val': 2, 'test': 2}}\n  {'intent': {'test': 3, 'train': 9, 'val': 3},\n-  'summaries': {'test': 3, 'train': 7, 'val': 2},\n?                        ^           ^\n\n+  'summaries': {'test': 2, 'train': 8, 'val': 2},\n?                        ^           ^\n\n   'toxicity': {'test': 6, 'train': 10, 'val': 4}}"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_label_totals": "AssertionError: {'int[17 chars]ht': 1, 'refund': 2, 'cancel': 1, 'greet': 1},[112 chars]: 1}} != {'int[17 chars]ht': 4, 'cancel': 4, 'greet': 2, 'refund': 5},[112 chars]: 3}}\nDiff is 770 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_cleaning",
+      "test_2_assignment",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_cleaning.TestCleaning.test_drop_reasons",
+      "tests.test_1_cleaning.TestCleaning.test_duplicates",
+      "tests.test_2_assignment.TestAssignment.test_intent_groups",
+      "tests.test_2_assignment.TestAssignment.test_toxicity_groups",
+      "tests.test_3_report.TestReport.test_label_totals",
+      "tests.test_3_report.TestReport.test_targets"
+    ]
+  }
+}

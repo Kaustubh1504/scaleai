@@ -1,0 +1,15 @@
+{
+  "id": "prob-005",
+  "title": "Webhook Delivery Dispatcher",
+  "topics": [
+    "webhooks-retries",
+    "durable-persistence",
+    "audit-logging"
+  ],
+  "mode": "plain-python",
+  "difficulty": "medium",
+  "starter": "repo",
+  "planted_bugs": false,
+  "package": "dispatcher",
+  "kind": "service"
+}

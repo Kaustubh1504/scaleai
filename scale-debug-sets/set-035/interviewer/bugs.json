@@ -1,0 +1,117 @@
+{
+  "id": "set-035",
+  "title": "Pairwise preferences: win rates, Elo and leaderboard",
+  "domain": "rlhf_preferences",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "prefrank",
+  "scenario": "Raters compared model pairs across 12 collection rounds. Filter skipped, failed-rater and invalid comparisons, compute win rates with half-credit ties, run sequential Elo in numeric round order, and list models with at least 11 games.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_win_rates",
+      "test_2_elo"
+    ]
+  },
+  "verified": [
+    {
+      "file": "prefrank/elo.py",
+      "symbol": "expected_score",
+      "why_correct": "`opponent - rating` in the exponent looks reversed, but it is the standard Elo formula from README rule 8: a stronger opponent makes the exponent positive and the expected score drop below 0.5."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Counter.update on a model name counts its letters",
+      "type": "counter-misuse",
+      "file": "prefrank/stats.py",
+      "function": "win_rates",
+      "test": "test_1_win_rates.TestWinRates.test_win_rates",
+      "old": "            wins[comp.winner] += 1",
+      "new": "            wins.update(comp.winner)",
+      "symptom": "Test 1 test_win_rates: every rate collapses to the tie credit only, e.g. m-alpha 0.042, m-beta 0.077, m-gamma 0.045 (should be 0.875 / 0.692 / 0.5). Games and exclusions are correct.",
+      "why": "Counter.update iterates its argument, and iterating a string yields its characters, so the counts go to 'm', '-', 'a', … and no model ever has a win. Only the half-credit from ties is left.",
+      "unblocks": "test_win_rates.",
+      "hints": [
+        "Every win rate equals half its tie share. Where did the wins go?",
+        "Print the `wins` Counter inside win_rates.",
+        "Use wins[comp.winner] += 1 (or wins.update([comp.winner]))."
+      ],
+      "probes": [
+        "Why does games.update(comp.models) work while wins.update(comp.winner) doesn't?",
+        "Why did Elo stay correct while this was present?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Round kept as text, so 10-12 sort before 2",
+      "type": "string-vs-int",
+      "file": "prefrank/loader.py",
+      "function": "load_comparisons",
+      "test": "test_2_elo.TestElo.test_elo_ratings",
+      "old": "                valid.append(Comparison(clean(row[\"comparison_id\"]).lower(), int(clean(row[\"round\"])),",
+      "new": "                valid.append(Comparison(clean(row[\"comparison_id\"]).lower(), clean(row[\"round\"]),",
+      "symptom": "Test 2 test_elo_ratings: all ratings shift slightly, e.g. m-alpha 1107.4 vs 1118.7, m-beta 1075.9 vs 1062.0, m-gamma 994.9 vs 1000.4. The sum and the leaderboard order are unchanged.",
+      "why": "elo_ratings sorts by `round`. As strings, '10', '11', '12' sort between '1' and '2', so rounds 10-12 are applied early. Elo is order-dependent, so every rating shifts slightly, though win rates and the leaderboard order don't change.",
+      "unblocks": "test_elo_ratings.",
+      "hints": [
+        "Win rates are right but all Elo values are a little off. Elo depends on more than the counts. On what?",
+        "Check the type of Comparison.round when elo_ratings sorts by it.",
+        "Parse the round with int(...) in load_comparisons."
+      ],
+      "probes": [
+        "Why didn't the sum of ratings change?",
+        "Would sorting by comparison_id have been safe instead? Why not?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Model with exactly the minimum games left off",
+      "type": "off-by-one",
+      "file": "prefrank/reports.py",
+      "function": "leaderboard",
+      "test": "test_2_elo.TestElo.test_leaderboard",
+      "old": "    eligible = [m for m in ratings if games[m] >= MIN_GAMES]",
+      "new": "    eligible = [m for m in ratings if games[m] > MIN_GAMES]",
+      "symptom": "Test 2 test_leaderboard: [m-alpha, m-beta, m-delta]; m-gamma (exactly 11 games) is missing.",
+      "why": "The README says at least 11 games. m-gamma has exactly 11 and `>` drops it.",
+      "unblocks": "test_leaderboard.",
+      "hints": [
+        "Which model is missing from the leaderboard, and how many games did it play?",
+        "Compare the eligibility filter with README rule 10.",
+        "Use games[m] >= MIN_GAMES."
+      ],
+      "probes": [
+        "m-eps is also missing in the expected output. Why is that correct?",
+        "What single data point would you add to a test to pin down this boundary?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does load_comparisons return?",
+      "a": "A list of valid `Comparison` objects in file order and a Counter of exclusion reasons (`skipped`, `rater`, `invalid`). For a tie, `winner` is None; otherwise it is the winning model's cleaned name."
+    },
+    {
+      "q": "How are flags like skipped parsed?",
+      "a": "`flag()` returns JSON booleans as is; anything else is cleaned, lower-cased and checked against {true, yes, y, 1}."
+    },
+    {
+      "q": "What does win_rates compute?",
+      "a": "It walks the comparisons and fills three Counters: `games` (both models), `ties` (both models on a tie) and `wins` (on a decisive result). The rate per model is (wins + 0.5 × ties) / games, rounded to 3 decimals. It returns (games, rates)."
+    },
+    {
+      "q": "In what order does elo_ratings apply comparisons?",
+      "a": "It sorts the valid comparisons with `key=lambda c: c.round`; sorting is stable, so within the same round value the file order is kept."
+    },
+    {
+      "q": "Where is the minimum-games rule applied?",
+      "a": "In `reports.leaderboard`, which filters models by `games[m]` against `MIN_GAMES` (11) and sorts the rest by (-rating, name). Elo and win rates are still reported for every model."
+    },
+    {
+      "q": "Is the Elo update zero-sum?",
+      "a": "Yes. Model a gains K × (Sa − Ea) and model b gains K × ((1 − Sa) − (1 − Ea)), which is the negative of a's change, so the ratings always add up to 1000 × the number of models."
+    }
+  ]
+}

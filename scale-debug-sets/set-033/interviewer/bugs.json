@@ -1,0 +1,117 @@
+{
+  "id": "set-033",
+  "title": "NER span adjudication across two export conventions",
+  "domain": "ner_spans",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "spanmerge",
+  "scenario": "Annotators using brat (half-open offsets) and labelkit (inclusive end) marked PER/ORG/LOC spans. Spans are converted, trimmed and validated, accepted at 2+ distinct annotators, and Test 2 reports per-annotator invalid counts and agreement.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_entities",
+      "test_2_annotators"
+    ]
+  },
+  "verified": [
+    {
+      "file": "spanmerge/loader.py",
+      "symbol": "to_exclusive_end",
+      "why_correct": "The `end + 1` looks like the off-by-one, but the README says labelkit exports the index of the last character, so adding 1 is exactly what turns it into a half-open end. brat ends are already exclusive and pass through unchanged."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Entity text sliced one character too far",
+      "type": "span-offset-off-by-one",
+      "file": "spanmerge/reports.py",
+      "function": "entities_by_doc",
+      "test": "test_1_entities.TestEntities.test_entity_text",
+      "old": "            \"text\": doc.text[start:end],",
+      "new": "            \"text\": doc.text[start:end + 1],",
+      "symptom": "Test 1 test_entity_text: every entity carries one extra character, e.g. \"Angela Merkel \", \"Austin.\", \"Ghent.\". Only Kyoto (which ends the text) is unchanged. Offsets and votes are correct.",
+      "why": "Spans are half-open after loading, so text[start:end] is already the whole entity. Adding 1 treats `end` as inclusive and pulls in the next character (a space or the full stop).",
+      "unblocks": "test_entity_text.",
+      "hints": [
+        "Offsets are right but the text has an extra character. Where is the text cut out?",
+        "Look at how entities_by_doc builds the `text` field.",
+        "Use doc.text[start:end]; the +1 belongs only to labelkit conversion, which already happened."
+      ],
+      "probes": [
+        "Why did Kyoto come out right even with the extra +1?",
+        "How many places should know about labelkit's inclusive end, and why only one?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "groupby over a partially sorted list",
+      "type": "groupby-misuse",
+      "file": "spanmerge/consensus.py",
+      "function": "vote",
+      "test": "test_1_entities.TestEntities.test_votes",
+      "old": "    ordered = sorted(spans, key=lambda s: s.key)",
+      "new": "    ordered = sorted(spans, key=lambda s: (s.doc_id, s.start))",
+      "symptom": "Test 1 test_votes: D03 shows [2, 2] instead of [3, 2]; Washington lost one PER vote. The entity list itself is unchanged.",
+      "why": "itertools.groupby only merges adjacent items. Sorting by (doc, start) leaves a02's LOC span for 'Washington' between the PER spans, so the PER votes are split into a group of 1 and a group of 2.",
+      "unblocks": "test_votes.",
+      "hints": [
+        "D03 'Washington' has three PER votes in the CSV but reports 2. What sits between them?",
+        "Look at the order vote() feeds into groupby.",
+        "Sort by the same key you group by: sorted(spans, key=lambda s: s.key)."
+      ],
+      "probes": [
+        "Why was the entity still accepted, just with fewer votes?",
+        "What data would make this drop an entity completely?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Duplicate submissions counted twice in agreement",
+      "type": "missing-dedupe",
+      "file": "spanmerge/metrics.py",
+      "function": "agreement",
+      "test": "test_2_annotators.TestAnnotators.test_agreement",
+      "old": "    per = defaultdict(set)\n    for span in spans:\n        per[span.annotator].add(span.key)",
+      "new": "    per = defaultdict(list)\n    for span in spans:\n        per[span.annotator].append(span.key)",
+      "symptom": "Test 2 test_agreement: a02 is 0.778 instead of 0.75. Every other annotator matches.",
+      "why": "Collecting keys in a list keeps a02's repeated D05 span twice, in both the hits and the denominator. The README measures agreement over distinct spans.",
+      "unblocks": "test_agreement.",
+      "hints": [
+        "Only a02 is off. What is special about a02's rows in spans.csv?",
+        "Look at how agreement() collects each annotator's spans.",
+        "Use a set: per = defaultdict(set) and .add(span.key)."
+      ],
+      "probes": [
+        "Why didn't the duplicate inflate the votes for Naomi Osaka?",
+        "Why does counting a duplicate push the rate up rather than down here?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What happens to a span row between the CSV and vote()?",
+      "a": "`load_spans` skips rows whose annotator isn't registered, then `normalise` cleans ids and the label, rejects unknown docs or labels, converts `end` with `to_exclusive_end` for the annotator's tool, checks the bounds, trims whitespace with `trim`, and builds a `Span`. Valid spans are kept in file order; invalid rows are counted per annotator."
+    },
+    {
+      "q": "What is Span.key?",
+      "a": "A tuple `(doc_id, start, end, label)`, defined as a property in models.py. Both consensus and metrics compare spans through it."
+    },
+    {
+      "q": "How does vote() count votes?",
+      "a": "It sorts the spans, walks them with `itertools.groupby` keyed on `s.key`, builds a set of annotators for each group and stores the set's size in `accepted` when it is at least `MIN_VOTES` (2)."
+    },
+    {
+      "q": "Where is the entity text built?",
+      "a": "In `reports.entities_by_doc`, which slices the document text using the accepted span's start and end and stores it with the label and vote count. Entities are then sorted by (start, end)."
+    },
+    {
+      "q": "How is agreement computed?",
+      "a": "`metrics.agreement` collects the keys of each annotator's valid spans, counts how many of those keys are in `accepted`, and divides by the number collected, rounded to 3 decimals."
+    },
+    {
+      "q": "What does trim() do with ' Paris'?",
+      "a": "It advances `start` while the character at `start` is whitespace and pulls `end` back while the character before `end` is whitespace, so a span starting on the space before 'Paris' ends up covering just 'Paris'."
+    }
+  ]
+}

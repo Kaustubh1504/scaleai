@@ -1,0 +1,117 @@
+{
+  "id": "set-021",
+  "title": "Pre-label TTL cache replay",
+  "domain": "cache_ttl",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "labelcache",
+  "scenario": "Replay a request log against a TTL cache that sits in front of a model server handing out pre-labels per (task, model, locale). Publishes bump the model version and flush that model. Test 2 checks the JSON report.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_lookups",
+      "test_2_cache_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "labelcache/store.py",
+      "symbol": "purge_expired",
+      "why_correct": "`expires_at <= now` looks like the opposite boundary from get(), but it is the same rule seen from the other side: an entry is expired at exactly t + T, so purge must remove it when expires_at == now."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Cache key drops the locale",
+      "type": "cache-key-missing-param",
+      "file": "labelcache/service.py",
+      "function": "make_key",
+      "test": "test_1_lookups.TestLookups.test_ocr_lookups",
+      "old": "    return (req.task_id, req.model, req.locale)",
+      "new": "    return (req.task_id, req.model)",
+      "symptom": "test_ocr_lookups fails: the 09:02:00 fetch for T01 fr-fr comes back as ('hit', 'ocr-v1@1/T01/en-us') instead of ('miss', 'ocr-v1@1/T01/fr-fr'), and the 09:04:00 fr-fr fetch also returns the en-us value.",
+      "why": "The key is only (task, model), so T01's fr-fr fetch finds the en-us entry and serves the English pre-label as a hit. README rule 1 says locale is part of the identity.",
+      "unblocks": "test_ocr_lookups",
+      "hints": [
+        "Look at the 09:02:00 ocr fetch. What locale was asked for, and what locale is in the value returned?",
+        "How is the cache key built for a fetch?",
+        "make_key returns (task_id, model); it needs (task_id, model, locale)."
+      ],
+      "probes": [
+        "Why did the bad hit disappear after the 09:06:00 publish?",
+        "The CacheEntry stores locale too. Why doesn't that protect the lookup?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Entry still served at its exact expiry",
+      "type": "time-window-boundary",
+      "file": "labelcache/store.py",
+      "function": "TTLCache.get",
+      "test": "test_1_lookups.TestLookups.test_seg_lookups",
+      "old": "        if now < entry.expires_at:",
+      "new": "        if now <= entry.expires_at:",
+      "symptom": "test_seg_lookups fails: the 09:02:30 seg-v2 fetch for T02 is a 'hit' instead of a 'miss', and the 09:03:00 fetch then flips from hit to miss.",
+      "why": "seg-v2 has a 120 s TTL; the entry stored at 09:00:30 expires at 09:02:30, and the fetch at exactly 09:02:30 must miss. `<=` treats the expiry instant as still fresh, so it hits, the entry is not refreshed, and the 09:03:00 fetch then misses instead of hitting.",
+      "unblocks": "test_seg_lookups",
+      "hints": [
+        "Compare the seg fetches at 09:02:30 and 09:03:00 with the TTL for seg-v2.",
+        "Read README cache rule 3, then look at how freshness is checked on lookup.",
+        "TTLCache.get uses now <= entry.expires_at; it should be now < entry.expires_at."
+      ],
+      "probes": [
+        "purge_expired uses <= and is correct. Why are the two comparisons opposite?",
+        "Why did the 09:03:00 fetch change from hit to miss, even though it isn't on a boundary?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "last_refresh dumped via str() instead of ISO",
+      "type": "json-serialization",
+      "file": "labelcache/reports.py",
+      "function": "build_report",
+      "test": "test_2_cache_report.TestCacheReport.test_last_refresh",
+      "old": "                \"last_refresh\": iso(s.last_refresh) if s.last_refresh else None,",
+      "new": "                \"last_refresh\": s.last_refresh,",
+      "symptom": "test_last_refresh fails: every last_refresh comes out as '2026-03-02 09:15:30' (space) instead of '2026-03-02T09:15:30'.",
+      "why": "The raw datetime goes into the report, and report_json's default=str turns it into '2026-03-02 09:15:30' with a space. The spec wants the ISO 'T' form that every other timestamp uses.",
+      "unblocks": "test_last_refresh",
+      "hints": [
+        "Compare the last_refresh strings with the other timestamps in the JSON.",
+        "How does each timestamp field in build_report get turned into a string?",
+        "last_refresh needs iso(s.last_refresh) if s.last_refresh else None."
+      ],
+      "probes": [
+        "Why didn't json.dumps raise on a datetime here?",
+        "Would test_last_refresh have caught this if it read build_report() instead of report_json()? What would it show?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does replay() do for each request row?",
+      "a": "For `publish` it bumps the backend version for the model and calls `cache.drop_model`. For `fetch` it builds a key with `make_key`, calls `cache.get(key, req.ts)`, and records a hit if an entry comes back. Otherwise it calls the backend, stores a new CacheEntry with `expires_at = ts + ttl`, and records a miss. Per-model counts live in ModelStats."
+    },
+    {
+      "q": "Where does the TTL for a model come from?",
+      "a": "`load_config` reads `default_ttl_seconds` and the `ttl_seconds` map, lower-casing and trimming model names and converting values with int(). `replay` uses `ttls.get(model, default_ttl)`, so ner-v3 (no override) gets 300 seconds."
+    },
+    {
+      "q": "When is purge_expired called?",
+      "a": "Only once, in `build_report`, at the ts of the last log row, before the snapshot is built. Lookups during the replay never call it."
+    },
+    {
+      "q": "What does a CacheEntry hold?",
+      "a": "task_id, model, locale, value, stored_at and expires_at. The snapshot is built from these entry fields, not from the cache keys."
+    },
+    {
+      "q": "How is a blank locale handled?",
+      "a": "`norm_locale` returns the trimmed lower-cased value or `en-us` if that is empty. `load_requests` only applies it to `fetch` rows; publish rows get an empty locale."
+    },
+    {
+      "q": "How does report_json differ from build_report?",
+      "a": "It calls build_report and passes the result to json.dumps with indent=2, sort_keys=True and default=str."
+    }
+  ]
+}

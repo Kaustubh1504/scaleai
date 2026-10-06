@@ -1,0 +1,193 @@
+{
+  "id": "set-002",
+  "title": "Gold-weighted annotation consensus",
+  "domain": "annotation_consensus",
+  "length": "FULL",
+  "difficulty": "easy",
+  "format": "multi",
+  "package": "consensus",
+  "scenario": "Score annotators on gold tasks, block the inaccurate ones, then resolve every other task by accuracy-weighted vote with an alphabetical tie-break. Test 3 summarises the resolved labels.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_annotator_quality",
+      "test_2_consensus",
+      "test_3_summary"
+    ]
+  },
+  "verified": [
+    {
+      "file": "consensus/loader.py",
+      "symbol": "latest_submissions",
+      "why_correct": "The `>=` looks like it should be `>`, but the spec says that on equal timestamps the later row in the file wins, so a later row with the same time has to replace the earlier one. It compares parsed datetimes, so the mixed formats sort correctly."
+    },
+    {
+      "file": "consensus/utils.py",
+      "symbol": "parse_timestamp",
+      "why_correct": "It covers exactly the three formats the README lists, with month/day order for the slash format."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "\"false\"/\"no\" strings parsed as active",
+      "type": "bool-from-string",
+      "file": "consensus/utils.py",
+      "function": "parse_bool",
+      "old": "    if isinstance(value, str):\n        return value.strip().lower() in {\"true\", \"yes\", \"y\", \"1\"}\n    return bool(value)",
+      "new": "    return bool(value)",
+      "symptom": "Test 1: ann-08 and ann-09 appear in the quality table even though they are inactive. Test 2: their votes change T05 (confidence 0.667 instead of 1.0) and resolve T08, which should need more votes.",
+      "why": "bool() of any non-empty string is True, so \"false\" and \"no\" both become active. Only real JSON booleans and numbers survive bool().",
+      "unblocks": "Test 1 table membership, plus T05/T08 in Test 2.",
+      "hints": [
+        "Two annotators in the table shouldn't be there. Look up their entries in annotators.json.",
+        "Look at how the `active` field is interpreted.",
+        "parse_bool returns bool(value). Strings need value.strip().lower() in {\"true\",\"yes\",\"y\",\"1\"}."
+      ],
+      "probes": [
+        "Why did ann-10 (active: 0) stay inactive even with the broken function?",
+        "Why does fixing this also change T05's confidence?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Annotation annotator ids not lower-cased",
+      "type": "id-normalization",
+      "file": "consensus/loader.py",
+      "function": "read_annotations",
+      "old": "                annotator_id=norm_annotator(row[\"annotator_id\"]),",
+      "new": "                annotator_id=clean(row[\"annotator_id\"]),",
+      "symptom": "Test 1: ann-05 shows accuracy 0.5, gold_answered 0, not blocked. It should be 0.0 / 2 / blocked. Consensus doesn't change, because a blocked annotator's votes don't count either way.",
+      "why": "Registry ids are lower-cased, but annotation ids are only trimmed. Every 'ANN-05'/'Ann-05' row fails the registry lookup and is dropped as unknown, so ann-05 looks as if they never answered gold.",
+      "unblocks": "Test 1 row for ann-05, and it exposes B3.",
+      "hints": [
+        "ann-05 answered two gold tasks in the CSV, yet gold_answered is 0. Where did those rows go?",
+        "Compare how annotator ids are normalised in load_annotators and in read_annotations.",
+        "read_annotations uses clean(); it should use norm_annotator()."
+      ],
+      "probes": [
+        "Why didn't Test 2 change when ann-05's annotations were silently dropped?",
+        "Which loader rule threw these rows away, and was that rule itself correct?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Zero accuracy replaced by the prior",
+      "type": "falsy-zero",
+      "file": "consensus/gold.py",
+      "function": "quality_table",
+      "old": "accuracy=rates.get(aid, PRIOR)",
+      "new": "accuracy=rates.get(aid) or PRIOR",
+      "masked_by": [
+        "B2"
+      ],
+      "symptom": "Only visible after B2 is fixed. ann-05 shows accuracy 0.5 with gold_answered 2 and is not blocked. In Test 2, T04 drops to confidence 0.75 and T09 to 0.833.",
+      "why": "`x or PRIOR` treats a real 0.0 accuracy as missing, so a fully wrong annotator gets the 0.5 prior and keeps voting.",
+      "unblocks": "Test 1 (ann-05), and T04/T09 in Test 2.",
+      "hints": [
+        "ann-05 answered both gold tasks wrong. What accuracy should they have?",
+        "Look at where the prior is applied in gold.py.",
+        "`rates.get(aid) or PRIOR` turns 0.0 into 0.5. Use rates.get(aid, PRIOR)."
+      ],
+      "probes": [
+        "Why was this invisible while annotator ids weren't normalised?",
+        "Name another value besides 0.0 that `or` would wrongly replace in code like this."
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Exactly 0.5 accuracy blocked",
+      "type": "off-by-one",
+      "file": "consensus/voting.py",
+      "function": "is_blocked",
+      "old": "    return row.accuracy < MIN_ACCURACY",
+      "new": "    return row.accuracy <= MIN_ACCURACY",
+      "symptom": "Test 1: ann-03, ann-04 and ann-06 (all exactly 0.5) are blocked. Test 2: T03, T04, T06, T07 and T10 all fall to needs_more_votes. Test 3: most_disputed becomes T05.",
+      "why": "The spec blocks accuracy strictly below 0.5. `<=` also blocks the boundary, which includes every annotator still on the 0.5 prior.",
+      "unblocks": "Test 1 blocked flags. Much of Test 2 recovers.",
+      "hints": [
+        "Which annotators are blocked, and what do their accuracies have in common?",
+        "Check the blocking rule in voting.py against README rule 5.",
+        "is_blocked uses <=; it should be row.accuracy < MIN_ACCURACY."
+      ],
+      "probes": [
+        "Why did this also block an annotator who answered no gold at all?",
+        "How would you test the boundary so a regression like this is caught on its own?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Weight ties resolved by insertion order",
+      "type": "wrong-tie-break",
+      "file": "consensus/voting.py",
+      "function": "pick_winner",
+      "old": "    return min(totals, key=lambda label: (-totals[label], label))",
+      "new": "    return max(totals, key=totals.get)",
+      "symptom": "Test 2: T03 resolves to 'dog' and T07 to 'dog'. Both should be 'cat', since both are exact weight ties. T10 happens to come out right.",
+      "why": "max() returns the first label that reaches the top weight, and that is whichever label was voted first. The spec breaks ties alphabetically.",
+      "unblocks": "Test 2 labels for T03/T07, and the Test 3 label counts.",
+      "hints": [
+        "Look at T03's votes and weights. Is there a clear winner?",
+        "Look at how the winner is chosen when totals are equal.",
+        "pick_winner uses max(totals, key=totals.get). Use min(totals, key=lambda l: (-totals[l], l))."
+      ],
+      "probes": [
+        "Why did T10 come out right even with this bug?",
+        "The comment says 'alphabetical on ties'. What does that tell you about trusting comments in this round?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Label counts include unresolved tasks",
+      "type": "counting-wrong-subset",
+      "file": "consensus/reports.py",
+      "function": "summarize",
+      "old": "    counts = Counter(r.label for r in resolved)",
+      "new": "    counts = Counter(r.label for r in results.values())",
+      "visible_only_in": [
+        "test_3_summary"
+      ],
+      "symptom": "Test 3 only: label_counts has an extra `None: 2` entry, from the two needs_more_votes tasks.",
+      "why": "The count runs over every result instead of the resolved subset, so tasks without a label are counted under None.",
+      "unblocks": "Test 3.",
+      "hints": [
+        "Where does the None key in label_counts come from?",
+        "Look at which collection summarize counts over.",
+        "Count over `resolved`, not results.values()."
+      ],
+      "probes": [
+        "If the code had filtered with `if r.label` instead of the status, would that be equivalent? When could they differ?",
+        "Why did Tests 1 and 2 never notice this?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What is the pipeline inside build_report()?",
+      "a": "`load_annotators` builds the registry, `load_tasks` returns task ids plus the gold labels, and `load_annotations` reads the CSV, keeps only rows from active registry annotators and dedupes them. `gold.quality_table` then computes accuracy, `voting.mark_blocked` sets the blocked flags, `voting.resolve` builds consensus for non-gold tasks, and `reports.summarize` builds the summary."
+    },
+    {
+      "q": "What does norm_annotator do, and where is it called?",
+      "a": "It is `clean(value).lower()`, defined in `utils.py`. In this repo it is called from `loader.load_annotators` when building the registry keys."
+    },
+    {
+      "q": "How does latest_submissions decide which duplicate to keep?",
+      "a": "It keys rows by `(task_id, annotator_id)` and replaces the stored row whenever the new row's `submitted_at` is `>=` the stored one. So the latest timestamp wins, and on equal timestamps the row later in the file wins. The output keeps the order in which each key was first seen."
+    },
+    {
+      "q": "What accuracy does quality_table give an annotator who answered no gold tasks?",
+      "a": "They don't appear in `rates` (which only has annotators with at least one gold answer), so the module-level `PRIOR` of 0.5 is used, with `gold_answered` = 0. Only active registry annotators get a row at all."
+    },
+    {
+      "q": "In resolve(), whose votes count and how much does each weigh?",
+      "a": "`weights` is built from table rows that aren't blocked, with weight = that annotator's accuracy. Votes from anyone not in `weights` are dropped. Gold tasks are skipped entirely, and a task with fewer than `MIN_VOTES` (2) counting votes gets `needs_more_votes`."
+    },
+    {
+      "q": "How is confidence computed?",
+      "a": "The winning label's total weight divided by the sum of all label totals for that task, rounded to 3 decimals."
+    },
+    {
+      "q": "How is most_disputed chosen?",
+      "a": "`summarize` takes the minimum over resolved results by `(confidence, task_id)`, so the lowest confidence wins and ties go to the lower task id."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+request_id,ts,action,customer,section,quantity
+R01,2026-05-01 09:00,hold,ana,ORCH,4
+R02,05/01/2026 09:04,hold,Ben ,orch,4
+R03,2026-05-01T09:06:00,confirm,ana,,
+R04,2026-05-01 09:10,hold,carl,ORCH,3
+R06,2026-05-01 09:21,confirm,CARL,,
+R05,2026-05-01 09:19,confirm,ben,,
+R07,05/01/2026 09:30,hold,fay,ORCH,5
+r08,2026-05-01 09:33,upgrade,gus,ORCH,
+R09,2026-05-01 09:35,hold,hal,balc,3
+R10,2026-05-01 09:40,Release,hal,,
+R11,2026-05-01T09:41:00,confirm,fay,,
+R12,2026-05-01 09:45,cancel,ivy,,
+R13,2026-05-01 09:50,hold,jo,ORCH,3
+R14,2026-05-01 09:52,hold,jo,BALC,1
+R15,05/01/2026 09:55,confirm, jo,,
+R16,2026-05-01 18:00,hold,dora,BALC,2
+R17,2026-05-02 18:05,hold,erin,BALC,2
+R18,2026-05-02 18:08,confirm,erin,,
+R19,05/02/2026 18:10,hold,kim,ORCH,10
+R20,2026-05-02 18:12,refund,lee,,
+R22,2026-05-02T18:25:00, Hold ,mo,BALC,2
+R21,2026-05-02 18:20,confirm,dora,,

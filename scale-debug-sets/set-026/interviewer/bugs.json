@@ -1,0 +1,193 @@
+{
+  "id": "set-026",
+  "title": "Tone-label agreement with per-project quorum",
+  "domain": "annotation_consensus",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "tonevote",
+  "scenario": "Per-project batches of tone labels are deduped, resolved to agreed/escalated/pending against each project's quorum and agreement bar, then scored per annotator and summarised per project and per team (roster CSV has a BOM).",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_tasks",
+      "test_2_agreement",
+      "test_3_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "tonevote/consensus.py",
+      "symbol": "decide",
+      "why_correct": "The `>=` looks like it might need to be `>`, but README rule 5 says a share at or above the bar is agreed (C-01 is exactly 3/4 = 0.75). The explicit tie check implements rule 4, so R-01's 2-2 split escalates even though 0.5 meets the reviews bar."
+    },
+    {
+      "file": "tonevote/utils.py",
+      "symbol": "parse_timestamp",
+      "why_correct": "The day.month.year format looks like it clashes with month/day/year, but the separators differ (`.` vs `/`), so each string matches exactly one format, and both are listed in the README."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Resubmissions not collapsed",
+      "type": "missing-dedupe",
+      "file": "tonevote/loader.py",
+      "function": "load_annotations",
+      "test": "test_1_tasks.TestTasks.test_vote_counts",
+      "old": "    return latest_per_annotator(annotations)\n",
+      "new": "    return annotations\n",
+      "symptom": "Test 1 test_vote_counts: C-04 shows 5 votes (expected 4) and E-06 shows 4 (expected 3). Every status and label is still right.",
+      "why": "The dedupe helper is never called, so a09's two C-04 rows and a11's two E-06 rows are both counted as votes. Neither task changes status, so only the vote counts show it.",
+      "unblocks": "test_1_tasks test_vote_counts.",
+      "hints": [
+        "Pick C-04 and count its rows in chat.csv by annotator. Who appears twice?",
+        "Follow load_annotations: where is rule 1 applied?",
+        "load_annotations returns `annotations`; it should return `latest_per_annotator(annotations)`."
+      ],
+      "probes": [
+        "Why didn't C-04's status change even though it got an extra vote?",
+        "If a09 had changed their label on the resubmission, which other tests could have failed?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Exactly min_votes treated as too few",
+      "type": "off-by-one",
+      "file": "tonevote/consensus.py",
+      "function": "resolve",
+      "test": "test_1_tasks.TestTasks.test_statuses",
+      "old": "        if len(labels) < project.min_votes:\n",
+      "new": "        if len(labels) <= project.min_votes:\n",
+      "symptom": "Test 1 test_statuses: C-03, E-01 and R-01 are 'pending' instead of 'escalated'. Each has exactly its project's min_votes votes.",
+      "why": "Rule 3 says exactly min_votes is enough to decide. `<=` sends every task with exactly the quorum to pending. In this data all of those tasks are escalated (C-03, E-01, R-01), so only the status map changes.",
+      "unblocks": "test_1_tasks test_statuses.",
+      "hints": [
+        "Compare the vote counts of the tasks that went to pending with each project's min_votes.",
+        "Look at the quorum check in resolve().",
+        "`len(labels) <= project.min_votes` should be `<`."
+      ],
+      "probes": [
+        "Why did no agreed label change even though three tasks changed status?",
+        "Which data row would you add to make this change agreement rates too?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Skips counted as disagreeing votes",
+      "type": "counting-wrong-subset",
+      "file": "tonevote/agreement.py",
+      "function": "agreement_table",
+      "test": "test_2_agreement.TestAgreement.test_agreement_rates",
+      "old": "            skips[aid] += 1\n            continue\n",
+      "new": "            skips[aid] += 1\n",
+      "symptom": "Test 2 test_agreement_rates: a06 shows agreed_tasks 5 / agreement 0.8 (expected 4 / 1.0) and a08 shows 6 / 0.333 (expected 4 / 0.5). Skip counts are right.",
+      "why": "Without the `continue`, a skip on an agreed task falls through and is counted as a vote that didn't match. a06 (skipped R-03) and a08 (skipped C-07 and E-05) get extra agreed_tasks and lower agreement.",
+      "unblocks": "test_2_agreement test_agreement_rates.",
+      "hints": [
+        "Only a06 and a08 are off. What else do they have in common in the table?",
+        "Trace a skip row through agreement_table's loop.",
+        "After `skips[aid] += 1` the loop must `continue`."
+      ],
+      "probes": [
+        "Why are a02's numbers right even though a02 also skipped a task?",
+        "Why do skip counts still come out right?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Zero agreement reported as None",
+      "type": "falsy-zero",
+      "file": "tonevote/reports.py",
+      "function": "build_report",
+      "test": "test_2_agreement.TestAgreement.test_low_and_unscored_annotators",
+      "old": "round(row.rate, 3) if row.rate is not None else None",
+      "new": "round(row.rate, 3) if row.rate else None",
+      "symptom": "Test 2 test_low_and_unscored_annotators: a10 shows agreement None (expected 0.0) even though agreed_tasks is 4.",
+      "why": "a10 disagreed on all 4 agreed tasks, so the rate is 0.0. A truthiness check treats 0.0 like a missing rate and prints None, which the spec reserves for annotators with no agreed tasks.",
+      "unblocks": "test_2_agreement test_low_and_unscored_annotators.",
+      "hints": [
+        "a10 has agreed_tasks 4 but no agreement value. Is that consistent with rule 7?",
+        "Look at how the rate is formatted for the report.",
+        "Use `if row.rate is not None`."
+      ],
+      "probes": [
+        "Why does a11 still correctly show None?",
+        "Where else in this repo could a 0 be confused with missing?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Per-project label counts accumulate",
+      "type": "mutable-default",
+      "file": "tonevote/consensus.py",
+      "function": "count_labels",
+      "test": "test_3_report.TestReport.test_labels_by_project",
+      "old": "def count_labels(results, counts=None):\n    \"\"\"Add the agreed labels in `results` to `counts` (a fresh Counter by default).\"\"\"\n    if counts is None:\n        counts = Counter()\n",
+      "new": "def count_labels(results, counts=Counter()):\n    \"\"\"Add the agreed labels in `results` to `counts` (a fresh Counter by default).\"\"\"\n",
+      "symptom": "Test 3 test_labels_by_project: the per-project counts keep growing (in a full-suite run chat shows negative 7, neutral 4, positive 13). The overall counts are right.",
+      "why": "The default Counter is created once, when the function is defined, so every call without `counts` adds to the same object. Each project's breakdown includes the projects before it (and earlier build_report calls). The overall count passes its own Counter, so it stays right.",
+      "unblocks": "test_3_report test_labels_by_project.",
+      "hints": [
+        "The overall counts are right but per-project counts keep growing. What do the two paths share?",
+        "Look at count_labels' signature.",
+        "Default `counts=None` and create the Counter inside the function."
+      ],
+      "probes": [
+        "Why does running test_3 alone give different numbers from running the whole suite?",
+        "Why is `overall` unaffected?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Roster read without stripping the BOM",
+      "type": "csv-bom-encoding",
+      "file": "tonevote/utils.py",
+      "function": "read_rows",
+      "test": "test_3_report.TestReport.test_team_summary",
+      "old": "    with open(path, newline=\"\", encoding=\"utf-8-sig\") as fh:\n",
+      "new": "    with open(path, newline=\"\", encoding=\"utf-8\") as fh:\n",
+      "symptom": "Test 3 test_team_summary: teams comes back as {} (expected east/north/south/west with members and votes).",
+      "why": "teams.csv starts with a UTF-8 BOM. Read as plain utf-8, the first header becomes '\\ufeffannotator_id', so `row.get(\"annotator_id\")` is None for every row and the roster comes back empty. The batch files have no BOM, so nothing else changes.",
+      "unblocks": "test_3_report test_team_summary.",
+      "hints": [
+        "The roster loads with no members. Print the keys of the first row read_rows returns for teams.csv.",
+        "Compare how teams.csv is decoded with what the README says about it.",
+        "Open with encoding=\"utf-8-sig\"."
+      ],
+      "probes": [
+        "Why didn't `.strip()` on the header remove the mark?",
+        "Why were the batch CSVs unaffected even though they use the same reader?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() do, step by step?",
+      "a": "It loads projects.json, reads every batch CSV whose stem is a project (`load_annotations`), resolves each task (`consensus.resolve`), builds the per-annotator table (`agreement.agreement_table`), counts agreed labels per project and overall (`label_breakdown`), and builds the team summary from teams.csv plus each annotator's vote count."
+    },
+    {
+      "q": "What does read_rows return?",
+      "a": "A list of dicts, one per CSV data row. Each column name is passed through `clean()` and lower-cased, and each cell is trimmed. It is used for the batch files and for teams.csv."
+    },
+    {
+      "q": "How does a skip row flow through the code?",
+      "a": "The loader keeps it as an Annotation with label 'skip'; `Annotation.skipped` is True for it. `resolve` leaves skips out of a task's labels but still records the task's project, and `votes_by_annotator` leaves them out. In `agreement_table`, a skip increments that annotator's `skips` counter."
+    },
+    {
+      "q": "Where does a task's project come from?",
+      "a": "From the batch file name: `load_annotations` passes `norm_id(path.stem)` to `read_batch`, which stamps it on each Annotation. `resolve` remembers the last project seen for each task id."
+    },
+    {
+      "q": "How is the label breakdown built?",
+      "a": "`label_breakdown` loops over project ids in sorted order, filters results to that project, and calls `count_labels(rows)` for the per-project dict and `count_labels(rows, overall)` to add to the overall Counter."
+    },
+    {
+      "q": "What does load_teams do with each roster row?",
+      "a": "It reads rows with `read_rows`, takes `row.get(\"annotator_id\")` and `row.get(\"team\")`, normalises both with `norm_id`, and keeps the row only if the annotator id is non-empty. The result maps annotator id to team."
+    },
+    {
+      "q": "Which annotators appear in the annotators table?",
+      "a": "Every annotator id that appears in the deduped annotations, whether the rows are votes or skips, sorted by id."
+    }
+  ]
+}

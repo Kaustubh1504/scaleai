@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_replay"
+    ],
+    "failures": {
+      "tests.test_1_replay.TestReplay.test_heartbeats": "AssertionError: Lists differ: [['08[84 chars]2', 'ok'], ['08:02:10', 'w3', 'T10', 'ok'], ['[25 chars]ok']] != [['08[84 chars]2', 'rejected'], ['08:02:10', 'w3', 'T10', 'ok[31 chars]ok']]\n\nFirst differing element 2:\n['08:01:50', 'w2', 'T02', 'ok']\n['08:01:50', 'w2', 'T02', 'rejected']\n\n  [['08:00:50', 'w2', 'T02', 'ok'],\n   ['08:01:20', 'w1', 'T05', 'ok'],\n-  ['08:01:50', 'w2', 'T02', 'ok'],\n?                             ^^\n\n+  ['08:01:50', 'w2', 'T02', 'rejected'],\n?                             ^^^^^^^^\n\n   ['08:02:10', 'w3', 'T10', 'ok'],\n   ['08:04:15', 'w4', 'T03', 'ok']]"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_completed_by": "AssertionError: {'w1': ['T08', 'T04', 'T05', 'T10', 'T02', 'T01', 'T03', 'T[536 chars]09']} != {'w1': ['T08', 'T05', 'T02'], 'w2': ['T01'], 'w3': ['T04', [32 chars]09']}\nDiff is 1581 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_mean_wait": "AssertionError: 821500 != 821.5"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_replay",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_replay.TestReplay.test_heartbeats",
+      "tests.test_2_report.TestReport.test_completed_by",
+      "tests.test_2_report.TestReport.test_mean_wait"
+    ]
+  }
+}

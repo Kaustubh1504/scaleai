@@ -1,0 +1,111 @@
+{
+  "id": "set-065",
+  "title": "Benchmark leaderboard with a freeze",
+  "domain": "leaderboard_ranking",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "podium",
+  "scenario": "Build a public benchmark leaderboard: best score per team and task up to an inclusive freeze, mean over three tasks (missing = 0), competition ranking (1,2,3,3,5) and a top-3 podium per division.",
+  "verified": [
+    {
+      "file": "podium/ranking.py",
+      "symbol": "competition_ranks",
+      "why_correct": "Comparing each row with the previous one and reusing the previous rank gives shared ranks for ties, and `i + 1` for the next distinct score skips the right number of places (aurora and cobalt are both 3, s-iris is 5). It looks as if it should count distinct scores, but that would be dense ranking, which the spec does not ask for."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Best score picked by string comparison",
+      "type": "string-vs-int",
+      "file": "podium/scoring.py",
+      "function": "best_per_task",
+      "test": "test_1_scores.TestScores.test_1_team_scores",
+      "old": "        if current is None or float(s.score) > float(current.score):",
+      "new": "        if current is None or s.score > current.score:",
+      "symptom": "Test 1 test_1_team_scores: basalt scores 80.67 instead of 81.17 (its gsm8k best stays 98.5 instead of 100.0). Ranks and podiums do not change, so Test 2 still passes.",
+      "why": "Scores are kept as the raw strings from the CSV. Compared as text, \"100\" sorts before \"98.5\" because '1' < '9', so basalt's 100 on gsm8k never replaces its earlier 98.5.",
+      "unblocks": "test_1_team_scores.",
+      "hints": [
+        "basalt scored 100 on gsm8k, but its best shows 98.5. What type are the values being compared?",
+        "Look at how best_per_task decides that a new submission beats the current one.",
+        "Compare float(s.score) > float(current.score)."
+      ],
+      "probes": [
+        "Why did every other team's best come out right with the text comparison?",
+        "Why didn't the ranking test fail even though basalt's score dropped?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Resubmissions counted as extra tasks",
+      "type": "missing-dedupe",
+      "file": "podium/scoring.py",
+      "function": "tasks_attempted",
+      "test": "test_1_scores.TestScores.test_2_tasks_attempted",
+      "old": "    seen: dict[str, set] = defaultdict(set)\n    for s in subs:\n        seen[s.team_id].add(s.task)",
+      "new": "    seen: dict[str, list] = defaultdict(list)\n    for s in subs:\n        seen[s.team_id].append(s.task)",
+      "symptom": "Test 1 test_2_tasks_attempted: aurora, basalt, s-iris and s-koi show 4 tasks attempted instead of 3.",
+      "why": "Collecting tasks in a list keeps one entry per submission, so a team that resubmitted a task counts it twice. Rule 6 counts different tasks.",
+      "unblocks": "test_2_tasks_attempted.",
+      "hints": [
+        "aurora shows 4 tasks attempted on a three-task benchmark.",
+        "Look at how tasks_attempted collects tasks per team.",
+        "Collect into a set (defaultdict(set) and .add) so repeats collapse."
+      ],
+      "probes": [
+        "Which teams were affected, and what do they have in common?",
+        "Would counting the keys of best_per_task's result give the same answer? Why?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Submission at the freeze dropped",
+      "type": "time-window-boundary",
+      "file": "podium/loader.py",
+      "function": "load_submissions",
+      "test": "test_2_leaderboard.TestLeaderboard.test_3_submission_counts",
+      "old": "            if submitted > FREEZE:",
+      "new": "            if submitted >= FREEZE:",
+      "symptom": "Test 2 test_3_submission_counts: counted_submissions is 30 instead of 31 (mmlu 10 instead of 11). Scores and ranks are unchanged.",
+      "why": "Rule 3 keeps a submission made exactly at the freeze. `>=` drops s-koi's 23:59 mmlu run. It was lower than s-koi's earlier mmlu score, so only the counts notice.",
+      "unblocks": "test_3_submission_counts.",
+      "hints": [
+        "One mmlu submission is missing from the counts. Look for rows near the freeze time.",
+        "Check the freeze comparison in the loader against rule 3.",
+        "Use `submitted > FREEZE` so the 23:59 row is kept."
+      ],
+      "probes": [
+        "Why didn't s-koi's score or rank change?",
+        "What data would make this boundary change the leaderboard itself?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_board() do, in order?",
+      "a": "It loads active teams, loads counted submissions for them, computes `best_per_task` and `tasks_attempted`, builds one row per active team with `overall(...)` as the score, orders the rows, attaches ranks from `competition_ranks`, then builds podiums per division and the summary from the counted submissions."
+    },
+    {
+      "q": "What type is Submission.score?",
+      "a": "It is the trimmed string from the CSV; `load_submissions` does not convert it. Conversion to float happens in `best_per_task` when it builds its return value."
+    },
+    {
+      "q": "What does best_per_task return?",
+      "a": "A dict of team id → {task → float score}, holding the submission that best_per_task kept for each (team, task). Teams with no counted submissions are absent."
+    },
+    {
+      "q": "Which rows does load_submissions skip?",
+      "a": "Rows whose lower-cased team id is not an active team, rows with a blank score, and rows whose parsed `submitted_at` is compared against the module-level `FREEZE` (2026-06-30 23:59) and found to be past it."
+    },
+    {
+      "q": "How does overall handle a task the team never submitted?",
+      "a": "It sums `best.get(task, 0.0)` over the three names in `TASKS` and divides by 3, then rounds to 2 decimals."
+    },
+    {
+      "q": "How are podiums built?",
+      "a": "For each division (sorted), it filters the already-ordered leaderboard to that division and takes the first `PODIUM_SIZE` (3) team ids, so ties at the cut-off are decided by leaderboard order."
+    }
+  ]
+}

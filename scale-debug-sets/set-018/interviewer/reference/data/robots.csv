@@ -1,0 +1,11 @@
+robot_id,model,max_gap_ms,active
+RB-01,arm-7dof,150,true
+rb-02,arm-7dof,150,yes
+RB-03,arm-6dof,150,TRUE
+RB-04,arm-6dof,150,no
+RB-05 ,mobile-manip,150,1
+RB-06,mobile-manip,200,y
+RB-07,arm-7dof,150,false
+RB-08,arm-6dof,150,
+RB-09,bimanual,120,Yes
+RB-10,bimanual,120,true

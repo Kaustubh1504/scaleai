@@ -1,0 +1,39 @@
+conv_id,turn,role,text
+c01,1,user,How do I update my card?
+c01,2,assistant,Go to Settings then Billing and choose Update card.
+c02,1,user,hi
+c02,2,User,my order is late
+c02,3,assistant,"Sorry about that, let me check the tracking number for you."
+c03,1,user,Where is my package? It was due Monday.
+c03,2,assistant,It is delayed at the regional hub and should arrive Thursday.
+c03,3,user,Can I return it if it arrives after my trip?
+c03,4,assistant,Yes. You have thirty days from delivery to start a return.
+c03,5,user,How do I start the return?
+c03,6,assistant,Open Orders and pick Return item.
+c04,1,user,My SSN is on the invoice by mistake
+c04,2,assistant,I will escalate this right away.
+c05,1,assistant,Hello! How can I help?
+c05,2,user,I want to return a jacket.
+c05,3,assistant,Sure. Use the Returns page and print the label.
+c05,4,user,thanks
+c06,1,user,Is anyone there?
+c06,2,user,hello?
+c07,1,user,Why does my script fail?
+c07,2,assistant,"The traceback shows the loop reads past the end of the list because the index starts at one and the stop value is the full length plus one, so the final iteration touches a slot that does not exist and raises an IndexError on every run."
+C08,2,GPT,Use the export button on the invoices page.
+c08,0,system,You are a forum bot.
+c08,1,Human,How do I download my invoices as CSV?
+c08,3,human,And for last year?
+c08,4,gpt,Change the year filter first and then export.
+c09,1,user,Can I change my plan?
+c09,2,tool,lookup_plan(user=42)
+c09,3,assistant,
+c09,4,assistant,Yes. Pick a new plan under Account and it applies next cycle.
+c10,1,user,Do you ship to Canada and do I pay any customs fees on arrival?
+c10,2,assistant,"Yes, and no fees."
+c10,3,user,How long to Toronto?
+c10,4,assistant,Usually five to seven business days.
+c10,5,user,Is there a tracking link?
+c10,6,assistant,It is in your confirmation email.
+c11,1,user,Can you review this contract clause?
+c11,2,assistant,I can only share general information.

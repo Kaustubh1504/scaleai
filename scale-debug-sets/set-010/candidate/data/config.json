@@ -1,0 +1,20 @@
+{
+  "billing_period": "2026-04",
+  "plans": [
+    {"plan": "free", "rpm": 2, "base_fee": 0, "included_tokens": 50000, "overage_per_1k": 0.50},
+    {"plan": "Pro", "rpm": 3, "base_fee": 49.0, "included_tokens": 200000, "overage_per_1k": 0.40, "default_discount_pct": 0},
+    {"plan": "enterprise", "rpm": 5, "base_fee": 299.0, "included_tokens": 1000000, "overage_per_1k": 0.25, "default_discount_pct": 5}
+  ],
+  "tenants": [
+    {"tenant_id": " Acme", "plan": "pro", "discount_pct": ""},
+    {"tenant_id": "globex", "plan": "Enterprise", "discount_pct": 10},
+    {"tenant_id": "initech", "plan": "free"},
+    {"tenant_id": "umbrella", "plan": "enterprise", "discount_pct": 0},
+    {"tenant_id": "HOOLI", "plan": "enterprise", "discount_pct": null},
+    {"tenant_id": "stark", "plan": "pro", "discount_pct": "15"},
+    {"tenant_id": "wayne ", "plan": "free", "discount_pct": ""},
+    {"tenant_id": "wonka", "plan": "PRO"},
+    {"tenant_id": "soylent", "plan": "enterprise", "discount_pct": " "},
+    {"tenant_id": "tyrell", "plan": "pro", "discount_pct": "0"}
+  ]
+}

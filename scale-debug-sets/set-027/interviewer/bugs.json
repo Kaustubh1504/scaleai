@@ -1,0 +1,122 @@
+{
+  "id": "set-027",
+  "title": "Lease heartbeats with epoch-ms replay",
+  "domain": "task_queue_leases",
+  "length": "MINI",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "leasebeat",
+  "scenario": "Replay lease/heartbeat/ack events (epoch-ms and ISO times mixed) against a priority queue where 1 is most urgent; report dispatch, heartbeat outcomes, per-worker completions and mean queue wait.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_replay",
+      "test_2_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "leasebeat/broker.py",
+      "symbol": "pick_next",
+      "why_correct": "min() on (priority, enqueued_ms, task_id) looks like it might be backwards for priority, but this README says 1 is the most urgent, so the smallest number should win. The tie-breaks match rule 3."
+    },
+    {
+      "file": "leasebeat/loader.py",
+      "symbol": "to_ms",
+      "why_correct": "Treating an all-digit string as epoch milliseconds matches the README, and the parsed formats are pinned to UTC before converting, multiplying seconds by 1000."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Heartbeat at the deadline accepted",
+      "type": "time-window-boundary",
+      "file": "leasebeat/broker.py",
+      "function": "Broker.reap",
+      "test": "test_1_replay.TestReplay.test_heartbeats",
+      "old": "            if now_ms >= lease.deadline_ms:\n",
+      "new": "            if now_ms > lease.deadline_ms:\n",
+      "symptom": "",
+      "why": "Rule 1 expires a lease when now ≥ deadline. With `>`, w2's heartbeat at exactly 08:01:50 (T02's deadline) finds the lease still live and extends it. No lease event comes before the extended deadline, so the dispatch log doesn't change.",
+      "unblocks": "test_1_replay test_heartbeats.",
+      "hints": [
+        "When was T02's deadline before the 08:01:50 heartbeat?",
+        "Look at the comparison that decides a lease has run out.",
+        "reap uses `>`; README rule 1 says `now >= deadline`."
+      ],
+      "probes": [
+        "Why does T02 still get re-leased to w1 at 08:03:00 under both versions?",
+        "What event would you add to the log to make this boundary visible in the dispatch log too?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Completion list shared by every worker",
+      "type": "shared-class-attribute",
+      "file": "leasebeat/models.py",
+      "function": "Worker",
+      "test": "test_2_report.TestReport.test_completed_by",
+      "old": "class Worker:\n    \"\"\"A worker seen in the event log, with the tasks it finished in order.\"\"\"\n\n    def __init__(self, worker_id):\n        self.worker_id = worker_id\n        self.completed = []\n",
+      "new": "class Worker:\n    \"\"\"A worker seen in the event log, with the tasks it finished in order.\"\"\"\n\n    completed = []\n\n    def __init__(self, worker_id):\n        self.worker_id = worker_id\n",
+      "symptom": "",
+      "why": "`completed` is a class attribute, so `self.completed.append` mutates one list shared by every Worker instance (and by every replay in the same process). Each worker reports everyone's completions.",
+      "unblocks": "test_2_report test_completed_by.",
+      "hints": [
+        "Every worker lists the same tasks. Where does each worker's list come from?",
+        "Look at how Worker stores `completed`.",
+        "Assign `self.completed = []` in __init__ instead of at class level."
+      ],
+      "probes": [
+        "Why does the list keep growing when the tests build the report more than once?",
+        "Why would `self.completed = self.completed + [task_id]` have hidden the problem?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Mean wait reported in milliseconds",
+      "type": "ms-vs-s",
+      "file": "leasebeat/reports.py",
+      "function": "mean_wait_seconds",
+      "test": "test_2_report.TestReport.test_mean_wait",
+      "old": "    return round(statistics.mean(waits) / 1000, 1) if waits else None\n",
+      "new": "    return round(statistics.mean(waits), 1) if waits else None\n",
+      "symptom": "",
+      "why": "All times are kept as epoch milliseconds, so the waits are in ms. Without dividing by 1000, the mean comes out 1000× too large.",
+      "unblocks": "test_2_report test_mean_wait.",
+      "hints": [
+        "The value is exactly 1000× the expected one.",
+        "What unit are enqueued_ms and first_leased_ms in?",
+        "Divide the mean by 1000."
+      ],
+      "probes": [
+        "How would you rename things so this can't happen again?",
+        "Which inputs are already in ms, and which get converted?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What happens for each event in Broker.handle?",
+      "a": "It first calls `reap(event.ts_ms)`, makes sure a Worker object exists for the worker id, formats the time as HH:MM:SS, and then branches on the action: `lease` picks a task with `pick_next`, `heartbeat` moves the deadline if `holds()` is true, and `ack` marks the task done and calls `worker.record` if `holds()` is true."
+    },
+    {
+      "q": "What does holds(event) check?",
+      "a": "That there is a lease stored for `event.task_id` and that its `worker_id` equals the event's worker. It doesn't look at the deadline itself; expired leases have already been removed by `reap`."
+    },
+    {
+      "q": "What units are times stored in?",
+      "a": "Everything is converted by `loader.to_ms` to integer epoch milliseconds in UTC. `LEASE_MS` is 60_000. `fmt_ms` turns ms back into an HH:MM:SS string for the logs."
+    },
+    {
+      "q": "Where is first_leased_ms set?",
+      "a": "In the `lease` branch of `Broker.handle`, only when it is still None, so it keeps the time of a task's first lease even if the task is leased again later."
+    },
+    {
+      "q": "How is completed_by built?",
+      "a": "`build_report` loops over `broker.workers` sorted by id and emits `list(w.completed)` for each worker whose `completed` is non-empty."
+    },
+    {
+      "q": "When is a task dead-lettered?",
+      "a": "Only inside `reap`: when a lease is removed, the task becomes `dead` if `attempts >= max_attempts`, otherwise `pending`. A final reap runs at END_OF_LOG after all events."
+    }
+  ]
+}

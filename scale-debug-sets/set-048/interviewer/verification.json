@@ -1,0 +1,93 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_cleaning",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_1_cleaning.TestCleaning.test_duplicate_rows": "AssertionError: Lists differ: [] != ['S-014', 'S-019']\n\nSecond list contains 2 additional elements.\nFirst extra element 0:\n'S-014'\n\n- []\n+ ['S-014', 'S-019']",
+      "tests.test_1_cleaning.TestCleaning.test_excluded_rows": "AssertionError: Lists differ: ['S-004', 'S-010', 'S-014', 'S-016', 'S-019', 'S-036'] != ['S-010', 'S-036']\n\nFirst differing element 0:\n'S-004'\n'S-010'\n\nFirst list contains 4 additional elements.\nFirst extra element 2:\n'S-014'\n\n- ['S-004', 'S-010', 'S-014', 'S-016', 'S-019', 'S-036']\n+ ['S-010', 'S-036']",
+      "tests.test_3_report.TestReport.test_capped": "AssertionError: Lists differ: ['S-021', 'S-022', 'S-025', 'S-026'] != ['S-021', 'S-022', 'S-025', 'S-026', 'S-033']\n\nSecond list contains 1 additional elements.\nFirst extra element 4:\n'S-033'\n\n- ['S-021', 'S-022', 'S-025', 'S-026']\n+ ['S-021', 'S-022', 'S-025', 'S-026', 'S-033']\n?                                    +++++++++\n",
+      "tests.test_3_report.TestReport.test_label_counts": "AssertionError: {'tra[55 chars], 'cat': 3, 'dog': 2}, 'test': {'bird': 1, 'cat': 3, 'dog': 3}} != {'tra[55 chars], 'cat': 3, 'dog': 2}, 'test': {'bird': 1, 'cat': 3, 'dog': 4}}\n- {'test': {'bird': 1, 'cat': 3, 'dog': 3},\n?                                       ^\n\n+ {'test': {'bird': 1, 'cat': 3, 'dog': 4},\n?                                       ^\n\n   'train': {'bird': 4, 'cat': 4, 'dog': 4},\n   'val': {'bird': 2, 'cat': 3, 'dog': 2}}",
+      "tests.test_3_report.TestReport.test_split_members": "AssertionError: {'tra[33 chars]'S-017', 'S-018', 'S-027', 'S-028', 'S-029', '[175 chars]20']} != {'tra[33 chars]'S-016', 'S-017', 'S-018', 'S-027', 'S-028', '[184 chars]20']}\n- {'test': ['S-001', 'S-002', 'S-003', 'S-007', 'S-008', 'S-019', 'S-020'],\n+ {'test': ['S-001',\n+           'S-002',\n+           'S-003',\n+           'S-004',\n+           'S-007',\n+           'S-008',\n+           'S-019',\n+           'S-020'],\n   'train': ['S-013',\n             'S-014',\n             'S-015',\n+            'S-016',\n             'S-017',\n             'S-018',\n             'S-027',\n             'S-028',\n    "
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_cleaning",
+      "test_2_splits",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_1_cleaning.TestCleaning.test_duplicate_rows": "AssertionError: Lists differ: [] != ['S-014', 'S-019']\n\nSecond list contains 2 additional elements.\nFirst extra element 0:\n'S-014'\n\n- []\n+ ['S-014', 'S-019']",
+      "tests.test_2_splits.TestSplits.test_group_labels": "AssertionError: {'g-0[135 chars]0': 'dog', 'g-11': 'cat', 'g-12': 'bird', 'g-1[52 chars]dog'} != {'g-0[135 chars]0': 'bird', 'g-11': 'cat', 'g-12': 'bird', 'g-[53 chars]dog'}\n  {'g-01': 'cat',\n   'g-02': 'cat',\n   'g-03': 'cat',\n   'g-04': 'dog',\n   'g-05': 'cat',\n   'g-06': 'dog',\n   'g-07': 'cat',\n   'g-08': 'dog',\n   'g-09': 'cat',\n-  'g-10': 'dog',\n?            --\n\n+  'g-10': 'bird',\n?           +++\n\n   'g-11': 'cat',\n   'g-12': 'bird',\n   'g-13': 'cat',\n   'g-14': 'bird',\n   'g-15': 'bird',\n   'g-16': 'dog'}",
+      "tests.test_2_splits.TestSplits.test_group_split": "AssertionError: {'g-0[145 chars]': 'train', 'g-11': 'train', 'g-12': 'train', [62 chars]ain'} != {'g-0[145 chars]': 'test', 'g-11': 'train', 'g-12': 'val', 'g-[59 chars]ain'}\n  {'g-01': 'test',\n   'g-02': 'test',\n   'g-03': 'val',\n   'g-04': 'test',\n   'g-05': 'val',\n   'g-06': 'val',\n   'g-07': 'train',\n   'g-08': 'train',\n   'g-09': 'train',\n-  'g-10': 'train',\n?            ^^^^\n\n+  'g-10': 'test',\n?            ^^^\n\n   'g-11': 'train',\n-  'g-12': 'train',\n?           ^^ ^^\n\n+  'g-12': 'val',\n?           ^ ^\n\n   'g-13': 'train',\n   'g-14': 'train',\n   'g-15': 'train',\n   'g-16': 'train'}",
+      "tests.test_3_report.TestReport.test_capped": "AssertionError: Lists differ: ['S-014', 'S-019', 'S-021', 'S-022', 'S-025', [48 chars]033'] != ['S-021', 'S-022', 'S-025', 'S-026', 'S-033']\n\nFirst differing element 0:\n'S-014'\n'S-021'\n\nFirst list contains 6 additional elements.\nFirst extra element 5:\n'S-026'\n\n+ ['S-021', 'S-022', 'S-025', 'S-026', 'S-033']\n- ['S-014',\n-  'S-019',\n-  'S-021',\n-  'S-022',\n-  'S-025',\n-  'S-026',\n-  'S-028',\n-  'S-029',\n-  'S-030',\n-  'S-032',\n-  'S-033']",
+      "tests.test_3_report.TestReport.test_label_counts": "AssertionError: {'tra[49 chars]rd': 0, 'cat': 3, 'dog': 2}, 'test': {'bird': [18 chars]: 3}} != {'tra[49 chars]rd': 2, 'cat': 3, 'dog': 2}, 'test': {'bird': [18 chars]: 4}}\n- {'test': {'bird': 0, 'cat': 3, 'dog': 3},\n?                   ^                   ^\n\n+ {'test': {'bird': 1, 'cat': 3, 'dog': 4},\n?                   ^                   ^\n\n   'train': {'bird': 4, 'cat': 4, 'dog': 4},\n-  'val': {'bird': 0, 'cat': 3, 'dog': 2}}\n?                  ^\n\n+  'val': {'bird': 2, 'cat': 3, 'dog': 2}}\n?                  ^\n",
+      "tests.test_3_report.TestReport.test_split_members": "AssertionError: {'tra[59 chars] 'S-019', 'S-020', 'S-023', 'S-024', 'S-027', [122 chars]08']} != {'tra[59 chars] 'S-027', 'S-028', 'S-029', 'S-030', 'S-031', [158 chars]20']}\n- {'test': ['S-001', 'S-002', 'S-003', 'S-004', 'S-007', 'S-008'],\n+ {'test': ['S-001',\n+           'S-002',\n+           'S-003',\n+           'S-004',\n+           'S-007',\n+           'S-008',\n+           'S-019',\n+           'S-020'],\n   'train': ['S-013',\n             'S-014',\n             'S-015',\n             'S-016',\n             'S-017',\n             'S-018',\n-            'S-019',\n-            'S-020',\n-            "
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_splits",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_2_splits.TestSplits.test_group_labels": "AssertionError: {'g-0[90 chars]7': 'dog', 'g-08': 'dog', 'g-09': 'cat', 'g-10[98 chars]dog'} != {'g-0[90 chars]7': 'cat', 'g-08': 'dog', 'g-09': 'cat', 'g-10[98 chars]dog'}\n  {'g-01': 'cat',\n   'g-02': 'cat',\n   'g-03': 'cat',\n   'g-04': 'dog',\n   'g-05': 'cat',\n   'g-06': 'dog',\n-  'g-07': 'dog',\n?           ^^^\n\n+  'g-07': 'cat',\n?           ^^^\n\n   'g-08': 'dog',\n   'g-09': 'cat',\n   'g-10': 'bird',\n   'g-11': 'cat',\n   'g-12': 'bird',\n   'g-13': 'cat',\n   'g-14': 'bird',\n   'g-15': 'bird',\n   'g-16': 'dog'}",
+      "tests.test_2_splits.TestSplits.test_group_split": "AssertionError: {'g-0[16 chars]2': 'val', 'g-03': 'train', 'g-04': 'test', 'g[191 chars]ain'} != {'g-0[16 chars]2': 'test', 'g-03': 'val', 'g-04': 'test', 'g-[188 chars]ain'}\n  {'g-01': 'test',\n+  'g-02': 'test',\n-  'g-02': 'val',\n?      ^\n\n+  'g-03': 'val',\n?      ^\n\n-  'g-03': 'train',\n   'g-04': 'test',\n-  'g-05': 'train',\n?           ^^ ^^\n\n+  'g-05': 'val',\n?           ^ ^\n\n   'g-06': 'val',\n   'g-07': 'train',\n   'g-08': 'train',\n   'g-09': 'train',\n   'g-10': 'test',\n   'g-11': 'train',\n   'g-12': 'val',\n   'g-13': 'train',\n   'g-14': 'train',\n   'g-15': 'train',\n   'g-16': 'train'}",
+      "tests.test_3_report.TestReport.test_capped": "AssertionError: Lists differ: ['S-014', 'S-017', 'S-018', 'S-021', 'S-022', 'S-025', 'S-026', 'S-033'] != ['S-021', 'S-022', 'S-025', 'S-026', 'S-033']\n\nFirst differing element 0:\n'S-014'\n'S-021'\n\nFirst list contains 3 additional elements.\nFirst extra element 5:\n'S-025'\n\n- ['S-014', 'S-017', 'S-018', 'S-021', 'S-022', 'S-025', 'S-026', 'S-033']\n?  ---------------------------\n\n+ ['S-021', 'S-022', 'S-025', 'S-026', 'S-033']",
+      "tests.test_3_report.TestReport.test_label_counts": "AssertionError: {'tra[55 chars], 'cat': 1, 'dog': 3}, 'test': {'bird': 1, 'cat': 2, 'dog': 3}} != {'tra[55 chars], 'cat': 3, 'dog': 2}, 'test': {'bird': 1, 'cat': 3, 'dog': 4}}\n- {'test': {'bird': 1, 'cat': 2, 'dog': 3},\n?                             ^         ^\n\n+ {'test': {'bird': 1, 'cat': 3, 'dog': 4},\n?                             ^         ^\n\n   'train': {'bird': 4, 'cat': 4, 'dog': 4},\n-  'val': {'bird': 2, 'cat': 1, 'dog': 3}}\n?                            ^         ^\n\n+  'val': {'bird': 2, 'cat': 3, 'dog': 2}}\n?                            ^         ^\n",
+      "tests.test_3_report.TestReport.test_split_members": "AssertionError: {'train': ['S-005', 'S-006', 'S-009', 'S-013', 'S-015', [185 chars]20']} != {'train': ['S-013', 'S-014', 'S-015', 'S-016', 'S-017', [212 chars]20']}\n+ {'test': ['S-001',\n- {'test': ['S-001', 'S-002', 'S-007', 'S-008', 'S-019', 'S-020'],\n-  'train': ['S-005',\n-            'S-006',\n? -               ^\n\n+           'S-002',\n?                ^\n\n-            'S-009',\n? -               ^\n\n+           'S-003',\n?                ^\n\n+           'S-004',\n+           'S-007',\n+           'S-008',\n+           'S-019',\n+           'S-020'],\n+  'train': ['S-013',\n-            'S-013',\n?      "
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_splits",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_2_splits.TestSplits.test_group_labels": "AssertionError: {'g-0[135 chars]0': 'dog', 'g-11': 'cat', 'g-12': 'bird', 'g-1[52 chars]dog'} != {'g-0[135 chars]0': 'bird', 'g-11': 'cat', 'g-12': 'bird', 'g-[53 chars]dog'}\n  {'g-01': 'cat',\n   'g-02': 'cat',\n   'g-03': 'cat',\n   'g-04': 'dog',\n   'g-05': 'cat',\n   'g-06': 'dog',\n   'g-07': 'cat',\n   'g-08': 'dog',\n   'g-09': 'cat',\n-  'g-10': 'dog',\n?            --\n\n+  'g-10': 'bird',\n?           +++\n\n   'g-11': 'cat',\n   'g-12': 'bird',\n   'g-13': 'cat',\n   'g-14': 'bird',\n   'g-15': 'bird',\n   'g-16': 'dog'}",
+      "tests.test_2_splits.TestSplits.test_group_split": "AssertionError: {'g-0[145 chars]': 'train', 'g-11': 'train', 'g-12': 'train', [62 chars]ain'} != {'g-0[145 chars]': 'test', 'g-11': 'train', 'g-12': 'val', 'g-[59 chars]ain'}\n  {'g-01': 'test',\n   'g-02': 'test',\n   'g-03': 'val',\n   'g-04': 'test',\n   'g-05': 'val',\n   'g-06': 'val',\n   'g-07': 'train',\n   'g-08': 'train',\n   'g-09': 'train',\n-  'g-10': 'train',\n?            ^^^^\n\n+  'g-10': 'test',\n?            ^^^\n\n   'g-11': 'train',\n-  'g-12': 'train',\n?           ^^ ^^\n\n+  'g-12': 'val',\n?           ^ ^\n\n   'g-13': 'train',\n   'g-14': 'train',\n   'g-15': 'train',\n   'g-16': 'train'}",
+      "tests.test_3_report.TestReport.test_capped": "AssertionError: Lists differ: ['S-0[13 chars] 'S-025', 'S-026', 'S-028', 'S-029', 'S-030', 'S-032', 'S-033'] != ['S-0[13 chars] 'S-025', 'S-026', 'S-033']\n\nFirst differing element 4:\n'S-028'\n'S-033'\n\nFirst list contains 4 additional elements.\nFirst extra element 5:\n'S-029'\n\n+ ['S-021', 'S-022', 'S-025', 'S-026', 'S-033']\n- ['S-021',\n-  'S-022',\n-  'S-025',\n-  'S-026',\n-  'S-028',\n-  'S-029',\n-  'S-030',\n-  'S-032',\n-  'S-033']",
+      "tests.test_3_report.TestReport.test_label_counts": "AssertionError: {'tra[49 chars]rd': 0, 'cat': 3, 'dog': 2}, 'test': {'bird': [18 chars]: 3}} != {'tra[49 chars]rd': 2, 'cat': 3, 'dog': 2}, 'test': {'bird': [18 chars]: 4}}\n- {'test': {'bird': 0, 'cat': 3, 'dog': 3},\n?                   ^                   ^\n\n+ {'test': {'bird': 1, 'cat': 3, 'dog': 4},\n?                   ^                   ^\n\n   'train': {'bird': 4, 'cat': 4, 'dog': 4},\n-  'val': {'bird': 0, 'cat': 3, 'dog': 2}}\n?                  ^\n\n+  'val': {'bird': 2, 'cat': 3, 'dog': 2}}\n?                  ^\n",
+      "tests.test_3_report.TestReport.test_split_members": "AssertionError: {'tra[59 chars] 'S-019', 'S-020', 'S-023', 'S-024', 'S-027', [122 chars]08']} != {'tra[59 chars] 'S-027', 'S-028', 'S-029', 'S-030', 'S-031', [158 chars]20']}\n- {'test': ['S-001', 'S-002', 'S-003', 'S-004', 'S-007', 'S-008'],\n+ {'test': ['S-001',\n+           'S-002',\n+           'S-003',\n+           'S-004',\n+           'S-007',\n+           'S-008',\n+           'S-019',\n+           'S-020'],\n   'train': ['S-013',\n             'S-014',\n             'S-015',\n             'S-016',\n             'S-017',\n             'S-018',\n-            'S-019',\n-            'S-020',\n-            "
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_2_splits",
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_2_splits.TestSplits.test_every_group_assigned": "AssertionError: Lists differ: ['g-01', 'g-02', 'g-04', 'g-07', 'g-08', 'g-09', 'g-10', 'g-11[29 chars]-16'] != ['g-01', 'g-02', 'g-03', 'g-04', 'g-05', 'g-06', 'g-07', 'g-08[61 chars]-16']\n\nFirst differing element 2:\n'g-04'\n'g-03'\n\nSecond list contains 4 additional elements.\nFirst extra element 12:\n'g-13'\n\n  ['g-01',\n   'g-02',\n+  'g-03',\n   'g-04',\n+  'g-05',\n+  'g-06',\n   'g-07',\n   'g-08',\n   'g-09',\n   'g-10',\n   'g-11',\n+  'g-12',\n   'g-13',\n   'g-14',\n   'g-15',\n   'g-16']",
+      "tests.test_2_splits.TestSplits.test_group_split": "AssertionError: {'g-0[27 chars] 'g-04': 'test', 'g-07': 'train', 'g-08': 'tra[117 chars]ain'} != {'g-0[27 chars] 'g-03': 'val', 'g-04': 'test', 'g-05': 'val',[177 chars]ain'}\n  {'g-01': 'test',\n   'g-02': 'test',\n+  'g-03': 'val',\n   'g-04': 'test',\n+  'g-05': 'val',\n+  'g-06': 'val',\n   'g-07': 'train',\n   'g-08': 'train',\n   'g-09': 'train',\n   'g-10': 'test',\n   'g-11': 'train',\n+  'g-12': 'val',\n   'g-13': 'train',\n   'g-14': 'train',\n   'g-15': 'train',\n   'g-16': 'train'}",
+      "tests.test_3_report.TestReport.test_label_counts": "AssertionError: {'tra[49 chars]rd': 0, 'cat': 0, 'dog': 0}, 'test': {'bird': [18 chars]: 4}} != {'tra[49 chars]rd': 2, 'cat': 3, 'dog': 2}, 'test': {'bird': [18 chars]: 4}}\n  {'test': {'bird': 1, 'cat': 3, 'dog': 4},\n   'train': {'bird': 4, 'cat': 4, 'dog': 4},\n-  'val': {'bird': 0, 'cat': 0, 'dog': 0}}\n?                  ^         ^         ^\n\n+  'val': {'bird': 2, 'cat': 3, 'dog': 2}}\n?                  ^         ^         ^\n",
+      "tests.test_3_report.TestReport.test_split_members": "AssertionError: {'tra[118 chars]l': [], 'test': ['S-001', 'S-002', 'S-003', 'S[38 chars]20']} != {'tra[118 chars]l': ['S-005', 'S-006', 'S-009', 'S-011', 'S-01[99 chars]20']}\n  {'test': ['S-001',\n            'S-002',\n            'S-003',\n            'S-004',\n            'S-007',\n            'S-008',\n            'S-019',\n            'S-020'],\n   'train': ['S-013',\n             'S-014',\n             'S-015',\n             'S-016',\n             'S-017',\n             'S-018',\n             'S-027',\n             'S-028',\n             'S-029',\n             'S-030',\n             'S-031',\n             '"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_label_counts": "AssertionError: {'train': {'bird': 7, 'cat': 10, 'dog': 10}, 'val': {'bird':[64 chars] 10}} != {'train': {'bird': 4, 'cat': 4, 'dog': 4}, 'val': {'bird': 2[58 chars]: 4}}\n- {'test': {'bird': 7, 'cat': 10, 'dog': 10},\n?                   ^         ^^         ^^\n\n+ {'test': {'bird': 1, 'cat': 3, 'dog': 4},\n?                   ^         ^         ^\n\n-  'train': {'bird': 7, 'cat': 10, 'dog': 10},\n?                    ^         ^^         ^^\n\n+  'train': {'bird': 4, 'cat': 4, 'dog': 4},\n?                    ^         ^         ^\n\n-  'val': {'bird': 7, 'cat': 10, 'dog': 10}}\n?                  ^    "
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_cleaning",
+      "test_2_splits",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_cleaning.TestCleaning.test_duplicate_rows",
+      "tests.test_1_cleaning.TestCleaning.test_excluded_rows",
+      "tests.test_2_splits.TestSplits.test_every_group_assigned",
+      "tests.test_2_splits.TestSplits.test_group_labels",
+      "tests.test_2_splits.TestSplits.test_group_split",
+      "tests.test_3_report.TestReport.test_capped",
+      "tests.test_3_report.TestReport.test_label_counts",
+      "tests.test_3_report.TestReport.test_split_members"
+    ]
+  }
+}

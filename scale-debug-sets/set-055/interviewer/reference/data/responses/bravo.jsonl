@@ -1,0 +1,14 @@
+{"model": "Bravo", "item": "I01", "attempt": 1, "status": "ok", "output": "Answer: B"}
+{"model": "Bravo", "item": "I02", "attempt": 1, "status": "cached", "output": "Let me think step by step. Option A looks tempting, but the answer is (a)."}
+{"model": "Bravo", "item": "I03", "attempt": 1, "status": "ok", "output": "{\"answer\": \"A\", \"confidence\": 0.8}"}
+{"model": "Bravo", "item": "I04", "attempt": 1, "status": "ok", "output": "D"}
+{"model": "Bravo", "item": "I05", "attempt": 1, "status": "ok", "output": "The answer is C."}
+{"model": "Bravo", "item": "I06", "attempt": 1, "status": "ok", "output": "First guess: answer is A. On reflection, Answer = D"}
+{"model": "Bravo", "item": "I07", "attempt": 1, "status": "ok", "output": "Answer: A"}
+{"model": "Bravo", "item": "I08", "attempt": 1, "status": "rate_limited", "output": ""}
+{"model": "bravo", "item": "i08", "attempt": 2, "status": "error", "output": ""}
+{"model": "Bravo", "item": "I08", "attempt": 3, "status": "ok", "output": "Let me think step by step. Option A looks tempting, but the answer is (c)."}
+{"model": "Bravo", "item": "I09", "attempt": 1, "status": "ok", "output": "{\"answer\": \"D\", \"confidence\": 0.8}"}
+{"model": "Bravo", "item": "I10", "attempt": 1, "status": "ok", "output": "D"}
+{"model": "Bravo", "item": "I11", "attempt": 1, "status": "cached", "output": "The answer is A."}
+{"model": "Bravo", "item": "I12", "attempt": 1, "status": "ok", "output": "First guess: answer is A. On reflection, Answer = D"}
