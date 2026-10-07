@@ -29,24 +29,24 @@
   "bugs": [
     {
       "id": "B1",
-      "title": "Resubmissions not collapsed",
+      "title": "Resubmissions with a changed label not collapsed",
       "type": "missing-dedupe",
       "file": "tonevote/loader.py",
-      "function": "load_annotations",
+      "function": "latest_per_annotator",
       "test": "test_1_tasks.TestTasks.test_vote_counts",
-      "old": "    return latest_per_annotator(annotations)\n",
-      "new": "    return annotations\n",
-      "symptom": "Test 1 test_vote_counts: C-04 shows 5 votes (expected 4) and E-06 shows 4 (expected 3). Every status and label is still right.",
-      "why": "The dedupe helper is never called, so a09's two C-04 rows and a11's two E-06 rows are both counted as votes. Neither task changes status, so only the vote counts show it.",
+      "old": "        key = (ann.task_id, ann.annotator_id)\n",
+      "new": "        key = (ann.task_id, ann.annotator_id, ann.label)\n",
+      "symptom": "Test 1 test_vote_counts: E-06 shows 4 votes (expected 3). C-04 is right and every status and label is still right.",
+      "why": "latest_per_annotator keys on (task, annotator, label), so a resubmission only collapses when the label is unchanged. a09's two neu rows on C-04 merge, but a11's pos then neg on E-06 stay as two votes. E-06 is escalated either way, so only the vote count shows it.",
       "unblocks": "test_1_tasks test_vote_counts.",
       "hints": [
-        "Pick C-04 and count its rows in chat.csv by annotator. Who appears twice?",
-        "Follow load_annotations: where is rule 1 applied?",
-        "load_annotations returns `annotations`; it should return `latest_per_annotator(annotations)`."
+        "Pick E-06 and count its rows in email.csv by annotator. Who appears twice, and what differs between their rows?",
+        "C-04 also has a repeat annotator but its count is right. Look at what latest_per_annotator treats as the same submission.",
+        "The dedupe key is `(ann.task_id, ann.annotator_id, ann.label)`; it should be `(ann.task_id, ann.annotator_id)`."
       ],
       "probes": [
-        "Why didn't C-04's status change even though it got an extra vote?",
-        "If a09 had changed their label on the resubmission, which other tests could have failed?"
+        "Why did C-04 come out right while E-06 did not?",
+        "Which submission of a11's on E-06 should count, and how does the README decide?"
       ]
     },
     {

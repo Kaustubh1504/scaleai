@@ -1,0 +1,13 @@
+[
+  {"id": " ana ", "name": "Ana Ruiz", "role": "agent"},
+  {"id": "bo", "name": "Bo Lindqvist", "role": " Agent"},
+  {"id": "Noor", "name": "Noor Haddad", "role": "agent"},
+  {"id": "sam", "name": "Sam Okafor", "role": "agent "},
+  {"id": "lee", "name": "Lee Park", "role": "LEAD"},
+  {"id": "mira ", "name": "Mira Chen", "role": "lead"},
+  {"id": "zed", "name": "Zed Novak", "role": "Lead"},
+  {"id": "acme", "name": "Acme Corp", "role": "customer"},
+  {"id": " globex", "name": "Globex", "role": "Customer"},
+  {"id": "initech", "name": "Initech", "role": "customer"},
+  {"id": "closer-bot", "name": "Auto-closer", "role": "bot"}
+]

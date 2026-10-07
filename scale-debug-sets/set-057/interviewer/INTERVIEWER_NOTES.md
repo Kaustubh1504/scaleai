@@ -21,11 +21,11 @@ and give one level at a time. Record every hint on the scoring sheet.
 2. **Area:** Work the README's Paris example through to_zero_based by hand.
 3. **Exact:** Only start moves: return start - 1, end.
 
-### B2: Equal-vote overlaps not ranked by length
+### B2: Equal-vote overlaps prefer the shorter span
 
 1. **Nudge:** D02 keeps 'Morgan' as PER. How many votes did each overlapping candidate get?
-2. **Area:** Look at the ranking key in resolve_doc against the README overlap rule.
-3. **Exact:** Add -e.length between votes and start in the sort key.
+2. **Area:** Look at the ranking key in resolve_doc against the README overlap rule: which span should win an equal-vote overlap?
+3. **Exact:** The sort key uses `e.length`; it should be `-e.length` so the longer span ranks first.
 
 ### B3: `== "PER" or "ORG"` counts every entity
 
@@ -40,7 +40,7 @@ and give one level at a time. Record every hint on the scoring sheet.
 - Why is a 1-based inclusive end equal to a 0-based exclusive end?
 
 **B2**
-- Why did the shorter span win rather than an arbitrary one?
+- If PER Morgan had 3 votes, would the length key matter for D02?
 - Why didn't named_entities change even though the label did?
 
 **B3**

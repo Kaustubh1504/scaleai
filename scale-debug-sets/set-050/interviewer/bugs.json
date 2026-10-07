@@ -151,6 +151,13 @@
       "probes": [
         "Would `class Status(str, Enum)` have made the comparison work? Why?",
         "Why does no error get raised?"
+      ],
+      "extra": [
+        {
+          "file": "ratingpanel/reports.py",
+          "old": "from .models import Status\n",
+          "new": ""
+        }
       ]
     }
   ],
@@ -161,7 +168,7 @@
     },
     {
       "q": "What does split_rushed return?",
-      "a": "A list of the submissions whose duration_seconds is at least MIN_SECONDS (20), and a Counter of annotator id → number of submissions under that."
+      "a": "A list of the submissions whose duration_seconds is at least MIN_SECONDS (20), and a Counter of annotator id \u2192 number of submissions under that."
     },
     {
       "q": "How does latest_only choose between two submissions with the same key?",

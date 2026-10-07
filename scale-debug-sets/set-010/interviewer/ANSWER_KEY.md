@@ -164,8 +164,12 @@ AssertionError: {'acm[88 chars], 'tyrell': 0.0, 'umbrella': 15.95, 'wayne': 0.0,
 Fix:
 
 ```diff
+# meterbill/billing.py
 -    blocks = round(excess / 1000)
 +    blocks = math.ceil(excess / 1000)
+
+# meterbill/billing.py
++import math
 ```
 
 Observed with only this bug applied (`tests.test_3_invoices.TestInvoices.test_overage`):

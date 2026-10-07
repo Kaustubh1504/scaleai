@@ -180,8 +180,12 @@ AssertionError: {'coding': 5.67, 'writing': 18.83} != {'coding': 5.67, 'writing'
 Fix:
 
 ```diff
+# ratingpanel/reports.py
 -if res.status == "escalated"
 +if res.status is Status.ESCALATED
+
+# ratingpanel/reports.py
++from .models import Status
 ```
 
 Observed with only this bug applied (`tests.test_3_summary.TestSummary.test_6_escalated_items`):

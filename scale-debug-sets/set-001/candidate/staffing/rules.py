@@ -8,7 +8,7 @@ def is_eligible(contributor, project):
         return False
     if project.required_skill and project.required_skill not in contributor.skills:
         return False
-    if project.required_course and project.required_course not in contributor.completed_courses:
+    if project.required_course and project.required_course not in contributor.skills:
         return False
     return True
 

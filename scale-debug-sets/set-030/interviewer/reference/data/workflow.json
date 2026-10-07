@@ -1,0 +1,14 @@
+[
+  {"from": "new", "action": "triage", "to": "triaged", "roles": ["agent", "lead"], "counts_as_response": "false"},
+  {"from": "new", "action": "reply", "to": "waiting_customer", "roles": ["agent", "lead"], "counts_as_response": true},
+  {"from": "triaged", "action": "reply", "to": "waiting_customer", "roles": ["agent", " Lead"], "counts_as_response": "yes"},
+  {"from": "triaged", "action": "start", "to": "in_progress", "roles": ["agent", "lead"]},
+  {"from": "in_progress", "action": "reply", "to": "waiting_customer", "roles": ["Agent", "lead"], "counts_as_response": true},
+  {"from": "waiting_customer", "action": "customer_reply", "to": "in_progress", "roles": ["customer"], "counts_as_response": "no"},
+  {"from": "in_progress", "action": "resolve", "to": "awaiting_approval", "roles": ["agent"]},
+  {"from": "in_progress", "action": "resolve", "to": "resolved", "roles": ["lead"]},
+  {"from": "awaiting_approval", "action": "approve", "to": "resolved", "roles": ["lead"]},
+  {"from": "awaiting_approval", "action": "reopen", "to": "in_progress", "roles": ["lead"]},
+  {"from": "resolved", "action": "reopen", "to": "in_progress", "roles": ["customer", "lead"]},
+  {"from": "resolved", "action": "close", "to": "closed", "roles": ["lead", "bot"]}
+]

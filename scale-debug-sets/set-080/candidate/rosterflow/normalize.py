@@ -17,6 +17,7 @@ def clean_email(value):
     return email
 
 
+# VERIFIED
 def parse_updated(value):
     raw = text(value)
     for fmt in TS_FORMATS:

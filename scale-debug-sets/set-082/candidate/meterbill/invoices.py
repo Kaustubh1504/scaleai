@@ -1,4 +1,4 @@
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import Decimal
 
 from .models import Invoice
 from .plans import blocks_for, tiered_cents

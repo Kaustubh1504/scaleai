@@ -48,8 +48,8 @@ and give one level at a time. Record every hint on the scoring sheet.
 ### B6: Datetimes exported with str()
 
 1. **Nudge:** Compare the exported timestamp string character by character with the expected one.
-2. **Area:** How does export_json turn non-JSON types into strings?
-3. **Exact:** Use `default=_encode` instead of `default=str`.
+2. **Area:** How does export_json turn datetimes into strings? Follow its `default=` hook.
+3. **Exact:** In `_encode`, return `obj.isoformat()` instead of `str(obj)` for datetimes.
 
 ## "Why did that fix work?" probes
 
@@ -75,7 +75,7 @@ and give one level at a time. Record every hint on the scoring sheet.
 
 **B6**
 - Why didn't json.dumps raise on the datetime values?
-- What would `default=str` do to a set of languages if one were added to the report?
+- Which values in the report reach `_encode` at all, and why do the plain strings and numbers never go through it?
 
 ## If the candidate edits a `# VERIFIED` region
 

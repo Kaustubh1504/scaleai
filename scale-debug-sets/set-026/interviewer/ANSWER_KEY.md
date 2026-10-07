@@ -6,7 +6,7 @@
 
 | Failing test | Bug |
 |---|---|
-| `test_1_tasks.TestTasks.test_vote_counts` | B1 Resubmissions not collapsed |
+| `test_1_tasks.TestTasks.test_vote_counts` | B1 Resubmissions with a changed label not collapsed |
 | `test_1_tasks.TestTasks.test_statuses` | B2 Exactly min_votes treated as too few |
 | `test_2_agreement.TestAgreement.test_agreement_rates` | B3 Skips counted as disagreeing votes |
 | `test_2_agreement.TestAgreement.test_low_and_unscored_annotators` | B4 Zero agreement reported as None |
@@ -24,35 +24,30 @@
 
 ## Bugs (recommended order)
 
-### B1: Resubmissions not collapsed
+### B1: Resubmissions with a changed label not collapsed
 
 - **Type:** missing-dedupe
-- **Symptom:** Test 1 test_vote_counts: C-04 shows 5 votes (expected 4) and E-06 shows 4 (expected 3). Every status and label is still right.
-- **Location:** `tonevote/loader.py` → `load_annotations`
-- **Why it fails:** The dedupe helper is never called, so a09's two C-04 rows and a11's two E-06 rows are both counted as votes. Neither task changes status, so only the vote counts show it.
+- **Symptom:** Test 1 test_vote_counts: E-06 shows 4 votes (expected 3). C-04 is right and every status and label is still right.
+- **Location:** `tonevote/loader.py` → `latest_per_annotator`
+- **Why it fails:** latest_per_annotator keys on (task, annotator, label), so a resubmission only collapses when the label is unchanged. a09's two neu rows on C-04 merge, but a11's pos then neg on E-06 stay as two votes. E-06 is escalated either way, so only the vote count shows it.
 - **Failing test:** `test_1_tasks.TestTasks.test_vote_counts`
 - **Unblocks:** test_1_tasks test_vote_counts.
 
 Fix:
 
 ```diff
--    return annotations
-+    return latest_per_annotator(annotations)
+-        key = (ann.task_id, ann.annotator_id, ann.label)
++        key = (ann.task_id, ann.annotator_id)
 ```
 
 Observed with only this bug applied (`tests.test_1_tasks.TestTasks.test_vote_counts`):
 
 ```
-AssertionError: {'C-0[32 chars]04': 5, 'C-05': 5, 'C-06': 2, 'C-07': 4, 'E-01[110 chars]': 2} != {'C-0[32 chars]04': 4, 'C-05': 5, 'C-06': 2, 'C-07': 4, 'E-01[110 chars]': 2}
+AssertionError: {'C-0[130 chars]-06': 4, 'R-01': 4, 'R-02': 5, 'R-03': 5, 'R-04': 5, 'R-05': 2} != {'C-0[130 chars]-06': 3, 'R-01': 4, 'R-02': 5, 'R-03': 5, 'R-04': 5, 'R-05': 2}
   {'C-01': 4,
    'C-02': 4,
    'C-03': 3,
--  'C-04': 5,
-?          ^
-
-+  'C-04': 4,
-?          ^
-
+   'C-04': 4,
    'C-05': 5,
    'C-06': 2,
    'C-07': 4,
@@ -62,7 +57,10 @@ AssertionError: {'C-0[32 chars]04': 5, 'C-05': 5, 'C-06': 2, 'C-07': 4, 'E-01[11
    'E-04': 1,
    'E-05': 3,
 -  'E-06': 4,
-? ...
+?          ^
+
++  'E-06': 3,
+?           ...
 ```
 
 ### B2: Exactly min_votes treated as too few

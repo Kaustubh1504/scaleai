@@ -13,14 +13,14 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 def _encode(obj):
     if isinstance(obj, datetime):
-        return obj.isoformat()
+        return str(obj)
     if isinstance(obj, (set, frozenset)):
         return sorted(obj)
     raise TypeError(f"cannot serialise {type(obj).__name__}")
 
 
 def export_json(report):
-    return json.dumps(report, default=str, indent=2, sort_keys=True)
+    return json.dumps(report, default=_encode, indent=2, sort_keys=True)
 
 
 def build_report(data_dir=None):

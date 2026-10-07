@@ -192,8 +192,13 @@ AssertionError: {'acm[34 chars]3': 2180, 'cinder/2026-02': 4925, 'cinder/2026[80
 Fix:
 
 ```diff
+# meterbill/invoices.py
 -    return round(discounted)
 +    return int(discounted.quantize(Decimal(1), rounding=ROUND_HALF_UP))
+
+# meterbill/invoices.py
+-from decimal import Decimal
++from decimal import ROUND_HALF_UP, Decimal
 ```
 
 Observed with only this bug applied (`tests.test_3_invoices.TestInvoices.test_discounted_total`):

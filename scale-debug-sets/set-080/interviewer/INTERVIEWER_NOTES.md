@@ -48,8 +48,8 @@ and give one level at a time. Record every hint on the scoring sheet.
 ### B6: Export serialises datetimes with str()
 
 1. **Nudge:** The exported timestamps have a space where the spec has a 'T'. What turns a datetime into a string here?
-2. **Area:** Look at the `default` argument of json.dumps in export_roster.
-3. **Exact:** Pass default=_encode.
+2. **Area:** Follow the `default` hook of json.dumps in export_roster into `_encode`.
+3. **Exact:** In `_encode`, return `value.isoformat()` instead of `str(value)` for datetimes and dates.
 
 ## "Why did that fix work?" probes
 
@@ -74,12 +74,12 @@ and give one level at a time. Record every hint on the scoring sheet.
 - Why do mixed timestamp formats (2026-01-20T10:00:00 vs 2026-01-20 10:00) still tie here?
 
 **B6**
-- Why does default=str 'work' without raising, and why is that dangerous?
-- What would default=str do to a set?
+- Why doesn't json.dumps raise on the datetime values?
+- Why is this only visible in test_3_export, even though updated_at is used in merging?
 
 ## If the candidate edits a `# VERIFIED` region
 
 Stop them and ask them to show, from the spec and the data, why it is wrong. These regions are correct:
 
 - `rosterflow/normalize.py` → `clean_email`: Stripping 'mailto:' looks like it might mangle addresses, but the README requires it, and only a leading prefix is removed. Lower-casing the whole address is also what the spec asks for.
-- `rosterflow/serialize.py` → `_encode`: It turns datetimes into isoformat() strings and sets into sorted lists, and raises TypeError for anything else, which is what json's `default` hook is supposed to do. It only works if it is actually passed as `default`.
+- `rosterflow/normalize.py` → `parse_updated`: Returning None instead of raising looks like a swallowed error, but check_row turns None into the `unparseable date` rejection the README asks for. The four formats match the README exactly, including the bare date (midnight) and month/day/year.

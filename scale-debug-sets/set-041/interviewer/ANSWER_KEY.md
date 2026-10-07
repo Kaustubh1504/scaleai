@@ -47,16 +47,17 @@ Second list contains 1 addi ...
 
 - **Type:** missing-dedupe
 - **Symptom:** Only visible after B1 is fixed. Test 1 test_full_rows: c-12, c-02 and c-03 show 4 attempts instead of 3, and c-02 drops to rank 3 instead of sharing rank 2 with c-01 (scores and order are unchanged). Test 2 test_summary: submissions_counted 30 instead of 27.
-- **Location:** `ladder/loader.py` → `load_submissions`
-- **Why it fails:** first_per_id is defined but load_submissions returns the raw list, so repeated export rows (s021, S023 , S022) are counted again. Best-per-task scores don't move, but attempts do, which changes the tie-break and the ranks.
+- **Location:** `ladder/loader.py` → `first_per_id`
+- **Why it fails:** first_per_id checks `seen` but never adds to it, so every row passes and repeated export rows (s021, S023 , S022) are counted again. Best-per-task scores don't move, but attempts do, which changes the tie-break and the ranks.
 - **Unblocks:** Test 1 attempts/order and the Test 2 summary count.
 - **Masked:** invisible until B1 is fixed (identical test output either way).
 
 Fix:
 
 ```diff
--    return graded
-+    return first_per_id(graded)
+             continue
++        seen.add(sub.id)
+         unique.append(sub)
 ```
 
 Observed with only this bug applied (`tests.test_1_leaderboard.TestLeaderboard.test_full_rows`):

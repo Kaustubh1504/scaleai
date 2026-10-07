@@ -11,7 +11,7 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 def payout_lines(statements, contributors):
     paid = [contributors[cid] for cid, s in statements.items() if s.status == "paid"]
-    paid.sort(key=lambda c: int(c.account_no))
+    paid.sort(key=lambda c: c.account_no)
     return [f"{c.account_no},{c.method},{statements[c.contributor_id].net}" for c in paid]
 
 
@@ -32,7 +32,8 @@ def build_report(data_dir=None):
     period = load_period(data_dir / "period.json")
     contributors = load_contributors(data_dir / "contributors.csv")
     rates = load_rates(data_dir / "rates.csv")
-    entries = payable_entries(load_work(data_dir / "work_log.csv"), contributors, rates, period)
+    work = load_work(data_dir / "work_log.csv")
+    entries = payable_entries(work, contributors, rates, period)
     statements = build_statements(entries, contributors, rates, load_adjustments(data_dir / "adjustments.json"), period)
     return {
         "statements": {

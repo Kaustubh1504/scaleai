@@ -4,7 +4,7 @@ Candidate: ________________   Date: ________   Interviewer: ________
 
 | Bug | Found & fixed | Minutes | Hints used (0-3) | Explanation (1-4) |
 |---|---|---|---|---|
-| B1 Resubmissions not collapsed | ☐ | | | |
+| B1 Resubmissions with a changed label not collapsed | ☐ | | | |
 | B2 Exactly min_votes treated as too few | ☐ | | | |
 | B3 Skips counted as disagreeing votes | ☐ | | | |
 | B4 Zero agreement reported as None | ☐ | | | |

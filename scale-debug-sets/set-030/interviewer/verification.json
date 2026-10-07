@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_replay"
+    ],
+    "failures": {
+      "tests.test_1_replay.TestReplay.test_lead_resolution": "AssertionError: Tuples differ: ('in_progress', datetime.datetime(2026, 5, 4, 10, 10)) != ('closed', datetime.datetime(2026, 5, 4, 11, 30))\n\nFirst differing element 0:\n'in_progress'\n'closed'\n\n- ('in_progress', datetime.datetime(2026, 5, 4, 10, 10))\n?   ^^^^^ ^^ ^^                                  ^  ^\n\n+ ('closed', datetime.datetime(2026, 5, 4, 11, 30))\n?   ^^ ^ ^                                  ^  ^\n"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_replay"
+    ],
+    "failures": {
+      "tests.test_1_replay.TestReplay.test_agent_handoff": "AssertionError: Tuples differ: ('new', None) != ('resolved', datetime.datetime(2026, 5, 4, 13, 30))\n\nFirst differing element 0:\n'new'\n'resolved'\n\n- ('new', None)\n+ ('resolved', datetime.datetime(2026, 5, 4, 13, 30))"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_tickets"
+    ],
+    "failures": {
+      "tests.test_2_tickets.TestTickets.test_labels": "AssertionError: {'T01': ['billing', 'login', 'outage'], 'T02': ['billing', [92 chars]ge']} != {'T01': ['billing'], 'T02': ['login'], 'T06': ['outage'], 'T10': []}\n+ {'T01': ['billing'], 'T02': ['login'], 'T06': ['outage'], 'T10': []}\n- {'T01': ['billing', 'login', 'outage'],\n-  'T02': ['billing', 'login', 'outage'],\n-  'T06': ['billing', 'login', 'outage'],\n-  'T10': ['billing', 'login', 'outage']}"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_tickets"
+    ],
+    "failures": {
+      "tests.test_2_tickets.TestTickets.test_first_response_after_triage": "AssertionError: {'T02': 10.0, 'T04': 20.0, 'T12': 30.0, 'T14': 10.0} != {'T02': 55.0, 'T04': None, 'T12': 180.0, 'T14': 30.0}\n- {'T02': 10.0, 'T04': 20.0, 'T12': 30.0, 'T14': 10.0}\n?         ^^           ^^^^         ^            ^\n\n+ {'T02': 55.0, 'T04': None, 'T12': 180.0, 'T14': 30.0}\n?         ^^           ^^^^         ^^            ^\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_sla_breaches": "AssertionError: Lists differ: ['T05', 'T07', 'T11', 'T13'] != ['T05', 'T07', 'T13']\n\nFirst differing element 2:\n'T11'\n'T13'\n\nFirst list contains 1 additional elements.\nFirst extra element 3:\n'T13'\n\n- ['T05', 'T07', 'T11', 'T13']\n?                -------\n\n+ ['T05', 'T07', 'T13']"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_actor_activity": "AssertionError: {'acme': {'_': 2, 'c': 2, 'e': 4, 'l': 2, 'm': 2, 'o[789 chars]: 1}} != {'acme': {'customer_reply': 2}, 'ana': {'reply': 5, [341 chars]: 1}}\nDiff is 2037 characters long. Set self.maxDiff to None to see it."
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_replay",
+      "test_2_tickets",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_replay.TestReplay.test_agent_handoff",
+      "tests.test_1_replay.TestReplay.test_lead_resolution",
+      "tests.test_2_tickets.TestTickets.test_first_response_after_triage",
+      "tests.test_2_tickets.TestTickets.test_labels",
+      "tests.test_3_report.TestReport.test_actor_activity",
+      "tests.test_3_report.TestReport.test_sla_breaches"
+    ]
+  }
+}

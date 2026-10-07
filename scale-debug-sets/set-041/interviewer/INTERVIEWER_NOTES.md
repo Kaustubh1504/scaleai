@@ -24,8 +24,8 @@ and give one level at a time. Record every hint on the scoring sheet.
 ### B2: Export duplicates never removed
 
 1. **Nudge:** Scores look right, but c-02, c-03 and c-12 have one attempt too many. Look for their rows in submissions.csv.
-2. **Area:** The README says rows with the same submission id are the same submission. Where does the loader handle that?
-3. **Exact:** load_submissions returns `graded`; it should return `first_per_id(graded)`.
+2. **Area:** The README says rows with the same submission id are the same submission. Step through first_per_id with two rows that share an id.
+3. **Exact:** first_per_id never calls `seen.add(sub.id)`, so the `in seen` check is always false; add it before appending.
 
 ### B3: Team ties ordered reverse-alphabetically
 

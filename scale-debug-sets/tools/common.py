@@ -66,15 +66,24 @@ def copy_repo(src: Path, dst: Path) -> None:
     shutil.copytree(src, dst, ignore=IGNORE)
 
 
+def bug_edits(bug: dict) -> list[dict]:
+    """The main (file, old, new) edit plus any `extra` edits (e.g. dropping an import the
+    buggy line no longer needs, so no unused name points at the change)."""
+    main = {"file": bug["file"], "old": bug["old"], "new": bug["new"]}
+    return [main] + [{"file": e.get("file", bug["file"]), "old": e["old"], "new": e["new"]}
+                     for e in bug.get("extra", [])]
+
+
 def apply_bugs(repo: Path, bugs: list[dict]) -> None:
-    """Apply (file, old, new) edits in place. Each `old` must match exactly once."""
+    """Apply each bug's edits in place. Each `old` must match exactly once."""
     for bug in bugs:
-        path = repo / bug["file"]
-        text = path.read_text()
-        count = text.count(bug["old"])
-        if count != 1:
-            raise ValueError(f"{bug['id']}: old text found {count}x in {bug['file']} (need exactly 1)")
-        path.write_text(text.replace(bug["old"], bug["new"], 1))
+        for edit in bug_edits(bug):
+            path = repo / edit["file"]
+            text = path.read_text()
+            count = text.count(edit["old"])
+            if count != 1:
+                raise ValueError(f"{bug['id']}: old text found {count}x in {edit['file']} (need exactly 1)")
+            path.write_text(text.replace(edit["old"], edit["new"], 1))
 
 
 def run_tests(repo: Path) -> dict:

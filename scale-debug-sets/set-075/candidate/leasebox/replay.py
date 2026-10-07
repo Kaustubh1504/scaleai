@@ -1,4 +1,3 @@
-import copy
 from collections import Counter
 
 from .broker import Broker, rejection_code

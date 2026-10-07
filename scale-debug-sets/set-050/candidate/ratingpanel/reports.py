@@ -2,7 +2,6 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from .loader import latest_only, load_items, load_registry, read_ratings, split_rushed
-from .models import Status
 from .scoring import score_items
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"

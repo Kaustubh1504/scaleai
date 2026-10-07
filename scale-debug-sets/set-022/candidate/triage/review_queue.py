@@ -1,4 +1,3 @@
-from .models import Route
 
 
 def queue_key(decision):

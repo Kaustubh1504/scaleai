@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from relaymesh.health import HealthFeed
-from relaymesh.models import ACCEPTING, WorkerState
+from relaymesh.models import ACCEPTING
 
 
 def release_finished(workers, now_ms: int) -> None:

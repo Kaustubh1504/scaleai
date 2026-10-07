@@ -5,7 +5,7 @@ Candidate: ________________   Date: ________   Interviewer: ________
 | Bug | Found & fixed | Minutes | Hints used (0-3) | Explanation (1-4) |
 |---|---|---|---|---|
 | B1 Legacy end shifted as if it were 1-based exclusive | ☐ | | | |
-| B2 Equal-vote overlaps not ranked by length | ☐ | | | |
+| B2 Equal-vote overlaps prefer the shorter span | ☐ | | | |
 | B3 `== "PER" or "ORG"` counts every entity | ☐ | | | |
 
 ## Explanation quality

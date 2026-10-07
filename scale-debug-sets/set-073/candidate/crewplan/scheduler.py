@@ -1,5 +1,4 @@
 from .eligibility import is_eligible
-from .models import Status
 
 
 def project_order(projects):

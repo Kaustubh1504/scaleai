@@ -36,8 +36,8 @@ and give one level at a time. Record every hint on the scoring sheet.
 ### B4: Accent not lower-cased
 
 1. **Nudge:** Where does the 'US' key in strata come from?
-2. **Area:** Compare how accents and ids are normalised in loader.py.
-3. **Exact:** Use norm_code(row["accent"]) for the accent.
+2. **Area:** Follow the accent from load_speakers into normalize.py and compare with the README rule for accents.
+3. **Exact:** norm_code returns `clean(value)`; it should return `clean(value).lower()`.
 
 ### B5: Minutes floored to whole minutes
 

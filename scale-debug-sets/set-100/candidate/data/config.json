@@ -1,0 +1,9 @@
+{
+  "model": " relay-small ",
+  "max_concurrency": 3,
+  "max_retries": 3,
+  "backoff_seconds": 0.5,
+  "baseline_page_size": 5,
+  "default_max_tokens": 32,
+  "new_since": "2026-09-01"
+}

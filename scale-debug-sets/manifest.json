@@ -37,7 +37,7 @@
         }
       ],
       "title": "Contributor staffing by priority with course gates",
-      "verified_at": "2026-10-06T04:43:45+00:00",
+      "verified_at": "2026-10-06T16:36:24+00:00",
       "format": "multi"
     },
     {
@@ -103,7 +103,7 @@
         }
       ],
       "title": "Gold-weighted annotation consensus",
-      "verified_at": "2026-10-06T04:40:51+00:00",
+      "verified_at": "2026-10-06T16:36:24+00:00",
       "format": "multi"
     },
     {
@@ -142,7 +142,7 @@
         }
       ],
       "title": "Task lease replay with expiry and dead-lettering",
-      "verified_at": "2026-10-06T05:03:34+00:00",
+      "verified_at": "2026-10-06T16:36:24+00:00",
       "format": "multi"
     },
     {
@@ -211,7 +211,7 @@
         }
       ],
       "title": "LLM judge client: retries, parsing, paginated usage",
-      "verified_at": "2026-10-06T04:40:54+00:00",
+      "verified_at": "2026-10-06T16:36:27+00:00",
       "format": "multi"
     },
     {
@@ -250,7 +250,7 @@
         }
       ],
       "title": "Bounding-box QA: IoU matching and annotator recall",
-      "verified_at": "2026-10-06T04:40:54+00:00",
+      "verified_at": "2026-10-06T16:36:24+00:00",
       "format": "multi"
     },
     {
@@ -320,7 +320,7 @@
       ],
       "format": "multi",
       "title": "Review queue replay with rework escalation",
-      "verified_at": "2026-10-06T05:03:31+00:00"
+      "verified_at": "2026-10-06T16:36:24+00:00"
     },
     {
       "id": "set-007",
@@ -359,7 +359,7 @@
       ],
       "format": "one_to_one",
       "title": "Multiple-choice eval scorer with weighted accuracy",
-      "verified_at": "2026-10-06T05:03:32+00:00"
+      "verified_at": "2026-10-06T16:36:24+00:00"
     },
     {
       "id": "set-008",
@@ -393,7 +393,14 @@
           "function": "build_record",
           "test": "test_2_cleaning.TestCleaning.test_notes",
           "old": "    record = copy.deepcopy(DEFAULTS)",
-          "new": "    record = dict(DEFAULTS)"
+          "new": "    record = dict(DEFAULTS)",
+          "extra": [
+            {
+              "file": "rosterload/normalize.py",
+              "old": "import copy\n",
+              "new": ""
+            }
+          ]
         },
         {
           "id": "B4",
@@ -425,7 +432,7 @@
       ],
       "format": "one_to_one",
       "title": "Vendor roster ingestion with cross-file dedupe",
-      "verified_at": "2026-10-06T05:03:35+00:00"
+      "verified_at": "2026-10-06T16:36:25+00:00"
     },
     {
       "id": "set-009",
@@ -467,7 +474,7 @@
       ],
       "format": "multi",
       "title": "NER span merger with inclusive-end exports",
-      "verified_at": "2026-10-06T05:03:36+00:00"
+      "verified_at": "2026-10-06T16:36:25+00:00"
     },
     {
       "id": "set-010",
@@ -519,7 +526,14 @@
           "function": "invoice",
           "test": "test_3_invoices.TestInvoices.test_overage",
           "old": "    blocks = math.ceil(excess / 1000)",
-          "new": "    blocks = round(excess / 1000)"
+          "new": "    blocks = round(excess / 1000)",
+          "extra": [
+            {
+              "file": "meterbill/billing.py",
+              "old": "import math\n",
+              "new": ""
+            }
+          ]
         },
         {
           "id": "B6",
@@ -533,7 +547,7 @@
       ],
       "format": "one_to_one",
       "title": "Tenant rate-limit audit and token invoices",
-      "verified_at": "2026-10-06T05:03:38+00:00"
+      "verified_at": "2026-10-06T16:36:26+00:00"
     },
     {
       "id": "set-011",
@@ -572,7 +586,7 @@
       ],
       "format": "one_to_one",
       "title": "Pairwise preference win rates and Elo leaderboard",
-      "verified_at": "2026-10-06T04:50:33+00:00"
+      "verified_at": "2026-10-06T16:36:25+00:00"
     },
     {
       "id": "set-012",
@@ -638,7 +652,7 @@
       ],
       "format": "one_to_one",
       "title": "Async embeddings batch sync with usage pagination",
-      "verified_at": "2026-10-06T04:59:22+00:00"
+      "verified_at": "2026-10-06T16:37:24+00:00"
     },
     {
       "id": "set-013",
@@ -677,7 +691,7 @@
       ],
       "format": "multi",
       "title": "Annotator speeding and copy detection",
-      "verified_at": "2026-10-06T05:01:55+00:00"
+      "verified_at": "2026-10-06T16:36:25+00:00"
     },
     {
       "id": "set-014",
@@ -743,7 +757,7 @@
       ],
       "format": "one_to_one",
       "title": "Weighted least-connections balancer replay",
-      "verified_at": "2026-10-06T05:07:45+00:00"
+      "verified_at": "2026-10-06T16:36:26+00:00"
     },
     {
       "id": "set-015",
@@ -782,7 +796,7 @@
       ],
       "format": "one_to_one",
       "title": "SFT chat-template packing with truncation",
-      "verified_at": "2026-10-06T05:10:06+00:00"
+      "verified_at": "2026-10-06T16:36:26+00:00"
     },
     {
       "id": "set-016",
@@ -848,7 +862,7 @@
       ],
       "format": "multi",
       "title": "Nightly job scheduler: rounds, retries and skip cascade",
-      "verified_at": "2026-10-06T05:04:07+00:00"
+      "verified_at": "2026-10-06T16:36:26+00:00"
     },
     {
       "id": "set-017",
@@ -887,7 +901,7 @@
       ],
       "format": "one_to_one",
       "title": "Labeling challenge leaderboard: best scores and tie-breaks",
-      "verified_at": "2026-10-06T05:04:08+00:00"
+      "verified_at": "2026-10-06T16:36:26+00:00"
     },
     {
       "id": "set-018",
@@ -953,7 +967,7 @@
       ],
       "format": "one_to_one",
       "title": "Teleop episode QA: frames, sync and validity",
-      "verified_at": "2026-10-06T05:04:09+00:00"
+      "verified_at": "2026-10-06T16:36:27+00:00"
     },
     {
       "id": "set-019",
@@ -992,7 +1006,7 @@
       ],
       "format": "multi",
       "title": "Box office seat holds with a 10-minute window",
-      "verified_at": "2026-10-06T05:04:10+00:00"
+      "verified_at": "2026-10-06T16:36:27+00:00"
     },
     {
       "id": "set-020",
@@ -1058,7 +1072,7 @@
       ],
       "format": "one_to_one",
       "title": "Async batch labeling client: concurrency, pages and archive",
-      "verified_at": "2026-10-06T05:05:27+00:00"
+      "verified_at": "2026-10-06T16:36:53+00:00"
     },
     {
       "id": "set-021",
@@ -1097,7 +1111,7 @@
       ],
       "format": "one_to_one",
       "title": "Pre-label TTL cache replay",
-      "verified_at": "2026-10-06T05:02:34+00:00"
+      "verified_at": "2026-10-06T16:36:27+00:00"
     },
     {
       "id": "set-022",
@@ -1136,7 +1150,14 @@
           "file": "triage/review_queue.py",
           "function": "build_queue",
           "old": "d.route is Route.HUMAN",
-          "new": "d.route == \"human\""
+          "new": "d.route == \"human\"",
+          "extra": [
+            {
+              "file": "triage/review_queue.py",
+              "old": "from .models import Route\n",
+              "new": ""
+            }
+          ]
         },
         {
           "id": "B5",
@@ -1163,7 +1184,7 @@
       ],
       "format": "multi",
       "title": "Confidence-threshold triage to a human review queue",
-      "verified_at": "2026-10-06T05:02:36+00:00"
+      "verified_at": "2026-10-06T16:36:27+00:00"
     },
     {
       "id": "set-023",
@@ -1202,7 +1223,7 @@
       ],
       "format": "one_to_one",
       "title": "Contributor payout run with late penalties and FX",
-      "verified_at": "2026-10-06T05:02:37+00:00"
+      "verified_at": "2026-10-06T16:36:27+00:00"
     },
     {
       "id": "set-024",
@@ -1268,7 +1289,7 @@
       ],
       "format": "one_to_one",
       "title": "Leak-free train/val/test split of labeled feedback",
-      "verified_at": "2026-10-06T05:02:39+00:00"
+      "verified_at": "2026-10-06T16:36:28+00:00"
     },
     {
       "id": "set-025",
@@ -1307,7 +1328,7 @@
       ],
       "format": "multi",
       "title": "Weekly hours split across projects by score and region",
-      "verified_at": "2026-10-06T05:02:40+00:00"
+      "verified_at": "2026-10-06T16:36:28+00:00"
     },
     {
       "id": "set-026",
@@ -1320,10 +1341,10 @@
           "id": "B1",
           "type": "missing-dedupe",
           "file": "tonevote/loader.py",
-          "function": "load_annotations",
+          "function": "latest_per_annotator",
           "test": "test_1_tasks.TestTasks.test_vote_counts",
-          "old": "    return latest_per_annotator(annotations)\n",
-          "new": "    return annotations\n"
+          "old": "        key = (ann.task_id, ann.annotator_id)\n",
+          "new": "        key = (ann.task_id, ann.annotator_id, ann.label)\n"
         },
         {
           "id": "B2",
@@ -1373,7 +1394,7 @@
       ],
       "format": "one_to_one",
       "title": "Tone-label agreement with per-project quorum",
-      "verified_at": "2026-10-06T04:52:26+00:00"
+      "verified_at": "2026-10-06T16:36:29+00:00"
     },
     {
       "id": "set-027",
@@ -1412,7 +1433,7 @@
       ],
       "format": "one_to_one",
       "title": "Lease heartbeats with epoch-ms replay",
-      "verified_at": "2026-10-06T05:02:24+00:00"
+      "verified_at": "2026-10-06T16:36:28+00:00"
     },
     {
       "id": "set-028",
@@ -1478,14 +1499,14 @@
       ],
       "format": "multi",
       "title": "Async embedding backfill: cache, retries, paginated usage",
-      "verified_at": "2026-10-06T05:07:41+00:00"
+      "verified_at": "2026-10-06T16:36:39+00:00"
     },
     {
       "id": "set-029",
       "domain": "bbox_qa",
       "length": "MINI",
       "difficulty": "medium",
-      "status": "built",
+      "status": "verified",
       "bugs": [
         {
           "id": "B1",
@@ -1516,16 +1537,81 @@
         }
       ],
       "format": "one_to_one",
-      "title": "Box audit: xywh predictions, per-class thresholds, greedy matching"
+      "title": "Box audit: xywh predictions, per-class thresholds, greedy matching",
+      "verified_at": "2026-10-06T16:36:28+00:00"
     },
     {
       "id": "set-030",
       "domain": "review_state_machine",
       "length": "FULL",
       "difficulty": "medium",
-      "status": "pending",
-      "bugs": [],
-      "format": "one_to_one"
+      "status": "verified",
+      "bugs": [
+        {
+          "id": "B1",
+          "type": "early-return",
+          "file": "ticketflow/workflow.py",
+          "function": "find_transition",
+          "test": "test_1_replay.TestReplay.test_lead_resolution",
+          "old": "        if t.source == state and t.action == action:\n            if role in t.roles:\n                return t\n",
+          "new": "        if t.source == state and t.action == action:\n            return t if role in t.roles else None\n"
+        },
+        {
+          "id": "B2",
+          "type": "id-normalization",
+          "file": "ticketflow/loader.py",
+          "function": "load_people",
+          "test": "test_1_replay.TestReplay.test_agent_handoff",
+          "old": "        return {clean(p[\"id\"]).lower(): clean(p[\"role\"]).lower() for p in json.load(fh)}",
+          "new": "        return {clean(p[\"id\"]): clean(p[\"role\"]).lower() for p in json.load(fh)}"
+        },
+        {
+          "id": "B3",
+          "type": "aliasing-shallow-copy",
+          "file": "ticketflow/models.py",
+          "function": "new_ticket",
+          "test": "test_2_tickets.TestTickets.test_labels",
+          "old": "    fields = copy.deepcopy(TICKET_DEFAULTS)",
+          "new": "    fields = copy.copy(TICKET_DEFAULTS)"
+        },
+        {
+          "id": "B4",
+          "type": "bool-from-string",
+          "file": "ticketflow/workflow.py",
+          "function": "load_workflow",
+          "test": "test_2_tickets.TestTickets.test_first_response_after_triage",
+          "old": "            counts_as_response=parse_flag(item.get(\"counts_as_response\", False)),",
+          "new": "            counts_as_response=bool(item.get(\"counts_as_response\", False)),",
+          "extra": [
+            {
+              "file": "ticketflow/workflow.py",
+              "old": "from .loader import clean, parse_flag\n",
+              "new": "from .loader import clean\n"
+            }
+          ]
+        },
+        {
+          "id": "B5",
+          "type": "time-window-boundary",
+          "file": "ticketflow/sla.py",
+          "function": "breached",
+          "test": "test_3_report.TestReport.test_sla_breaches",
+          "old": "    return waited > sla_minutes(ticket)",
+          "new": "    return waited >= sla_minutes(ticket)"
+        },
+        {
+          "id": "B6",
+          "type": "counter-misuse",
+          "file": "ticketflow/reports.py",
+          "function": "actor_activity",
+          "test": "test_3_report.TestReport.test_actor_activity",
+          "old": "        stats[event.actor][event.action] += 1",
+          "new": "        stats[event.actor].update(event.action)"
+        }
+      ],
+      "format": "one_to_one",
+      "title": "Support ticket workflow replay with a data-driven transition table",
+      "verified_at": "2026-10-06T16:36:29+00:00"
     },
     {
       "id": "set-031",
@@ -1540,7 +1626,14 @@
           "file": "evalscore/scoring.py",
           "function": "select_final",
           "old": "        if att.status in (Status.ERROR, Status.TIMEOUT):",
-          "new": "        if att.status in (\"error\", \"timeout\"):"
+          "new": "        if att.status in (\"error\", \"timeout\"):",
+          "extra": [
+            {
+              "file": "evalscore/scoring.py",
+              "old": "from .models import ModelScore, Status\n",
+              "new": "from .models import ModelScore\n"
+            }
+          ]
         },
         {
           "id": "B2",
@@ -1564,7 +1657,7 @@
       ],
       "format": "multi",
       "title": "Multiple-choice eval scoring with retried attempts",
-      "verified_at": "2026-10-06T05:05:06+00:00"
+      "verified_at": "2026-10-06T16:36:29+00:00"
     },
     {
       "id": "set-032",
@@ -1630,7 +1723,7 @@
       ],
       "format": "one_to_one",
       "title": "Multi-vendor label feed: validate, merge, summarise",
-      "verified_at": "2026-10-06T05:05:08+00:00"
+      "verified_at": "2026-10-06T16:36:30+00:00"
     },
     {
       "id": "set-033",
@@ -1669,7 +1762,7 @@
       ],
       "format": "one_to_one",
       "title": "NER span adjudication across two export conventions",
-      "verified_at": "2026-10-06T05:05:09+00:00"
+      "verified_at": "2026-10-06T16:36:29+00:00"
     },
     {
       "id": "set-034",
@@ -1735,7 +1828,7 @@
       ],
       "format": "multi",
       "title": "Sliding-window rate limits and token overage billing",
-      "verified_at": "2026-10-06T05:05:11+00:00"
+      "verified_at": "2026-10-06T16:36:30+00:00"
     },
     {
       "id": "set-035",
@@ -1774,7 +1867,7 @@
       ],
       "format": "one_to_one",
       "title": "Pairwise preferences: win rates, Elo and leaderboard",
-      "verified_at": "2026-10-06T05:05:12+00:00"
+      "verified_at": "2026-10-06T16:36:30+00:00"
     },
     {
       "id": "set-036",
@@ -1840,7 +1933,7 @@
       ],
       "format": "one_to_one",
       "title": "Async embedding indexer: concurrency, retries, upserts",
-      "verified_at": "2026-10-06T05:08:52+00:00"
+      "verified_at": "2026-10-06T16:36:52+00:00"
     },
     {
       "id": "set-037",
@@ -1879,7 +1972,7 @@
       ],
       "format": "one_to_one",
       "title": "Card fraud screen: velocity, unknown currencies, rejects",
-      "verified_at": "2026-10-06T05:08:53+00:00"
+      "verified_at": "2026-10-06T16:36:30+00:00"
     },
     {
       "id": "set-038",
@@ -1945,7 +2038,7 @@
       ],
       "format": "multi",
       "title": "Load balancer replay: health probes, weighted least-connections",
-      "verified_at": "2026-10-06T05:08:54+00:00"
+      "verified_at": "2026-10-06T16:36:31+00:00"
     },
     {
       "id": "set-039",
@@ -1979,12 +2072,19 @@
           "function": "summarize",
           "test": "test_2_report.TestReport.test_assistant_turns",
           "old": "if m.role is Role.ASSISTANT),",
-          "new": "if m.role == \"assistant\"),"
+          "new": "if m.role == \"assistant\"),",
+          "extra": [
+            {
+              "file": "sftfmt/reports.py",
+              "old": "from .models import Role\n",
+              "new": ""
+            }
+          ]
         }
       ],
       "format": "one_to_one",
       "title": "SFT formatter: trimming, loss-mask spans, role enums",
-      "verified_at": "2026-10-06T05:08:56+00:00"
+      "verified_at": "2026-10-06T16:36:31+00:00"
     },
     {
       "id": "set-040",
@@ -2050,7 +2150,7 @@
       ],
       "format": "one_to_one",
       "title": "Batch job scheduler: queue order, blocked deps, team summary",
-      "verified_at": "2026-10-06T05:08:58+00:00"
+      "verified_at": "2026-10-06T16:36:31+00:00"
     },
     {
       "id": "set-041",
@@ -2071,9 +2171,9 @@
           "id": "B2",
           "type": "missing-dedupe",
           "file": "ladder/loader.py",
-          "function": "load_submissions",
-          "old": "    return first_per_id(graded)",
-          "new": "    return graded",
+          "function": "first_per_id",
+          "old": "            continue\n        seen.add(sub.id)\n        unique.append(sub)",
+          "new": "            continue\n        unique.append(sub)",
           "masked_by": [
             "B1"
           ]
@@ -2092,7 +2192,7 @@
       ],
       "format": "multi",
       "title": "Sprint leaderboard with export duplicates and team standings",
-      "verified_at": "2026-10-06T05:06:23+00:00"
+      "verified_at": "2026-10-06T16:36:31+00:00"
     },
     {
       "id": "set-042",
@@ -2158,7 +2258,7 @@
       ],
       "format": "one_to_one",
       "title": "Teleop episode QA: sync, frame gaps and task metrics",
-      "verified_at": "2026-10-06T05:06:25+00:00"
+      "verified_at": "2026-10-06T16:36:32+00:00"
     },
     {
       "id": "set-043",
@@ -2197,7 +2297,7 @@
       ],
       "format": "one_to_one",
       "title": "Workshop seat holds with 10-minute expiry",
-      "verified_at": "2026-10-06T05:06:26+00:00"
+      "verified_at": "2026-10-06T16:36:32+00:00"
     },
     {
       "id": "set-044",
@@ -2263,7 +2363,7 @@
       ],
       "format": "one_to_one",
       "title": "Async embeddings batcher with bounded concurrency and index listing",
-      "verified_at": "2026-10-06T05:06:53+00:00"
+      "verified_at": "2026-10-06T16:36:56+00:00"
     },
     {
       "id": "set-045",
@@ -2302,7 +2402,7 @@
       ],
       "format": "multi",
       "title": "Price-quote TTL cache with per-model TTLs and tenant discounts",
-      "verified_at": "2026-10-06T05:06:22+00:00"
+      "verified_at": "2026-10-06T16:36:32+00:00"
     },
     {
       "id": "set-046",
@@ -2360,15 +2460,15 @@
           "id": "B6",
           "type": "json-serialization",
           "file": "routedesk/reports.py",
-          "function": "export_json",
+          "function": "_encode",
           "test": "test_3_report.TestReport.test_6_exported_timestamps",
-          "old": "    return json.dumps(report, default=_encode, indent=2, sort_keys=True)",
-          "new": "    return json.dumps(report, default=str, indent=2, sort_keys=True)"
+          "old": "    if isinstance(obj, datetime):\n        return obj.isoformat()",
+          "new": "    if isinstance(obj, datetime):\n        return str(obj)"
         }
       ],
       "format": "one_to_one",
       "title": "Confidence-threshold routing to a human review desk",
-      "verified_at": "2026-10-06T05:03:48+00:00"
+      "verified_at": "2026-10-06T16:36:33+00:00"
     },
     {
       "id": "set-047",
@@ -2407,7 +2507,7 @@
       ],
       "format": "one_to_one",
       "title": "Pay-period statements with bonuses and a platform fee",
-      "verified_at": "2026-10-06T05:03:49+00:00"
+      "verified_at": "2026-10-06T16:36:33+00:00"
     },
     {
       "id": "set-048",
@@ -2473,7 +2573,7 @@
       ],
       "format": "multi",
       "title": "Group-aware stratified train/val/test splitter",
-      "verified_at": "2026-10-06T05:03:51+00:00"
+      "verified_at": "2026-10-06T16:36:33+00:00"
     },
     {
       "id": "set-049",
@@ -2507,12 +2607,19 @@
           "function": "skill_gaps",
           "test": "test_2_report.TestReport.test_3_skill_gaps_for_americas_skills",
           "old": "    for project in project_order(projects):",
-          "new": "    for project in projects:"
+          "new": "    for project in projects:",
+          "extra": [
+            {
+              "file": "seatplan/reports.py",
+              "old": "from .assigner import project_order, staff\n",
+              "new": "from .assigner import staff\n"
+            }
+          ]
         }
       ],
       "format": "one_to_one",
       "title": "Weekly seat planner with skill levels and hour budgets",
-      "verified_at": "2026-10-06T05:03:52+00:00"
+      "verified_at": "2026-10-06T16:36:34+00:00"
     },
     {
       "id": "set-050",
@@ -2573,12 +2680,19 @@
           "function": "summarize",
           "test": "test_3_summary.TestSummary.test_6_escalated_items",
           "old": "if res.status is Status.ESCALATED",
-          "new": "if res.status == \"escalated\""
+          "new": "if res.status == \"escalated\"",
+          "extra": [
+            {
+              "file": "ratingpanel/reports.py",
+              "old": "from .models import Status\n",
+              "new": ""
+            }
+          ]
         }
       ],
       "format": "one_to_one",
       "title": "Median consensus for 1-10 response ratings",
-      "verified_at": "2026-10-06T05:03:53+00:00"
+      "verified_at": "2026-10-06T16:36:34+00:00"
     },
     {
       "id": "set-051",
@@ -2617,7 +2731,7 @@
       ],
       "format": "multi",
       "title": "Lease book: heartbeats, expiry and dead-lettering",
-      "verified_at": "2026-10-06T04:50:13+00:00"
+      "verified_at": "2026-10-06T16:36:34+00:00"
     },
     {
       "id": "set-052",
@@ -2683,7 +2797,7 @@
       ],
       "format": "one_to_one",
       "title": "Async embedding indexer: concurrency cap, retries, paginated usage",
-      "verified_at": "2026-10-06T04:59:58+00:00"
+      "verified_at": "2026-10-06T16:36:53+00:00"
     },
     {
       "id": "set-053",
@@ -2722,7 +2836,7 @@
       ],
       "format": "one_to_one",
       "title": "Pre-label review QA: survival of model boxes after human review",
-      "verified_at": "2026-10-06T05:03:06+00:00"
+      "verified_at": "2026-10-06T16:36:34+00:00"
     },
     {
       "id": "set-054",
@@ -2788,7 +2902,7 @@
       ],
       "format": "one_to_one",
       "title": "Two-level review flow: four-eyes state machine",
-      "verified_at": "2026-10-06T05:07:07+00:00"
+      "verified_at": "2026-10-06T16:36:35+00:00"
     },
     {
       "id": "set-055",
@@ -2827,7 +2941,7 @@
       ],
       "format": "one_to_one",
       "title": "Multiple-choice eval scorer: retries, answer extraction, weighted leaderboard",
-      "verified_at": "2026-10-06T05:09:40+00:00"
+      "verified_at": "2026-10-06T16:36:35+00:00"
     },
     {
       "id": "set-056",
@@ -2896,7 +3010,7 @@
       ],
       "format": "multi",
       "title": "Supplier catalog merge: BOM feeds, rejects, latest-wins dedupe",
-      "verified_at": "2026-10-06T05:07:34+00:00"
+      "verified_at": "2026-10-06T16:36:36+00:00"
     },
     {
       "id": "set-057",
@@ -2921,7 +3035,7 @@
           "function": "resolve_doc",
           "test": "test_1_adjudication.TestAdjudication.test_overlapping_spans",
           "old": "    for ent in sorted(entities, key=lambda e: (-e.votes, -e.length, e.start)):",
-          "new": "    for ent in sorted(entities, key=lambda e: (-e.votes, e.start)):"
+          "new": "    for ent in sorted(entities, key=lambda e: (-e.votes, e.length, e.start)):"
         },
         {
           "id": "B3",
@@ -2935,7 +3049,7 @@
       ],
       "format": "one_to_one",
       "title": "NER span adjudication: legacy offsets, voting, overlaps",
-      "verified_at": "2026-10-06T05:07:36+00:00"
+      "verified_at": "2026-10-06T16:36:36+00:00"
     },
     {
       "id": "set-058",
@@ -3001,7 +3115,7 @@
       ],
       "format": "one_to_one",
       "title": "Tenant rate limits and usage invoices",
-      "verified_at": "2026-10-06T05:07:38+00:00"
+      "verified_at": "2026-10-06T16:36:37+00:00"
     },
     {
       "id": "set-059",
@@ -3043,7 +3157,7 @@
       ],
       "format": "multi",
       "title": "Preference leaderboard: position swaps, Elo, contested prompts",
-      "verified_at": "2026-10-06T05:07:39+00:00"
+      "verified_at": "2026-10-06T16:36:37+00:00"
     },
     {
       "id": "set-060",
@@ -3109,7 +3223,7 @@
       ],
       "format": "one_to_one",
       "title": "Async embedding backfill: paginated dataset, batches, index commit",
-      "verified_at": "2026-10-06T05:08:08+00:00"
+      "verified_at": "2026-10-06T16:37:05+00:00"
     },
     {
       "id": "set-061",
@@ -3148,7 +3262,7 @@
       ],
       "format": "one_to_one",
       "title": "Rushing and copying tripwire",
-      "verified_at": "2026-10-06T05:03:02+00:00"
+      "verified_at": "2026-10-06T16:36:38+00:00"
     },
     {
       "id": "set-062",
@@ -3164,7 +3278,14 @@
           "function": "effective_weight",
           "test": "test_1_routing.TestRouting.test_1_east_assignments",
           "old": "    if worker.state is WorkerState.DEGRADED:",
-          "new": "    if worker.state == \"degraded\":"
+          "new": "    if worker.state == \"degraded\":",
+          "extra": [
+            {
+              "file": "relaymesh/router.py",
+              "old": "from relaymesh.models import ACCEPTING, WorkerState\n",
+              "new": "from relaymesh.models import ACCEPTING\n"
+            }
+          ]
         },
         {
           "id": "B2",
@@ -3214,7 +3335,7 @@
       ],
       "format": "one_to_one",
       "title": "Zone-local least-inflight replay",
-      "verified_at": "2026-10-06T05:03:03+00:00"
+      "verified_at": "2026-10-06T16:36:39+00:00"
     },
     {
       "id": "set-063",
@@ -3253,7 +3374,7 @@
       ],
       "format": "multi",
       "title": "Chat-format SFT export with a token budget",
-      "verified_at": "2026-10-06T05:03:04+00:00"
+      "verified_at": "2026-10-06T16:36:39+00:00"
     },
     {
       "id": "set-064",
@@ -3319,7 +3440,7 @@
       ],
       "format": "one_to_one",
       "title": "Overnight queue simulation with retries",
-      "verified_at": "2026-10-06T05:03:06+00:00"
+      "verified_at": "2026-10-06T16:36:40+00:00"
     },
     {
       "id": "set-065",
@@ -3358,7 +3479,7 @@
       ],
       "format": "one_to_one",
       "title": "Benchmark leaderboard with a freeze",
-      "verified_at": "2026-10-06T05:03:08+00:00"
+      "verified_at": "2026-10-06T16:36:40+00:00"
     },
     {
       "id": "set-066",
@@ -3424,7 +3545,7 @@
       ],
       "format": "multi",
       "title": "Teleop episode QA: units, sync tolerance, frame gaps",
-      "verified_at": "2026-10-06T05:08:45+00:00"
+      "verified_at": "2026-10-06T16:36:41+00:00"
     },
     {
       "id": "set-067",
@@ -3463,7 +3584,7 @@
       ],
       "format": "one_to_one",
       "title": "Box-office holds: seat order, overnight expiry, action routing",
-      "verified_at": "2026-10-06T05:08:46+00:00"
+      "verified_at": "2026-10-06T16:36:41+00:00"
     },
     {
       "id": "set-068",
@@ -3529,7 +3650,7 @@
       ],
       "format": "one_to_one",
       "title": "Async embedding backfill: concurrency cap, retries, index matching",
-      "verified_at": "2026-10-06T05:09:25+00:00"
+      "verified_at": "2026-10-06T16:37:19+00:00"
     },
     {
       "id": "set-069",
@@ -3568,7 +3689,7 @@
       ],
       "format": "one_to_one",
       "title": "Guideline TTL cache: expiry boundary, cache key, shared payloads",
-      "verified_at": "2026-10-06T05:09:26+00:00"
+      "verified_at": "2026-10-06T16:36:42+00:00"
     },
     {
       "id": "set-070",
@@ -3590,10 +3711,10 @@
           "id": "B2",
           "type": "bool-from-string",
           "file": "hitlroute/loader.py",
-          "function": "load_predictions",
+          "function": "parse_flag",
           "test": "test_1_routing.TestRouting.test_caption_review_reasons",
-          "old": "                sensitive=parse_flag(row[\"sensitive\"]),",
-          "new": "                sensitive=bool(clean(row[\"sensitive\"])),"
+          "old": "    return clean(value).lower() in {\"yes\", \"y\", \"true\", \"1\"}",
+          "new": "    return bool(clean(value))"
         },
         {
           "id": "B3",
@@ -3634,7 +3755,7 @@
       ],
       "format": "one_to_one",
       "title": "Confidence routing to human review: flags, worklist urgency, run summary",
-      "verified_at": "2026-10-06T05:09:27+00:00"
+      "verified_at": "2026-10-06T16:36:43+00:00"
     },
     {
       "id": "set-071",
@@ -3673,7 +3794,7 @@
       ],
       "format": "multi",
       "title": "Weekly contributor payouts with adjustments and carryover",
-      "verified_at": "2026-10-06T05:05:36+00:00"
+      "verified_at": "2026-10-06T16:36:44+00:00"
     },
     {
       "id": "set-072",
@@ -3712,11 +3833,11 @@
         {
           "id": "B4",
           "type": "id-normalization",
-          "file": "voxsplit/loader.py",
-          "function": "load_speakers",
+          "file": "voxsplit/normalize.py",
+          "function": "norm_code",
           "test": "test_2_assignment.TestAssignment.test_strata_sizes",
-          "old": "accent=norm_code(row[\"accent\"])",
-          "new": "accent=clean(row[\"accent\"])"
+          "old": "def norm_code(value):\n    return clean(value).lower()",
+          "new": "def norm_code(value):\n    return clean(value)"
         },
         {
           "id": "B5",
@@ -3739,7 +3860,7 @@
       ],
       "format": "one_to_one",
       "title": "Speaker-disjoint, accent-stratified speech splits",
-      "verified_at": "2026-10-06T05:05:37+00:00"
+      "verified_at": "2026-10-06T16:36:45+00:00"
     },
     {
       "id": "set-073",
@@ -3755,7 +3876,14 @@
           "function": "staff",
           "test": "test_1_staffing.TestStaffing.test_assignments",
           "old": "        if project.status == Status.PAUSED:",
-          "new": "        if project.status == \"paused\":"
+          "new": "        if project.status == \"paused\":",
+          "extra": [
+            {
+              "file": "crewplan/scheduler.py",
+              "old": "from .models import Status\n",
+              "new": ""
+            }
+          ]
         },
         {
           "id": "B2",
@@ -3773,12 +3901,19 @@
           "function": "course_table",
           "test": "test_2_courses.TestCourseCoverage.test_most_demanded",
           "old": "            if project.status is Status.OPEN:\n                entry.demand += 1",
-          "new": "            entry.demand += 1"
+          "new": "            entry.demand += 1",
+          "extra": [
+            {
+              "file": "crewplan/reports.py",
+              "old": "from .models import CourseStats, Status\n",
+              "new": "from .models import CourseStats\n"
+            }
+          ]
         }
       ],
       "format": "one_to_one",
       "title": "Hours-capped crew planner with expiring certifications",
-      "verified_at": "2026-10-06T05:05:38+00:00"
+      "verified_at": "2026-10-06T16:36:46+00:00"
     },
     {
       "id": "set-074",
@@ -3844,7 +3979,7 @@
       ],
       "format": "multi",
       "title": "Rubric-calibrated Likert consensus",
-      "verified_at": "2026-10-06T05:05:40+00:00"
+      "verified_at": "2026-10-06T16:36:46+00:00"
     },
     {
       "id": "set-075",
@@ -3860,7 +3995,14 @@
           "function": "snapshot",
           "test": "test_1_replay.TestReplay.test_checkpoint",
           "old": "    return copy.deepcopy(tasks)",
-          "new": "    return dict(tasks)"
+          "new": "    return dict(tasks)",
+          "extra": [
+            {
+              "file": "leasebox/replay.py",
+              "old": "import copy\n",
+              "new": ""
+            }
+          ]
         },
         {
           "id": "B2",
@@ -3883,7 +4025,7 @@
       ],
       "format": "one_to_one",
       "title": "Lease broker replay with checkpoint snapshot",
-      "verified_at": "2026-10-06T05:05:42+00:00"
+      "verified_at": "2026-10-06T16:36:47+00:00"
     },
     {
       "id": "set-076",
@@ -3949,7 +4091,7 @@
       ],
       "format": "one_to_one",
       "title": "Async embedding backfill: concurrency cap, retries, commit, paged index check",
-      "verified_at": "2026-10-06T05:08:51+00:00"
+      "verified_at": "2026-10-06T16:37:05+00:00"
     },
     {
       "id": "set-077",
@@ -3988,7 +4130,7 @@
       ],
       "format": "multi",
       "title": "Detection pre-label QA: two models vs ground truth",
-      "verified_at": "2026-10-06T05:08:52+00:00"
+      "verified_at": "2026-10-06T16:36:53+00:00"
     },
     {
       "id": "set-078",
@@ -4054,7 +4196,7 @@
       ],
       "format": "one_to_one",
       "title": "Review lifecycle replay with claim expiry and escalation",
-      "verified_at": "2026-10-06T05:08:54+00:00"
+      "verified_at": "2026-10-06T16:36:54+00:00"
     },
     {
       "id": "set-079",
@@ -4093,7 +4235,7 @@
       ],
       "format": "one_to_one",
       "title": "LLM judge score rollup: parsing, medians, weighted leaderboard",
-      "verified_at": "2026-10-06T05:08:55+00:00"
+      "verified_at": "2026-10-06T16:36:54+00:00"
     },
     {
       "id": "set-080",
@@ -4149,9 +4291,9 @@
           "id": "B6",
           "type": "json-serialization",
           "file": "rosterflow/serialize.py",
-          "function": "export_roster",
-          "old": "    return json.dumps(rows, default=_encode, indent=2, sort_keys=True)",
-          "new": "    return json.dumps(rows, default=str, indent=2, sort_keys=True)",
+          "function": "_encode",
+          "old": "        return value.isoformat()",
+          "new": "        return str(value)",
           "visible_only_in": [
             "test_3_export"
           ]
@@ -4159,7 +4301,7 @@
       ],
       "format": "multi",
       "title": "Multi-vendor contributor roster: validate, merge, export",
-      "verified_at": "2026-10-06T05:08:57+00:00"
+      "verified_at": "2026-10-06T16:36:54+00:00"
     },
     {
       "id": "set-081",
@@ -4198,7 +4340,7 @@
       ],
       "format": "one_to_one",
       "title": "Entity span audit: trim, snap, score",
-      "verified_at": "2026-10-06T04:51:34+00:00"
+      "verified_at": "2026-10-06T16:36:54+00:00"
     },
     {
       "id": "set-082",
@@ -4259,12 +4401,19 @@
           "function": "apply_discount",
           "test": "test_3_invoices.TestInvoices.test_discounted_total",
           "old": "    return int(discounted.quantize(Decimal(1), rounding=ROUND_HALF_UP))",
-          "new": "    return round(discounted)"
+          "new": "    return round(discounted)",
+          "extra": [
+            {
+              "file": "meterbill/invoices.py",
+              "old": "from decimal import ROUND_HALF_UP, Decimal\n",
+              "new": "from decimal import Decimal\n"
+            }
+          ]
         }
       ],
       "format": "one_to_one",
       "title": "Gateway metering: sliding-window limits and tiered invoices",
-      "verified_at": "2026-10-06T04:57:40+00:00"
+      "verified_at": "2026-10-06T16:36:55+00:00"
     },
     {
       "id": "set-083",
@@ -4289,7 +4438,14 @@
           "function": "margin_of",
           "test": "test_1_judgements.TestJudgements.test_pair_margins",
           "old": "    left_is_a = norm_model(judgement.left_model) == pair.model_a",
-          "new": "    left_is_a = judgement.left_model == pair.model_a"
+          "new": "    left_is_a = judgement.left_model == pair.model_a",
+          "extra": [
+            {
+              "file": "prefpairs/aggregate.py",
+              "old": "from .loader import norm_model\n",
+              "new": ""
+            }
+          ]
         },
         {
           "id": "B3",
@@ -4303,7 +4459,7 @@
       ],
       "format": "one_to_one",
       "title": "Preference pair builder: screening, margins, standings",
-      "verified_at": "2026-10-06T05:01:36+00:00"
+      "verified_at": "2026-10-06T16:36:55+00:00"
     },
     {
       "id": "set-084",
@@ -4369,16 +4525,46 @@
       ],
       "format": "one_to_one",
       "title": "Async batch embedding client: jobs, polling, paged results",
-      "verified_at": "2026-10-06T05:10:29+00:00"
+      "verified_at": "2026-10-06T16:37:14+00:00"
     },
     {
       "id": "set-085",
       "domain": "fraud_detection",
       "length": "MINI",
       "difficulty": "hard",
-      "status": "pending",
-      "bugs": [],
-      "format": "one_to_one"
+      "status": "verified",
+      "bugs": [
+        {
+          "id": "B1",
+          "type": "id-normalization",
+          "file": "refwatch/loader.py",
+          "function": "clean_device",
+          "test": "test_1_signals.TestSignals.test_1_rings",
+          "old": "    return (raw or \"\").strip().upper() or None",
+          "new": "    return (raw or \"\").strip() or None"
+        },
+        {
+          "id": "B2",
+          "type": "timedelta-seconds",
+          "file": "refwatch/timeutil.py",
+          "function": "minutes_between",
+          "test": "test_2_report.TestReport.test_2_flags",
+          "old": "    return (later - earlier).total_seconds() / 60",
+          "new": "    return (later - earlier).seconds / 60"
+        },
+        {
+          "id": "B3",
+          "type": "missing-dedupe",
+          "file": "refwatch/rules.py",
+          "function": "bonus_ledger",
+          "test": "test_2_report.TestReport.test_3_payouts",
+          "old": "        paid.add(acct.id)\n        ledger.append(",
+          "new": "        ledger.append("
+        }
+      ],
+      "format": "one_to_one",
+      "title": "Referral payout review",
+      "verified_at": "2026-10-06T16:36:56+00:00"
     },
     {
       "id": "set-086",
@@ -4429,6 +4615,13 @@
           "function": "p50",
           "old": "    return ordered[math.ceil(0.5 * len(ordered)) - 1]",
           "new": "    return ordered[len(ordered) // 2]",
+          "extra": [
+            {
+              "file": "lbreplay/metrics.py",
+              "old": "import math\n",
+              "new": ""
+            }
+          ],
           "visible_only_in": [
             "test_3_report"
           ]
@@ -4447,7 +4640,7 @@
       ],
       "format": "multi",
       "title": "Load balancer replay with health checks and sticky sessions",
-      "verified_at": "2026-10-06T05:07:05+00:00"
+      "verified_at": "2026-10-06T16:36:56+00:00"
     },
     {
       "id": "set-087",
@@ -4486,7 +4679,7 @@
       ],
       "format": "one_to_one",
       "title": "Chat SFT packer with per-source token budgets",
-      "verified_at": "2026-10-06T05:07:07+00:00"
+      "verified_at": "2026-10-06T16:36:57+00:00"
     },
     {
       "id": "set-088",
@@ -4552,7 +4745,7 @@
       ],
       "format": "one_to_one",
       "title": "Batch cluster day planner with retries and dependencies",
-      "verified_at": "2026-10-06T05:07:10+00:00"
+      "verified_at": "2026-10-06T16:36:57+00:00"
     },
     {
       "id": "set-089",
@@ -4591,7 +4784,7 @@
       ],
       "format": "one_to_one",
       "title": "Eval Cup leaderboard with a contest window",
-      "verified_at": "2026-10-06T05:07:11+00:00"
+      "verified_at": "2026-10-06T16:36:57+00:00"
     },
     {
       "id": "set-090",
@@ -4660,7 +4853,7 @@
       ],
       "format": "multi",
       "title": "Teleop episode QA with stream sync checks",
-      "verified_at": "2026-10-06T05:07:13+00:00"
+      "verified_at": "2026-10-06T16:36:57+00:00"
     },
     {
       "id": "set-091",
@@ -4699,7 +4892,7 @@
       ],
       "format": "one_to_one",
       "title": "Workshop seat holds: hold window, tier priority, seats left",
-      "verified_at": "2026-10-06T04:49:37+00:00"
+      "verified_at": "2026-10-06T16:36:58+00:00"
     },
     {
       "id": "set-092",
@@ -4765,7 +4958,7 @@
       ],
       "format": "one_to_one",
       "title": "Async embedding index sync: batches, concurrency, retries, paginated index",
-      "verified_at": "2026-10-06T04:58:42+00:00"
+      "verified_at": "2026-10-06T16:37:14+00:00"
     },
     {
       "id": "set-093",
@@ -4804,7 +4997,7 @@
       ],
       "format": "one_to_one",
       "title": "Price quote TTL cache: key, stored copies, log span",
-      "verified_at": "2026-10-06T05:02:36+00:00"
+      "verified_at": "2026-10-06T16:36:58+00:00"
     },
     {
       "id": "set-094",
@@ -4870,16 +5063,46 @@
       ],
       "format": "one_to_one",
       "title": "Moderation HITL router: thresholds, legacy models, reviewer pools, calibration",
-      "verified_at": "2026-10-06T05:08:06+00:00"
+      "verified_at": "2026-10-06T16:36:59+00:00"
     },
     {
       "id": "set-095",
       "domain": "payouts",
       "length": "MINI",
       "difficulty": "hard",
-      "status": "pending",
-      "bugs": [],
-      "format": "one_to_one"
+      "status": "verified",
+      "bugs": [
+        {
+          "id": "B1",
+          "type": "id-normalization",
+          "file": "paycalc/loader.py",
+          "function": "load_adjustments",
+          "test": "test_1_statements.TestStatements.test_1_adjustments_and_net",
+          "old": "    return [(clean(a[\"contributor_id\"]).upper(), parse_amount(a[\"amount\"])) for a in raw[\"adjustments\"]]",
+          "new": "    return [(clean(a[\"contributor_id\"]), parse_amount(a[\"amount\"])) for a in raw[\"adjustments\"]]"
+        },
+        {
+          "id": "B2",
+          "type": "counting-wrong-subset",
+          "file": "paycalc/payfile.py",
+          "function": "build_report",
+          "test": "test_2_payfile.TestPayfile.test_2_audit_flags",
+          "old": "        \"flags\": audit_flags(entries, rates),",
+          "new": "        \"flags\": audit_flags(work, rates),"
+        },
+        {
+          "id": "B3",
+          "type": "string-vs-int",
+          "file": "paycalc/loader.py",
+          "function": "load_contributors",
+          "test": "test_2_payfile.TestPayfile.test_3_payout_file",
+          "old": "            int(clean(row[\"account_no\"])), clean(row[\"method\"]).lower())",
+          "new": "            clean(row[\"account_no\"]), clean(row[\"method\"]).lower())"
+        }
+      ],
+      "format": "one_to_one",
+      "title": "Weekly payout file with speed audit",
+      "verified_at": "2026-10-06T16:36:59+00:00"
     },
     {
       "id": "set-096",
@@ -4945,7 +5168,7 @@
       ],
       "format": "one_to_one",
       "title": "Group-aware dataset splits with pins and dedupe",
-      "verified_at": "2026-10-06T04:56:17+00:00"
+      "verified_at": "2026-10-06T16:37:00+00:00"
     },
     {
       "id": "set-097",
@@ -4984,7 +5207,7 @@
       ],
       "format": "one_to_one",
       "title": "Hour-capped pod staffing with course recency",
-      "verified_at": "2026-10-06T05:00:49+00:00"
+      "verified_at": "2026-10-06T16:37:00+00:00"
     },
     {
       "id": "set-098",
@@ -5050,7 +5273,7 @@
       ],
       "format": "one_to_one",
       "title": "Two-vendor tiered consensus with deadlines",
-      "verified_at": "2026-10-06T05:05:56+00:00"
+      "verified_at": "2026-10-06T16:37:01+00:00"
     },
     {
       "id": "set-099",
@@ -5089,16 +5312,73 @@
       ],
       "format": "one_to_one",
       "title": "Lease broker replay with heartbeats and nacks",
-      "verified_at": "2026-10-06T05:08:59+00:00"
+      "verified_at": "2026-10-06T16:37:01+00:00"
     },
     {
       "id": "set-100",
       "domain": "endpoint_client",
       "length": "FULL",
       "difficulty": "hard",
-      "status": "pending",
-      "bugs": [],
-      "format": "one_to_one"
+      "status": "verified",
+      "bugs": [
+        {
+          "id": "B1",
+          "type": "async-shared-state",
+          "file": "relaygrade/client.py",
+          "function": "RelayClient.complete",
+          "test": "test_1_requests.TestRequests.test_1_request_ids_match_prompts",
+          "old": "        headers = {**self.headers, \"X-Request-Id\": f\"{prompt.id}-{attempt}\"}\n",
+          "new": "        headers = self.headers\n        headers[\"X-Request-Id\"] = f\"{prompt.id}-{attempt}\"\n"
+        },
+        {
+          "id": "B2",
+          "type": "retry-off-by-one",
+          "file": "relaygrade/retry.py",
+          "function": "with_retries",
+          "test": "test_1_requests.TestRequests.test_2_attempts_for_unavailable_prompt",
+          "old": "        if response.status not in RETRYABLE or retries >= policy.max_retries:",
+          "new": "        if response.status not in RETRYABLE or retries + 1 >= policy.max_retries:"
+        },
+        {
+          "id": "B3",
+          "type": "missing-await",
+          "file": "relaygrade/runner.py",
+          "function": "Runner.run_one",
+          "test": "test_2_answers.TestAnswers.test_3_blocked_prompts",
+          "old": "        if prompt.review and await self.client.policy_blocks(prompt.id):",
+          "new": "        if prompt.review and self.client.policy_blocks(prompt.id):"
+        },
+        {
+          "id": "B4",
+          "type": "missing-dedupe",
+          "file": "relaygrade/stream.py",
+          "function": "assemble",
+          "test": "test_2_answers.TestAnswers.test_4_resent_delta",
+          "old": "        if event[\"seq\"] in seen:\n            continue\n",
+          "new": ""
+        },
+        {
+          "id": "B5",
+          "type": "gather-hides-failures",
+          "file": "relaygrade/runner.py",
+          "function": "Runner.run_all",
+          "test": "test_3_report.TestReport.test_5_failed_prompts",
+          "old": "            if isinstance(outcome, Exception):\n                failed[prompt.id] = str(outcome)\n                continue\n",
+          "new": "            if isinstance(outcome, Exception):\n                continue\n"
+        },
+        {
+          "id": "B6",
+          "type": "pagination-cursor",
+          "file": "relaygrade/history.py",
+          "function": "fetch_baselines",
+          "test": "test_3_report.TestReport.test_6_regressions",
+          "old": "        cursor = page.get(\"next_cursor\")",
+          "new": "        cursor = page.get(\"cursor\")"
+        }
+      ],
+      "format": "one_to_one",
+      "title": "Streaming eval relay: request ids, retries, policy gate, resent deltas, failures, baselines",
+      "verified_at": "2026-10-06T16:37:11+00:00"
     }
   ]
 }

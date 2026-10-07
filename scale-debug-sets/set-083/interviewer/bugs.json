@@ -68,6 +68,13 @@
       "probes": [
         "Why does P08's verdict still come out as A?",
         "Why is calibration unaffected by the same function?"
+      ],
+      "extra": [
+        {
+          "file": "prefpairs/aggregate.py",
+          "old": "from .loader import norm_model\n",
+          "new": ""
+        }
       ]
     },
     {

@@ -47,17 +47,17 @@
       "title": "Sensitive flag parsed with bool()",
       "type": "bool-from-string",
       "file": "hitlroute/loader.py",
-      "function": "load_predictions",
+      "function": "parse_flag",
       "test": "test_1_routing.TestRouting.test_caption_review_reasons",
-      "old": "                sensitive=parse_flag(row[\"sensitive\"]),",
-      "new": "                sensitive=bool(clean(row[\"sensitive\"])),",
+      "old": "    return clean(value).lower() in {\"yes\", \"y\", \"true\", \"1\"}",
+      "new": "    return bool(clean(value))",
       "symptom": "Test 1 test_caption_review_reasons: C02 ('no'), C03 ('false') and C06 ('N') have reason sensitive instead of low_confidence. Decisions are unchanged.",
-      "why": "bool() of any non-empty string is True, so 'no', 'false' and 'N' all count as sensitive. C02, C03 and C06 get reason sensitive instead of low_confidence. Their decision is review either way, so only the reason changes.",
+      "why": "parse_flag returns bool() of the trimmed text, and any non-empty string is True, so 'no', 'false' and 'N' all count as sensitive. C02, C03 and C06 get reason sensitive instead of low_confidence. Their decision is review either way, so only the reason changes.",
       "unblocks": "test_caption_review_reasons.",
       "hints": [
         "C02 is marked 'no' in the sensitive column but is routed as sensitive.",
-        "Look at how the sensitive column is turned into a bool in the loader.",
-        "Use parse_flag(row['sensitive']) instead of bool(clean(...))."
+        "Follow the sensitive column from load_predictions into parse_flag and compare with the README flag rule.",
+        "parse_flag returns `bool(clean(value))`; it should return `clean(value).lower() in {\"yes\", \"y\", \"true\", \"1\"}`."
       ],
       "probes": [
         "Why did no item flip from auto_accept to human_review?",
@@ -163,8 +163,8 @@
       "a": "It returns at the first matching check: sensitive, label in policy.always_review, missing confidence, confidence below policy.threshold, and otherwise auto_accept with reason 'confident'. Each result is a Routed object holding a Decision enum member."
     },
     {
-      "q": "What does parse_flag accept?",
-      "a": "It trims and lower-cases the value and returns True only for 'yes', 'y', 'true' or '1'."
+      "q": "Where is the sensitive column parsed, and where is it used?",
+      "a": "load_predictions passes the raw cell to `parse_flag` and stores the result as `Prediction.sensitive`. router.route checks `pred.sensitive` first, before any confidence rule."
     },
     {
       "q": "How are worklists ordered?",

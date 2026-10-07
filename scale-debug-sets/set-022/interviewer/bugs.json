@@ -109,6 +109,13 @@
       "probes": [
         "Why does d.route.value == \"human\" work but d.route == \"human\" not?",
         "What change to the Route class would have made the string comparison work?"
+      ],
+      "extra": [
+        {
+          "file": "triage/review_queue.py",
+          "old": "from .models import Route\n",
+          "new": ""
+        }
       ]
     },
     {

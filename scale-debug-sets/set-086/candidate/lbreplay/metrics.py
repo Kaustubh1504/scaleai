@@ -1,4 +1,3 @@
-import math
 
 
 def p50(values):

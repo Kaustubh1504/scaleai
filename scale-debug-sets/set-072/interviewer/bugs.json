@@ -97,18 +97,18 @@
       "id": "B4",
       "title": "Accent not lower-cased",
       "type": "id-normalization",
-      "file": "voxsplit/loader.py",
-      "function": "load_speakers",
+      "file": "voxsplit/normalize.py",
+      "function": "norm_code",
       "test": "test_2_assignment.TestAssignment.test_strata_sizes",
-      "old": "accent=norm_code(row[\"accent\"])",
-      "new": "accent=clean(row[\"accent\"])",
+      "old": "def norm_code(value):\n    return clean(value).lower()",
+      "new": "def norm_code(value):\n    return clean(value)",
       "symptom": "Test 2 test_strata_sizes: strata is {'US': 1, 'au': 3, 'in': 4, 'uk': 7, 'us': 6} instead of four lower-case strata.",
-      "why": "S04's accent is 'US'. Without lower-casing it forms its own one-speaker stratum, so the strata (and the stratified allocation) no longer follow the spec.",
+      "why": "S04's accent is 'US'. norm_code only trims, so 'US' forms its own one-speaker stratum and the strata (and the stratified allocation) no longer follow the spec.",
       "unblocks": "test_strata_sizes.",
       "hints": [
         "Where does the 'US' key in strata come from?",
-        "Compare how accents and ids are normalised in loader.py.",
-        "Use norm_code(row[\"accent\"]) for the accent."
+        "Follow the accent from load_speakers into normalize.py and compare with the README rule for accents.",
+        "norm_code returns `clean(value)`; it should return `clean(value).lower()`."
       ],
       "probes": [
         "S04 still ended up in train. Why did that happen with the bug, and would it always?",

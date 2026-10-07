@@ -136,6 +136,13 @@
       "probes": [
         "Why were b03 and b04 right with the bug?",
         "b02 also has an even count. Why didn't it change?"
+      ],
+      "extra": [
+        {
+          "file": "lbreplay/metrics.py",
+          "old": "import math\n",
+          "new": ""
+        }
       ]
     },
     {

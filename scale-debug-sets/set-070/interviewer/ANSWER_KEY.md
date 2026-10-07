@@ -62,16 +62,16 @@ AssertionError: {'T02[47 chars]4': 'no_confidence', 'T06': 'no_confidence', '[63
 
 - **Type:** bool-from-string
 - **Symptom:** Test 1 test_caption_review_reasons: C02 ('no'), C03 ('false') and C06 ('N') have reason sensitive instead of low_confidence. Decisions are unchanged.
-- **Location:** `hitlroute/loader.py` → `load_predictions`
-- **Why it fails:** bool() of any non-empty string is True, so 'no', 'false' and 'N' all count as sensitive. C02, C03 and C06 get reason sensitive instead of low_confidence. Their decision is review either way, so only the reason changes.
+- **Location:** `hitlroute/loader.py` → `parse_flag`
+- **Why it fails:** parse_flag returns bool() of the trimmed text, and any non-empty string is True, so 'no', 'false' and 'N' all count as sensitive. C02, C03 and C06 get reason sensitive instead of low_confidence. Their decision is review either way, so only the reason changes.
 - **Failing test:** `test_1_routing.TestRouting.test_caption_review_reasons`
 - **Unblocks:** test_caption_review_reasons.
 
 Fix:
 
 ```diff
--                sensitive=bool(clean(row["sensitive"])),
-+                sensitive=parse_flag(row["sensitive"]),
+-    return bool(clean(value))
++    return clean(value).lower() in {"yes", "y", "true", "1"}
 ```
 
 Observed with only this bug applied (`tests.test_1_routing.TestRouting.test_caption_review_reasons`):

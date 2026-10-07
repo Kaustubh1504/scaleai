@@ -79,6 +79,13 @@
       "probes": [
         "Would class Role(str, Enum) have avoided this? What would you give up?",
         "Where else in the package are roles compared, and how?"
+      ],
+      "extra": [
+        {
+          "file": "sftfmt/reports.py",
+          "old": "from .models import Role\n",
+          "new": ""
+        }
       ]
     }
   ],

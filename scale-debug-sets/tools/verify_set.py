@@ -235,7 +235,7 @@ def _sync_manifest(set_id: str, verified: bool) -> list[str]:
         "difficulty": spec["difficulty"],
         "format": spec.get("format", "multi"),
         "bugs": [
-            {k: b[k] for k in ("id", "type", "file", "function", "test", "old", "new", "masked_by", "visible_only_in")
+            {k: b[k] for k in ("id", "type", "file", "function", "test", "old", "new", "extra", "masked_by", "visible_only_in")
              if k in b}
             for b in spec["bugs"]
         ],

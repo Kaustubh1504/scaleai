@@ -15,11 +15,11 @@ and give one level at a time. Record every hint on the scoring sheet.
 
 ## Hint ladders
 
-### B1: Resubmissions not collapsed
+### B1: Resubmissions with a changed label not collapsed
 
-1. **Nudge:** Pick C-04 and count its rows in chat.csv by annotator. Who appears twice?
-2. **Area:** Follow load_annotations: where is rule 1 applied?
-3. **Exact:** load_annotations returns `annotations`; it should return `latest_per_annotator(annotations)`.
+1. **Nudge:** Pick E-06 and count its rows in email.csv by annotator. Who appears twice, and what differs between their rows?
+2. **Area:** C-04 also has a repeat annotator but its count is right. Look at what latest_per_annotator treats as the same submission.
+3. **Exact:** The dedupe key is `(ann.task_id, ann.annotator_id, ann.label)`; it should be `(ann.task_id, ann.annotator_id)`.
 
 ### B2: Exactly min_votes treated as too few
 
@@ -54,8 +54,8 @@ and give one level at a time. Record every hint on the scoring sheet.
 ## "Why did that fix work?" probes
 
 **B1**
-- Why didn't C-04's status change even though it got an extra vote?
-- If a09 had changed their label on the resubmission, which other tests could have failed?
+- Why did C-04 come out right while E-06 did not?
+- Which submission of a11's on E-06 should count, and how does the README decide?
 
 **B2**
 - Why did no agreed label change even though three tasks changed status?

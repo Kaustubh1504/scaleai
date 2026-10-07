@@ -14,7 +14,7 @@ def norm_id(value):
 
 
 def norm_code(value):
-    return clean(value).lower()
+    return clean(value)
 
 
 def parse_flag(value):

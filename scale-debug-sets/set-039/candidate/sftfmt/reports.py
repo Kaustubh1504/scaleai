@@ -2,7 +2,6 @@ from pathlib import Path
 
 from .loader import load_config, load_conversations, validate, with_system
 from .masks import assistant_spans
-from .models import Role
 from .render import render, total_tokens, truncate
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"

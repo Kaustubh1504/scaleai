@@ -36,8 +36,13 @@
 Fix:
 
 ```diff
+# relaymesh/router.py
 -    if worker.state == "degraded":
 +    if worker.state is WorkerState.DEGRADED:
+
+# relaymesh/router.py
+-from relaymesh.models import ACCEPTING
++from relaymesh.models import ACCEPTING, WorkerState
 ```
 
 Observed with only this bug applied (`tests.test_1_routing.TestRouting.test_1_east_assignments`):

@@ -87,8 +87,13 @@ First differing element 0:
 Fix:
 
 ```diff
+# seatplan/reports.py
 -    for project in projects:
 +    for project in project_order(projects):
+
+# seatplan/reports.py
+-from .assigner import staff
++from .assigner import project_order, staff
 ```
 
 Observed with only this bug applied (`tests.test_2_report.TestReport.test_3_skill_gaps_for_americas_skills`):

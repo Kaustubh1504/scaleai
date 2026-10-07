@@ -185,16 +185,17 @@ Diff is 664 characters long. Set self.maxDiff to None to see it.
 
 - **Type:** json-serialization
 - **Symptom:** Test 3 test_6_exported_timestamps: exported last_review_at is '2026-03-01 16:45:00' instead of '2026-03-01T16:45:00' (space instead of T).
-- **Location:** `routedesk/reports.py` → `export_json`
-- **Why it fails:** `default=str` serialises datetimes as `2026-03-02 11:05:00` (space separator) instead of ISO 8601, and would also write sets as `{...}` strings. The `_encode` helper does what the README asks.
+- **Location:** `routedesk/reports.py` → `_encode`
+- **Why it fails:** `str(datetime)` writes `2026-03-01 16:45:00` (space separator) instead of ISO 8601 `2026-03-01T16:45:00`, which is what the README asks for. json.dumps calls `_encode` for every datetime, so every exported timestamp has the space.
 - **Failing test:** `test_3_report.TestReport.test_6_exported_timestamps`
 - **Unblocks:** test_6_exported_timestamps
 
 Fix:
 
 ```diff
--    return json.dumps(report, default=str, indent=2, sort_keys=True)
-+    return json.dumps(report, default=_encode, indent=2, sort_keys=True)
+     if isinstance(obj, datetime):
+-        return str(obj)
++        return obj.isoformat()
 ```
 
 Observed with only this bug applied (`tests.test_3_report.TestReport.test_6_exported_timestamps`):

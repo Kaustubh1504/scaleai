@@ -1,0 +1,193 @@
+{
+  "id": "set-100",
+  "title": "Streaming eval relay: request ids, retries, policy gate, resent deltas, failures, baselines",
+  "domain": "endpoint_client",
+  "length": "FULL",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "relaygrade",
+  "scenario": "An eval harness streams model answers from a mock completion relay over raw HTTP/1.1 (asyncio.open_connection, chunked NDJSON), gates review prompts through a policy endpoint, retries 429/5xx with Retry-After/backoff, rebuilds each answer from out-of-order and resent delta events, grades it, and pages through cursor-paginated baselines to flag regressions. Test 1 checks what the relay saw, test 2 the rebuilt answers, test 3 the report.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_requests",
+      "test_2_answers",
+      "test_3_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "relaygrade/wire.py",
+      "symbol": "_read_chunked",
+      "why_correct": "Each chunk is `<hex size>\\r\\n<data>\\r\\n`, so reading size + 2 bytes and dropping the last two removes exactly the chunk's trailing CRLF. The size is hex (base 16), chunk extensions after `;` are ignored, and the zero-size chunk is followed by one blank line, which is consumed before returning."
+    },
+    {
+      "file": "relaygrade/history.py",
+      "symbol": "latest_baselines",
+      "why_correct": "The baseline API returns records oldest run first, so letting a later record overwrite an earlier one keeps the most recent score, as the spec requires (p05: r1 score 0, then r2 score 1). Keeping the first record would pick the oldest run."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Shared header dict mutated per request",
+      "type": "async-shared-state",
+      "file": "relaygrade/client.py",
+      "function": "RelayClient.complete",
+      "test": "test_1_requests.TestRequests.test_1_request_ids_match_prompts",
+      "old": "        headers = {**self.headers, \"X-Request-Id\": f\"{prompt.id}-{attempt}\"}\n",
+      "new": "        headers = self.headers\n        headers[\"X-Request-Id\"] = f\"{prompt.id}-{attempt}\"\n",
+      "symptom": "Test 1 test_1_request_ids_match_prompts: the dicts differ, e.g. 'p02': ['p14-1'] and 'p13': ['p14-1'] instead of ['p02-1'] / ['p13-1'] (which ids collide varies with scheduling). Several requests reached the relay carrying another prompt's X-Request-Id. Answers, attempts and the report are all still correct.",
+      "why": "Every concurrent request writes its id into the one `self.headers` dict, and `wire.send` only serialises the headers after `await asyncio.open_connection(...)`. While one task is connecting, the next task overwrites the id, so the request goes out with another prompt's X-Request-Id. Answers are unaffected because the relay routes by the body's prompt_id.",
+      "unblocks": "test_1 test_1_request_ids_match_prompts.",
+      "hints": [
+        "The relay received request ids that belong to other prompts. Where is the header built, and when is it actually written to the socket?",
+        "Look at RelayClient.complete: which dict does it put X-Request-Id into, and who else uses that dict?",
+        "Build a per-request copy: `headers = {**self.headers, \"X-Request-Id\": f\"{prompt.id}-{attempt}\"}`."
+      ],
+      "probes": [
+        "Why does the mix-up only happen with concurrency, and which await opens the window?",
+        "Why do the policy and baseline requests also start carrying an X-Request-Id?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Retry budget counted in attempts",
+      "type": "retry-off-by-one",
+      "file": "relaygrade/retry.py",
+      "function": "with_retries",
+      "test": "test_1_requests.TestRequests.test_2_attempts_for_unavailable_prompt",
+      "old": "        if response.status not in RETRYABLE or retries >= policy.max_retries:",
+      "new": "        if response.status not in RETRYABLE or retries + 1 >= policy.max_retries:",
+      "symptom": "Test 1 test_2_attempts_for_unavailable_prompt: '3 != 4'. The relay saw only 3 completion requests for p11. p11 is still failed with 'HTTP 503' and p03 still recovers on its third attempt.",
+      "why": "`retries` already counts retries made; adding one compares attempts against a retry budget, so the loop gives up one retry early (3 attempts instead of max_retries + 1 = 4). p03 still recovers on its third attempt, so only the always-503 prompt shows it.",
+      "unblocks": "test_1 test_2_attempts_for_unavailable_prompt.",
+      "hints": [
+        "How many attempts does the spec allow with max_retries = 3?",
+        "Look at the stop condition in with_retries: what does `retries` count at that point?",
+        "Stop when `retries >= policy.max_retries`."
+      ],
+      "probes": [
+        "Why does p03, which also gets retried, still succeed?",
+        "Why does the failure reason for p11 stay `HTTP 503` either way?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Policy check never awaited",
+      "type": "missing-await",
+      "file": "relaygrade/runner.py",
+      "function": "Runner.run_one",
+      "test": "test_2_answers.TestAnswers.test_3_blocked_prompts",
+      "old": "        if prompt.review and await self.client.policy_blocks(prompt.id):",
+      "new": "        if prompt.review and self.client.policy_blocks(prompt.id):",
+      "symptom": "Test 2 test_3_blocked_prompts: ['p04', 'p09', 'p12'] != ['p09'], plus a RuntimeWarning \"coroutine 'RelayClient.policy_blocks' was never awaited\". Every review prompt is blocked and no /v1/policy request reaches the relay.",
+      "why": "Without `await`, `policy_blocks` returns a coroutine object, which is always truthy, so every review prompt is treated as blocked and the policy endpoint is never called (Python warns 'coroutine ... was never awaited').",
+      "unblocks": "test_2 test_3_blocked_prompts.",
+      "hints": [
+        "p04 and p12 are allowed by the policy service, yet they are blocked. Did the relay ever receive a policy request?",
+        "Look at the review gate at the top of Runner.run_one, and at the RuntimeWarning in the test output.",
+        "`if prompt.review and await self.client.policy_blocks(prompt.id):`."
+      ],
+      "probes": [
+        "Why is a coroutine object truthy, and why was no policy request logged?",
+        "Why are p04 and p12 not counted as regressions or failures when this happens?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Resent delta joined twice",
+      "type": "missing-dedupe",
+      "file": "relaygrade/stream.py",
+      "function": "assemble",
+      "test": "test_2_answers.TestAnswers.test_4_resent_delta",
+      "old": "        if event[\"seq\"] in seen:\n            continue\n",
+      "new": "",
+      "symptom": "Test 2 test_4_resent_delta: 'Hamlet was written written by William Shakespeare.' != 'Hamlet was written by William Shakespeare.'. p06 still passes grading, so nothing else changes.",
+      "why": "The relay resends seq 3 for p06. Without the `seen` check both copies are kept, and sorting by seq puts them side by side, so the answer repeats ' written'. The answer still contains 'Shakespeare', so grading hides it.",
+      "unblocks": "test_2 test_4_resent_delta.",
+      "hints": [
+        "Which word appears twice in p06's answer, and what does the mock relay deliver for p06?",
+        "Look at how assemble uses `seen`.",
+        "Skip events whose seq is already in `seen` before appending."
+      ],
+      "probes": [
+        "Why does p02's out-of-order stream still come out right?",
+        "Why does p06 still pass grading with the repeated word?"
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Failed prompts dropped after gather",
+      "type": "gather-hides-failures",
+      "file": "relaygrade/runner.py",
+      "function": "Runner.run_all",
+      "test": "test_3_report.TestReport.test_5_failed_prompts",
+      "old": "            if isinstance(outcome, Exception):\n                failed[prompt.id] = str(outcome)\n                continue\n",
+      "new": "            if isinstance(outcome, Exception):\n                continue\n",
+      "symptom": "Test 3 test_5_failed_prompts: {} != {'p07': 'HTTP 400', 'p10': 'stream ended before done', 'p11': 'HTTP 503'}. The three prompts are missing from answers, blocked and failed alike.",
+      "why": "`gather(..., return_exceptions=True)` hands the exceptions back as results; skipping them without recording means p07 (400), p10 (truncated stream) and p11 (503) vanish from the report instead of appearing under `failed`.",
+      "unblocks": "test_3 test_5_failed_prompts.",
+      "hints": [
+        "Three prompts are neither answered, blocked nor failed. Where did they go?",
+        "Look at what run_all does with exception outcomes from gather.",
+        "Record them: `failed[prompt.id] = str(outcome)` before `continue`."
+      ],
+      "probes": [
+        "Why doesn't one failing prompt stop the others?",
+        "What would change if return_exceptions were False?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Cursor taken from the echo field",
+      "type": "pagination-cursor",
+      "file": "relaygrade/history.py",
+      "function": "fetch_baselines",
+      "test": "test_3_report.TestReport.test_6_regressions",
+      "old": "        cursor = page.get(\"next_cursor\")",
+      "new": "        cursor = page.get(\"cursor\")",
+      "symptom": "Test 3 test_6_regressions: ['p08'] != ['p05', 'p08', 'p13']. Only one /v1/baselines request is made, so p05 keeps its old r1 score 0 and p13 has no baseline.",
+      "why": "Each page echoes the cursor that was sent as `cursor` and gives the next one as `next_cursor`. The first page's echo is null, so the loop stops after five records: p05 keeps its old r1 score 0 and p13 has no baseline, leaving only p08 as a regression.",
+      "unblocks": "test_3 test_6_regressions.",
+      "hints": [
+        "How many baseline requests did the relay receive, and how many records does it hold?",
+        "Look at which response field fetch_baselines uses as the next cursor.",
+        "Use `page.get(\"next_cursor\")`."
+      ],
+      "probes": [
+        "Why does p05 drop out of the regressions as well as p13?",
+        "Why is latest_baselines not the cause even though p05's score looks stale?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report do, step by step?",
+      "a": "It loads config, suites and prompts (sorted by priority then id), creates a RelayClient and a Runner, awaits `runner.run_all(prompts)` to get completions and failures, fetches baselines with `fetch_baselines` and reduces them with `latest_baselines`, then builds the report dict (answers, finish reasons, tokens, passed, blocked, failed, attempts, suites, regressions, new prompts)."
+    },
+    {
+      "q": "How does wire.send talk to the server?",
+      "a": "It opens a connection with `asyncio.open_connection`, writes one HTTP/1.1 request built by `_encode_request` from the headers dict it was given, reads the status line and headers, then reads the body either chunked (`_read_chunked`), by Content-Length, or to EOF. It returns a `Response(status, headers, body)` with lower-cased header names and closes the connection."
+    },
+    {
+      "q": "Where does the concurrency limit live?",
+      "a": "Runner creates `self.limit = asyncio.Semaphore(config.max_concurrency)` once. `run_one` holds it around the `with_retries` call (all attempts and backoff waits for one prompt). The policy check happens before the semaphore is acquired."
+    },
+    {
+      "q": "What does the mock relay do for the special prompts?",
+      "a": "p03 gets 429 with `Retry-After: 1.5`, then 503, then a stream; p07 always gets 400; p11 always gets 503; p10's stream has no done event; p02's deltas arrive in the order 3,1,5,2,4; p06's seq 3 is sent twice; p08 is cut to its 4-token budget with finish_reason `length`. Policy: p04 and p12 allowed, p09 not. The server logs each request's path, body prompt_id, X-Request-Id and Authorization."
+    },
+    {
+      "q": "What does a baselines page look like?",
+      "a": "`{\"data\": [...records...], \"cursor\": <the cursor that was sent, or null>, \"next_cursor\": <base64 cursor or null>}`. There are 13 records ordered oldest run first; some prompt ids have stray case or whitespace, and p05 appears twice (r1 then r2)."
+    },
+    {
+      "q": "What does with_retries return and how are waits computed?",
+      "a": "It calls `attempt(n)` with n starting at 1, and returns `(last_response, attempts_made)`. Between attempts it awaits `sleep(retry_delay(response, retries, policy))`; `retry_delay` returns the Retry-After header as float seconds if present, else `backoff_seconds * 2**retries`. Tests inject a sleep that records the delay and returns immediately."
+    },
+    {
+      "q": "How is an answer graded?",
+      "a": "`grade` lower-cases and collapses whitespace in both the expected answer and the completion text, then checks that the expected string is a substring of the completion."
+    }
+  ]
+}

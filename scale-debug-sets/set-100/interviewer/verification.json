@@ -1,0 +1,65 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_1_request_ids_match_prompts": "AssertionError: {'p01[19 chars]: ['p14-1'], 'p03': ['p03-2', 'p03-3', 'p06-1'[222 chars]-1']} != {'p01[19 chars]: ['p02-1'], 'p03': ['p03-1', 'p03-2', 'p03-3'[222 chars]-1']}\n  {'p01': ['p01-1'],\n-  'p02': ['p14-1'],\n?            ^^\n\n+  'p02': ['p02-1'],\n?            ^^\n\n-  'p03': ['p03-2', 'p03-3', 'p06-1'],\n?                          ---------\n\n+  'p03': ['p03-1', 'p03-2', 'p03-3'],\n?          +++++++++\n\n   'p04': ['p04-1'],\n   'p05': ['p05-1'],\n   'p06': ['p06-1'],\n   'p07': ['p07-1'],\n   'p08': ['p08-1'],\n   'p10': ['p10-1'],\n   'p11': ['p11-1', 'p11-2', 'p11-3', 'p11-4'],\n   'p12': ['p12-"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_1_requests"
+    ],
+    "failures": {
+      "tests.test_1_requests.TestRequests.test_2_attempts_for_unavailable_prompt": "AssertionError: 3 != 4"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_answers"
+    ],
+    "failures": {
+      "tests.test_2_answers.TestAnswers.test_3_blocked_prompts": "AssertionError: Lists differ: ['p04', 'p09', 'p12'] != ['p09']\n\nFirst differing element 0:\n'p04'\n'p09'\n\nFirst list contains 2 additional elements.\nFirst extra element 1:\n'p09'\n\n- ['p04', 'p09', 'p12']\n+ ['p09']"
+    }
+  },
+  "B4": {
+    "failing_files": [
+      "test_2_answers"
+    ],
+    "failures": {
+      "tests.test_2_answers.TestAnswers.test_4_resent_delta": "AssertionError: 'Hamlet was written written by William Shakespeare.' != 'Hamlet was written by William Shakespeare.'\n- Hamlet was written written by William Shakespeare.\n?                    --------\n+ Hamlet was written by William Shakespeare.\n"
+    }
+  },
+  "B5": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_5_failed_prompts": "AssertionError: {} != {'p07': 'HTTP 400', 'p10': 'stream ended before done', 'p11': 'HTTP 503'}\n- {}\n+ {'p07': 'HTTP 400', 'p10': 'stream ended before done', 'p11': 'HTTP 503'}"
+    }
+  },
+  "B6": {
+    "failing_files": [
+      "test_3_report"
+    ],
+    "failures": {
+      "tests.test_3_report.TestReport.test_6_regressions": "AssertionError: Lists differ: ['p08'] != ['p05', 'p08', 'p13']\n\nFirst differing element 0:\n'p08'\n'p05'\n\nSecond list contains 2 additional elements.\nFirst extra element 1:\n'p08'\n\n- ['p08']\n+ ['p05', 'p08', 'p13']"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_requests",
+      "test_2_answers",
+      "test_3_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_requests.TestRequests.test_1_request_ids_match_prompts",
+      "tests.test_1_requests.TestRequests.test_2_attempts_for_unavailable_prompt",
+      "tests.test_2_answers.TestAnswers.test_3_blocked_prompts",
+      "tests.test_2_answers.TestAnswers.test_4_resent_delta",
+      "tests.test_3_report.TestReport.test_5_failed_prompts",
+      "tests.test_3_report.TestReport.test_6_regressions"
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_statements"
+    ],
+    "failures": {
+      "tests.test_1_statements.TestStatements.test_1_adjustments_and_net": "AssertionError: {'C-01': ('0.00', '7.50'), 'C-02': ('5.00', '14.00')[213 chars]00')} != {'C-01': ('-1.20', '6.30'), 'C-02': ('5.00', '14.00'[214 chars]00')}\n- {'C-01': ('0.00', '7.50'),\n?            ^ ^     ^ ^\n\n+ {'C-01': ('-1.20', '6.30'),\n?            ^^ ^     ^ ^\n\n   'C-02': ('5.00', '14.00'),\n   'C-03': ('0.25', '5.95'),\n   'C-04': ('-0.60', '5.86'),\n   'C-05': ('0.00', '5.19'),\n   'C-06': ('2.50', '3.87'),\n   'C-07': ('1000.00', '1009.00'),\n   'C-08': ('9.00', '10.00'),\n   'C-09': ('3.00', '10.20'),\n   'C-10': ('3.00', '3.00')}"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_payfile"
+    ],
+    "failures": {
+      "tests.test_2_payfile.TestPayfile.test_2_audit_flags": "AssertionError: {'C-02': ['fast:gale', 'fast:helix'], 'C-05': ['fast:embe[24 chars]us']} != {'C-02': ['fast:helix'], 'C-05': ['fast:ember']}\n+ {'C-02': ['fast:helix'], 'C-05': ['fast:ember']}\n- {'C-02': ['fast:gale', 'fast:helix'],\n-  'C-05': ['fast:ember'],\n-  'C-11': ['fast:cirrus']}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_payfile"
+    ],
+    "failures": {
+      "tests.test_2_payfile.TestPayfile.test_3_payout_file": "AssertionError: Lists differ: ['104433,wire,14.00', '230111,paypal,10.20'[37 chars].00'] != ['830,ach,10.00', '61005,paypal,1009.00', '[37 chars].20']\n\nFirst differing element 0:\n'104433,wire,14.00'\n'830,ach,10.00'\n\n+ ['830,ach,10.00',\n- ['104433,wire,14.00',\n-  '230111,paypal,10.20',\n   '61005,paypal,1009.00',\n-  '830,ach,10.00']\n+  '104433,wire,14.00',\n+  '230111,paypal,10.20']"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_statements",
+      "test_2_payfile"
+    ],
+    "failing_tests": [
+      "tests.test_1_statements.TestStatements.test_1_adjustments_and_net",
+      "tests.test_2_payfile.TestPayfile.test_2_audit_flags",
+      "tests.test_2_payfile.TestPayfile.test_3_payout_file"
+    ]
+  }
+}

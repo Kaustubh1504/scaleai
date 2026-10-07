@@ -1,7 +1,7 @@
 from collections import defaultdict
 from pathlib import Path
 
-from .assigner import project_order, staff
+from .assigner import staff
 from .loader import load_contributors, load_projects
 from .rules import is_available
 

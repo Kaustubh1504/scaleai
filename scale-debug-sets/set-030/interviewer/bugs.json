@@ -1,0 +1,200 @@
+{
+  "id": "set-030",
+  "title": "Support ticket workflow replay with a data-driven transition table",
+  "domain": "review_state_machine",
+  "length": "FULL",
+  "difficulty": "medium",
+  "format": "one_to_one",
+  "package": "ticketflow",
+  "scenario": "Replay an unordered support-desk event log through a transition table loaded from workflow.json (roles per transition, an agent resolve that needs lead approval vs a lead's final resolve), then report ticket states, labels, first-response times, response-SLA breaches (severity 1 is most urgent, VIP halves the limit) and per-actor activity. Test 3 is the report.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_replay",
+      "test_2_tickets",
+      "test_3_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "ticketflow/engine.py",
+      "symbol": "ordered",
+      "why_correct": "Sorting on (ts, seq) is exactly the README rule: timestamp order, seq breaking ties. It matters for T10, where the customer_reply and the resolve share 14:50 and appear in the file in reverse order."
+    },
+    {
+      "file": "ticketflow/loader.py",
+      "symbol": "parse_flag",
+      "why_correct": "Text is true only for true/yes/y/1 after trimming and lower-casing; real JSON booleans go through bool(), which is right for them. The bool() fallback looks suspicious but only applies to non-strings."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "First matching transition ends the search",
+      "type": "early-return",
+      "file": "ticketflow/workflow.py",
+      "function": "find_transition",
+      "test": "test_1_replay.TestReplay.test_lead_resolution",
+      "old": "        if t.source == state and t.action == action:\n            if role in t.roles:\n                return t\n",
+      "new": "        if t.source == state and t.action == action:\n            return t if role in t.roles else None\n",
+      "symptom": "Test 1 test_lead_resolution: T03 ends as ('in_progress', 10:10) instead of ('closed', 11:30); lee's 10:40 resolve is refused (role_not_allowed) and the 11:30 close is then refused too.",
+      "why": "The table has two in_progress/resolve entries: the agent one first, the lead one second. Returning None as soon as the first (state, action) match refuses the actor never reaches the lead's entry, so lee's resolve on T03 is refused as role_not_allowed and the following close is then invalid.",
+      "unblocks": "test_lead_resolution.",
+      "hints": [
+        "Only the lead's resolve is refused; agents resolve fine. What is different about the lead's entry in workflow.json?",
+        "Look at how find_transition walks entries that share a state and action.",
+        "Keep looping when the role isn't in t.roles; return None only after the loop."
+      ],
+      "probes": [
+        "Why does the order of the two resolve entries in workflow.json matter for this symptom?",
+        "Why is the refusal reason role_not_allowed rather than invalid_transition?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "People ids keep their original case",
+      "type": "id-normalization",
+      "file": "ticketflow/loader.py",
+      "function": "load_people",
+      "test": "test_1_replay.TestReplay.test_agent_handoff",
+      "old": "        return {clean(p[\"id\"]).lower(): clean(p[\"role\"]).lower() for p in json.load(fh)}",
+      "new": "        return {clean(p[\"id\"]): clean(p[\"role\"]).lower() for p in json.load(fh)}",
+      "symptom": "Test 1 test_agent_handoff: T09 stays ('new', None) instead of ('resolved', 13:30); every T09 event is refused, starting with noor's triage.",
+      "why": "people.json lists Noor with a capital N while event actors are lower-cased, so the lookup for 'noor' finds no role. Her triage is refused (role_not_allowed) and every later step on T09 is invalid from state new.",
+      "unblocks": "test_agent_handoff.",
+      "hints": [
+        "Every action on T09 is refused, starting with noor's triage. What role does the replay think she has?",
+        "Compare how person ids are normalised in load_people and in load_events.",
+        "Lower-case the id key in load_people."
+      ],
+      "probes": [
+        "Why do the other people.json entries with stray spaces still work?",
+        "Why are the later T09 events refused as invalid_transition and not role_not_allowed?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Ticket defaults copied shallowly",
+      "type": "aliasing-shallow-copy",
+      "file": "ticketflow/models.py",
+      "function": "new_ticket",
+      "test": "test_2_tickets.TestTickets.test_labels",
+      "old": "    fields = copy.deepcopy(TICKET_DEFAULTS)",
+      "new": "    fields = copy.copy(TICKET_DEFAULTS)",
+      "symptom": "Test 2 test_labels: every ticket (T01, T02, T06 and the never-tagged T10) reports ['billing', 'login', 'outage'].",
+      "why": "A shallow copy of the defaults dict still shares the one `labels` list, so every ticket appends to the same list and each ticket reports every tag in the log.",
+      "unblocks": "test_labels.",
+      "hints": [
+        "Every ticket shows the same labels, even T10, which was never tagged.",
+        "Where does each Ticket get its labels list from?",
+        "Use copy.deepcopy (or build a fresh list) in new_ticket."
+      ],
+      "probes": [
+        "Why does the dedupe check in Replay.apply make the shared list look tidy rather than full of repeats?",
+        "Why are state and first_response unaffected by the same copy?"
+      ]
+    },
+    {
+      "id": "B4",
+      "title": "Text flag read with bool()",
+      "type": "bool-from-string",
+      "file": "ticketflow/workflow.py",
+      "function": "load_workflow",
+      "test": "test_2_tickets.TestTickets.test_first_response_after_triage",
+      "old": "            counts_as_response=parse_flag(item.get(\"counts_as_response\", False)),",
+      "new": "            counts_as_response=bool(item.get(\"counts_as_response\", False)),",
+      "symptom": "Test 2 test_first_response_after_triage: T02 10.0, T04 20.0, T12 30.0, T14 10.0 instead of 55.0, None, 180.0, 30.0. The triage time is counted as the first response.",
+      "why": "The triage entry stores counts_as_response as the text \"false\", and bool() of any non-empty string is True. Triage then sets the first response, so triaged tickets report their triage time instead of the first reply.",
+      "unblocks": "test_first_response_after_triage.",
+      "hints": [
+        "Only tickets that were triaged before their first reply are off. Which event became their first response?",
+        "Check how counts_as_response is read in load_workflow and what the triage entry holds.",
+        "Use parse_flag for counts_as_response."
+      ],
+      "probes": [
+        "Why does the customer_reply entry (\"no\") not change any result even with bool()?",
+        "Why are none of the SLA breaches affected?"
+      ],
+      "extra": [
+        {
+          "file": "ticketflow/workflow.py",
+          "old": "from .loader import clean, parse_flag\n",
+          "new": "from .loader import clean\n"
+        }
+      ]
+    },
+    {
+      "id": "B5",
+      "title": "Responding at the limit counted as a breach",
+      "type": "time-window-boundary",
+      "file": "ticketflow/sla.py",
+      "function": "breached",
+      "test": "test_3_report.TestReport.test_sla_breaches",
+      "old": "    return waited > sla_minutes(ticket)",
+      "new": "    return waited >= sla_minutes(ticket)",
+      "symptom": "Test 3 test_sla_breaches: the list is ['T05', 'T07', 'T11', 'T13']. T11, answered after exactly 120 minutes, is added.",
+      "why": "The README says a response exactly at the limit is on time. T11 (severity 2, 120 minutes) was answered after exactly 120 minutes, and >= marks it as breached.",
+      "unblocks": "test_sla_breaches.",
+      "hints": [
+        "One extra ticket is listed. How long did it wait, and what is its limit?",
+        "Read the breach rule in the README and compare it with breached().",
+        "Use a strict > comparison."
+      ],
+      "probes": [
+        "Why is T07, which never got a response, breached either way?",
+        "What other data would expose a VIP boundary case?"
+      ]
+    },
+    {
+      "id": "B6",
+      "title": "Counter updated with a string",
+      "type": "counter-misuse",
+      "file": "ticketflow/reports.py",
+      "function": "actor_activity",
+      "test": "test_3_report.TestReport.test_actor_activity",
+      "old": "        stats[event.actor][event.action] += 1",
+      "new": "        stats[event.actor].update(event.action)",
+      "symptom": "Test 3 test_actor_activity: actors are right but the inner counts are keyed by single characters, e.g. acme -> {'_': 2, 'c': 2, 'e': 4, ...} instead of {'customer_reply': 2}.",
+      "why": "Counter.update with a string iterates it, so each action adds one count per character ('r', 'e', 'p', ...) instead of one count for the action name.",
+      "unblocks": "test_actor_activity.",
+      "hints": [
+        "The actor keys are right, but the inner keys are single letters.",
+        "What does Counter.update do when it is given a str?",
+        "Increment stats[event.actor][event.action] by 1 (or update with [event.action])."
+      ],
+      "probes": [
+        "Why are the actor names themselves still right?",
+        "How would you write the same count with Counter over (actor, action) pairs?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "How does build_report run the replay?",
+      "a": "It loads tickets.csv into Ticket objects keyed by upper-cased id, people.json into an id -> role dict, workflow.json into a list of Transition objects, and events.csv into Event objects. It then builds a Replay and calls run(events), which applies events in ordered() order, and builds each report section from the tickets, replay.rejected and the raw events."
+    },
+    {
+      "q": "What does Replay.apply do with a non-tag event?",
+      "a": "It looks up the actor's role in the people dict (None if missing), asks find_transition for an entry matching the ticket's state, the action and the role, and if there is none uses has_transition to choose between role_not_allowed and invalid_transition. On success it sets state and updated_at, and sets first_response if the transition counts_as_response and the ticket has none yet."
+    },
+    {
+      "q": "What does find_transition return?",
+      "a": "A Transition from the list, scanned in workflow.json file order, whose source and action match and whose roles contain the role; otherwise None. has_transition only checks source and action."
+    },
+    {
+      "q": "Where does each ticket's labels list come from?",
+      "a": "new_ticket in models.py copies the module-level TICKET_DEFAULTS dict (state 'new', labels, first_response None, updated_at None) and passes the copy's values into the Ticket dataclass. Replay.apply appends tag values to ticket.labels if they aren't already there."
+    },
+    {
+      "q": "How are counts_as_response values read from workflow.json?",
+      "a": "load_workflow builds one Transition per entry, cleaning and lower-casing from/action/to/roles and converting counts_as_response with the expression in the Transition(...) call; a missing key defaults to False. In the data the value appears both as JSON booleans and as text such as \"false\", \"yes\" and \"no\"."
+    },
+    {
+      "q": "How is an SLA breach decided?",
+      "a": "sla_minutes looks up SLA_MINUTES by severity and halves it for VIP tickets. breached takes the first response (or as_of when there is none), computes the minutes since opened_at with total_seconds()/60, and compares that with the limit. breaches returns the sorted ids."
+    },
+    {
+      "q": "What does actor_activity count?",
+      "a": "It walks every loaded event (accepted or refused) and keeps a Counter per actor in a defaultdict, then returns {actor: {key: count}} with both levels sorted."
+    }
+  ]
+}

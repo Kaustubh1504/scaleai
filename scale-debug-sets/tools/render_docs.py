@@ -23,10 +23,17 @@ TIMELINE = {
 
 
 def fix_diff(bug: dict) -> str:
-    """Diff from the candidate's (buggy) text to the reference text."""
-    lines = difflib.unified_diff(bug["new"].splitlines(), bug["old"].splitlines(), lineterm="", n=2)
-    body = [ln for ln in lines if not ln.startswith(("---", "+++", "@@"))]
-    return "\n".join(body)
+    """Diff from the candidate's (buggy) text to the reference text, one hunk per edit."""
+    hunks = []
+    edits = [(bug["file"], bug["old"], bug["new"])]
+    edits += [(e.get("file", bug["file"]), e["old"], e["new"]) for e in bug.get("extra", [])]
+    for path, old, new in edits:
+        lines = difflib.unified_diff(new.splitlines(), old.splitlines(), lineterm="", n=2)
+        body = [ln for ln in lines if not ln.startswith(("---", "+++", "@@"))]
+        if len(edits) > 1:
+            body.insert(0, f"# {path}")
+        hunks.append("\n".join(body))
+    return "\n\n".join(hunks)
 
 
 def answer_key(spec: dict, observed: dict) -> str:

@@ -24,8 +24,8 @@ and give one level at a time. Record every hint on the scoring sheet.
 ### B2: Sensitive flag parsed with bool()
 
 1. **Nudge:** C02 is marked 'no' in the sensitive column but is routed as sensitive.
-2. **Area:** Look at how the sensitive column is turned into a bool in the loader.
-3. **Exact:** Use parse_flag(row['sensitive']) instead of bool(clean(...)).
+2. **Area:** Follow the sensitive column from load_predictions into parse_flag and compare with the README flag rule.
+3. **Exact:** parse_flag returns `bool(clean(value))`; it should return `clean(value).lower() in {"yes", "y", "true", "1"}`.
 
 ### B3: Priority sorted as if higher is more urgent
 

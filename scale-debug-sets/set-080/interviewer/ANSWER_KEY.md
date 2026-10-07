@@ -162,16 +162,16 @@ AssertionError: {'ana[159 chars]ara D.', 'country': 'US', 'hours': 35, 'skills[1
 
 - **Type:** json-serialization
 - **Symptom:** Test 3 only, test_export_timestamps: every timestamp has a space instead of 'T' (`'2026-03-01 09:30:00'` vs `'2026-03-01T09:30:00'`).
-- **Location:** `rosterflow/serialize.py` → `export_roster`
-- **Why it fails:** default=str avoids the TypeError, but str(datetime) uses a space separator ('2026-03-01 09:30:00'), not the ISO-8601 'T' the spec requires. The VERIFIED _encode helper exists but is never passed in.
+- **Location:** `rosterflow/serialize.py` → `_encode`
+- **Why it fails:** `str(datetime)` uses a space separator ('2026-03-01 09:30:00'), not the ISO-8601 'T' the spec requires. json.dumps hands every datetime to `_encode`, so every exported timestamp has the space.
 - **Unblocks:** test_export_timestamps.
 - **Masked:** only surfaces in test_3_export.
 
 Fix:
 
 ```diff
--    return json.dumps(rows, default=str, indent=2, sort_keys=True)
-+    return json.dumps(rows, default=_encode, indent=2, sort_keys=True)
+-        return str(value)
++        return value.isoformat()
 ```
 
 Observed with only this bug applied (`tests.test_3_export.TestExport.test_export_timestamps`):
@@ -193,4 +193,4 @@ AssertionError: {'ana[14 chars]03-01 09:30:00', 'cara@x.io': '2026-03-05 10:0[45
 ## Red herrings (marked `# VERIFIED`, genuinely correct)
 
 - `rosterflow/normalize.py` → `clean_email`: Stripping 'mailto:' looks like it might mangle addresses, but the README requires it, and only a leading prefix is removed. Lower-casing the whole address is also what the spec asks for.
-- `rosterflow/serialize.py` → `_encode`: It turns datetimes into isoformat() strings and sets into sorted lists, and raises TypeError for anything else, which is what json's `default` hook is supposed to do. It only works if it is actually passed as `default`.
+- `rosterflow/normalize.py` → `parse_updated`: Returning None instead of raising looks like a swallowed error, but check_row turns None into the `unparseable date` rejection the README asks for. The four formats match the README exactly, including the bare date (midnight) and month/day/year.

@@ -39,23 +39,23 @@
     },
     {
       "id": "B2",
-      "title": "Equal-vote overlaps not ranked by length",
+      "title": "Equal-vote overlaps prefer the shorter span",
       "type": "wrong-tie-break",
       "file": "spanmerge/resolve.py",
       "function": "resolve_doc",
       "test": "test_1_adjudication.TestAdjudication.test_overlapping_spans",
       "old": "    for ent in sorted(entities, key=lambda e: (-e.votes, -e.length, e.start)):",
-      "new": "    for ent in sorted(entities, key=lambda e: (-e.votes, e.start)):",
+      "new": "    for ent in sorted(entities, key=lambda e: (-e.votes, e.length, e.start)):",
       "symptom": "test_1_adjudication.test_overlapping_spans: D02's first entity is [4, 10, 'PER', 'Morgan'] instead of [4, 18, 'ORG', 'Morgan Stanley'].",
-      "why": "Morgan Stanley (ORG) and Morgan (PER) both have 2 votes and the same start. Without the length key the stable sort keeps the candidates' offset order, where the shorter span comes first, so PER 'Morgan' is kept.",
+      "why": "Morgan Stanley (ORG) and Morgan (PER) both have 2 votes and the same start. The length key is ascending (`e.length` instead of `-e.length`), so the shorter span ranks first and PER 'Morgan' is kept, dropping the overlapping ORG.",
       "unblocks": "test_overlapping_spans.",
       "hints": [
         "D02 keeps 'Morgan' as PER. How many votes did each overlapping candidate get?",
-        "Look at the ranking key in resolve_doc against the README overlap rule.",
-        "Add -e.length between votes and start in the sort key."
+        "Look at the ranking key in resolve_doc against the README overlap rule: which span should win an equal-vote overlap?",
+        "The sort key uses `e.length`; it should be `-e.length` so the longer span ranks first."
       ],
       "probes": [
-        "Why did the shorter span win rather than an arbitrary one?",
+        "If PER Morgan had 3 votes, would the length key matter for D02?",
         "Why didn't named_entities change even though the label did?"
       ]
     },

@@ -46,6 +46,13 @@
       "probes": [
         "Why does a new dict not protect the snapshot?",
         "Would copy.copy(tasks) have been enough? Why not?"
+      ],
+      "extra": [
+        {
+          "file": "leasebox/replay.py",
+          "old": "import copy\n",
+          "new": ""
+        }
       ]
     },
     {

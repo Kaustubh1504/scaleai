@@ -7,7 +7,7 @@
 | Failing test | Bug |
 |---|---|
 | `test_1_adjudication.TestAdjudication.test_legacy_tool_offsets` | B1 Legacy end shifted as if it were 1-based exclusive |
-| `test_1_adjudication.TestAdjudication.test_overlapping_spans` | B2 Equal-vote overlaps not ranked by length |
+| `test_1_adjudication.TestAdjudication.test_overlapping_spans` | B2 Equal-vote overlaps prefer the shorter span |
 | `test_2_summary.TestSummary.test_named_entities` | B3 `== "PER" or "ORG"` counts every entity |
 
 ## Failing pattern with all bugs present
@@ -51,19 +51,19 @@ First extra element 2:
 ?  ...
 ```
 
-### B2: Equal-vote overlaps not ranked by length
+### B2: Equal-vote overlaps prefer the shorter span
 
 - **Type:** wrong-tie-break
 - **Symptom:** test_1_adjudication.test_overlapping_spans: D02's first entity is [4, 10, 'PER', 'Morgan'] instead of [4, 18, 'ORG', 'Morgan Stanley'].
 - **Location:** `spanmerge/resolve.py` → `resolve_doc`
-- **Why it fails:** Morgan Stanley (ORG) and Morgan (PER) both have 2 votes and the same start. Without the length key the stable sort keeps the candidates' offset order, where the shorter span comes first, so PER 'Morgan' is kept.
+- **Why it fails:** Morgan Stanley (ORG) and Morgan (PER) both have 2 votes and the same start. The length key is ascending (`e.length` instead of `-e.length`), so the shorter span ranks first and PER 'Morgan' is kept, dropping the overlapping ORG.
 - **Failing test:** `test_1_adjudication.TestAdjudication.test_overlapping_spans`
 - **Unblocks:** test_overlapping_spans.
 
 Fix:
 
 ```diff
--    for ent in sorted(entities, key=lambda e: (-e.votes, e.start)):
+-    for ent in sorted(entities, key=lambda e: (-e.votes, e.length, e.start)):
 +    for ent in sorted(entities, key=lambda e: (-e.votes, -e.length, e.start)):
 ```
 

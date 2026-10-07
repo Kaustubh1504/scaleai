@@ -26,7 +26,7 @@ def load_speakers(path):
     registry = {}
     for row in _read_csv(path):
         sid = norm_id(row["speaker_id"])
-        registry[sid] = Speaker(id=sid, accent=clean(row["accent"]), held_out=parse_flag(row["held_out"]))
+        registry[sid] = Speaker(id=sid, accent=norm_code(row["accent"]), held_out=parse_flag(row["held_out"]))
     return registry
 
 

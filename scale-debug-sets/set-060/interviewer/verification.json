@@ -20,7 +20,7 @@
       "test_1_requests"
     ],
     "failures": {
-      "tests.test_1_requests.TestRequests.test_backoff_between_attempts": "AssertionError: False is not true : gaps between b2 attempts: [0.057, 0.057]"
+      "tests.test_1_requests.TestRequests.test_backoff_between_attempts": "AssertionError: False is not true : gaps between b2 attempts: [0.058, 0.056]"
     }
   },
   "B4": {

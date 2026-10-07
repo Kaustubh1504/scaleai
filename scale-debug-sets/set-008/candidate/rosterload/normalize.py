@@ -1,4 +1,3 @@
-import copy
 from datetime import datetime
 
 from .schema import DEFAULTS, REQUIRED, MissingField, RowError, norm_country

@@ -15,9 +15,9 @@ It loads policies, reviewers and predictions (the loader fills a blank priority 
 
 It returns at the first matching check: sensitive, label in policy.always_review, missing confidence, confidence below policy.threshold, and otherwise auto_accept with reason 'confident'. Each result is a Routed object holding a Decision enum member.
 
-### 3. What does parse_flag accept?
+### 3. Where is the sensitive column parsed, and where is it used?
 
-It trims and lower-cases the value and returns True only for 'yes', 'y', 'true' or '1'.
+load_predictions passes the raw cell to `parse_flag` and stores the result as `Prediction.sensitive`. router.route checks `pred.sensitive` first, before any confidence rule.
 
 ### 4. How are worklists ordered?
 

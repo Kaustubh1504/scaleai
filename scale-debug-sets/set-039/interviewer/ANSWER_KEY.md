@@ -89,8 +89,12 @@ AssertionError: {'c07': (20, 0), 'c09': (32, 0), 'c13': (26, 0)} != {'c07': (20,
 Fix:
 
 ```diff
+# sftfmt/reports.py
 -if m.role == "assistant"),
 +if m.role is Role.ASSISTANT),
+
+# sftfmt/reports.py
++from .models import Role
 ```
 
 Observed with only this bug applied (`tests.test_2_report.TestReport.test_assistant_turns`):

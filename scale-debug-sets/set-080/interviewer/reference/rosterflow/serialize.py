@@ -2,7 +2,6 @@ import json
 from datetime import date, datetime
 
 
-# VERIFIED
 def _encode(value):
     if isinstance(value, (datetime, date)):
         return value.isoformat()

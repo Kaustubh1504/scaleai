@@ -1,4 +1,3 @@
-from .loader import norm_model
 
 NEUTRAL = 4
 TIE_BAND = 0.5

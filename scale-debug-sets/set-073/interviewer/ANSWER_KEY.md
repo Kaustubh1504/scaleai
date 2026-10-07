@@ -30,8 +30,12 @@
 Fix:
 
 ```diff
+# crewplan/scheduler.py
 -        if project.status == "paused":
 +        if project.status == Status.PAUSED:
+
+# crewplan/scheduler.py
++from .models import Status
 ```
 
 Observed with only this bug applied (`tests.test_1_staffing.TestStaffing.test_assignments`):
@@ -94,9 +98,14 @@ AssertionError: {'CODE-300': 13, 'LANG-ES': 13, 'MED-200': 13, 'QA-101': 13} != 
 Fix:
 
 ```diff
+# crewplan/reports.py
 -            entry.demand += 1
 +            if project.status is Status.OPEN:
 +                entry.demand += 1
+
+# crewplan/reports.py
+-from .models import CourseStats
++from .models import CourseStats, Status
 ```
 
 Observed with only this bug applied (`tests.test_2_courses.TestCourseCoverage.test_most_demanded`):

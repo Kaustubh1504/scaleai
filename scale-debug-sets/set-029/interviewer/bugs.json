@@ -35,8 +35,8 @@
       "test": "test_1_matching.TestMatching.test_matches",
       "old": "sorted(candidates(preds, gts), key=lambda c: c[0], reverse=True)",
       "new": "sorted(candidates(preds, gts), key=lambda c: c[0])",
-      "symptom": "",
-      "why": "Greedy matching has to start with the best overlap. Ascending order lets the weakest qualifying pair claim a box first. On IMG-1 ann-1's p01/p02 swap targets, and on IMG-3 ann-3's p14 takes g06 ahead of p15. Each annotator ends up with the same number of matches, so the scores don't move.",
+      "symptom": "test_1 test_matches fails: on IMG-1 the pairs come out p01→g02, p02→g01, p03→g02 instead of p01→g01, p02→g02, p03→g01. All other pairs, the unmatched list and the annotator scores are unaffected.",
+      "why": "Greedy matching has to start with the best overlap. In ascending order the weakest qualifying pair claims a box first. On IMG-1, ann-1's p02→g01 (0.720) gets accepted before p02→g02 (0.933), so p01 and p02 swap targets, and Ann-2's p03 lands on g02 (0.661) instead of g01 (0.960). Every prediction that matched still matches, so the unmatched list and the scores don't change.",
       "unblocks": "test_1 test_matches.",
       "hints": [
         "Compare p01's IoU with g01 and with g02. Which pairing did the code choose?",
@@ -57,8 +57,8 @@
       "test": "test_2_report.TestReport.test_annotator_scores",
       "old": "                annotator=clean(row[\"annotator\"]).lower(),\n",
       "new": "                annotator=clean(row[\"annotator\"]),\n",
-      "symptom": "",
-      "why": "The IMG-2 rows are exported as 'ANN-3' (and one as 'Ann-2'), so without lower-casing they become separate annotators, each charged with every ground-truth box as a possible miss.",
+      "symptom": "test_2 test_annotator_scores fails: the report lists five annotators, including 'ANN-3' (tp 1, fp 1, fn 9) and 'Ann-2' (tp 1, fp 0, fn 9), and ann-2/ann-3 drop to tp 4 and tp 3 (f1 0.471 and 0.429). Matches are unchanged.",
+      "why": "The IMG-2 rows are exported as 'ANN-3' and IMG-1's p03 as 'Ann-2'. Without lower-casing they become separate annotators, and each one is charged with every ground-truth box as a possible miss.",
       "unblocks": "test_2 test_annotator_scores.",
       "hints": [
         "How many annotators does the report list, and how many should there be?",
@@ -79,7 +79,7 @@
       "test": "test_2_report.TestReport.test_localization",
       "old": "    iw = min(a.x2, b.x2) - max(a.x1, b.x1)\n    ih = min(a.y2, b.y2) - max(a.y1, b.y1)\n",
       "new": "    iw = min(a.x2, b.x2) - max(a.x1, b.x1) + 1\n    ih = min(a.y2, b.y2) - max(a.y1, b.y1) + 1\n",
-      "symptom": "",
+      "symptom": "test_2 test_localization fails: {'car': 1.0, 'person': 0.984, 'sign': 0.776} instead of {'car': 0.971, 'person': 0.944, 'sign': 0.701}. Every class reads high, and matches and scores are unchanged.",
       "why": "The +1 belongs to inclusive pixel indexing. Here x2 is exclusive and area() has no +1, so the intersection is inflated against the union: exact matches score above 1 and every overlap reads high. No pair crosses a threshold, so matching is unchanged.",
       "unblocks": "test_2 test_localization.",
       "hints": [

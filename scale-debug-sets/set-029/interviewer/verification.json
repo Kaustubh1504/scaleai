@@ -4,8 +4,7 @@
       "test_1_matching"
     ],
     "failures": {
-      "tests.test_1_matching.TestMatching.test_matches": "AssertionError: {'p01': 'g02', 'p02': 'g01', 'p03': 'g02', 'p04': 'g[181 chars]g09'} != {'p01': 'g01', 'p02': 'g02', 'p03': 'g01', 'p04': 'g[181 chars]g09'}\n- {'p01': 'g02',\n?            ^\n\n+ {'p01': 'g01',\n?            ^\n\n-  'p02': 'g01',\n?            ^\n\n+  'p02': 'g02',\n?            ^\n\n-  'p03': 'g02',\n?            ^\n\n+  'p03': 'g01',\n?            ^\n\n   'p04': 'g03',\n   'p05': 'g04',\n   'p06': 'g03',\n   'p08': 'g03',\n   'p10': 'g05',\n   'p11': 'g06',\n   'p13': 'g06',\n-  'p14': 'g06',\n?     ^\n\n+  'p15': 'g06',\n?     ^\n\n   'p16': 'g07',\n   'p17': 'g07',\n   'p18': 'g08',\n   'p19': 'g08',\n   'p2",
-      "tests.test_1_matching.TestMatching.test_unmatched_predictions": "AssertionError: Lists differ: ['p07', 'p09', 'p12', 'p15', 'p20'] != ['p07', 'p09', 'p12', 'p14', 'p20']\n\nFirst differing element 3:\n'p15'\n'p14'\n\n- ['p07', 'p09', 'p12', 'p15', 'p20']\n?                          ^\n\n+ ['p07', 'p09', 'p12', 'p14', 'p20']\n?                          ^\n"
+      "tests.test_1_matching.TestMatching.test_matches": "AssertionError: {'p01': 'g02', 'p02': 'g01', 'p03': 'g02', 'p04': 'g[181 chars]g09'} != {'p01': 'g01', 'p02': 'g02', 'p03': 'g01', 'p04': 'g[181 chars]g09'}\n- {'p01': 'g02',\n?            ^\n\n+ {'p01': 'g01',\n?            ^\n\n-  'p02': 'g01',\n?            ^\n\n+  'p02': 'g02',\n?            ^\n\n-  'p03': 'g02',\n?            ^\n\n+  'p03': 'g01',\n?            ^\n\n   'p04': 'g03',\n   'p05': 'g04',\n   'p06': 'g03',\n   'p08': 'g03',\n   'p10': 'g05',\n   'p11': 'g06',\n   'p13': 'g06',\n   'p15': 'g06',\n   'p16': 'g07',\n   'p17': 'g07',\n   'p18': 'g08',\n   'p19': 'g08',\n   'p21': 'g09',\n   'p22': 'g09'}"
     }
   },
   "B2": {
@@ -31,7 +30,6 @@
     ],
     "failing_tests": [
       "tests.test_1_matching.TestMatching.test_matches",
-      "tests.test_1_matching.TestMatching.test_unmatched_predictions",
       "tests.test_2_report.TestReport.test_annotator_scores",
       "tests.test_2_report.TestReport.test_localization"
     ]

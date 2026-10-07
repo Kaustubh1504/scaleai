@@ -120,7 +120,7 @@ Fix:
 Observed with only this bug applied (`tests.test_2_retries.TestRetries.test_retry_after_respected`):
 
 ```
-AssertionError: 0.1 not greater than or equal to 0.3
+AssertionError: 0.08 not greater than or equal to 0.3
 ```
 
 ### B5: Embeddings matched by position

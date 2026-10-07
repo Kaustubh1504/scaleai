@@ -65,7 +65,7 @@ Fix:
 Observed with only this bug applied (`tests.test_1_requests.TestRequests.test_retry_after_honoured`):
 
 ```
-AssertionError: 0.061342957997112535 not greater than or equal to 0.2
+AssertionError: 0.057725457998458296 not greater than or equal to 0.2
 ```
 
 ### B3: One retry too many
@@ -144,7 +144,7 @@ Fix:
 Observed with only this bug applied (`tests.test_3_summary.TestSummary.test_total_tokens`):
 
 ```
-AssertionError: 71 != 91
+AssertionError: 25 != 91
 ```
 
 ### B6: Last index page dropped

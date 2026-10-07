@@ -172,8 +172,12 @@ AssertionError: {'R01[85 chars]: 'b03', 'R08': 'b01', 'R09': 'b02', 'R10': 'b[27
 Fix:
 
 ```diff
+# lbreplay/metrics.py
 -    return ordered[len(ordered) // 2]
 +    return ordered[math.ceil(0.5 * len(ordered)) - 1]
+
+# lbreplay/metrics.py
++import math
 ```
 
 Observed with only this bug applied (`tests.test_3_report.TestReport.test_median_latency`):

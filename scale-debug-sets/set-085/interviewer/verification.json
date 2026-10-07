@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "failing_files": [
+      "test_1_signals"
+    ],
+    "failures": {
+      "tests.test_1_signals.TestSignals.test_1_rings": "AssertionError: Lists differ: [['acc-03', 'acc-16'], ['acc-06', 'acc-28'], ['acc-07', 'acc-08']] != [['acc-06', 'acc-28', 'acc-29'], ['acc-03', 'acc-16'], ['acc-07', 'acc-08']]\n\nFirst differing element 0:\n['acc-03', 'acc-16']\n['acc-06', 'acc-28', 'acc-29']\n\n- [['acc-03', 'acc-16'], ['acc-06', 'acc-28'], ['acc-07', 'acc-08']]\n+ [['acc-06', 'acc-28', 'acc-29'], ['acc-03', 'acc-16'], ['acc-07', 'acc-08']]"
+    }
+  },
+  "B2": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_2_flags": "AssertionError: {'acc[45 chars]rral', 'burst'], 'acc-04': ['burst'], 'acc-05'[29 chars]al']} != {'acc[45 chars]rral'], 'acc-04': ['burst'], 'acc-05': [], 'ac[20 chars]al']}\n  {'acc-01': [],\n   'acc-02': [],\n-  'acc-03': ['self_referral', 'burst'],\n?                            ---------\n\n+  'acc-03': ['self_referral'],\n   'acc-04': ['burst'],\n   'acc-05': [],\n   'acc-06': ['self_referral']}"
+    }
+  },
+  "B3": {
+    "failing_files": [
+      "test_2_report"
+    ],
+    "failures": {
+      "tests.test_2_report.TestReport.test_3_payouts": "AssertionError: {'acc[15 chars]02': 50, 'acc-03': 25, 'acc-04': 75, 'acc-05': 50, 'acc-06': 0} != {'acc[15 chars]02': 50, 'acc-03': 25, 'acc-04': 50, 'acc-05': 50, 'acc-06': 0}\n  {'acc-01': 50,\n   'acc-02': 50,\n   'acc-03': 25,\n-  'acc-04': 75,\n?            -\n\n+  'acc-04': 50,\n?             +\n\n   'acc-05': 50,\n   'acc-06': 0}"
+    }
+  },
+  "ALL": {
+    "failing_files": [
+      "test_1_signals",
+      "test_2_report"
+    ],
+    "failing_tests": [
+      "tests.test_1_signals.TestSignals.test_1_rings",
+      "tests.test_2_report.TestReport.test_2_flags",
+      "tests.test_2_report.TestReport.test_3_payouts"
+    ]
+  }
+}

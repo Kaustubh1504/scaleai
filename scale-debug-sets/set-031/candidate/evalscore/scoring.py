@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from .models import ModelScore, Status
+from .models import ModelScore
 from .parsing import parse_choice
 
 

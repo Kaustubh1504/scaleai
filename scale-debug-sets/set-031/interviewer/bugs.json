@@ -40,6 +40,13 @@
       "probes": [
         "Why would this comparison have worked if Status were declared as `class Status(str, Enum)`?",
         "Why did the failed lists become empty instead of just changing?"
+      ],
+      "extra": [
+        {
+          "file": "evalscore/scoring.py",
+          "old": "from .models import ModelScore, Status\n",
+          "new": "from .models import ModelScore\n"
+        }
       ]
     },
     {

@@ -92,8 +92,12 @@ AssertionError: {'ash[18 chars]n', 'python', 'spark', 'sql'], 'ben@lab.io': [[14
 Fix:
 
 ```diff
+# rosterload/normalize.py
 -    record = dict(DEFAULTS)
 +    record = copy.deepcopy(DEFAULTS)
+
+# rosterload/normalize.py
++import copy
 ```
 
 Observed with only this bug applied (`tests.test_2_cleaning.TestCleaning.test_notes`):

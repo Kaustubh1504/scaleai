@@ -40,6 +40,13 @@
       "probes": [
         "Why does `parse_state(...) == \"degraded\"` fail even though WorkerState.DEGRADED.value is \"degraded\"?",
         "Why were e01 to e04 still right with the comparison broken?"
+      ],
+      "extra": [
+        {
+          "file": "relaymesh/router.py",
+          "old": "from relaymesh.models import ACCEPTING, WorkerState\n",
+          "new": "from relaymesh.models import ACCEPTING\n"
+        }
       ]
     },
     {
@@ -172,7 +179,7 @@
     },
     {
       "q": "How does worker_stats work out peak_inflight?",
-      "a": "For each worker it builds (arrival, end) intervals of its requests, turns them into (time, ±1) points with `sweep_points`, walks them in sorted order adding the deltas to `current`, and keeps the largest value seen in `peak`."
+      "a": "For each worker it builds (arrival, end) intervals of its requests, turns them into (time, \u00b11) points with `sweep_points`, walks them in sorted order adding the deltas to `current`, and keeps the largest value seen in `peak`."
     },
     {
       "q": "What does load_requests return, and in what order?",

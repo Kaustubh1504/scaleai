@@ -59,7 +59,7 @@
       "old": "    return sorted(requests, key=lambda r: r.ts)",
       "new": "    return sorted(requests, key=lambda r: (r.ts, r.request_id))",
       "symptom": "Test 1 test_same_instant_keeps_log_order: garnet's timeline is ['gw1-0011', 'gw2-0011', 'gw1-0012', 'gw2-0010']; each same-second pair is swapped.",
-      "why": "The spec keeps log order for equal timestamps, which a stable sort on ts alone already does. Adding request_id to the key breaks the tie by id, and ids come from two gateway shards, so gw1-… jumps ahead of gw2-….",
+      "why": "The spec keeps log order for equal timestamps, which a stable sort on ts alone already does. Adding request_id to the key breaks the tie by id, and ids come from two gateway shards, so gw1-\u2026 jumps ahead of gw2-\u2026.",
       "unblocks": "test_1 test_same_instant_keeps_log_order.",
       "hints": [
         "The garnet requests that swap places share something. What?",
@@ -73,7 +73,7 @@
     },
     {
       "id": "B3",
-      "title": "Window treated as closed at t − W",
+      "title": "Window treated as closed at t \u2212 W",
       "type": "time-window-boundary",
       "file": "meterbill/limiter.py",
       "function": "SlidingWindow.offer",
@@ -81,7 +81,7 @@
       "old": "        while self.accepted and self.accepted[0] <= cutoff:",
       "new": "        while self.accepted and self.accepted[0] < cutoff:",
       "symptom": "Test 2 test_rejected_requests: an extra rejection, gw2-0004 (elm-labs at 12:00:10, exactly 10 s after its first accepted call).",
-      "why": "The window is (t − W, t]. A request exactly W seconds old sits on the excluded boundary and must be evicted; with `<` it stays, so elm-labs' 12:00:10 call sees a full window.",
+      "why": "The window is (t \u2212 W, t]. A request exactly W seconds old sits on the excluded boundary and must be evicted; with `<` it stays, so elm-labs' 12:00:10 call sees a full window.",
       "unblocks": "test_2 test_rejected_requests.",
       "hints": [
         "How far apart are elm-labs' first accepted request and the extra rejected one?",
@@ -147,7 +147,7 @@
       "old": "    return int(discounted.quantize(Decimal(1), rounding=ROUND_HALF_UP))",
       "new": "    return round(discounted)",
       "symptom": "Test 3 test_discounted_total: 4292 != 4293 for acme/2026-03.",
-      "why": "round() uses banker's rounding (half to even), also for Decimal. 5050 × 0.85 = 4292.5, which rounds to 4292 instead of the spec's half-up 4293.",
+      "why": "round() uses banker's rounding (half to even), also for Decimal. 5050 \u00d7 0.85 = 4292.5, which rounds to 4292 instead of the spec's half-up 4293.",
       "unblocks": "test_3 test_discounted_total.",
       "hints": [
         "acme is one cent short. Work out 5050 less 15% by hand.",
@@ -157,6 +157,13 @@
       "probes": [
         "Which other values would round() and ROUND_HALF_UP disagree on?",
         "Why does nobody else's total change?"
+      ],
+      "extra": [
+        {
+          "file": "meterbill/invoices.py",
+          "old": "from decimal import ROUND_HALF_UP, Decimal\n",
+          "new": "from decimal import Decimal\n"
+        }
       ]
     }
   ],

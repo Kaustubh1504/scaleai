@@ -123,16 +123,17 @@ AssertionError: {'S08': 'test', 'S09': 'train', 'S19': 'test'} != {'S08': 'test'
 
 - **Type:** id-normalization
 - **Symptom:** Test 2 test_strata_sizes: strata is {'US': 1, 'au': 3, 'in': 4, 'uk': 7, 'us': 6} instead of four lower-case strata.
-- **Location:** `voxsplit/loader.py` → `load_speakers`
-- **Why it fails:** S04's accent is 'US'. Without lower-casing it forms its own one-speaker stratum, so the strata (and the stratified allocation) no longer follow the spec.
+- **Location:** `voxsplit/normalize.py` → `norm_code`
+- **Why it fails:** S04's accent is 'US'. norm_code only trims, so 'US' forms its own one-speaker stratum and the strata (and the stratified allocation) no longer follow the spec.
 - **Failing test:** `test_2_assignment.TestAssignment.test_strata_sizes`
 - **Unblocks:** test_strata_sizes.
 
 Fix:
 
 ```diff
--accent=clean(row["accent"])
-+accent=norm_code(row["accent"])
+ def norm_code(value):
+-    return clean(value)
++    return clean(value).lower()
 ```
 
 Observed with only this bug applied (`tests.test_2_assignment.TestAssignment.test_strata_sizes`):

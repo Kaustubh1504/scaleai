@@ -101,7 +101,7 @@ Fix:
 Observed with only this bug applied (`tests.test_1_requests.TestRequests.test_backoff_between_attempts`):
 
 ```
-AssertionError: False is not true : gaps between b2 attempts: [0.063, 0.054]
+AssertionError: False is not true : gaps between b2 attempts: [0.058, 0.056]
 ```
 
 ### B4: 4xx responses passed to the parser

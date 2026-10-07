@@ -25,8 +25,13 @@
 Fix:
 
 ```diff
+# evalscore/scoring.py
 -        if att.status in ("error", "timeout"):
 +        if att.status in (Status.ERROR, Status.TIMEOUT):
+
+# evalscore/scoring.py
+-from .models import ModelScore
++from .models import ModelScore, Status
 ```
 
 Observed with only this bug applied (`tests.test_1_scoring.TestScoring.test_accuracy`):

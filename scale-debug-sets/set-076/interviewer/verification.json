@@ -4,7 +4,7 @@
       "test_1_requests"
     ],
     "failures": {
-      "tests.test_1_requests.TestRequests.test_concurrency_limit": "AssertionError: 7 != 2"
+      "tests.test_1_requests.TestRequests.test_concurrency_limit": "AssertionError: 8 != 2"
     }
   },
   "B2": {

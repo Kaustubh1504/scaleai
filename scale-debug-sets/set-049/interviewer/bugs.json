@@ -80,6 +80,13 @@
       "probes": [
         "Why doesn't the `unfilled` section show PR-07 even though skill_gaps counts it?",
         "Why did this not raise a KeyError for on-hold projects?"
+      ],
+      "extra": [
+        {
+          "file": "seatplan/reports.py",
+          "old": "from .assigner import project_order, staff\n",
+          "new": "from .assigner import staff\n"
+        }
       ]
     }
   ],

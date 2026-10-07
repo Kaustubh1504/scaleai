@@ -13,11 +13,11 @@ It loads the roster (`load_contributors`) and the graded submissions (`load_subm
 
 ### 2. Which submission rows does load_submissions drop?
 
-Rows whose `points` cell is blank after trimming are skipped. Every other row becomes a `Submission` with upper-cased submission and task ids, a lower-cased contributor id, int points and a parsed timestamp. The returned list is what the function's final `return` line gives back.
+Rows whose `points` cell is blank after trimming are skipped. Every other row becomes a `Submission` with upper-cased submission and task ids, a lower-cased contributor id, int points and a parsed timestamp. The list is then passed through `first_per_id` before it is returned.
 
 ### 3. What does first_per_id return?
 
-A new list in the original order, keeping only the first submission seen for each `Submission.id`. Later ones with the same id are skipped.
+A new list in the original order. It walks the submissions, skips one whose `id` is already in its `seen` set, and appends the rest.
 
 ### 4. How are attempts counted in leaderboard()?
 

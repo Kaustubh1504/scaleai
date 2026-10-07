@@ -30,8 +30,12 @@
 Fix:
 
 ```diff
+# leasebox/replay.py
 -    return dict(tasks)
 +    return copy.deepcopy(tasks)
+
+# leasebox/replay.py
++import copy
 ```
 
 Observed with only this bug applied (`tests.test_1_replay.TestReplay.test_checkpoint`):

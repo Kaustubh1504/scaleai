@@ -84,6 +84,13 @@
       "probes": [
         "Why are `skills` and `sources` unaffected even though DEFAULTS has a list for skills too?",
         "What does `DEFAULTS[\"notes\"]` contain after a run with the shallow copy?"
+      ],
+      "extra": [
+        {
+          "file": "rosterload/normalize.py",
+          "old": "import copy\n",
+          "new": ""
+        }
       ]
     },
     {

@@ -47,19 +47,19 @@
       "title": "Export duplicates never removed",
       "type": "missing-dedupe",
       "file": "ladder/loader.py",
-      "function": "load_submissions",
-      "old": "    return first_per_id(graded)",
-      "new": "    return graded",
+      "function": "first_per_id",
+      "old": "            continue\n        seen.add(sub.id)\n        unique.append(sub)",
+      "new": "            continue\n        unique.append(sub)",
       "masked_by": [
         "B1"
       ],
       "symptom": "Only visible after B1 is fixed. Test 1 test_full_rows: c-12, c-02 and c-03 show 4 attempts instead of 3, and c-02 drops to rank 3 instead of sharing rank 2 with c-01 (scores and order are unchanged). Test 2 test_summary: submissions_counted 30 instead of 27.",
-      "why": "first_per_id is defined but load_submissions returns the raw list, so repeated export rows (s021, S023 , S022) are counted again. Best-per-task scores don't move, but attempts do, which changes the tie-break and the ranks.",
+      "why": "first_per_id checks `seen` but never adds to it, so every row passes and repeated export rows (s021, S023 , S022) are counted again. Best-per-task scores don't move, but attempts do, which changes the tie-break and the ranks.",
       "unblocks": "Test 1 attempts/order and the Test 2 summary count.",
       "hints": [
         "Scores look right, but c-02, c-03 and c-12 have one attempt too many. Look for their rows in submissions.csv.",
-        "The README says rows with the same submission id are the same submission. Where does the loader handle that?",
-        "load_submissions returns `graded`; it should return `first_per_id(graded)`."
+        "The README says rows with the same submission id are the same submission. Step through first_per_id with two rows that share an id.",
+        "first_per_id never calls `seen.add(sub.id)`, so the `in seen` check is always false; add it before appending."
       ],
       "probes": [
         "Why didn't the duplicates change anyone's score?",
@@ -98,11 +98,11 @@
     },
     {
       "q": "Which submission rows does load_submissions drop?",
-      "a": "Rows whose `points` cell is blank after trimming are skipped. Every other row becomes a `Submission` with upper-cased submission and task ids, a lower-cased contributor id, int points and a parsed timestamp. The returned list is what the function's final `return` line gives back."
+      "a": "Rows whose `points` cell is blank after trimming are skipped. Every other row becomes a `Submission` with upper-cased submission and task ids, a lower-cased contributor id, int points and a parsed timestamp. The list is then passed through `first_per_id` before it is returned."
     },
     {
       "q": "What does first_per_id return?",
-      "a": "A new list in the original order, keeping only the first submission seen for each `Submission.id`. Later ones with the same id are skipped."
+      "a": "A new list in the original order. It walks the submissions, skips one whose `id` is already in its `seen` set, and appends the rest."
     },
     {
       "q": "How are attempts counted in leaderboard()?",

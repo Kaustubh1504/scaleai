@@ -1,0 +1,126 @@
+{
+  "id": "set-085",
+  "title": "Referral payout review",
+  "domain": "fraud_detection",
+  "length": "MINI",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "refwatch",
+  "scenario": "Before a referral-bonus payout run, link accounts into rings by shared device or private IP, decide which referrals earn the $25 bonus (qualifying deposit, not a self-referral, once per referred account), flag self-referrals and signup bursts, and hold flagged referrers.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_signals",
+      "test_2_report"
+    ]
+  },
+  "verified": [
+    {
+      "file": "refwatch/timeutil.py",
+      "symbol": "within_days",
+      "why_correct": "The spec makes the 14-day window inclusive at both ends (deposit at or after signup, exactly 14 days later still counts), which is exactly `timedelta(0) <= end - start <= timedelta(days=days)`. acc-25's deposit lands exactly 14 days after signup and must qualify; acc-26's lands 14 days and 1 hour later and must not. The `<=` looks like the classic boundary suspect but is correct."
+    },
+    {
+      "file": "refwatch/links.py",
+      "symbol": "find",
+      "why_correct": "Union-find with path halving: `parent[x] = parent[parent[x]]` points x at its grandparent before stepping, which only shortens paths and never changes which root a node reaches. It looks like it could skip or corrupt roots, but the root is the only node with parent[x] == x and the loop stops there."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Device ids not case-folded",
+      "type": "id-normalization",
+      "file": "refwatch/loader.py",
+      "function": "clean_device",
+      "test": "test_1_signals.TestSignals.test_1_rings",
+      "old": "    return (raw or \"\").strip().upper() or None",
+      "new": "    return (raw or \"\").strip() or None",
+      "symptom": "Test 1 test_1_rings: the ring [acc-06, acc-28, acc-29] comes back as [acc-06, acc-28] (acc-29 missing), so it drops behind [acc-03, acc-16] in the ordering. Self-referrals, flags and payouts are unchanged.",
+      "why": "acc-29's device is written `dv-60` while acc-06 and acc-28 have `DV-60`. Without upper-casing, the device keys differ, so acc-29 is never linked and the three-account ring shrinks to two. The self-referral acc-06 -> acc-28 survives because those two still match, so nothing downstream changes.",
+      "unblocks": "test_1_rings.",
+      "hints": [
+        "Only one ring is affected and it loses exactly one member. What links acc-29 to the others?",
+        "Look at how device ids are cleaned before build_rings groups by them.",
+        "clean_device trims but does not upper-case; the spec says trim and upper-case."
+      ],
+      "probes": [
+        "Why did acc-06 still get flagged for self-referral even before your fix?",
+        "Why do the IP links not have the same problem?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Burst gap uses the seconds field",
+      "type": "timedelta-seconds",
+      "file": "refwatch/timeutil.py",
+      "function": "minutes_between",
+      "test": "test_2_report.TestReport.test_2_flags",
+      "old": "    return (later - earlier).total_seconds() / 60",
+      "new": "    return (later - earlier).seconds / 60",
+      "symptom": "Test 2 test_2_flags: acc-03 gets ['self_referral', 'burst'] instead of ['self_referral']. Every other referrer's flags, the held list and releasable_usd are unchanged.",
+      "why": "`timedelta.seconds` is only the seconds part after whole days are removed. acc-03's referrals signed up at 10:00, 10:20 and 10:40 on three different days, so the span reads as 40 minutes and acc-03 gets a `burst` flag. acc-03 is already held for its self-referral, so the held list and totals do not move; only its flags do.",
+      "unblocks": "test_2_flags.",
+      "hints": [
+        "acc-03's referrals were days apart. Why would they count as a 60-minute burst?",
+        "has_burst relies on a helper in timeutil.py to measure the gap.",
+        "`.seconds` drops the days; use `.total_seconds()`."
+      ],
+      "probes": [
+        "Why were acc-04 (exactly 60 minutes) and acc-05 (61 minutes) unaffected?",
+        "Why didn't the held list or releasable total change while this was present?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Bonus paid per deposit, not per account",
+      "type": "missing-dedupe",
+      "file": "refwatch/rules.py",
+      "function": "bonus_ledger",
+      "test": "test_2_report.TestReport.test_3_payouts",
+      "old": "        paid.add(acct.id)\n        ledger.append(",
+      "new": "        ledger.append(",
+      "symptom": "Test 2 test_3_payouts: acc-04 shows payout_usd 75 instead of 50; all other payouts match. Its qualifying count (2), the held list, releasable_usd (150) and top_referrer are unchanged.",
+      "why": "The `paid` set is checked but never filled, so a referred account with two qualifying deposits earns its referrer two bonuses. acc-19 deposited twice (d10, d11), so acc-04 shows 75 instead of 50. acc-04 is held for its burst, so releasable_usd and top_referrer are unchanged and the qualifying count (a set) still says 2.",
+      "unblocks": "test_3_payouts.",
+      "hints": [
+        "acc-04 has 2 qualifying referrals but is paid for 3. Which of its referred accounts deposited more than once?",
+        "Look at how bonus_ledger avoids paying the same account twice.",
+        "`paid` is consulted but nothing is added to it; add `paid.add(acct.id)` before appending."
+      ],
+      "probes": [
+        "Why did qualifying stay at 2 for acc-04 while payout_usd went up?",
+        "Why didn't releasable_usd catch this?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What does build_report() call, in order?",
+      "a": "`load_accounts`, `load_deposits`, `load_logins`, then `build_rings` and `ring_index`, `self_referrals`, `qualifying_accounts` and `bonus_ledger` (counted per referrer). It then walks `referrals(accounts)` sorted by referrer id, builds flags with `has_burst` on each referrer's signup times, and computes the summary from the rows that are not held."
+    },
+    {
+      "q": "How does build_rings decide which accounts to join?",
+      "a": "It groups account ids by key: `(\"device\", device)` for each account with a device, and `(\"ip\", ip)` for each login whose IP is not in the shared-network set. Every id in a group is unioned with the group's first id. Groups of 2+ after `find` become rings, each sorted, ordered by size descending then first id."
+    },
+    {
+      "q": "What does load_accounts do with a referred_by that isn't in the file?",
+      "a": "It collects the cleaned ids of all rows first, and sets `referred_by` to None when the cleaned referrer is not among them. acc-30's `acc-99` becomes None."
+    },
+    {
+      "q": "What does has_burst receive and how does it check the window?",
+      "a": "A list of signup datetimes for one referrer's referred accounts. It sorts them and, for each run of 3 consecutive signups, calls `minutes_between(first, third)` and returns True if any is <= 60."
+    },
+    {
+      "q": "In what order does bonus_ledger look at deposits, and what does it skip?",
+      "a": "By `(deposited_at, deposit_id)`. It skips deposits whose account has no referrer, is a self-referral, or is in the `paid` set, and deposits that fail `is_qualifying`. Each remaining deposit appends `(referrer, account, deposit_id)`."
+    },
+    {
+      "q": "How is the `qualifying` count in a report row computed?",
+      "a": "From `qualifying_accounts`, a set of referred account ids with at least one deposit passing `is_qualifying`; the row counts how many of the referrer's referred accounts are in that set. It is independent of `bonus_ledger`."
+    },
+    {
+      "q": "Which deposits and logins does the loader drop?",
+      "a": "Deposits whose cleaned account id is unknown (d18 for acc-41) or whose amount is blank (d21). Logins whose cleaned account is unknown (acc-41) or whose IP is blank. Status is stored trimmed and lower-cased."
+    }
+  ]
+}

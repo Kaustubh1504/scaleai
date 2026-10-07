@@ -42,7 +42,6 @@ def first_per_id(submissions):
     for sub in submissions:
         if sub.id in seen:
             continue
-        seen.add(sub.id)
         unique.append(sub)
     return unique
 
@@ -61,4 +60,4 @@ def load_submissions(path=None):
                 points=int(points),
                 submitted_at=parse_timestamp(row["submitted_at"]),
             ))
-    return graded
+    return first_per_id(graded)

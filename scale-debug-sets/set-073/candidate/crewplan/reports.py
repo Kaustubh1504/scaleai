@@ -2,7 +2,7 @@ from pathlib import Path
 
 from .eligibility import current_certs
 from .loader import load_completions, load_config, load_contributors, load_projects
-from .models import CourseStats, Status
+from .models import CourseStats
 from .scheduler import staff
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"

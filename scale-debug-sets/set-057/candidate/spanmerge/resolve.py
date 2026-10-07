@@ -35,7 +35,7 @@ def _overlaps(a, b):
 def resolve_doc(entities):
     """Greedy: strongest first; drop anything overlapping an entity already kept."""
     kept = []
-    for ent in sorted(entities, key=lambda e: (-e.votes, e.start)):
+    for ent in sorted(entities, key=lambda e: (-e.votes, e.length, e.start)):
         if not any(_overlaps(ent, k) for k in kept):
             kept.append(ent)
     return sorted(kept, key=lambda e: e.start)

@@ -12,7 +12,7 @@ def clean(value):
 
 
 def parse_flag(value):
-    return clean(value).lower() in {"yes", "y", "true", "1"}
+    return bool(clean(value))
 
 
 def parse_time(value):
@@ -67,7 +67,7 @@ def load_predictions(path, policies):
                 task=task,
                 label=clean(row["label"]).lower(),
                 confidence=parse_confidence(row["confidence"]),
-                sensitive=bool(clean(row["sensitive"])),
+                sensitive=parse_flag(row["sensitive"]),
                 priority=int(priority) if priority else policies[task].priority,
                 created_at=parse_time(row["created_at"]),
             ))

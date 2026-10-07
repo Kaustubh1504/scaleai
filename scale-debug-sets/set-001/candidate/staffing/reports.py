@@ -26,6 +26,3 @@ def build_report(data_dir=None):
         "open_seats": open_seats(projects, assignments),
         "bench": bench(contributors, assignments),
     }
-
-
-print(build_report())

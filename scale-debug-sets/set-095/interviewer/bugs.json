@@ -1,0 +1,126 @@
+{
+  "id": "set-095",
+  "title": "Weekly payout file with speed audit",
+  "domain": "payouts",
+  "length": "MINI",
+  "difficulty": "hard",
+  "format": "one_to_one",
+  "package": "paycalc",
+  "scenario": "Price approved tasks at flat per-project rates inside a half-open week, add manual adjustments, mark contributors paid or held against a minimum, flag contributors whose median task time is below a project floor, and write a bank payout file sorted by account number. Test 2 checks the report.",
+  "design": {
+    "all_bugs_failing_files": [
+      "test_1_statements",
+      "test_2_payfile"
+    ]
+  },
+  "verified": [
+    {
+      "file": "paycalc/loader.py",
+      "symbol": "parse_amount",
+      "why_correct": "The parenthesised-negative branch looks like it could drop the sign or choke on `$`/`,`, but it strips `$` and `,` first and returns -Decimal for `(1.20)`, exactly as the spec says. It is the obvious suspect for C-01's missing clawback, but the value is parsed fine; the id never matches."
+    },
+    {
+      "file": "paycalc/earnings.py",
+      "symbol": "in_period",
+      "why_correct": "Comparing a date with `< period.end` looks like it drops the last day, but the spec makes the period half-open: w14 at 2026-09-28 00:00 belongs to the next week and w05 at 09-27 23:59 counts."
+    }
+  ],
+  "bugs": [
+    {
+      "id": "B1",
+      "title": "Adjustment ids are not upper-cased",
+      "type": "id-normalization",
+      "file": "paycalc/loader.py",
+      "function": "load_adjustments",
+      "test": "test_1_statements.TestStatements.test_1_adjustments_and_net",
+      "old": "    return [(clean(a[\"contributor_id\"]).upper(), parse_amount(a[\"amount\"])) for a in raw[\"adjustments\"]]",
+      "new": "    return [(clean(a[\"contributor_id\"]), parse_amount(a[\"amount\"])) for a in raw[\"adjustments\"]]",
+      "symptom": "test_1_adjustments_and_net fails: C-01 shows adjustments 0.00 and net 7.50 instead of -1.20 and 6.30. Every other contributor matches, and C-01 is held either way, so no other test changes.",
+      "why": "The adjustments file writes C-01 as `c-01`. Without upper-casing, the clawback is keyed under `c-01`, which is not a roster id, so build_statements never adds it to C-01.",
+      "unblocks": "test_1_adjustments_and_net",
+      "hints": [
+        "Only C-01's adjustment is missing. How is its row written in adjustments.json?",
+        "Compare how ids are cleaned in load_contributors and load_work with load_adjustments.",
+        "load_adjustments trims the id but does not call .upper()."
+      ],
+      "probes": [
+        "Why was C-03's adjustment (`\"C-03 \"`) fine before the fix?",
+        "C-01 stays held with or without the fix. Why did no other test notice?"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "Audit runs over every work entry",
+      "type": "counting-wrong-subset",
+      "file": "paycalc/payfile.py",
+      "function": "build_report",
+      "test": "test_2_payfile.TestPayfile.test_2_audit_flags",
+      "old": "        \"flags\": audit_flags(entries, rates),",
+      "new": "        \"flags\": audit_flags(work, rates),",
+      "symptom": "test_2_audit_flags fails: flags are {'C-02': ['fast:gale', 'fast:helix'], 'C-05': ['fast:ember'], 'C-11': ['fast:cirrus']} instead of {'C-02': ['fast:helix'], 'C-05': ['fast:ember']}.",
+      "why": "build_report hands the raw work log to audit_flags instead of the payable entries, so a rejected entry (w09) and a contributor who is not on the roster (C-11) get flagged.",
+      "unblocks": "test_2_audit_flags",
+      "hints": [
+        "C-11 is not on the roster and w09 was rejected. Why do they show up in the flags?",
+        "audit.py only groups what it is given. Look at what build_report passes in.",
+        "build_report calls audit_flags(work, ...); spec rule 7 wants the payable entries."
+      ],
+      "probes": [
+        "Why didn't w14 (end-date midnight) or w18 (pending) change any flag even when they were included?",
+        "Where would you have to look if audit.py had been the cause instead?"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "Account numbers kept as text",
+      "type": "string-vs-int",
+      "file": "paycalc/loader.py",
+      "function": "load_contributors",
+      "test": "test_2_payfile.TestPayfile.test_3_payout_file",
+      "old": "            int(clean(row[\"account_no\"])), clean(row[\"method\"]).lower())",
+      "new": "            clean(row[\"account_no\"]), clean(row[\"method\"]).lower())",
+      "symptom": "test_3_payout_file fails: the lines are right but ordered 104433, 230111, 61005, 830 instead of 830, 61005, 104433, 230111.",
+      "why": "account_no stays a string, so payout_lines sorts the paid contributors lexicographically: \"104433\" < \"230111\" < \"61005\" < \"830\". The lines themselves look identical because the numbers have no leading zeros.",
+      "unblocks": "test_3_payout_file",
+      "hints": [
+        "The lines are all there; only the order is off. What order are they in?",
+        "payout_lines sorts by account_no. What type is it when it gets there?",
+        "load_contributors must convert account_no with int()."
+      ],
+      "probes": [
+        "Why does the printed payout line look the same whether account_no is a str or an int?",
+        "Would sorting with key=lambda c: int(c.account_no) in payfile.py also have worked? Which fix is better and why?"
+      ]
+    }
+  ],
+  "context_qa": [
+    {
+      "q": "What is the flow in build_report?",
+      "a": "It loads the period, roster, rates and work log, filters the work with earnings.payable_entries, builds statements with build_statements (which also takes the loaded adjustments), then computes flags with audit.audit_flags, the payout lines with payout_lines and the summary with summarize."
+    },
+    {
+      "q": "What does load_adjustments return?",
+      "a": "A list of (contributor_id, Decimal amount) tuples, one per entry in adjustments.json, with the id passed through clean() and the amount through parse_amount."
+    },
+    {
+      "q": "How does build_statements use the adjustments?",
+      "a": "It sums the amounts into a defaultdict keyed by the id from each tuple, then for every roster id (sorted) reads that dict with the roster id; ids that are not roster ids are never read."
+    },
+    {
+      "q": "What does audit_flags group on?",
+      "a": "It groups the entries it is passed by contributor_id and then by project, collecting duration_ms values; reasons_for takes each project's median, divides by 1000 and compares it with the project's min_seconds."
+    },
+    {
+      "q": "Which entries does build_report keep in the local variables work and entries?",
+      "a": "work is the full parsed work log from load_work; entries is the result of payable_entries(work, contributors, rates, period)."
+    },
+    {
+      "q": "How is the payout file ordered?",
+      "a": "payout_lines collects the Contributor objects whose statement status is paid and sorts them with key=lambda c: c.account_no, using whatever value load_contributors stored in account_no."
+    },
+    {
+      "q": "What shape does the work log have?",
+      "a": "40 rows with entry_id, contributor_id, project, submitted_at (three date formats), duration_ms and status; ids and statuses come in mixed case, and one row (w40) belongs to C-11, who is not on the roster."
+    }
+  ]
+}

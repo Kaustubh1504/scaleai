@@ -128,6 +128,13 @@
       "probes": [
         "What would round() do for an excess of 500 500 tokens?",
         "Why is it safer to bill in integer blocks than to multiply the raw excess by a per-token price?"
+      ],
+      "extra": [
+        {
+          "file": "meterbill/billing.py",
+          "old": "import math\n",
+          "new": ""
+        }
       ]
     },
     {

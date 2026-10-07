@@ -136,21 +136,21 @@
       "title": "Datetimes exported with str()",
       "type": "json-serialization",
       "file": "routedesk/reports.py",
-      "function": "export_json",
+      "function": "_encode",
       "test": "test_3_report.TestReport.test_6_exported_timestamps",
-      "old": "    return json.dumps(report, default=_encode, indent=2, sort_keys=True)",
-      "new": "    return json.dumps(report, default=str, indent=2, sort_keys=True)",
+      "old": "    if isinstance(obj, datetime):\n        return obj.isoformat()",
+      "new": "    if isinstance(obj, datetime):\n        return str(obj)",
       "symptom": "Test 3 test_6_exported_timestamps: exported last_review_at is '2026-03-01 16:45:00' instead of '2026-03-01T16:45:00' (space instead of T).",
-      "why": "`default=str` serialises datetimes as `2026-03-02 11:05:00` (space separator) instead of ISO 8601, and would also write sets as `{...}` strings. The `_encode` helper does what the README asks.",
+      "why": "`str(datetime)` writes `2026-03-01 16:45:00` (space separator) instead of ISO 8601 `2026-03-01T16:45:00`, which is what the README asks for. json.dumps calls `_encode` for every datetime, so every exported timestamp has the space.",
       "unblocks": "test_6_exported_timestamps",
       "hints": [
         "Compare the exported timestamp string character by character with the expected one.",
-        "How does export_json turn non-JSON types into strings?",
-        "Use `default=_encode` instead of `default=str`."
+        "How does export_json turn datetimes into strings? Follow its `default=` hook.",
+        "In `_encode`, return `obj.isoformat()` instead of `str(obj)` for datetimes."
       ],
       "probes": [
         "Why didn't json.dumps raise on the datetime values?",
-        "What would `default=str` do to a set of languages if one were added to the report?"
+        "Which values in the report reach `_encode` at all, and why do the plain strings and numbers never go through it?"
       ]
     }
   ],

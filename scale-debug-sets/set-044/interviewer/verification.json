@@ -12,7 +12,7 @@
       "test_1_requests"
     ],
     "failures": {
-      "tests.test_1_requests.TestRequests.test_retry_after_honoured": "AssertionError: 0.061342957997112535 not greater than or equal to 0.2"
+      "tests.test_1_requests.TestRequests.test_retry_after_honoured": "AssertionError: 0.057725457998458296 not greater than or equal to 0.2"
     }
   },
   "B3": {
@@ -36,7 +36,7 @@
       "test_3_summary"
     ],
     "failures": {
-      "tests.test_3_summary.TestSummary.test_total_tokens": "AssertionError: 71 != 91"
+      "tests.test_3_summary.TestSummary.test_total_tokens": "AssertionError: 25 != 91"
     }
   },
   "B6": {

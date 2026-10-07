@@ -34,7 +34,7 @@ def read_batch(path, project):
 def latest_per_annotator(annotations):
     latest = {}
     for ann in annotations:
-        key = (ann.task_id, ann.annotator_id)
+        key = (ann.task_id, ann.annotator_id, ann.label)
         current = latest.get(key)
         if current is None or ann.submitted_at > current.submitted_at:
             latest[key] = ann
@@ -48,7 +48,7 @@ def load_annotations(batch_dir, projects):
         if project not in projects:
             continue
         annotations.extend(read_batch(path, project))
-    return annotations
+    return latest_per_annotator(annotations)
 
 
 def load_teams(path):

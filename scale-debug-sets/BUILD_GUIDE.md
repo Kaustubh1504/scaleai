@@ -52,6 +52,10 @@ tools from `/Users/kaustubh/Desktop/scaleai/scale-debug-sets`.
 4. Re-run `verify_set.py`, then `../.venv/bin/python tools/render_docs.py set-NNN`.
 5. Skim `set-NNN/candidate/` to confirm nothing gives away a bug (names, comments).
    Misleading-but-plausible comments are allowed.
+6. Make sure no name goes unused because of a bug, e.g. an import or helper that only the
+   reverted line used. A linter would flag it and point straight at the change. If a bug
+   orphans an import, add it to the bug's `extra` edits (`[{"file", "old", "new"}]`) to drop
+   that import too. If it orphans a helper, reshape the bug so the helper is still called.
 
 ## Formats
 

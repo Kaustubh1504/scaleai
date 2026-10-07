@@ -28,7 +28,7 @@
       "test_2_retries"
     ],
     "failures": {
-      "tests.test_2_retries.TestRetries.test_retry_after_respected": "AssertionError: 0.1 not greater than or equal to 0.3"
+      "tests.test_2_retries.TestRetries.test_retry_after_respected": "AssertionError: 0.08 not greater than or equal to 0.3"
     }
   },
   "B5": {

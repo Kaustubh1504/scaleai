@@ -138,8 +138,12 @@ AssertionError: {'P002': 'low_confidence', 'P005': 'flagged', [332 chars]nce'} !
 Fix:
 
 ```diff
+# triage/review_queue.py
 -d.route == "human"
 +d.route is Route.HUMAN
+
+# triage/review_queue.py
++from .models import Route
 ```
 
 Observed with only this bug applied (`tests.test_2_review_queue.TestReviewQueue.test_assignments`):

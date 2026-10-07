@@ -56,8 +56,12 @@ AssertionError: {'lab[486 chars], 'lab-09': {'checks': 5, 'accuracy': 0.6, 'excl
 Fix:
 
 ```diff
+# prefpairs/aggregate.py
 -    left_is_a = judgement.left_model == pair.model_a
 +    left_is_a = norm_model(judgement.left_model) == pair.model_a
+
+# prefpairs/aggregate.py
++from .loader import norm_model
 ```
 
 Observed with only this bug applied (`tests.test_1_judgements.TestJudgements.test_pair_margins`):

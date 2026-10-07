@@ -11,7 +11,7 @@ TIME_FORMATS = ("%Y-%m-%d %H:%M", "%m/%d/%Y %H:%M", "%Y-%m-%dT%H:%M:%S")
 class Contributor:
     contributor_id: str
     name: str
-    account_no: str
+    account_no: int
     method: str
 
 
@@ -77,7 +77,7 @@ def load_contributors(path):
     return {
         clean(row["contributor_id"]).upper(): Contributor(
             clean(row["contributor_id"]).upper(), clean(row["name"]),
-            clean(row["account_no"]), clean(row["method"]).lower())
+            int(clean(row["account_no"])), clean(row["method"]).lower())
         for row in _rows(path)
     }
 

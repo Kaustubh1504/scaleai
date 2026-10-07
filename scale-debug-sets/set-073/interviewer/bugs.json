@@ -46,6 +46,13 @@
       "probes": [
         "Would the comparison work if Status subclassed str? Why?",
         "Why did no open project's team change with this bug present?"
+      ],
+      "extra": [
+        {
+          "file": "crewplan/scheduler.py",
+          "old": "from .models import Status\n",
+          "new": ""
+        }
       ]
     },
     {
@@ -90,6 +97,13 @@
       "probes": [
         "Why does MED-200 win rather than tie in the output?",
         "Which other report field would show this bug directly?"
+      ],
+      "extra": [
+        {
+          "file": "crewplan/reports.py",
+          "old": "from .models import CourseStats, Status\n",
+          "new": "from .models import CourseStats\n"
+        }
       ]
     }
   ],
