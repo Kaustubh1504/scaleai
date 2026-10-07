@@ -4,13 +4,15 @@ from pathlib import Path
 from .gold import quality_table
 from .loader import load_annotations, load_annotators, load_tasks
 from .voting import mark_blocked, resolve
+import json
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 
 def summarize(results):
     resolved = [r for r in results.values() if r.status == "resolved"]
-    counts = Counter(r.label for r in results.values())
+    print("results", results)
+    counts = Counter(r.label for r in results.values() if r.label is not None)
     needs = sorted(r.task_id for r in results.values() if r.status == "needs_more_votes")
     disputed = min(resolved, key=lambda r: (r.confidence, r.task_id)).task_id if resolved else None
     return {"label_counts": dict(counts), "needs_more_votes": needs, "most_disputed": disputed}
@@ -34,3 +36,5 @@ def build_report(data_dir=None):
         },
         "summary": summarize(results),
     }
+
+print(json.dumps(build_report()["summary"], indent=4))

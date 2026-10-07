@@ -3,7 +3,7 @@ from .rules import is_eligible, rank_candidates
 
 def project_order(projects):
     # most important first, ties by project id
-    return sorted(projects, key=lambda p: (-p.priority, p.id))
+    return sorted(projects, key=lambda p: (p.priority, p.id))
 
 
 def assign(contributors, projects):

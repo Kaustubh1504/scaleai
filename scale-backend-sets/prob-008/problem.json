@@ -1,0 +1,11 @@
+{
+  "id": "prob-008",
+  "title": "Annotator Earnings Calculator",
+  "kind": "api-client",
+  "topics": ["cross-endpoint-joins", "messy-json", "payouts"],
+  "mode": "plain-python",
+  "difficulty": "medium",
+  "starter": "repo",
+  "planted_bugs": false,
+  "package": "earnings"
+}

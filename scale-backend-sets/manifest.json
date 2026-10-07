@@ -175,7 +175,7 @@
       ],
       "mode": "plain-python",
       "difficulty": "medium",
-      "status": "planned",
+      "status": "verified",
       "starter": "repo",
       "planted_bugs": false
     },
@@ -190,7 +190,7 @@
       ],
       "mode": "plain-python",
       "difficulty": "medium",
-      "status": "planned",
+      "status": "verified",
       "starter": "skeleton",
       "planted_bugs": false
     },

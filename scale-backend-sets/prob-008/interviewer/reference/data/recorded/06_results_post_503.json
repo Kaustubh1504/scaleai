@@ -1,0 +1,11 @@
+{
+  "note": "the results sink failing transiently",
+  "request": "POST /v1/results",
+  "status": 503,
+  "headers": {
+    "date": "Wed, 01 May 2024 08:00:00 GMT"
+  },
+  "body": {
+    "error": "upstream_error"
+  }
+}

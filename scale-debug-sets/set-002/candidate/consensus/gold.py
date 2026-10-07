@@ -24,5 +24,5 @@ def quality_table(annotations, gold, registry):
     for aid in sorted(registry):
         if not registry[aid].active:
             continue
-        table[aid] = QualityRow(accuracy=rates.get(aid) or PRIOR, gold_answered=answered[aid])
+        table[aid] = QualityRow(accuracy=rates.get(aid, PRIOR), gold_answered=answered[aid])
     return table

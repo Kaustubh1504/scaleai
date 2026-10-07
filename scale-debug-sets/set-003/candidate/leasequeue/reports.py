@@ -18,8 +18,11 @@ def build_report(data_dir=None, as_of=AS_OF):
     broker = Broker(load_tasks(data_dir / "tasks.csv"))
     for event in load_events(data_dir / "events.csv"):
         broker.handle(event)
+
+    # return
     broker.reap(as_of)
-    tasks = sorted(broker.tasks.values(), key=lambda t: t.id)
+    tasks = sorted(broker.tasks.values(), key=lambda t: (t.id))
+    print("broker", broker)
     return {
         "dispatch": [[_fmt(ts), worker, task_id] for ts, worker, task_id in broker.dispatch_log],
         "status": {t.id: t.status for t in tasks},
@@ -28,3 +31,5 @@ def build_report(data_dir=None, as_of=AS_OF):
         "rejected": [[_fmt(ts), worker, task_id] for ts, worker, task_id in broker.rejected],
         "completed_by": dict(sorted(broker.completed_by.items())),
     }
+
+# print(build_report()["completed_by"])

@@ -21,8 +21,9 @@ class Broker:
         self.completed_by = Counter()
 
     def reap(self, now):
+        print(self.leases)
         for task_id, lease in list(self.leases.items()):
-            if (now - lease.leased_at).seconds >= LEASE_SECONDS:
+            if (now - lease.leased_at).total_seconds() >= LEASE_SECONDS:
                 del self.leases[task_id]
                 task = self.tasks[task_id]
                 task.status = DEAD if task.exhausted() else PENDING

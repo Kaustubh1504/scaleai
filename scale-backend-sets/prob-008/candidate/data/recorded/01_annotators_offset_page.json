@@ -1,0 +1,71 @@
+{
+  "note": "offset pagination, envelope 'items'; is_active arrives as a bool, a string or 0/1",
+  "request": "GET /v1/annotators?offset=0&limit=4",
+  "status": 200,
+  "headers": {
+    "date": "Wed, 01 May 2024 08:00:00 GMT"
+  },
+  "body": {
+    "items": [
+      {
+        "id": "ann_001",
+        "handle": "annotator001",
+        "country": "BR",
+        "level": 1,
+        "hourly_rate_cents": 900,
+        "skills": [
+          "image_bbox",
+          "lidar_cuboid"
+        ],
+        "is_active": true,
+        "joined_at": "2022-04-24T00:00:00Z",
+        "updated_at": "2022-04-30T00:00:00Z"
+      },
+      {
+        "id": "ann_002",
+        "handle": "annotator002",
+        "country": "US",
+        "level": 1,
+        "hourly_rate_cents": 600,
+        "skills": [
+          "image_bbox",
+          "lidar_cuboid",
+          "text_classification"
+        ],
+        "is_active": 1,
+        "joined_at": "2023-04-03T00:00:00Z",
+        "updated_at": "2023-04-05T00:00:00Z"
+      },
+      {
+        "id": "ann_003",
+        "handle": "annotator003",
+        "country": "BR",
+        "level": 5,
+        "hourly_rate_cents": 750,
+        "skills": [
+          "image_bbox"
+        ],
+        "is_active": false,
+        "joined_at": "2022-06-11T00:00:00Z",
+        "updated_at": "2022-06-13T00:00:00Z"
+      },
+      {
+        "id": "ann_004",
+        "handle": "annotator004",
+        "country": "PL",
+        "level": 2,
+        "hourly_rate_cents": 450,
+        "skills": [
+          "image_bbox",
+          "lidar_cuboid"
+        ],
+        "is_active": true,
+        "joined_at": "2023-09-22T00:00:00Z",
+        "updated_at": "2023-09-22T00:00:00Z"
+      }
+    ],
+    "offset": 0,
+    "limit": 4,
+    "total": 30
+  }
+}

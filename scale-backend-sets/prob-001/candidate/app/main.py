@@ -34,6 +34,15 @@ def create_app(
         return {"status": "ok"}
 
     # TODO: implement the endpoints described in PART1.md.
+    @app.post("/uploads")
+    def upload():
+        return {"status":"ok"}
+    
+    
+    @app.get("/uploads/{upload_id}")
+    def get_uploads():
+        return {"status":"ok"}
+    
 
     return app
 

@@ -1,4 +1,5 @@
 from collections import defaultdict
+import json
 
 from .models import Consensus
 
@@ -7,7 +8,7 @@ MIN_VOTES = 2
 
 
 def is_blocked(row):
-    return row.accuracy <= MIN_ACCURACY
+    return row.accuracy < MIN_ACCURACY
 
 
 def mark_blocked(table):
@@ -25,16 +26,25 @@ def tally(votes, weights):
 
 def pick_winner(totals):
     # heaviest label wins; alphabetical on ties
-    return max(totals, key=totals.get)
+    # return max(totals, key=totals.get)
+    # return min(totals, key=lambda label:(-totals[label], label))
+    best = max(totals.values())
+    tied = [label for label, weight in totals.items() if weight==best]
+    return min(tied)
 
 
 def resolve(task_ids, annotations, gold, table):
+    # print("table", table)
     weights = {aid: row.accuracy for aid, row in table.items() if not row.blocked}
+    # print("weights", weights)
     by_task = defaultdict(list)
+    
     for ann in annotations:
         if ann.annotator_id in weights:
             by_task[ann.task_id].append(ann)
-
+            
+            
+    # print("by_task", by_task)
     results = {}
     for tid in task_ids:
         if tid in gold:
@@ -47,4 +57,5 @@ def resolve(task_ids, annotations, gold, table):
         winner = pick_winner(totals)
         confidence = round(totals[winner] / sum(totals.values()), 3)
         results[tid] = Consensus(tid, "resolved", winner, confidence, len(votes))
+    
     return results

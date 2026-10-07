@@ -11,6 +11,7 @@ def load_annotators(path):
     registry = {}
     for item in raw:
         aid = norm_annotator(item["id"])
+        # print(item.get("active", True), parse_bool(item.get("active", True)))
         registry[aid] = Annotator(id=aid, name=clean(item.get("name")), active=parse_bool(item.get("active", True)))
     return registry
 
@@ -37,7 +38,7 @@ def read_annotations(path):
                 continue
             annotations.append(Annotation(
                 task_id=norm_task(row["task_id"]),
-                annotator_id=clean(row["annotator_id"]),
+                annotator_id=norm_annotator(row["annotator_id"]),
                 label=label,
                 submitted_at=parse_timestamp(row["submitted_at"]),
             ))

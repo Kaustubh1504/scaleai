@@ -1,0 +1,15 @@
+{
+  "note": "same Idempotency-Key again: 200 and the stored record",
+  "request": "POST /v1/results",
+  "status": 200,
+  "headers": {
+    "date": "Wed, 01 May 2024 08:00:00 GMT"
+  },
+  "body": {
+    "annotator_id": "ann_001",
+    "period": "p",
+    "amount_cents": 5,
+    "id": "results_00001",
+    "received_at": "2024-05-01T08:00:00+00:00"
+  }
+}

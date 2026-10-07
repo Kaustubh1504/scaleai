@@ -1,0 +1,66 @@
+{
+  "note": "page pagination, envelope 'results'; verdict casing/whitespace varies; some submissions have several reviews",
+  "request": "GET /v1/reviews?page=1&per_page=5",
+  "status": 200,
+  "headers": {
+    "date": "Wed, 01 May 2024 08:00:00 GMT"
+  },
+  "body": {
+    "results": [
+      {
+        "id": "rev_00001",
+        "submission_id": "sub_00001",
+        "reviewer_id": "ann_021",
+        "verdict": "approved",
+        "score": 2,
+        "comment": null,
+        "created_at": 1712745950,
+        "updated_at": "2024-04-10T10:45:50Z"
+      },
+      {
+        "id": "rev_00002",
+        "submission_id": "sub_00003",
+        "reviewer_id": "ann_020",
+        "verdict": "  rejected ",
+        "score": 5,
+        "comment": "Missed a box.",
+        "created_at": "2024-03-25T10:53:01Z",
+        "updated_at": "2024-03-25T10:53:01Z"
+      },
+      {
+        "id": "rev_00003",
+        "submission_id": "sub_00004",
+        "reviewer_id": "ann_018",
+        "verdict": "approved",
+        "score": 3,
+        "comment": "Missed a box.",
+        "created_at": "2024-03-24T22:28:01Z",
+        "updated_at": "2024-03-24T22:28:01Z"
+      },
+      {
+        "id": "rev_00004",
+        "submission_id": "sub_00005",
+        "reviewer_id": "ann_020",
+        "verdict": "rejected",
+        "score": 2,
+        "comment": null,
+        "created_at": "2024-03-30T03:43:05Z",
+        "updated_at": "2024-03-30T03:43:05Z"
+      },
+      {
+        "id": "rev_00005",
+        "submission_id": "sub_00007",
+        "reviewer_id": "ann_022",
+        "verdict": "  approved ",
+        "score": 5,
+        "comment": null,
+        "created_at": "2024-03-30T13:35:05Z",
+        "updated_at": "2024-03-30T13:35:05Z"
+      }
+    ],
+    "page": 1,
+    "per_page": 5,
+    "total": 261,
+    "total_pages": 53
+  }
+}

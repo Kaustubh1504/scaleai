@@ -1,0 +1,11 @@
+{
+  "id": "prob-009",
+  "title": "Resilient Task Exporter",
+  "kind": "api-client",
+  "topics": ["api-error-retries", "api-rate-limits", "result-writing"],
+  "mode": "plain-python",
+  "difficulty": "medium",
+  "starter": "skeleton",
+  "planted_bugs": false,
+  "package": "exporter"
+}

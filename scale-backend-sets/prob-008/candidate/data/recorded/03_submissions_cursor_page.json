@@ -1,0 +1,115 @@
+{
+  "note": "submitted_at in several formats; answer.label casing/whitespace varies",
+  "request": "GET /v1/submissions?limit=5",
+  "status": 200,
+  "headers": {
+    "date": "Wed, 01 May 2024 08:00:00 GMT"
+  },
+  "body": {
+    "data": [
+      {
+        "id": "sub_00001",
+        "task_id": "tsk_0002",
+        "annotator_id": "ann_023",
+        "submitted_at": 1712658950,
+        "duration_s": 311.3,
+        "answer": {
+          "label": "CYCLIST",
+          "confidence": 0.77,
+          "boxes": [
+            {
+              "x": 485,
+              "y": 391,
+              "w": 121,
+              "h": 113,
+              "label": "car"
+            },
+            {
+              "x": 272,
+              "y": 92,
+              "w": 183,
+              "h": 62,
+              "label": "sign"
+            },
+            {
+              "x": 212,
+              "y": 207,
+              "w": 66,
+              "h": 73,
+              "label": "cyclist"
+            }
+          ]
+        },
+        "updated_at": "2024-04-09T10:35:50Z"
+      },
+      {
+        "id": "sub_00002",
+        "task_id": "tsk_0003",
+        "annotator_id": "ann_010",
+        "submitted_at": 1711263601000,
+        "duration_s": 497.3,
+        "answer": {
+          "label": "negative",
+          "confidence": 0.62,
+          "boxes": []
+        },
+        "updated_at": "2024-03-24T07:00:01Z"
+      },
+      {
+        "id": "sub_00003",
+        "task_id": "tsk_0003",
+        "annotator_id": "ann_012",
+        "submitted_at": "2024-03-24T09:12:01Z",
+        "duration_s": 891.9,
+        "answer": {
+          "label": "negative",
+          "confidence": 0.86,
+          "boxes": []
+        },
+        "updated_at": "2024-03-24T09:12:01Z"
+      },
+      {
+        "id": "sub_00004",
+        "task_id": "tsk_0003",
+        "annotator_id": "ann_025",
+        "submitted_at": "2024-03-24T10:20:01",
+        "duration_s": 168.9,
+        "answer": {
+          "label": "negative",
+          "confidence": 0.79,
+          "boxes": []
+        },
+        "updated_at": "2024-03-24T10:20:01Z"
+      },
+      {
+        "id": "sub_00005",
+        "task_id": "tsk_0004",
+        "annotator_id": "ann_015",
+        "submitted_at": 1711726025000,
+        "duration_s": "492.0",
+        "answer": {
+          "label": "person",
+          "confidence": 0.75,
+          "boxes": [
+            {
+              "x": 175,
+              "y": 141,
+              "w": 110,
+              "h": 62,
+              "label": "vehicle"
+            },
+            {
+              "x": 221,
+              "y": 362,
+              "w": 24,
+              "h": 95,
+              "label": "vehicle"
+            }
+          ]
+        },
+        "updated_at": "2024-03-29T15:27:05Z"
+      }
+    ],
+    "next_cursor": "eyJyIjogInN1Ym1pc3Npb25zIiwgImsiOiBbInN1Yl8wMDAwNSIsICJzdWJfMDAwMDUiXX0"
+  }
+}

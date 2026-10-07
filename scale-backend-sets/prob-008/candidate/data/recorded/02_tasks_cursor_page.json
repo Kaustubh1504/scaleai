@@ -1,0 +1,93 @@
+{
+  "note": "cursor pagination, envelope 'data'; reward_cents may be an int, a digit string, null or missing",
+  "request": "GET /v1/tasks?limit=4",
+  "status": 200,
+  "headers": {
+    "date": "Wed, 01 May 2024 08:00:00 GMT"
+  },
+  "body": {
+    "data": [
+      {
+        "id": "tsk_0001",
+        "project_id": "prj_02",
+        "status": "pending",
+        "priority": 1,
+        "is_gold": false,
+        "gold_label": null,
+        "payload": {
+          "image_url": "https://cdn.example.com/img/00001.jpg",
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          }
+        },
+        "tags": [
+          "occluded"
+        ],
+        "reward_cents": "12",
+        "created_at": "2024-03-30T11:30:40Z",
+        "completed_at": null,
+        "updated_at": "2024-03-30T11:30:40Z"
+      },
+      {
+        "id": "tsk_0002",
+        "project_id": "prj_02",
+        "status": "completed",
+        "priority": 2,
+        "is_gold": true,
+        "gold_label": "car",
+        "payload": {
+          "image_url": "https://cdn.example.com/img/00002.jpg"
+        },
+        "tags": [
+          "highway",
+          "occluded",
+          "urban"
+        ],
+        "reward_cents": 20,
+        "created_at": 1712650970,
+        "completed_at": "2024-04-09T13:03:50Z",
+        "updated_at": "2024-04-09T13:03:50Z"
+      },
+      {
+        "id": "tsk_0003",
+        "project_id": "prj_04",
+        "status": "  in_progress ",
+        "priority": 1,
+        "is_gold": true,
+        "gold_label": "negative",
+        "payload": {
+          "text": "Sample sentence 3 for review."
+        },
+        "tags": [
+          "urban"
+        ],
+        "reward_cents": 8,
+        "created_at": "2024-03-24T05:54:01Z",
+        "completed_at": null,
+        "updated_at": "2024-03-24T05:54:01Z"
+      },
+      {
+        "id": "tsk_0004",
+        "project_id": "prj_01",
+        "status": "COMPLETED",
+        "priority": 5,
+        "is_gold": false,
+        "gold_label": null,
+        "payload": {
+          "image_url": "https://cdn.example.com/img/00004.jpg",
+          "dimensions": {
+            "width": 640,
+            "height": 720
+          }
+        },
+        "tags": [],
+        "reward_cents": 5,
+        "created_at": 1711714685,
+        "completed_at": "2024-03-29T14:02:05Z",
+        "updated_at": "2024-03-29T14:02:05Z"
+      }
+    ],
+    "next_cursor": "eyJyIjogInRhc2tzIiwgImsiOiBbInRza18wMDA0IiwgInRza18wMDA0Il19"
+  }
+}

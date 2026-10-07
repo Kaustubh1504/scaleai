@@ -17,7 +17,7 @@ class Task:
     status: str = PENDING
 
     def exhausted(self):
-        return self.attempts > self.max_attempts
+        return self.attempts >= self.max_attempts
 
 
 @dataclass
