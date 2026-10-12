@@ -1,0 +1,62 @@
+[
+  {
+    "id": "m1",
+    "bug": "Drops the last page: stops as soon as next_cursor is null without yielding that page's results",
+    "edits": [
+      {
+        "find": "        yield from body[\"results\"]\n        cursor = body.get(\"next_cursor\")\n        if cursor is None:\n            return\n",
+        "replace": "        cursor = body.get(\"next_cursor\")\n        if cursor is None:\n            return\n        yield from body[\"results\"]\n"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Sends cursor= (empty) on the first request because it passes cursor=None in params",
+    "edits": [
+      {
+        "find": "params = {\"limit\": limit}",
+        "replace": "params = {\"limit\": limit, \"cursor\": None}"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Ignores HTTP errors: parses the error body instead of raising ApiError",
+    "edits": [
+      {
+        "find": "        if not resp.is_success:\n            raise ApiError(resp.status_code, \"/v1/events\", resp.text)\n        body = resp.json()\n",
+        "replace": "        body = resp.json()\n        if \"results\" not in body:\n            return\n"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Weak loop guard: only gives up after 50 pages instead of on the first repeated cursor",
+    "edits": [
+      {
+        "find": "        if cursor in seen:\n            raise PaginationLoopError(f\"server repeated cursor {cursor!r}\")\n        seen.add(cursor)\n",
+        "replace": "        if len(seen) > 50:\n            raise PaginationLoopError(\"too many pages\")\n        seen.add(f\"{cursor}#{len(seen)}\")\n"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Not lazy: fetches every page up front and returns a list instead of yielding",
+    "edits": [
+      {
+        "find": "def iter_events(client: httpx.Client, api_key: str, limit: int = 50) -> Iterator[dict]:\n",
+        "replace": "def iter_events(client: httpx.Client, api_key: str, limit: int = 50) -> Iterator[dict]:\n    return iter(list(_iter_events(client, api_key, limit)))\n\n\ndef _iter_events(client: httpx.Client, api_key: str, limit: int = 50) -> Iterator[dict]:\n"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Forgets the API key header on pages after the first",
+    "edits": [
+      {
+        "find": "headers={\"X-API-Key\": api_key})",
+        "replace": "headers={\"X-API-Key\": api_key} if \"cursor\" not in params else {})"
+      }
+    ]
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "id": "46",
+  "title": "Money with Decimal",
+  "group": "9. Python fluency",
+  "level": "Easy",
+  "minutes": 10,
+  "daily": false,
+  "tags": ["decimal", "money", "rounding", "parsing"],
+  "parts": 1
+}

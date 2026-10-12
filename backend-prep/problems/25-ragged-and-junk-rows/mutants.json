@@ -1,0 +1,42 @@
+[
+  {
+    "id": "m1",
+    "bug": "Counts records instead of physical lines, so line numbers drift after a multi-line quoted field",
+    "edits": [{"find": "line, end = end + 1, reader.line_num", "replace": "line, end = end + 1, end + 1"}]
+  },
+  {
+    "id": "m2",
+    "bug": "Opens the file as plain utf-8, so a BOM sticks to the first header name and the required column looks missing",
+    "edits": [{"find": "encoding=\"utf-8-sig\"", "replace": "encoding=\"utf-8\""}]
+  },
+  {
+    "id": "m3",
+    "bug": "Matches footers with search instead of a whole-field match, so 'GRAND TOTAL' and 'totally_real' rows are dropped",
+    "edits": [{"find": "re.fullmatch(", "replace": "re.search("}]
+  },
+  {
+    "id": "m4",
+    "bug": "Compares the raw (unstripped) record to the header, so a repeated header with extra spaces becomes a data row",
+    "edits": [{"find": "elif values == header or", "replace": "elif record == header or"}]
+  },
+  {
+    "id": "m5",
+    "bug": "Checks required values before the field count, so a ragged row is reported as missing_required",
+    "edits": [
+      {
+        "find": "            elif len(values) > len(header):\n                errors.append({\"line\": line, \"reason\": \"too_many_fields\"})\n            elif len(values) < len(header):\n                errors.append({\"line\": line, \"reason\": \"too_few_fields\"})\n            elif not all(values[header.index(c)] for c in required):\n                errors.append({\"line\": line, \"reason\": \"missing_required\"})\n",
+        "replace": "            elif not all(dict(zip(header, values)).get(c) for c in required):\n                errors.append({\"line\": line, \"reason\": \"missing_required\"})\n            elif len(values) > len(header):\n                errors.append({\"line\": line, \"reason\": \"too_many_fields\"})\n            elif len(values) < len(header):\n                errors.append({\"line\": line, \"reason\": \"too_few_fields\"})\n"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Computes the missing columns with a set difference, so SchemaError.missing isn't in the required order",
+    "edits": [{"find": "missing := [c for c in required if c not in header]", "replace": "missing := sorted(set(required) - set(header))"}]
+  },
+  {
+    "id": "m7",
+    "bug": "Returns an empty result for a file with no header instead of raising SchemaError",
+    "edits": [{"find": "    if header is None:\n        raise SchemaError(list(required))\n", "replace": ""}]
+  }
+]

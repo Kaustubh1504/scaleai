@@ -1,0 +1,10 @@
+{
+  "id": "M2",
+  "title": "Customer data import",
+  "group": "Mock rounds",
+  "level": "Hard",
+  "minutes": 60,
+  "daily": false,
+  "tags": ["csv", "data cleaning", "caching", "concurrency", "checkpointing", "atomic writes"],
+  "parts": 3
+}

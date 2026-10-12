@@ -1,0 +1,76 @@
+[
+  {
+    "id": "m1",
+    "bug": "Treats an entry as still fresh at exactly stored_at + ttl (<= instead of <)",
+    "edits": [
+      {
+        "find": "if clock.time() < stored_at +",
+        "replace": "if clock.time() <= stored_at +"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Caches not-found responses for ttl_s instead of negative_ttl_s",
+    "edits": [
+      {
+        "find": "(ttl_s if status == 200 else negative_ttl_s)",
+        "replace": "ttl_s"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Never caches an upstream 404, so every repeat lookup of a missing id hits the upstream",
+    "edits": [
+      {
+        "find": "                cache[product_id] = (resp.status_code, body, clock.time())",
+        "replace": "                if resp.status_code == 200:\n                    cache[product_id] = (resp.status_code, body, clock.time())"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Serves an expired not-found as STALE 404 on upstream failure instead of returning 502",
+    "edits": [
+      {
+        "find": "        if entry and entry[0] == 200:",
+        "replace": "        if entry:"
+      },
+      {
+        "find": "return reply(200, entry[1], \"STALE\")",
+        "replace": "return reply(entry[0], entry[1], \"STALE\")"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Refreshes stored_at when serving STALE, so the next request is a HIT instead of retrying upstream",
+    "edits": [
+      {
+        "find": "            return reply(200, entry[1], \"STALE\")",
+        "replace": "            cache[product_id] = (200, entry[1], clock.time())\n            return reply(200, entry[1], \"STALE\")"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Only catches httpx.TransportError, so a truncated non-JSON 200 crashes with a 500",
+    "edits": [
+      {
+        "find": "except (httpx.TransportError, ValueError):",
+        "replace": "except httpx.TransportError:"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Treats every 4xx (429, 400) like a 404 and caches it as not-found instead of counting it as an upstream failure",
+    "edits": [
+      {
+        "find": "            resp = upstream.get(f\"/v1/products/{product_id}\")\n",
+        "replace": "            resp = upstream.get(f\"/v1/products/{product_id}\")\n            if 400 <= resp.status_code < 500:\n                resp.status_code = 404\n"
+      }
+    ]
+  }
+]

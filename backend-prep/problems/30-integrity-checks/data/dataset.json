@@ -1,0 +1,40 @@
+{
+  "annotators": [
+    {"id": "A1", "name": "Ada", "status": "active", "projects": ["P1", "P2"]},
+    {"id": "A2", "name": "Ben", "status": "active", "projects": ["P1"]},
+    {"id": "A3", "name": "Cy", "status": "on_leave", "projects": ["P2"]},
+    {"id": "A4", "name": "Dee", "status": "suspended", "projects": ["P2"]},
+    {"id": "A2", "name": "Ben", "status": "active", "projects": ["P1"]},
+    {"id": "A5", "name": "Eve", "status": "active", "projects": ["P1"]},
+    {"id": "A5", "name": "Eve", "status": "active", "projects": ["P1", "P2"]}
+  ],
+  "tasks": [
+    {"id": "T1", "project_id": "P1", "status": "open", "created_at": "2024-03-01T08:00:00Z", "completed_at": null, "reward_cents": 120},
+    {"id": "T2", "project_id": "P1", "status": "completed", "created_at": "2024-03-01T08:00:00Z", "completed_at": "2024-03-01T12:00:00Z", "reward_cents": 150},
+    {"id": "T3", "project_id": "P2", "status": "completed", "created_at": "2024-03-02T10:00:00Z", "completed_at": "2024-03-02T09:00:00Z", "reward_cents": 90},
+    {"id": "T4", "project_id": "P2", "status": "done", "created_at": "2024-03-01T08:00:00Z", "completed_at": null, "reward_cents": -50},
+    {"id": "T5", "project_id": "P1", "status": "completed", "created_at": "2024-03-01T08:00:00Z", "completed_at": null, "reward_cents": 0},
+    {"id": "T6", "project_id": "P2", "status": "in_progress", "created_at": "2024-03-01T10:00:00+02:00", "completed_at": null, "reward_cents": "100"},
+    {"id": "T7", "project_id": "P1", "status": "open", "created_at": "March 3rd", "completed_at": null, "reward_cents": 80},
+    {"id": "T6", "project_id": "P2", "status": "in_progress", "created_at": "2024-03-01T10:00:00+02:00", "completed_at": null, "reward_cents": 200},
+    {"id": "T8", "project_id": "P1", "status": "cancelled", "created_at": "2024-03-01T08:00:00", "completed_at": null, "reward_cents": 75}
+  ],
+  "submissions": [
+    {"id": "S1", "task_id": "T1", "annotator_id": "A1", "submitted_at": "2024-03-01T09:00:00Z", "confidence": 0.9, "status": "accepted"},
+    {"id": "S2", "task_id": "T1", "annotator_id": "A2", "submitted_at": "2024-03-01T07:00:00Z", "confidence": 0.5, "status": "pending"},
+    {"id": "S3", "task_id": "T9", "annotator_id": "A1", "submitted_at": "2024-03-01T09:00:00Z", "confidence": 0.7, "status": "pending"},
+    {"id": "S4", "task_id": "T2", "annotator_id": "A9", "submitted_at": "2024-03-01T09:00:00Z", "confidence": 0.7, "status": "pending"},
+    {"id": "S5", "task_id": "T3", "annotator_id": "A2", "submitted_at": "2024-03-02T11:00:00Z", "confidence": 0.8, "status": "accepted"},
+    {"id": "S6", "task_id": "T2", "annotator_id": "A1", "submitted_at": "2024-03-01T09:00:00Z", "confidence": 1.5, "status": "approved"},
+    {"id": "S7", "task_id": "T6", "annotator_id": "A4", "submitted_at": "2024-03-01T11:30:00+05:00", "confidence": 0.6, "status": "rejected"},
+    {"id": "S8", "task_id": "T6", "annotator_id": "A4", "submitted_at": "2024-03-01T09:00:00Z", "confidence": 0.6, "status": "accepted"},
+    {"id": "S9", "task_id": "T1", "annotator_id": "A1", "submitted_at": "2024-03-01T09:10:00Z", "confidence": true, "status": "pending"},
+    {"id": "S10", "task_id": "T1", "annotator_id": "A5", "submitted_at": "2024-03-01T09:20:00Z", "confidence": null, "status": "pending"},
+    {"id": "S1", "task_id": "T1", "annotator_id": "A1", "submitted_at": "2024-03-01T09:00:00Z", "confidence": 0.9, "status": "accepted"},
+    {"id": "S11", "task_id": "T4", "annotator_id": "A3", "submitted_at": "2024-03-01T09:00:00Z", "confidence": 0, "status": "accepted"},
+    {"id": "S12", "task_id": "T2", "annotator_id": "A5", "submitted_at": "2024-03-01T09:00:00Z", "confidence": 1, "status": "accepted"},
+    {"id": "S13", "task_id": "T7", "annotator_id": "A1", "submitted_at": "2024-03-01T09:00:00Z", "confidence": 0.4, "status": "pending"},
+    {"id": "S14", "task_id": "T2", "annotator_id": "A1", "submitted_at": "not-a-date", "confidence": 0.4, "status": "pending"},
+    {"id": "S15", "task_id": "T3", "annotator_id": "A5", "submitted_at": "2024-03-02T11:00:00Z", "confidence": 0.4, "status": "pending"}
+  ]
+}

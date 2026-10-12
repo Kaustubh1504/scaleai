@@ -1,0 +1,10 @@
+{
+  "id": "15",
+  "title": "Idempotent POST retries",
+  "group": "3. Querying robustly",
+  "level": "Medium",
+  "minutes": 20,
+  "daily": true,
+  "tags": ["idempotency", "retries", "post", "payments", "headers"],
+  "parts": 1
+}

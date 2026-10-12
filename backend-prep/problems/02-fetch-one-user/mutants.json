@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Forgets timeout=5 on the request, so a slow Users API hangs for the client's 30 s default",
+    "edits": [
+      {
+        "find": "client.get(path, timeout=5)",
+        "replace": "client.get(path)"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Raises UserApiError on a 404 instead of returning None",
+    "edits": [
+      {
+        "find": "    if resp.status_code == 404:\n        return None\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Validates the id with re.match instead of fullmatch, so \"u 1\" and \"../admin\"-style suffixes slip through",
+    "edits": [
+      {
+        "find": "re.fullmatch(",
+        "replace": "re.match("
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Only catches httpx.TimeoutException, so a ConnectError escapes unwrapped",
+    "edits": [
+      {
+        "find": "except httpx.TransportError as exc:",
+        "replace": "except httpx.TimeoutException as exc:"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Wraps transport errors with `from None`, losing the original httpx exception as __cause__",
+    "edits": [
+      {
+        "find": "from exc",
+        "replace": "from None"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Only raises on 5xx: a 401/403/429 error body is returned as if it were the user",
+    "edits": [
+      {
+        "find": "    if not resp.is_success:\n",
+        "replace": "    if resp.status_code >= 500:\n"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Validates the id after sending the request, so an unsafe id still hits the server",
+    "edits": [
+      {
+        "find": "    if not isinstance(user_id, str) or not re.fullmatch(r\"[A-Za-z0-9_-]{1,64}\", user_id):\n        raise ValueError(f\"invalid user id: {user_id!r}\")\n    path = f\"/v1/users/{user_id}\"\n    try:\n        resp = client.get(path, timeout=5)\n",
+        "replace": "    path = f\"/v1/users/{user_id}\"\n    try:\n        resp = client.get(path, timeout=5)\n        if not isinstance(user_id, str) or not re.fullmatch(r\"[A-Za-z0-9_-]{1,64}\", user_id):\n            raise ValueError(f\"invalid user id: {user_id!r}\")\n"
+      }
+    ]
+  }
+]

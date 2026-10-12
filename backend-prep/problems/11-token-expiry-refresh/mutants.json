@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Refreshes only once the token has already expired instead of when it has less than 2 s left",
+    "edits": [
+      {
+        "find": "self.expires_at - self.clock.time() < 2",
+        "replace": "self.expires_at - self.clock.time() <= 0"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Measures expiry from the clock after the token response arrives, not just before the request",
+    "edits": [
+      {
+        "find": "self.expires_at = started + body[\"expires_in\"]",
+        "replace": "self.expires_at = self.clock.time() + body[\"expires_in\"]"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Uses <= for the 2 s margin, refreshing one request earlier than needed",
+    "edits": [
+      {
+        "find": "self.expires_at - self.clock.time() < 2",
+        "replace": "self.expires_at - self.clock.time() <= 2"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Never uses the refresh_token grant: every renewal is a fresh client_credentials request",
+    "edits": [
+      {
+        "find": "        if self.refresh_token:\n",
+        "replace": "        if False:\n"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Raises AuthError when the refresh grant returns 400 instead of falling back to client_credentials",
+    "edits": [
+      {
+        "find": "if resp.status_code != 400 or grant[\"grant_type\"] == \"client_credentials\":",
+        "replace": "if True:"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Raises AuthError on the first 401 instead of renewing the token and retrying once",
+    "edits": [
+      {
+        "find": "        if resp.status_code == 401:\n            self._renew()\n            resp = self._send(path, params)\n            if resp.status_code == 401:\n",
+        "replace": "        if resp.status_code == 401:\n            if True:\n"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Retries after a 401 without the original query params",
+    "edits": [
+      {
+        "find": "            self._renew()\n            resp = self._send(path, params)\n",
+        "replace": "            self._renew()\n            resp = self._send(path, None)\n"
+      }
+    ]
+  }
+]

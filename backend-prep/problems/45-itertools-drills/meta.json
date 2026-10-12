@@ -1,0 +1,10 @@
+{
+  "id": "45",
+  "title": "itertools drills",
+  "group": "9. Python fluency",
+  "level": "Easy",
+  "minutes": 10,
+  "daily": false,
+  "tags": ["itertools", "groupby", "generators", "batching"],
+  "parts": 1
+}

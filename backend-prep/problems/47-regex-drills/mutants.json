@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Ticket pattern has no word boundaries, so XTKT-1 and the start of TKT-1234567 match",
+    "edits": [
+      {
+        "find": "re.findall(r\"\\bTKT-\\d{1,6}\\b\", text)",
+        "replace": "re.findall(r\"TKT-\\d{1,6}\", text)"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "find_tickets does not de-duplicate repeated refs",
+    "edits": [
+      {
+        "find": "return list(dict.fromkeys(re.findall(r\"\\bTKT-\\d{1,6}\\b\", text)))",
+        "replace": "return re.findall(r\"\\bTKT-\\d{1,6}\\b\", text)"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "find_emails does not lower-case, so Bob@Example.com and bob@example.com both appear",
+    "edits": [
+      {
+        "find": "dict.fromkeys(e.lower() for e in EMAIL_RE.findall(text))",
+        "replace": "dict.fromkeys(EMAIL_RE.findall(text))"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Email domain allows dots anywhere ([A-Za-z0-9.-]+), so a sentence-ending period is captured",
+    "edits": [
+      {
+        "find": "EMAIL_RE = re.compile(r\"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+\")",
+        "replace": "EMAIL_RE = re.compile(r\"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z0-9.-]+\")"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Validates idempotency keys with re.match and $, which accepts a trailing newline",
+    "edits": [
+      {
+        "find": "re.fullmatch(r\"[A-Za-z0-9_-]{1,64}\", key)",
+        "replace": "re.match(r\"[A-Za-z0-9_-]{1,64}$\", key)"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "parse_log_line uses match instead of fullmatch, so trailing junk after req= is accepted",
+    "edits": [
+      {
+        "find": "m = LOG_RE.fullmatch(line.rstrip(\"\\n\"))",
+        "replace": "m = LOG_RE.match(line.rstrip(\"\\n\"))"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Phone pattern has no digit lookarounds, so it redacts part of a longer number",
+    "edits": [
+      {
+        "find": "PHONE_RE = re.compile(r\"(?<!\\d)(?:\\+1[ -])?(?:\\(\\d{3}\\)|\\d{3})[ .-]\\d{3}[ .-]\\d{4}(?!\\d)\")",
+        "replace": "PHONE_RE = re.compile(r\"(?:\\+1[ -])?(?:\\(\\d{3}\\)|\\d{3})[ .-]\\d{3}[ .-]\\d{4}\")"
+      }
+    ]
+  }
+]

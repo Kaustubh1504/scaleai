@@ -1,0 +1,37 @@
+[
+  {
+    "id": "m1",
+    "bug": "Treats every epoch number as seconds, so 13-digit millisecond timestamps are rejected as out of range",
+    "edits": [{"find": "        if abs(n) >= 10**11:  # milliseconds\n            n /= 1000\n", "replace": ""}]
+  },
+  {
+    "id": "m2",
+    "bug": "Returns ISO strings without an offset as naive datetimes instead of treating them as UTC",
+    "edits": [{"find": "    return parse_timestamp(datetime.fromisoformat(s.upper()))", "replace": "    dt = datetime.fromisoformat(s.upper())\n    return dt if dt.tzinfo is None else dt.astimezone(UTC)"}]
+  },
+  {
+    "id": "m3",
+    "bug": "to_iso_z formats a naive datetime (guessing local time) instead of raising ValueError",
+    "edits": [{"find": "    if dt.utcoffset() is None:\n        raise", "replace": "    if dt.tzinfo is not None and dt.utcoffset() is None:\n        raise"}]
+  },
+  {
+    "id": "m4",
+    "bug": "Parses slash dates as DD/MM/YYYY instead of US MM/DD/YYYY",
+    "edits": [{"find": "(\"%m/%d/%Y\", \"%m/%d/%Y %H:%M\", \"%m/%d/%Y %H:%M:%S\")", "replace": "(\"%d/%m/%Y\", \"%d/%m/%Y %H:%M\", \"%d/%m/%Y %H:%M:%S\")"}]
+  },
+  {
+    "id": "m5",
+    "bug": "Converts float dollars with int(v * 100), so 19.99 becomes 1998 and 0.1 + 0.2 isn't rejected",
+    "edits": [{"find": "        dollars = Decimal(str(v))", "replace": "        if isinstance(v, float):\n            return int(v * 100)\n        dollars = Decimal(str(v))"}]
+  },
+  {
+    "id": "m6",
+    "bug": "Silently truncates fractional cents ('$12.345' -> 1234) instead of raising ValueError",
+    "edits": [{"find": "    if not cents.is_finite() or cents != cents.to_integral_value():", "replace": "    if not cents.is_finite():"}]
+  },
+  {
+    "id": "m7",
+    "bug": "Doesn't detect a wall time inside a DST gap, returning a shifted instant instead of raising ValueError",
+    "edits": [{"find": "    if utc.astimezone(tz).replace(tzinfo=None) != wall:", "replace": "    if False:"}]
+  }
+]

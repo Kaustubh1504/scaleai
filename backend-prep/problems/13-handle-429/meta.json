@@ -1,0 +1,10 @@
+{
+  "id": "13",
+  "title": "Handle 429 and Retry-After",
+  "group": "3. Querying robustly",
+  "level": "Medium",
+  "minutes": 20,
+  "daily": true,
+  "tags": ["rate-limits", "429", "retry-after", "http-date", "retries"],
+  "parts": 1
+}

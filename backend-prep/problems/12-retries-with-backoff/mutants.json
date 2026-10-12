@@ -1,0 +1,76 @@
+[
+  {
+    "id": "m1",
+    "bug": "Sleeps after the final attempt too, wasting a full backoff before raising",
+    "edits": [
+      {
+        "find": "if attempt < max_attempts:",
+        "replace": "if True:"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Wrong backoff exponent: uses base_s * 2 ** attempt, so the first wait is already doubled",
+    "edits": [
+      {
+        "find": "2 ** (attempt - 1)",
+        "replace": "2 ** attempt"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Retries 4xx errors (404, 422) as if they were transient",
+    "edits": [
+      {
+        "find": "elif status not in (500, 502, 503, 504):",
+        "replace": "elif status < 400:"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Only catches timeouts, so a connection error escapes instead of being retried",
+    "edits": [
+      {
+        "find": "except httpx.TransportError:",
+        "replace": "except httpx.TimeoutException:"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Trusts any 2xx: returns a truncated/non-JSON 200 body instead of retrying it",
+    "edits": [
+      {
+        "find": "                try:\n                    resp.json()\n                    return resp\n                except ValueError:  # truncated body: the server was mid-write, worth another go\n                    pass\n",
+        "replace": "                return resp\n"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Never applies cap_s, so the delay keeps doubling forever",
+    "edits": [
+      {
+        "find": "d = min(cap_s, base_s * 2 ** (attempt - 1))",
+        "replace": "d = base_s * 2 ** (attempt - 1)"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Keeps the previous HTTP status when the last attempt was a transport error, so ApiError.status is not None",
+    "edits": [
+      {
+        "find": "            status = None\n",
+        "replace": "            pass\n"
+      },
+      {
+        "find": "    for attempt in range(1, max_attempts + 1):\n",
+        "replace": "    status = None\n    for attempt in range(1, max_attempts + 1):\n"
+      }
+    ]
+  }
+]

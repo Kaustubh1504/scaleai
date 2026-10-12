@@ -1,0 +1,10 @@
+{
+  "id": "40",
+  "title": "Refactor a messy payout script",
+  "group": "8. Production quality",
+  "level": "Medium",
+  "minutes": 35,
+  "daily": true,
+  "tags": ["refactoring", "logging", "exceptions", "dataclasses", "testability"],
+  "parts": 1
+}

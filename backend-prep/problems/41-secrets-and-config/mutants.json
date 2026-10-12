@@ -1,0 +1,76 @@
+[
+  {
+    "id": "m1",
+    "bug": "Raises on the first problem (API_KEY) instead of collecting every bad variable into one ConfigError",
+    "edits": [
+      {
+        "find": "problems.append(\"API_KEY is required\")",
+        "replace": "raise ConfigError([\"API_KEY is required\"])"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Relies on the dataclass default repr, which shows the API key in plain text",
+    "edits": [
+      {
+        "find": "    def __repr__(self) -> str:\n        return (f\"Settings(api_key='***', base_url={self.base_url!r}, timeout_s={self.timeout_s!r}, \"\n                f\"max_retries={self.max_retries!r}, log_level={self.log_level!r})\")\n\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Parses MAX_RETRIES with int(float(...)), so \"2.5\" is silently accepted as 2",
+    "edits": [
+      {
+        "find": "max_retries = int(retries) if retries.isdecimal() else -1",
+        "replace": "max_retries = int(float(retries))"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Only checks TIMEOUT_S > 0, so nan and inf are accepted",
+    "edits": [
+      {
+        "find": "if not (math.isfinite(timeout_s) and timeout_s > 0):",
+        "replace": "if not timeout_s > 0:"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Lets .env values override the real environment (merges in the wrong order)",
+    "edits": [
+      {
+        "find": "{**dotenv, **(os.environ if env is None else env)}",
+        "replace": "{**(os.environ if env is None else env), **dotenv}"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Snapshots os.environ at import time instead of reading it when from_env() is called",
+    "edits": [
+      {
+        "find": "LOG_LEVELS = (\"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\")\n",
+        "replace": "LOG_LEVELS = (\"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\")\n_ENV = dict(os.environ)\n"
+      },
+      {
+        "find": "env = os.environ if env is None else env\n",
+        "replace": "env = _ENV if env is None else env\n"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "load_dotenv does not handle the optional `export ` prefix, so the key becomes \"export BASE_URL\"",
+    "edits": [
+      {
+        "find": "line = line.strip().removeprefix(\"export \")",
+        "replace": "line = line.strip()"
+      }
+    ]
+  }
+]

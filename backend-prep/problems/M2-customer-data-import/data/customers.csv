@@ -1,0 +1,13 @@
+﻿Customer ID; Full Name ;E-Mail;Website;Seats;Last Updated;Notes
+C001;Ada  Lovelace;ADA@Acme.io;https://www.acme.io/;25;2024-03-01;renewal in Q3
+C002;Grace Hopper;grace@navy.example;;;2024-02-11;
+C003;  ;bob@gmail.com;;3;2024-01-05;free mail, no company
+C004;Linus;linus@kernel.example;kernel.example;1,200;2024-02-01;
+;Nobody;nobody@acme.io;;;2024-02-01;
+C005;Alan Turing;alan.turing;bletchley.example;4;2024-02-01;
+C001;Ada Lovelace;ada@acme.io;acme.io;30;2024-04-15;seats bumped
+
+C006;Ken Thompson;ken@bell-labs.example;;12;2024-13-01;
+C007;Barbara Liskov;barbara@mit.example;MIT.example;;2024-03-03;;;
+C008;Margaret Hamilton;margaret@nasa.example;nasa.example;9;2024-03-04;extra;field
+C009;Edsger Dijkstra;edsger@unknown-co.example;;7;2024-03-05

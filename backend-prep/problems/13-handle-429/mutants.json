@@ -1,0 +1,37 @@
+[
+  {
+    "id": "m1",
+    "bug": "Ignores HTTP-date Retry-After values and always waits the 1 s default for them",
+    "edits": [{"find": "    target = _http_date(value)\n", "replace": "    target = None\n"}]
+  },
+  {
+    "id": "m2",
+    "bug": "Measures an HTTP-date Retry-After from its own clock instead of the response's Date header",
+    "edits": [{"find": "    wait = target - (now if server_now is None else server_now)", "replace": "    wait = target - now"}]
+  },
+  {
+    "id": "m3",
+    "bug": "Returns a negative wait when the Retry-After date is already in the past instead of defaulting to 1 s",
+    "edits": [{"find": "    return wait if wait >= 0 else 1.0", "replace": "    return wait"}]
+  },
+  {
+    "id": "m4",
+    "bug": "Counts 429s toward max_attempts, so rate limiting exhausts the retry budget",
+    "edits": [{"find": "clock.time()))\n                continue", "replace": "clock.time()))\n                attempts += 1\n                if attempts >= max_attempts:\n                    raise ApiError(status, path, attempts, \"rate limited\")\n                continue"}]
+  },
+  {
+    "id": "m5",
+    "bug": "Never resets the consecutive-429 streak after a non-429 response",
+    "edits": [{"find": "        streak = 0\n        attempts += 1", "replace": "        attempts += 1"}]
+  },
+  {
+    "id": "m6",
+    "bug": "Off by one on max_429s: gives up on the fifth consecutive 429 instead of the sixth",
+    "edits": [{"find": "if streak > max_429s:", "replace": "if streak >= max_429s:"}]
+  },
+  {
+    "id": "m7",
+    "bug": "Retries non-transient 4xx errors like 403 instead of raising ApiError immediately",
+    "edits": [{"find": "            elif status not in (500, 502, 503, 504):", "replace": "            elif status < 400:"}]
+  }
+]

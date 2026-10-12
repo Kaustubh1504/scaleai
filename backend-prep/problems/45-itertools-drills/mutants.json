@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Calls groupby without sorting first, so a project split across the input keeps only its last group",
+    "edits": [
+      {
+        "find": "groupby(sorted(tasks, key=key), key=key)",
+        "replace": "groupby(tasks, key=key)"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Groups with a plain dict loop, returning projects in first-seen order instead of ascending",
+    "edits": [
+      {
+        "find": "    key = itemgetter(\"project\")\n",
+        "replace": "    groups: dict[str, list[str]] = {}\n    for t in tasks:\n        groups.setdefault(t[\"project\"], []).append(t[\"id\"])\n    return groups\n    key = itemgetter(\"project\")\n"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "batched yields tuples instead of lists",
+    "edits": [
+      {
+        "find": "    while chunk := list(islice(it, n)):\n        yield chunk",
+        "replace": "    while chunk := tuple(islice(it, n)):\n        yield chunk"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "batched reads the next batch before yielding the current one, so it consumes more than n items ahead",
+    "edits": [
+      {
+        "find": "    while chunk := list(islice(it, n)):\n        yield chunk",
+        "replace": "    chunk = list(islice(it, n))\n    while chunk:\n        nxt = list(islice(it, n))\n        yield chunk\n        chunk = nxt"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "batched accepts n=0 (checks n < 0) and silently yields nothing instead of raising ValueError",
+    "edits": [
+      {
+        "find": "    if n < 1:\n        raise ValueError",
+        "replace": "    if n < 0:\n        raise ValueError"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "deltas uses values[1:]-style pairing, which returns [] for a one-shot iterator",
+    "edits": [
+      {
+        "find": "return [b - a for a, b in pairwise(values)]",
+        "replace": "return [b - a for a, b in zip(values, list(values)[1:])]"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "running_totals starts from an initial 0, returning one extra element",
+    "edits": [
+      {
+        "find": "return list(accumulate(values))",
+        "replace": "return list(accumulate(values, initial=0))"
+      }
+    ]
+  }
+]

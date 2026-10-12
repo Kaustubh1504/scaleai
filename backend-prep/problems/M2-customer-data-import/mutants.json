@@ -1,0 +1,122 @@
+[
+  {
+    "id": "m1",
+    "bug": "Part 1: On a duplicate with the same updated_at keeps the earlier line instead of the later one",
+    "edits": [
+      {
+        "find": "            if updated >= prev[\"updated_at\"]:",
+        "replace": "            if updated > prev[\"updated_at\"]:"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Part 1: Numbers lines by record count, so skipped blank lines don't advance the line number",
+    "edits": [
+      {
+        "find": "    while True:\n        line = reader.line_num + 1\n        fields = next(reader, None)\n        if fields is None:\n            break\n        if not any(f.strip() for f in fields):\n            continue\n",
+        "replace": "    line = 1\n    while True:\n        fields = next(reader, None)\n        if fields is None:\n            break\n        if not any(f.strip() for f in fields):\n            continue\n        line += 1\n"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Part 1: Checks seats before updated_at, so a row with both wrong reports invalid_seats",
+    "edits": [
+      {
+        "find": "        elif not is_date(updated):\n            reason = \"invalid_updated_at\"\n        elif seats and not (seats.isascii() and seats.isdigit()):\n            reason = \"invalid_seats\"\n",
+        "replace": "        elif seats and not (seats.isascii() and seats.isdigit()):\n            reason = \"invalid_seats\"\n        elif not is_date(updated):\n            reason = \"invalid_updated_at\"\n"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Part 1: Reports too_many_fields for any extra field, even empty trailing ones like ',,,'",
+    "edits": [
+      {
+        "find": "        if any(f.strip() for f in fields[len(header):]):",
+        "replace": "        if len(fields) > len(header):"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Part 2: Cache entry still a hit at exactly stored_at + ttl (uses > instead of >=)",
+    "edits": [
+      {
+        "find": "            if self.clock.time() < stored_at + ttl:",
+        "replace": "            if self.clock.time() <= stored_at + ttl:"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Part 2: Caches 404s for ttl_s instead of negative_ttl_s",
+    "edits": [
+      {
+        "find": "            ttl = self.ttl_s if company is not None else self.negative_ttl_s",
+        "replace": "            ttl = self.ttl_s"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Part 2: Doesn't cache 404s, so every row with an unknown domain makes a new request",
+    "edits": [
+      {
+        "find": "                cache.put(domain, company)",
+        "replace": "                if company is not None:\n                    cache.put(domain, company)"
+      }
+    ]
+  },
+  {
+    "id": "m8",
+    "bug": "Part 2: Mutates the caller's row dicts instead of returning new ones",
+    "edits": [
+      {
+        "find": "        out.append({**row, **(company or NO_COMPANY), \"enrichment\": status})",
+        "replace": "        row.update({**(company or NO_COMPANY), \"enrichment\": status})\n        out.append(row)"
+      }
+    ]
+  },
+  {
+    "id": "m9",
+    "bug": "Part 3: Writes checkpoint.json directly instead of temp file + os.replace (not atomic)",
+    "edits": [
+      {
+        "find": "            atomic_write(ckpt, json.dumps(done, sort_keys=True))",
+        "replace": "            ckpt.write_text(json.dumps(done, sort_keys=True))"
+      }
+    ]
+  },
+  {
+    "id": "m10",
+    "bug": "Part 3: Treats a failed lookup (5xx, timeout, bad JSON) as not found and checkpoints it, so it is never retried",
+    "edits": [
+      {
+        "find": "            return  # not checkpointed: retried on the next run",
+        "replace": "            company = None"
+      }
+    ]
+  },
+  {
+    "id": "m11",
+    "bug": "Part 3: Writes the checkpoint only once after all lookups finish, so a crash mid-run loses all progress",
+    "edits": [
+      {
+        "find": "            done[domain] = company\n            atomic_write(ckpt, json.dumps(done, sort_keys=True))\n\n    with ThreadPoolExecutor(max_workers=max_workers) as pool:\n        list(pool.map(fetch, todo))\n",
+        "replace": "            done[domain] = company\n\n    with ThreadPoolExecutor(max_workers=max_workers) as pool:\n        list(pool.map(fetch, todo))\n    atomic_write(ckpt, json.dumps(done, sort_keys=True))\n"
+      }
+    ]
+  },
+  {
+    "id": "m12",
+    "bug": "Part 3: Doesn't dedupe domains before submitting, so a domain shared by several rows is requested several times",
+    "edits": [
+      {
+        "find": "    todo = [d for d in dict.fromkeys(r[\"domain\"] for r in cleaned.rows)",
+        "replace": "    todo = [d for d in (r[\"domain\"] for r in cleaned.rows)"
+      }
+    ]
+  }
+]

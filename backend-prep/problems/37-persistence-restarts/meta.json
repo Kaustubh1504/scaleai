@@ -1,0 +1,10 @@
+{
+  "id": "37",
+  "title": "A task store that survives restarts",
+  "group": "7. Building a service",
+  "level": "Medium",
+  "minutes": 30,
+  "daily": false,
+  "tags": ["fastapi", "persistence", "atomic-writes", "idempotency", "sqlite"],
+  "parts": 1
+}

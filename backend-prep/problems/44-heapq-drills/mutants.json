@@ -1,0 +1,76 @@
+[
+  {
+    "id": "m1",
+    "bug": "top_k breaks score ties by annotator id descending (nlargest on (score, id))",
+    "edits": [
+      {
+        "find": "return heapq.nsmallest(k, scores, key=lambda s: (-s[1], s[0]))",
+        "replace": "return heapq.nlargest(k, scores, key=lambda s: (s[1], s[0]))"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "top_k forgets to negate the score and returns the lowest scores first",
+    "edits": [
+      {
+        "find": "return heapq.nsmallest(k, scores, key=lambda s: (-s[1], s[0]))",
+        "replace": "return heapq.nsmallest(k, scores, key=lambda s: (s[1], s[0]))"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "merge_logs breaks equal-ts ties by the last stream first instead of the order streams were passed",
+    "edits": [
+      {
+        "find": "return heapq.merge(*streams, key=lambda rec: rec[\"ts\"])",
+        "replace": "return heapq.merge(*reversed(streams), key=lambda rec: rec[\"ts\"])"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "merge_logs is not lazy: it buffers a chunk of every stream up front and sorts it",
+    "edits": [
+      {
+        "find": "return heapq.merge(*streams, key=lambda rec: rec[\"ts\"])",
+        "replace": "buffered = [rec for s in streams for rec in itertools.islice(s, 100)]\n    return iter(sorted(buffered, key=lambda rec: rec[\"ts\"]))"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "TaskScheduler pops the lowest priority first (forgot to negate priority for the min-heap)",
+    "edits": [
+      {
+        "find": "heapq.heappush(self.heap, (-priority, next(self.seq), task_id, payload))",
+        "replace": "heapq.heappush(self.heap, (priority, next(self.seq), task_id, payload))"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Breaks equal priorities by task_id instead of submission order (task_id before the counter in the tuple)",
+    "edits": [
+      {
+        "find": "(-priority, next(self.seq), task_id, payload)",
+        "replace": "(-priority, task_id, next(self.seq), task_id, payload)"
+      },
+      {
+        "find": "return heapq.heappop(self.heap)[2:]",
+        "replace": "return heapq.heappop(self.heap)[3:]"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "pop() on an empty scheduler returns (None, None) instead of raising IndexError",
+    "edits": [
+      {
+        "find": "return heapq.heappop(self.heap)[2:]",
+        "replace": "return heapq.heappop(self.heap)[2:] if self.heap else (None, None)"
+      }
+    ]
+  }
+]

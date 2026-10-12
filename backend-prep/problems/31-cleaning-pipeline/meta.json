@@ -1,0 +1,10 @@
+{
+  "id": "31",
+  "title": "End-to-end cleaning pipeline",
+  "group": "5. Data cleaning",
+  "level": "Hard",
+  "minutes": 45,
+  "daily": true,
+  "tags": ["csv", "pipeline", "dedupe", "atomic-writes", "idempotency", "error-report"],
+  "parts": 1
+}

@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Never marks a job running: it shows as queued while process() is executing",
+    "edits": [
+      {
+        "find": "            jobs[job_id][\"status\"] = \"running\"\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Stores str(exc) even when it is empty, instead of falling back to the exception class name",
+    "edits": [
+      {
+        "find": "error=str(exc) or type(exc).__name__)",
+        "replace": "error=str(exc))"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Only catches ValueError, so any other exception from process() kills the worker thread",
+    "edits": [
+      {
+        "find": "            except Exception as exc:",
+        "replace": "            except ValueError as exc:"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Passes process() the payload without its kind instead of the whole posted object",
+    "edits": [
+      {
+        "find": "result=process(payload)",
+        "replace": "result=process({k: v for k, v in payload.items() if k != \"kind\"})"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Accepts any kind with 202 and only fails it later in the worker instead of rejecting it with 422",
+    "edits": [
+      {
+        "find": "        if payload.get(\"kind\") not in (\"word_count\", \"sum\"):\n            raise HTTPException(422, \"kind must be 'word_count' or 'sum'\")\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Ignores the ?status= filter and always lists every job",
+    "edits": [
+      {
+        "find": "if status is None or j[\"status\"] == status]",
+        "replace": "]"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Sends only one stop sentinel on shutdown, so only one of the worker threads ever exits",
+    "edits": [
+      {
+        "find": "        for t in threads:\n            pending.put(None)\n        for t in threads:\n            t.join()",
+        "replace": "        pending.put(None)\n        for t in threads:\n            t.join(timeout=0.1)"
+      }
+    ]
+  }
+]

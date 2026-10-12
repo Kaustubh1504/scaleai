@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "get_path uses truthiness, so a found falsy value (0, None) is treated as missing and returns default",
+    "edits": [
+      {
+        "find": "        if isinstance(obj, dict) and seg in obj:",
+        "replace": "        if isinstance(obj, dict) and obj.get(seg):"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Accepts negative list indexes, so \"lst.-1\" returns the last element instead of default",
+    "edits": [
+      {
+        "find": "and seg.isdigit() and",
+        "replace": "and seg.lstrip(\"-\").isdigit() and"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Doesn't treat the string \"null\" as blank, so name \"  NULL \" wins over profile.full_name",
+    "edits": [
+      {
+        "find": "v.strip().lower() not in (\"\", \"null\")",
+        "replace": "v.strip() != \"\""
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Accepts a bool as a rating, so rating True becomes 1.0 instead of falling through",
+    "edits": [
+      {
+        "find": "    if isinstance(v, (int, float)) and not isinstance(v, bool):",
+        "replace": "    if isinstance(v, (int, float)):"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Treats any active string other than \"true\" as False, so an invalid flag like \"yes\" never falls back to status",
+    "edits": [
+      {
+        "find": "    return {\"true\": True, \"false\": False}.get((_clean(v) or \"\").lower())",
+        "replace": "    return (_clean(v) or \"\").lower() == \"true\" if _clean(v) else None"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "A skills value that cleans down to no items returns [] instead of blank, so profile.skills is never tried",
+    "edits": [
+      {
+        "find": "    return [s for s in map(_clean, v) if s] or None",
+        "replace": "    return [s for s in map(_clean, v) if s]"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Rejects integer ids instead of converting them to strings, so v2 records with an int annotator_id fail",
+    "edits": [
+      {
+        "find": "    return str(v) if type(v) is int else _clean(v)",
+        "replace": "    return _clean(v)"
+      }
+    ]
+  }
+]

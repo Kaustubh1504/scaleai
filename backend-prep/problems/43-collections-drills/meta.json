@@ -1,0 +1,10 @@
+{
+  "id": "43",
+  "title": "collections drills",
+  "group": "9. Python fluency",
+  "level": "Easy",
+  "minutes": 10,
+  "daily": false,
+  "tags": ["collections", "Counter", "defaultdict", "deque", "OrderedDict"],
+  "parts": 1
+}

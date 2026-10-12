@@ -1,0 +1,10 @@
+{
+  "id": "02",
+  "title": "Fetch one user safely",
+  "group": "1. HTTP and API basics",
+  "level": "Easy",
+  "minutes": 12,
+  "daily": true,
+  "tags": ["httpx", "errors", "timeouts", "exception-chaining", "validation"],
+  "parts": 1
+}

@@ -1,0 +1,10 @@
+{
+  "id": "30",
+  "title": "Integrity checks across entities",
+  "group": "5. Data cleaning",
+  "level": "Hard",
+  "minutes": 35,
+  "daily": true,
+  "tags": ["validation", "referential-integrity", "duplicates", "datetime", "rules"],
+  "parts": 1
+}

@@ -1,0 +1,10 @@
+{
+  "id": "36",
+  "title": "CSV upload endpoint with row validation",
+  "group": "7. Building a service",
+  "level": "Medium",
+  "minutes": 35,
+  "daily": false,
+  "tags": ["fastapi", "file-upload", "csv", "validation", "persistence"],
+  "parts": 1
+}

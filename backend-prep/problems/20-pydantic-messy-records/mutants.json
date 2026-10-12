@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Strips the email but forgets to lower-case it",
+    "edits": [
+      {
+        "find": "        v = v.strip().lower()\n",
+        "replace": "        v = v.strip()\n"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Lets float ages through to pydantic, so 42.0 is accepted as 42",
+    "edits": [
+      {
+        "find": "        if type(v) is not int:",
+        "replace": "        if type(v) not in (int, float):"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Leaves a joined_at with no offset naive instead of assuming UTC",
+    "edits": [
+      {
+        "find": "return v.replace(tzinfo=timezone.utc) if v.tzinfo is None else",
+        "replace": "return v if v.tzinfo is None else"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Keeps the original offset on joined_at instead of converting it to UTC",
+    "edits": [
+      {
+        "find": "else v.astimezone(timezone.utc)",
+        "replace": "else v"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Lets pydantic coerce a unix timestamp into joined_at instead of requiring an ISO string",
+    "edits": [
+      {
+        "find": "        if not isinstance(v, str):\n            raise ValueError(\"joined_at must be an ISO 8601 string\")",
+        "replace": "        pass"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Doesn't dedupe tags, so \"ner, NER\" keeps both",
+    "edits": [
+      {
+        "find": "        return list(dict.fromkeys(t.strip().lower() for t in v if t.strip()))",
+        "replace": "        return [t.strip().lower() for t in v if t.strip()]"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Reports the last validation error instead of the first failing field",
+    "edits": [
+      {
+        "find": "            first = exc.errors()[0]",
+        "replace": "            first = exc.errors()[-1]"
+      }
+    ]
+  }
+]

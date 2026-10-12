@@ -1,0 +1,10 @@
+{
+  "id": "03",
+  "title": "Search orders with query filters",
+  "group": "1. HTTP and API basics",
+  "level": "Easy",
+  "minutes": 15,
+  "daily": true,
+  "tags": ["httpx", "query-params", "datetime", "timezones", "validation"],
+  "parts": 1
+}

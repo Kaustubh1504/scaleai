@@ -1,0 +1,43 @@
+[
+  {
+    "id": "m1",
+    "bug": "'Repairs' trailing commas with a regex instead of reporting invalid_json",
+    "edits": [{"find": "        obj = json.loads(payload)", "replace": "        obj = json.loads(re.sub(r\",\\s*([}\\]])\", r\"\\1\", payload))"}]
+  },
+  {
+    "id": "m2",
+    "bug": "Accepts a bool as a user id (true becomes 'True')",
+    "edits": [{"find": "type(v) is int or", "replace": "isinstance(v, int) or"}]
+  },
+  {
+    "id": "m3",
+    "bug": "Compares ids before normalizing, so uid 7 and user_id '7' are reported as conflicting",
+    "edits": [
+      {"find": "else str(v) for v in ids}", "replace": "else v for v in ids}"},
+      {"find": "{\"user_id\": ids.pop(),", "replace": "{\"user_id\": str(ids.pop()),"}
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Treats an alias key with a null value as present, so {'uid': null, 'userId': 'b'} is invalid_user_id",
+    "edits": [
+      {"find": "ids = [obj[k] for k in ALIASES if obj.get(k) is not None]", "replace": "ids = [obj[k] for k in ALIASES if k in obj]"},
+      {"find": "    if not ids:\n", "replace": "    if all(v is None for v in ids):\n"}
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Accepts booleans as scores (true becomes 1.0)",
+    "edits": [{"find": "s = str(score).strip()", "replace": "s = str(int(score) if isinstance(score, bool) else score).strip()"}]
+  },
+  {
+    "id": "m6",
+    "bug": "Reports a multi-line fenced block at its first body line instead of the opener's line",
+    "edits": [{"find": "payload, i = \"\\n\".join(lines[i:end]), end + 1", "replace": "payload, i, line_no = \"\\n\".join(lines[i:end]), end + 1, line_no + 1"}]
+  },
+  {
+    "id": "m7",
+    "bug": "On an unclosed fence, reports it but then keeps parsing the remaining lines one by one",
+    "edits": [{"find": "\"unclosed_fence\"})\n                break", "replace": "\"unclosed_fence\"})\n                continue"}]
+  }
+]

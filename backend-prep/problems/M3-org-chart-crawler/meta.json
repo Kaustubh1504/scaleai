@@ -1,0 +1,10 @@
+{
+  "id": "M3",
+  "title": "Org chart crawler",
+  "group": "Mock rounds",
+  "level": "Hard",
+  "minutes": 60,
+  "daily": false,
+  "tags": ["graph crawl", "bfs", "pagination", "token refresh", "rate limits", "checkpointing"],
+  "parts": 3
+}

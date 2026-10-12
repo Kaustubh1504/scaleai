@@ -1,0 +1,1290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backend Prep</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+:root {
+  --bg: #1a1a1a; --panel: #262626; --panel-2: #2f2f2f; --border: #3a3a3a;
+  --text: #eff1f6; --muted: #9ca3af; --faint: #6b7280;
+  --accent: #ffa116; --green: #2cbb5d; --red: #ef4743; --yellow: #ffc01e; --blue: #3b82f6;
+  --easy: #00b8a3; --medium: #ffc01e; --hard: #ff375f;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+  font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; }
+a { color: var(--blue); text-decoration: none; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.hidden { display: none !important; }
+
+/* top bar */
+header { height: 48px; display: flex; align-items: center; gap: 18px; padding: 0 16px;
+  background: var(--panel); border-bottom: 1px solid var(--border); }
+.logo { font-weight: 700; letter-spacing: .2px; display: flex; align-items: center; gap: 8px; }
+.logo b { color: var(--accent); }
+nav a { color: var(--muted); padding: 6px 4px; }
+nav a.active, nav a:hover { color: var(--text); }
+.grow { flex: 1; }
+.pill { background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; color: var(--muted); font-size: 12px; }
+.pill b { color: var(--green); }
+
+/* problem list */
+#list-view { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.stat .n { font-size: 22px; font-weight: 700; }
+.stat .l { color: var(--muted); font-size: 12px; }
+.bar { height: 6px; background: var(--panel-2); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+.bar > span { display: block; height: 100%; background: var(--green); }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; align-items: center; }
+.filters input#q, .filters input#dq, .filters select { background: var(--panel); border: 1px solid var(--border); color: var(--text);
+  border-radius: 8px; padding: 7px 10px; font: inherit; }
+.filters input#q, .filters input#dq { min-width: 220px; flex: 1; }
+.btn { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; }
+.btn:hover { border-color: #555; }
+.btn.primary { background: var(--green); border-color: var(--green); color: #fff; font-weight: 600; }
+.btn.run { background: var(--panel-2); }
+.btn.accent { background: var(--accent); border-color: var(--accent); color: #1a1a1a; font-weight: 600; }
+.btn:disabled { opacity: .55; cursor: progress; }
+.group-title { margin: 22px 0 6px; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .8px; }
+table.problems { width: 100%; border-collapse: collapse; }
+table.problems tr { border-bottom: 1px solid #2a2a2a; }
+table.problems tbody tr:nth-child(odd) { background: #202020; }
+table.problems tbody tr:hover { background: #2b2b2b; cursor: pointer; }
+table.problems td { padding: 9px 10px; vertical-align: middle; }
+td.st { width: 34px; text-align: center; }
+td.id { width: 48px; color: var(--muted); font-family: var(--mono); }
+td.lvl { width: 80px; }
+td.min { width: 60px; color: var(--muted); text-align: right; }
+td.tst { width: 64px; font-size: 12px; white-space: nowrap; }
+.tags { color: var(--faint); font-size: 12px; }
+.lvl-Easy { color: var(--easy); } .lvl-Medium { color: var(--medium); } .lvl-Hard { color: var(--hard); }
+.ok { color: var(--green); } .bad { color: var(--red); } .warn { color: var(--yellow); }
+.star { color: var(--accent); font-size: 12px; margin-left: 6px; }
+
+/* workspace */
+#ws-view { position: absolute; top: 48px; left: 0; right: 0; bottom: 0; display: flex; padding: 8px; gap: 0; }
+.pane { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+#left { width: 44%; }
+#right { flex: 1; display: flex; flex-direction: column; gap: 0; background: none; border: none; }
+.gutter-x { width: 8px; cursor: col-resize; flex: none; }
+.gutter-y { height: 8px; cursor: row-resize; flex: none; }
+.gutter-x:hover, .gutter-y:hover { background: #333; border-radius: 4px; }
+.tabs { display: flex; gap: 2px; align-items: center; padding: 0 8px; height: 38px; border-bottom: 1px solid var(--border); background: var(--panel-2); flex: none; }
+.tab { padding: 6px 10px; border-radius: 6px; color: var(--muted); background: none; border: none; }
+.tab.active { color: var(--text); background: #3a3a3a; }
+.scroll { overflow: auto; flex: 1; }
+.md { padding: 18px 22px 40px; }
+.md h1 { font-size: 20px; margin: 0 0 6px; }
+.md h2 { font-size: 15px; margin: 22px 0 8px; }
+.md h3 { font-size: 14px; }
+.md p, .md li { color: #dfe2e8; }
+.md code { font-family: var(--mono); font-size: 12.5px; background: #333; padding: 1px 5px; border-radius: 4px; }
+.md pre { background: #1e1e1e; border: 1px solid var(--border); border-radius: 8px; padding: 12px; overflow: auto; }
+.md pre code { background: none; padding: 0; }
+.md table { border-collapse: collapse; margin: 8px 0; font-size: 13px; }
+.md th, .md td { border: 1px solid var(--border); padding: 5px 9px; text-align: left; vertical-align: top; }
+.md th { background: var(--panel-2); }
+.md details { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
+.md details summary { cursor: pointer; color: var(--accent); }
+.meta-row { display: flex; gap: 10px; align-items: center; margin: 4px 0 14px; flex-wrap: wrap; }
+.chip { font-size: 12px; padding: 2px 9px; border-radius: 999px; background: #333; color: var(--muted); }
+.locked { border: 1px dashed var(--border); border-radius: 10px; padding: 18px; text-align: center; color: var(--muted); margin: 18px 0; }
+.part-sep { border: none; border-top: 1px solid var(--border); margin: 28px 0 10px; }
+
+#editor-pane { flex: 1; min-height: 120px; }
+.toolbar { display: flex; gap: 8px; align-items: center; padding: 0 8px; height: 40px; border-bottom: 1px solid var(--border); background: var(--panel-2); flex: none; }
+.file { font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
+.toolbar .btn, .toolbar .tab { white-space: nowrap; flex: none; }
+.toolbar .save-state { white-space: nowrap; flex: none; }
+.save-state { font-size: 12px; color: var(--faint); }
+#editor-host { flex: 1; min-height: 0; position: relative; }
+.CodeMirror { position: absolute !important; inset: 0; height: auto !important; font-family: var(--mono); font-size: 13.5px; }
+.cm-s-material-darker.CodeMirror { background: #1e1e1e; }
+.cm-s-material-darker .CodeMirror-gutters { background: #1e1e1e; }
+textarea.fallback { position: absolute; inset: 0; width: 100%; height: 100%; background: #1e1e1e; color: var(--text);
+  font-family: var(--mono); font-size: 13.5px; border: none; padding: 10px; resize: none; tab-size: 4; }
+
+#console { height: 38%; min-height: 60px; }
+.console-body { padding: 14px 18px; }
+.verdict { font-size: 20px; font-weight: 700; }
+.verdict.ok { color: var(--green); } .verdict.bad { color: var(--red); } .verdict.warn { color: var(--yellow); }
+.sub { color: var(--muted); margin: 2px 0 12px; }
+.parts { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.part-chip { padding: 4px 10px; border-radius: 6px; background: #333; font-size: 12px; }
+.case { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; overflow: hidden; }
+.case-head { display: flex; gap: 8px; padding: 7px 10px; align-items: baseline; cursor: pointer; }
+.case-head .nm { flex: 1; }
+.case-head .dur { color: var(--faint); font-size: 12px; font-family: var(--mono); }
+.case-body { padding: 0 10px 10px 30px; }
+.case-body .short { color: var(--red); font-family: var(--mono); font-size: 12.5px; white-space: pre-wrap; margin-bottom: 6px; }
+pre.out { background: #1e1e1e; border: 1px solid var(--border); border-radius: 6px; padding: 10px; font-family: var(--mono);
+  font-size: 12px; white-space: pre-wrap; word-break: break-word; margin: 6px 0; max-height: 380px; overflow: auto; }
+.empty { color: var(--faint); padding: 18px; }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #555; border-top-color: var(--accent);
+  border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.timer { font-family: var(--mono); font-size: 13px; padding: 4px 10px; border-radius: 6px; background: #333; border: 1px solid var(--border); }
+.timer.running { color: var(--accent); }
+.timer.over { color: var(--red); }
+kbd { font-family: var(--mono); font-size: 11px; background: #333; border: 1px solid #444; border-radius: 4px; padding: 0 4px; color: var(--muted); }
+
+/* expected vs your output */
+.cmp-diffs { margin: 4px 0 8px; padding-left: 18px; font-family: var(--mono); font-size: 12px; color: #e5c07b; }
+.cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0; }
+.cmp-h { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin-bottom: 3px; }
+.cmp pre { margin: 0; background: #1e1e1e; border: 1px solid var(--border); border-radius: 6px; padding: 8px 0; font-family: var(--mono);
+  font-size: 12px; max-height: 340px; overflow: auto; white-space: pre; }
+.cmp pre span { display: block; padding: 0 10px; min-height: 1.4em; }
+.cmp .exp span.x { background: rgba(44, 187, 93, .14); }
+.cmp .got span.x { background: rgba(239, 71, 67, .16); }
+@media (max-width: 900px) { .cmp { grid-template-columns: 1fr; } }
+
+/* debug */
+#dbg-view { position: absolute; top: 48px; left: 0; right: 0; bottom: 0; display: flex; padding: 8px; }
+#dbg-left { width: 36%; }
+#dbg-right { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+#dbg-editor-pane { flex: 1; min-height: 140px; }
+#dbg-console { height: 36%; min-height: 60px; }
+.dbg-body { flex: 1; display: flex; min-height: 0; }
+#dbg-files { width: 210px; flex: none; overflow: auto; border-right: 1px solid var(--border); padding: 6px 0; font-family: var(--mono); font-size: 12px; }
+#dbg-files .f { padding: 3px 10px; cursor: pointer; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#dbg-files .f:hover { background: #2b2b2b; color: var(--text); }
+#dbg-files .f.active { background: #353535; color: var(--text); }
+#dbg-files .f .dot { color: var(--accent); }
+#dbg-files .dir { padding: 8px 10px 2px; color: var(--faint); font-size: 11px; text-transform: uppercase; letter-spacing: .6px; }
+#dbg-editor-host { flex: 1; min-width: 0; position: relative; }
+.badge { font-size: 10px; padding: 0 5px; border-radius: 4px; margin-left: 4px; vertical-align: 1px; }
+.badge.v { background: #1f3b2b; color: var(--green); }
+.badge.l { background: #333; color: var(--faint); }
+textarea.notes { width: 100%; min-height: 60vh; background: #1e1e1e; color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px; font-family: var(--mono); font-size: 13px; resize: vertical; }
+.qa { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; padding: 10px 12px; }
+.qa summary { cursor: pointer; }
+.keybug { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.keybug h3 { margin: 0 0 6px; font-size: 14px; }
+.warnbox { border: 1px solid #6b4f12; background: #2b2410; color: var(--yellow); border-radius: 8px; padding: 8px 12px; margin: 8px 0; font-size: 13px; }
+.chipbtn { font-size: 12px; padding: 4px 9px; }
+.weak td { padding: 4px 10px; }
+
+/* flashcards */
+#cards-view { max-width: 760px; margin: 0 auto; padding: 28px 16px 60px; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 26px 28px; min-height: 260px; }
+.card .topic { color: var(--accent); font-size: 12px; text-transform: uppercase; letter-spacing: .8px; }
+.card .q { font-size: 19px; font-weight: 600; margin: 10px 0 18px; }
+.card .a { border-top: 1px solid var(--border); padding-top: 14px; color: #dfe2e8; }
+.card-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+
+@media (max-width: 900px) {
+  #dbg-view { flex-direction: column; overflow: auto; }
+  #dbg-left { width: auto !important; height: 50vh; flex: none; }
+  #dbg-right { min-height: 85vh; }
+  #dbg-files { width: 140px; }
+  #ws-view { flex-direction: column; overflow: auto; }
+  #left { width: auto !important; height: 50vh; flex: none; }
+  .gutter-x { display: none; }
+  #right { min-height: 80vh; }
+  td.tagcol, td.min { display: none; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><span>⌁</span><span>backend<b>prep</b></span></div>
+  <nav><a href="#/" id="nav-problems">Problems</a> &nbsp; <a href="#/debug" id="nav-debug">Debug</a> &nbsp; <a href="#/cards" id="nav-cards">Flashcards</a></nav>
+  <div class="grow"></div>
+  <span id="ws-title" class="file"></span>
+  <button id="dbg-timer" class="timer hidden" title="Click to start / pause; double-click to reset">⏱ 00:00</button>
+  <button id="timer" class="timer hidden" title="Click to start / pause; double-click to reset">⏱ 00:00</button>
+  <span class="pill" id="solved-pill">…</span>
+</header>
+
+<!-- ------------------------------------------------------------ list -->
+<main id="list-view" class="hidden">
+  <div class="stats" id="stats"></div>
+  <div class="filters">
+    <input id="q" placeholder="Search problems or tags…" autocomplete="off">
+    <select id="f-group"><option value="">All groups</option></select>
+    <select id="f-level"><option value="">Any level</option><option>Easy</option><option>Medium</option><option>Hard</option></select>
+    <select id="f-status"><option value="">Any status</option><option value="todo">To do</option><option value="attempted">Attempted</option><option value="solved">Solved</option><option value="tests-todo">🧪 Tests not done</option></select>
+    <label class="pill" style="cursor:pointer"><input type="checkbox" id="f-daily" style="vertical-align:-2px"> ★ daily only</label>
+    <button class="btn accent" id="pick">Pick one for me</button>
+  </div>
+  <div id="groups"></div>
+</main>
+
+<!-- ------------------------------------------------------- workspace -->
+<section id="ws-view" class="hidden">
+  <div class="pane" id="left">
+    <div class="tabs">
+      <button class="tab active" data-ltab="desc">Description</button>
+      <button class="tab" data-ltab="sol">Solution</button>
+    </div>
+    <div class="scroll"><div class="md" id="desc"></div><div class="md hidden" id="sol"></div></div>
+  </div>
+  <div class="gutter-x" id="gx"></div>
+  <div id="right">
+    <div class="pane" id="editor-pane">
+      <div class="toolbar">
+        <button class="tab active" data-ftab="solution" id="ftab-solution">Solution</button>
+        <button class="tab" data-ftab="tests" id="ftab-tests" title="Write the tests: graded against hidden buggy versions">🧪 Tests</button>
+        <span class="file" id="file-name" style="margin-left:6px"></span>
+        <span class="save-state" id="save-state"></span>
+        <div class="grow"></div>
+        <button class="btn" id="btn-reset" title="Restore the starter code">Reset</button>
+        <button class="btn run" id="btn-run" title="Run your file's __main__ block (Ctrl/⌘ + ')">▶ Run</button>
+        <button class="btn primary" id="btn-submit" title="Run the checks (Ctrl/⌘ + Enter)">Submit</button>
+      </div>
+      <div id="editor-host"></div>
+    </div>
+    <div class="gutter-y" id="gy"></div>
+    <div class="pane" id="console">
+      <div class="tabs">
+        <button class="tab active" data-ctab="result">Test Result</button>
+        <button class="tab" data-ctab="output">Output</button>
+        <div class="grow"></div>
+        <span class="save-state"><kbd>⌘/Ctrl</kbd>+<kbd>Enter</kbd> submit · <kbd>⌘/Ctrl</kbd>+<kbd>'</kbd> run · <kbd>⌘/Ctrl</kbd>+<kbd>S</kbd> save</span>
+      </div>
+      <div class="scroll">
+        <div class="console-body" id="result"><div class="empty">Submit to run the checks.</div></div>
+        <div class="console-body hidden" id="output"><div class="empty">Run executes your file's <code>if __name__ == "__main__":</code> block. Use it to print raw API responses and data first.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------ debug list -->
+<main id="dbg-list-view" class="hidden" style="max-width:1100px;margin:0 auto;padding:24px 16px 60px">
+  <p class="sub" style="margin-top:0">The Debugging Practical: an unfamiliar repo, a messy dataset, failing tests numbered
+  1 → 2 → 3. Find and fix every bug, and be ready to explain where and why each one fails. MINI sets have 3 bugs (30 min),
+  FULL sets have 6 (60 min). Your copy lives in <code>debug-workspace/</code>; the original sets are never touched.</p>
+  <div class="stats" id="dbg-stats"></div>
+  <div id="dbg-weak"></div>
+  <div class="filters">
+    <input id="dq" placeholder="Search sets or domains…" autocomplete="off">
+    <select id="d-length"><option value="">MINI + FULL</option><option value="MINI">MINI (3 bugs, 30 min)</option><option value="FULL">FULL (6 bugs, 60 min)</option></select>
+    <select id="d-diff"><option value="">Any difficulty</option></select>
+    <select id="d-domain"><option value="">All domains</option></select>
+    <select id="d-status"><option value="">Any status</option><option value="todo">To do</option><option value="attempted">In progress</option><option value="solved">Solved</option></select>
+    <button class="btn accent" id="d-pick">Pick one for me</button>
+  </div>
+  <table class="problems"><tbody id="dbg-rows"></tbody></table>
+</main>
+
+<!-- ------------------------------------------------- debug workspace -->
+<section id="dbg-view" class="hidden">
+  <div class="pane" id="dbg-left">
+    <div class="tabs">
+      <button class="tab active" data-dtab="brief">Brief</button>
+      <button class="tab" data-dtab="notes">My notes</button>
+      <button class="tab" data-dtab="ask">Ask about the code</button>
+      <button class="tab" data-dtab="key">Answer key</button>
+    </div>
+    <div class="scroll">
+      <div class="md" id="dbg-brief"></div>
+      <div class="md hidden" id="dbg-notes"></div>
+      <div class="md hidden" id="dbg-ask"></div>
+      <div class="md hidden" id="dbg-key"></div>
+    </div>
+  </div>
+  <div class="gutter-x" id="dgx"></div>
+  <div id="dbg-right">
+    <div class="pane" id="dbg-editor-pane">
+      <div class="toolbar">
+        <span class="file" id="dbg-file-name"></span>
+        <span class="save-state" id="dbg-save-state"></span>
+        <div class="grow"></div>
+        <button class="btn chipbtn" id="dbg-reset" title="Throw away your changes and start from the original buggy repo">Reset</button>
+        <button class="btn chipbtn" id="dbg-diff" title="Your changes vs the original">Diff</button>
+        <button class="btn chipbtn" id="dbg-hint" title="A nudge for the next unfixed bug. Hints get more specific.">💡 Hint</button>
+        <button class="btn chipbtn run" id="dbg-main" title="Run main.py">▶ main.py</button>
+        <span id="dbg-test-btns" style="display:flex;gap:6px"></span>
+        <button class="btn primary chipbtn" id="dbg-all" title="Run every test (Ctrl/⌘ + Enter)">Run all tests</button>
+      </div>
+      <div class="dbg-body"><div id="dbg-files"></div><div id="dbg-editor-host"></div></div>
+    </div>
+    <div class="gutter-y" id="dgy"></div>
+    <div class="pane" id="dbg-console">
+      <div class="tabs">
+        <button class="tab active" data-dctab="results">Results</button>
+        <button class="tab" data-dctab="output">Output</button>
+        <button class="tab" data-dctab="diff">Diff</button>
+        <div class="grow"></div>
+        <span class="save-state"><kbd>⌘/Ctrl</kbd>+<kbd>Enter</kbd> all tests · <kbd>⌘/Ctrl</kbd>+<kbd>S</kbd> save</span>
+      </div>
+      <div class="scroll">
+        <div class="console-body" id="dbg-results"><div class="empty">Run the tests to see what fails. Start with Test 1.</div></div>
+        <div class="console-body hidden" id="dbg-output"><div class="empty">▶ main.py prints the report: often the fastest way to see what's wrong.</div></div>
+        <div class="console-body hidden" id="dbg-diffout"><div class="empty">Diff shows your changes against the original buggy repo.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------ flashcards -->
+<main id="cards-view" class="hidden">
+  <div class="filters">
+    <select id="c-topic"><option value="">All topics</option></select>
+    <select id="c-mode"><option value="due">Not yet known</option><option value="all">All cards</option></select>
+    <span class="pill" id="c-count"></span>
+    <div class="grow"></div>
+    <button class="btn" id="c-shuffle">Shuffle</button>
+  </div>
+  <div class="card" id="card"></div>
+  <div class="card-actions">
+    <button class="btn" id="c-prev">← Prev</button>
+    <button class="btn accent" id="c-show">Show answer <kbd>space</kbd></button>
+    <button class="btn" id="c-again">Again</button>
+    <button class="btn primary" id="c-known">I know this</button>
+    <div class="grow"></div>
+    <button class="btn" id="c-next">Next →</button>
+  </div>
+  <p class="sub" style="margin-top:14px">Answer out loud first, as you would in the interview, then reveal the answer.</p>
+</main>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+async function api(method, path, body) {
+  const r = await fetch(path, { method, headers: body ? {"Content-Type": "application/json"} : {}, body: body ? JSON.stringify(body) : undefined });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.statusText);
+  return r.json();
+}
+function md(text) {
+  if (!window.marked) return `<pre>${esc(text)}</pre>`;
+  const html = marked.parse(text, { gfm: true });
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  if (window.hljs) div.querySelectorAll("pre code").forEach(el => { try { hljs.highlightElement(el); } catch {} });
+  return div.innerHTML;
+}
+
+let problems = [];
+let current = null;     // {meta, parts, ...}
+let editor = null;      // CodeMirror or textarea adapter
+let dirty = false, saveTimer = null, lastSaved = { solution: null, tests: null }, mode = "solution";
+
+// ------------------------------------------------------------------ routing
+window.addEventListener("hashchange", route);
+async function route() {
+  const h = location.hash || "#/";
+  const m = h.match(/^#\/p\/([^/]+)(?:\/tests)?$/);
+  const dm = h.match(/^#\/debug\/(set-\d+)$/);
+  const isDebug = h.startsWith("#/debug");
+  $("#list-view").classList.toggle("hidden", !(h === "#/" || h === "#"));
+  $("#ws-view").classList.toggle("hidden", !m);
+  $("#dbg-list-view").classList.toggle("hidden", h !== "#/debug");
+  $("#dbg-view").classList.toggle("hidden", !dm);
+  $("#cards-view").classList.toggle("hidden", h !== "#/cards");
+  $("#nav-problems").classList.toggle("active", !h.startsWith("#/cards") && !isDebug);
+  $("#nav-debug").classList.toggle("active", isDebug);
+  $("#nav-cards").classList.toggle("active", h.startsWith("#/cards"));
+  $("#timer").classList.toggle("hidden", !m);
+  $("#dbg-timer").classList.toggle("hidden", !dm);
+  $("#ws-title").textContent = "";
+  if (!dm && dbg.sid) await dbgLeave();
+  if (dm) { if (current && dirty) await save(); current = null; return dbgOpen(dm[1]); }
+  if (m) return openProblem(decodeURIComponent(m[1]));
+  if (current && dirty) await save();
+  current = null;
+  if (h === "#/debug") return dbgList();
+  if (h === "#/cards") return showCards();
+  await loadList();
+}
+
+// ------------------------------------------------------------- problem list
+async function loadList() {
+  problems = await api("GET", "/api/problems");
+  const groups = [...new Set(problems.map(p => p.group))];
+  const sel = $("#f-group");
+  if (sel.options.length === 1) groups.forEach(g => sel.add(new Option(g, g)));
+  renderStats();
+  renderList();
+}
+function status(p) { return p.progress?.solved ? "solved" : p.progress?.submissions ? "attempted" : "todo"; }
+function testsStatus(p) { const t = p.progress?.tests; return !p.tests_mode ? "none" : t?.solved ? "solved" : t ? "attempted" : "todo"; }
+function renderStats() {
+  const solved = problems.filter(p => status(p) === "solved").length;
+  $("#solved-pill").innerHTML = `<b>${solved}</b> / ${problems.length} solved`;
+  const by = lvl => { const all = problems.filter(p => p.level === lvl); return [all.filter(p => status(p) === "solved").length, all.length]; };
+  const daily = problems.filter(p => p.daily);
+  const dSolved = daily.filter(p => status(p) === "solved").length;
+  const mocks = problems.filter(p => p.group === "Mock rounds");
+  const cell = (n, l, a, b, color) => `<div class="stat"><div class="n" style="color:${color||"inherit"}">${n}</div><div class="l">${l}</div><div class="bar"><span style="width:${b ? 100*a/b : 0}%"></span></div></div>`;
+  const [e1,e2] = by("Easy"), [m1,m2] = by("Medium"), [h1,h2] = by("Hard");
+  $("#stats").innerHTML =
+    cell(`${solved}/${problems.length}`, "Solved", solved, problems.length) +
+    cell(`${dSolved}/${daily.length}`, "★ Daily set (groups 1–5, 8)", dSolved, daily.length, "var(--accent)") +
+    cell(`${e1}/${e2}`, "Easy", e1, e2, "var(--easy)") +
+    cell(`${m1}/${m2}`, "Medium", m1, m2, "var(--medium)") +
+    cell(`${h1}/${h2}`, "Hard", h1, h2, "var(--hard)") +
+    cell(`${mocks.filter(p => status(p) === "solved").length}/${mocks.length}`, "Mock rounds (60 min)", mocks.filter(p => status(p) === "solved").length, mocks.length) +
+    (() => { const tp = problems.filter(p => p.tests_mode), ts = tp.filter(p => testsStatus(p) === "solved").length;
+             return cell(`${ts}/${tp.length}`, "🧪 Test suites (all bugs caught)", ts, tp.length, "var(--blue)"); })();
+}
+function filtered() {
+  const q = $("#q").value.trim().toLowerCase(), g = $("#f-group").value, l = $("#f-level").value,
+        s = $("#f-status").value, d = $("#f-daily").checked;
+  return problems.filter(p =>
+    (!q || (p.id + " " + p.title + " " + p.tags.join(" ")).toLowerCase().includes(q)) &&
+    (!g || p.group === g) && (!l || p.level === l) && (!s || (s === "tests-todo" ? p.tests_mode && testsStatus(p) !== "solved" : status(p) === s)) && (!d || p.daily));
+}
+function renderList() {
+  const items = filtered();
+  const byGroup = {};
+  items.forEach(p => (byGroup[p.group] ||= []).push(p));
+  $("#groups").innerHTML = Object.entries(byGroup).map(([g, ps]) => `
+    <div class="group-title">${esc(g)}</div>
+    <table class="problems"><tbody>${ps.map(p => {
+      const st = status(p);
+      const icon = st === "solved" ? '<span class="ok">✔</span>' : st === "attempted" ? '<span class="warn" title="attempted">●</span>' : "";
+      const score = p.progress?.submissions && !p.progress.solved && p.progress.total ? `<span class="tags"> · best ${p.progress.best}/${p.progress.total}</span>` : "";
+      const ts = testsStatus(p), t = p.progress?.tests;
+      const tests = ts === "none" ? "" : ts === "solved" ? '<span class="ok">🧪 ✔</span>'
+        : ts === "attempted" ? `<span class="warn">🧪 ${t.best_caught}/${t.total}</span>` : '<span class="tags">🧪</span>';
+      return `<tr data-id="${esc(p.id)}">
+        <td class="st">${icon}</td><td class="id">${esc(p.id)}</td>
+        <td>${esc(p.title)}${p.daily ? '<span class="star" title="daily practice">★</span>' : ""}${score}</td>
+        <td class="tagcol tags">${esc(p.tags.slice(0, 3).join(" · "))}</td>
+        <td class="tst" data-tests="${esc(p.id)}" title="Write the tests: bugs caught">${tests}</td>
+        <td class="lvl lvl-${esc(p.level)}">${esc(p.level)}</td><td class="min">~${esc(p.minutes)}m</td></tr>`;
+    }).join("")}</tbody></table>`).join("") || '<div class="empty">No problems match.</div>';
+  $$("#groups tr[data-id]").forEach(tr => tr.onclick = e => {
+    const t = e.target.closest("[data-tests]");
+    location.hash = "#/p/" + tr.dataset.id + (t && t.textContent.trim() ? "/tests" : "");
+  });
+}
+["#q", "#f-group", "#f-level", "#f-status", "#f-daily"].forEach(s => $(s).addEventListener("input", renderList));
+$("#pick").onclick = () => {
+  const pool = filtered().filter(p => status(p) !== "solved");
+  const pref = pool.filter(p => p.daily);
+  const from = pref.length ? pref : pool;
+  if (!from.length) return alert("Everything here is solved. Nice.");
+  location.hash = "#/p/" + from[Math.floor(Math.random() * from.length)].id;
+};
+
+// ---------------------------------------------------------------- workspace
+// Two buffers per problem: "solution" (workspace/<dir>.py) and "tests"
+// (workspace/<dir>_test.py). Run / Submit act on whichever is showing.
+function makeEditor() {
+  const host = $("#editor-host");
+  if (window.CodeMirror) {
+    const cm = CodeMirror(host, {
+      mode: "python", theme: "material-darker", lineNumbers: true, indentUnit: 4, tabSize: 4,
+      indentWithTabs: false, matchBrackets: true, autoCloseBrackets: true, styleActiveLine: true,
+      extraKeys: {
+        "Tab": c => c.somethingSelected() ? c.indentSelection("add") : c.replaceSelection("    ", "end"),
+        "Shift-Tab": c => c.indentSelection("subtract"),
+        "Cmd-/": "toggleComment", "Ctrl-/": "toggleComment",
+        "Cmd-Enter": () => submit(), "Ctrl-Enter": () => submit(),
+        "Cmd-'": () => run(), "Ctrl-'": () => run(),
+        "Cmd-S": () => save(), "Ctrl-S": () => save(),
+      },
+    });
+    cm.on("change", onEdit);
+    const docs = {};
+    let active = "solution";
+    return {
+      load(kind, code) { docs[kind] = CodeMirror.Doc(code ?? "", "python"); if (kind === active) cm.swapDoc(docs[kind]); },
+      show(kind) { active = kind; if (docs[kind]) cm.swapDoc(docs[kind]); },
+      get(kind = active) { return docs[kind] ? docs[kind].getValue() : ""; },
+      set(v, kind = active) { docs[kind] = CodeMirror.Doc(v, "python"); if (kind === active) cm.swapDoc(docs[kind]); },
+      refresh: () => cm.refresh(), focus: () => cm.focus(),
+    };
+  }
+  const ta = document.createElement("textarea");
+  ta.className = "fallback"; ta.spellcheck = false;
+  ta.addEventListener("input", onEdit);
+  ta.addEventListener("keydown", e => {
+    if (e.key === "Tab") { e.preventDefault(); document.execCommand("insertText", false, "    "); }
+  });
+  host.appendChild(ta);
+  const texts = {};
+  let active = "solution";
+  return {
+    load(kind, code) { texts[kind] = code ?? ""; if (kind === active) ta.value = texts[kind]; },
+    show(kind) { texts[active] = ta.value; active = kind; ta.value = texts[kind] ?? ""; },
+    get(kind = active) { return kind === active ? ta.value : (texts[kind] ?? ""); },
+    set(v, kind = active) { texts[kind] = v; if (kind === active) ta.value = v; },
+    refresh() {}, focus: () => ta.focus(),
+  };
+}
+const isDirty = kind => current && lastSaved[kind] !== null && editor.get(kind) !== lastSaved[kind];
+function paintSaveState(text) {
+  $("#save-state").textContent = text || (isDirty(mode) ? "unsaved" : "saved");
+}
+function onEdit() {
+  if (!current) return;
+  dirty = isDirty("solution") || isDirty("tests");
+  paintSaveState();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(save, 900);
+}
+async function save() {
+  if (!current) return;
+  for (const kind of ["solution", "tests"]) {
+    if (!isDirty(kind)) continue;
+    const code = editor.get(kind);
+    await api("PUT", `/api/problems/${current.meta.id}/code`, { code, kind });
+    lastSaved[kind] = code;
+  }
+  dirty = isDirty("solution") || isDirty("tests");
+  paintSaveState();
+}
+function markSaved(kind) { lastSaved[kind] = editor.get(kind); dirty = isDirty("solution") || isDirty("tests"); paintSaveState(); }
+
+function setMode(kind) {
+  if (kind === "tests" && !current?.tests_mode) kind = "solution";
+  mode = kind;
+  editor.show(kind);
+  $$("[data-ftab]").forEach(b => b.classList.toggle("active", b.dataset.ftab === kind));
+  const fname = kind === "tests" ? current.tests_file : current.file;
+  $("#file-name").textContent = fname.replace(/^workspace\//, "");
+  $("#file-name").title = fname;
+  $("#btn-run").textContent = kind === "tests" ? "▶ Run on mine" : "▶ Run";
+  $("#btn-run").title = kind === "tests" ? "Run your tests against your own solution (Ctrl/⌘ + ')" : "Run your file's __main__ block (Ctrl/⌘ + ')";
+  $("#btn-submit").textContent = kind === "tests" ? "Submit tests" : "Submit";
+  $("#btn-submit").title = kind === "tests" ? "Grade your tests against hidden buggy versions (Ctrl/⌘ + Enter)" : "Run the checks (Ctrl/⌘ + Enter)";
+  paintSaveState();
+  const last = store.get(`last-result:${current.meta.id}:${kind}`, null);
+  if (last) (kind === "tests" ? renderTestsResult(last) : renderResult(last));
+  else $("#result").innerHTML = kind === "tests" ? testsIntro() : '<div class="empty">Submit to run the checks.</div>';
+  setConsoleTab("result");
+  setTimeout(() => { editor.refresh(); editor.focus(); }, 0);
+}
+$$("[data-ftab]").forEach(b => b.onclick = () => setMode(b.dataset.ftab));
+
+function testsIntro() {
+  return `<div class="sub" style="max-width:720px">
+    <div class="verdict">🧪 Write the tests</div>
+    <p>Interviewers grade your tests as part of the deliverable. Write pytest tests for the behaviour in the
+    statement. The <code>sol</code> fixture is the module under test.</p>
+    <ul>
+      <li><b>Run on mine</b>: your tests against <i>your</i> solution.</li>
+      <li><b>Submit tests</b>: your tests against the reference solution (they must all pass) and against
+      hidden versions with realistic bugs planted. Each bug you catch scores.</li>
+    </ul>
+    <p>Cover the happy path, every edge case the statement names, ordering and tie-breaks, and every failure
+    mode. Fixtures: <code>sol</code>, <code>clock</code>, <code>tmp_path</code>, <code>monkeypatch</code>, <code>caplog</code>.</p>
+    <p>Mock APIs record every request: <code>api.log</code> / <code>api.calls("GET", "/path")</code> give calls with
+    <code>.params</code>, <code>.header(name)</code>, <code>.json()</code>; <code>api.script("GET /path", [503, "429:2", "timeout"])</code>
+    injects failures; <code>clock.sleeps</code> lists every wait.</p></div>`;
+}
+
+async function openProblem(id) {
+  if (current && dirty) await save();
+  if (!editor) editor = makeEditor();
+  if (!problems.length) api("GET", "/api/problems").then(ps => { problems = ps; renderStats(); }).catch(() => {});
+  const data = await api("GET", `/api/problems/${encodeURIComponent(id)}`);
+  current = data;
+  lastSaved = { solution: data.code, tests: data.tests_mode ? data.tests_code : null };
+  editor.load("solution", data.code);
+  if (data.tests_mode) editor.load("tests", data.tests_code);
+  dirty = false;
+  $("#ftab-tests").classList.toggle("hidden", !data.tests_mode);
+  $("#ws-title").textContent = `${data.meta.id}. ${data.meta.title}`;
+  document.title = `${data.meta.id}. ${data.meta.title} · Backend Prep`;
+  renderDesc();
+  $("#sol").innerHTML = "";
+  setLeftTab("desc");
+  $("#output").innerHTML = '<div class="empty">Run executes your file\'s <code>if __name__ == "__main__":</code> block. Use it to print raw API responses and data first.</div>';
+  setMode(location.hash.endsWith("/tests") && data.tests_mode ? "tests" : "solution");
+  timerLoad();
+}
+
+function unlockedParts() {
+  const meta = current.meta;
+  if (meta.parts <= 1) return 1;
+  if (store.get("unlock-all:" + meta.id, false)) return meta.parts;
+  const passed = new Set(current.progress?.parts_passed || []);
+  let n = 1;
+  while (n < meta.parts && passed.has(n)) n++;
+  return n;
+}
+function renderDesc() {
+  const meta = current.meta;
+  const t = current.progress?.tests;
+  const head = `<div class="meta-row"><span class="lvl-${esc(meta.level)}">${esc(meta.level)}</span>
+    <span class="chip">${esc(meta.group)}</span><span class="chip">~${esc(meta.minutes)} min</span>
+    ${meta.tags.map(t => `<span class="chip">${esc(t)}</span>`).join("")}
+    ${current.progress?.solved ? '<span class="chip ok">✔ Solved</span>' : ""}
+    ${t?.solved ? '<span class="chip ok">🧪 All bugs caught</span>' : t ? `<span class="chip">🧪 ${t.best_caught}/${t.total} bugs</span>` : ""}</div>`;
+  const parts = current.parts;
+  const open = unlockedParts();
+  let html = "";
+  parts.forEach((chunk, i) => {
+    if (i >= open) return;
+    if (i > 0) html += '<hr class="part-sep">';
+    html += md(chunk);
+  });
+  if (open < parts.length) {
+    html += `<div class="locked">🔒 Part ${open + 1} unlocks when every Part ${open} check passes.<br><br>
+      <button class="btn" id="unlock-all">Show all parts anyway</button></div>`;
+  }
+  $("#desc").innerHTML = html.replace(/(<h1[^>]*>.*?<\/h1>)/, `$1${head}`);
+  const u = $("#unlock-all");
+  if (u) u.onclick = () => { store.set("unlock-all:" + meta.id, true); renderDesc(); };
+}
+
+function setLeftTab(t) {
+  $$("[data-ltab]").forEach(b => b.classList.toggle("active", b.dataset.ltab === t));
+  $("#desc").classList.toggle("hidden", t !== "desc");
+  $("#sol").classList.toggle("hidden", t !== "sol");
+  if (t === "sol" && !$("#sol").innerHTML) {
+    const solved = current.progress?.solved;
+    const tSolved = current.progress?.tests?.solved;
+    $("#sol").innerHTML = `<h2>Reference solution</h2>
+      <p class="sub">${solved ? "You've solved this. Compare approaches." : "Try it first. In the interview there's no answer key. Reading the solution after a real attempt teaches far more than reading it first."}</p>
+      <button class="btn ${solved ? "primary" : ""}" id="reveal">Reveal solution</button>
+      <div id="reveal-code"></div>
+      ${current.tests_mode ? `<h2 style="margin-top:28px">Reference tests</h2>
+      <p class="sub">The official test suite: a model answer for the 🧪 Tests exercise.</p>
+      <button class="btn ${tSolved ? "primary" : ""}" id="reveal-tests">Reveal tests</button><div id="reveal-tests-code"></div>` : ""}`;
+    const reveal = (btn, solvedFlag, url, target) => {
+      $(btn).onclick = async () => {
+        if (!solvedFlag && !confirm("Reveal before solving it yourself?")) return;
+        const { code } = await api("GET", url);
+        $(target).innerHTML = `<pre><code class="language-python">${esc(code)}</code></pre>`;
+        if (window.hljs) $$(`${target} pre code`).forEach(el => hljs.highlightElement(el));
+        $(btn).remove();
+      };
+    };
+    reveal("#reveal", solved, `/api/problems/${current.meta.id}/solution`, "#reveal-code");
+    if (current.tests_mode) reveal("#reveal-tests", tSolved, `/api/problems/${current.meta.id}/tests/solution`, "#reveal-tests-code");
+  }
+}
+$$("[data-ltab]").forEach(b => b.onclick = () => setLeftTab(b.dataset.ltab));
+function setConsoleTab(t) {
+  $$("[data-ctab]").forEach(b => b.classList.toggle("active", b.dataset.ctab === t));
+  $("#result").classList.toggle("hidden", t !== "result");
+  $("#output").classList.toggle("hidden", t !== "output");
+}
+$$("[data-ctab]").forEach(b => b.onclick = () => setConsoleTab(b.dataset.ctab));
+
+function busy(on) { ["#btn-run", "#btn-submit", "#btn-reset"].forEach(s => $(s).disabled = on); }
+function payload() { return { code: editor.get("solution") }; }
+async function run() {
+  if (!current || $("#btn-run").disabled) return;
+  if (mode === "tests") return runTests();
+  busy(true); setConsoleTab("output");
+  $("#output").innerHTML = '<div class="sub"><span class="spinner"></span>Running…</div>';
+  try {
+    const r = await api("POST", `/api/problems/${current.meta.id}/run`, payload());
+    markSaved("solution");
+    $("#output").innerHTML = `<div class="sub">exit code ${r.exit_code} · ${r.elapsed}s</div>
+      ${r.stdout ? `<pre class="out">${esc(r.stdout)}</pre>` : ""}
+      ${r.stderr ? `<pre class="out bad">${esc(r.stderr)}</pre>` : ""}
+      ${!r.stdout && !r.stderr ? '<div class="empty">(no output)</div>' : ""}`;
+  } catch (e) { $("#output").innerHTML = `<pre class="out bad">${esc(e.message)}</pre>`; }
+  busy(false);
+}
+async function submit() {
+  if (!current || $("#btn-submit").disabled) return;
+  if (mode === "tests") return submitTests();
+  busy(true); setConsoleTab("result");
+  $("#result").innerHTML = '<div class="sub"><span class="spinner"></span>Checking…</div>';
+  try {
+    const r = await api("POST", `/api/problems/${current.meta.id}/submit`, payload());
+    markSaved("solution");
+    const before = unlockedParts();
+    current.progress = r.progress;
+    syncProgress(r.progress);
+    store.set(`last-result:${current.meta.id}:solution`, r);
+    renderResult(r);
+    if (unlockedParts() !== before) renderDesc();
+    if (r.accepted) timerStop();
+  } catch (e) { $("#result").innerHTML = `<pre class="out bad">${esc(e.message)}</pre>`; }
+  busy(false);
+}
+async function runTests() {
+  busy(true); setConsoleTab("result");
+  $("#result").innerHTML = '<div class="sub"><span class="spinner"></span>Running your tests on your solution…</div>';
+  try {
+    const r = await api("POST", `/api/problems/${current.meta.id}/tests/run`, { code: editor.get("tests"), solution_code: editor.get("solution") });
+    markSaved("tests"); markSaved("solution");
+    renderResult(r, "Your tests on your solution");
+  } catch (e) { $("#result").innerHTML = `<pre class="out bad">${esc(e.message)}</pre>`; }
+  busy(false);
+}
+async function submitTests() {
+  busy(true); setConsoleTab("result");
+  $("#result").innerHTML = '<div class="sub"><span class="spinner"></span>Running your tests against the reference and the hidden buggy versions…</div>';
+  try {
+    const r = await api("POST", `/api/problems/${current.meta.id}/tests/submit`, { code: editor.get("tests"), solution_code: editor.get("solution") });
+    markSaved("tests"); markSaved("solution");
+    current.progress = r.progress;
+    syncProgress(r.progress);
+    store.set(`last-result:${current.meta.id}:tests`, r);
+    renderTestsResult(r);
+    renderDesc();
+  } catch (e) { $("#result").innerHTML = `<pre class="out bad">${esc(e.message)}</pre>`; }
+  busy(false);
+}
+function syncProgress(progress) {
+  const p = problems.find(x => x.id === current.meta.id);
+  if (p) { p.progress = progress; renderStats(); }
+}
+function caseList(cases, multiPart) {
+  const failedFirst = [...cases].sort((a, b) => (a.outcome === "passed") - (b.outcome === "passed"));
+  return failedFirst.map(c => {
+    const ok = c.outcome === "passed";
+    return `<div class="case"><div class="case-head">
+        <span class="${ok ? "ok" : "bad"}">${ok ? "✔" : "✘"}</span>
+        <span class="nm">${multiPart ? `<span class="chip">P${c.part}</span> ` : ""}${esc(c.doc || c.name)}</span>
+        <span class="dur">${c.duration}s</span></div>
+      <div class="case-body ${ok ? "hidden" : ""}">
+        ${c.compare ? compareBlock(c.compare) : c.short ? `<div class="short">${esc(c.short)}</div>` : ""}
+        ${c.compare && c.short ? `<div class="sub" style="font-family:var(--mono);font-size:12px">${esc(c.short.split("\n")[0].slice(0, 200))}</div>` : ""}
+        ${c.long ? `<details><summary class="sub">traceback</summary><pre class="out">${esc(c.long)}</pre></details>` : ""}
+        ${c.stdout ? `<div class="sub">stdout</div><pre class="out">${esc(c.stdout)}</pre>` : ""}
+        ${ok && !c.stdout ? '<div class="sub">passed</div>' : ""}
+      </div></div>`;
+  }).join("");
+}
+function compareBlock(cmp) {
+  if (!cmp) return "";
+  const exp = cmp.expected.split("\n"), got = cmp.actual.split("\n");
+  const lines = (arr, other) => arr.map((l, i) => `<span class="${l !== other[i] ? "x" : ""}">${esc(l) || " "}</span>`).join("");
+  const opNote = cmp.op && cmp.op !== "==" ? `<div class="sub">check: <code>your output ${esc(cmp.op)} expected</code></div>` : "";
+  return `${cmp.diffs && cmp.diffs.length ? `<ul class="cmp-diffs">${cmp.diffs.map(d => `<li>${esc(d)}</li>`).join("")}</ul>` : ""}${opNote}
+    <div class="cmp"><div><div class="cmp-h">Expected</div><pre class="exp">${lines(exp, got)}</pre></div>
+    <div><div class="cmp-h">Your output</div><pre class="got">${lines(got, exp)}</pre></div></div>`;
+}
+function wireCases(root) { $$(".case-head", root).forEach(h => h.onclick = () => h.nextElementSibling.classList.toggle("hidden")); }
+function renderResult(r, title) {
+  let verdict, cls;
+  if (r.accepted) { verdict = title ? "All your tests pass" : "All checks pass"; cls = "ok"; }
+  else if (r.error && !r.total) { verdict = r.error.startsWith("Time limit") ? "Timed out" : "Could not run"; cls = "bad"; }
+  else { verdict = title ? "Some of your tests fail on your solution" : `${r.total - r.passed} check${r.total - r.passed === 1 ? "" : "s"} failing`; cls = "bad"; }
+  const parts = !title && r.parts.length > 1 ? `<div class="parts">${r.parts.map(p =>
+    `<span class="part-chip ${p.total && p.passed === p.total ? "ok" : ""}">Part ${p.part}: ${p.passed}/${p.total}</span>`).join("")}</div>` : "";
+  $("#result").innerHTML = `${title ? `<div class="sub">${esc(title)}</div>` : ""}<div class="verdict ${cls}">${verdict}</div>
+    <div class="sub">${r.passed} / ${r.total} ${title ? "tests" : "checks"} passed · ${r.elapsed}s${r.skipped ? ` · ${r.skipped} skipped` : ""}</div>
+    ${title && !r.accepted && r.total ? '<div class="sub">Either your solution or your test is wrong. Submit tests to check them against the reference.</div>' : ""}
+    ${parts}${r.error ? `<pre class="out bad">${esc(r.error)}</pre>` : ""}${caseList(r.cases, !title && r.parts.length > 1)}`;
+  wireCases($("#result"));
+}
+function renderTestsResult(r) {
+  const ref = r.reference;
+  if (r.empty) {
+    $("#result").innerHTML = `<div class="verdict warn">No tests yet</div>
+      <div class="sub">Add <code>test_*</code> functions that take <code>sol</code>, for example
+      <code>def test_returns_every_event(sol): ...</code>, then submit again.</div>`;
+    return;
+  }
+  if (!r.valid) {
+    $("#result").innerHTML = `<div class="verdict bad">Invalid test suite</div>
+      <div class="sub">Your tests must all pass on the <b>correct</b> solution. A test that fails there is checking
+      the wrong behaviour (re-read the statement), or it's flaky.</div>
+      ${ref.error ? `<pre class="out bad">${esc(ref.error)}</pre>` : ""}${caseList(ref.cases, false)}`;
+    wireCases($("#result"));
+    return;
+  }
+  const all = r.accepted, cls = all ? "ok" : r.caught ? "warn" : "bad";
+  const mine = r.mine ? (r.mine.accepted ? '<span class="ok">all pass on your solution</span>'
+    : `<span class="warn">${r.mine.passed}/${r.mine.total} pass on your solution</span>`) : "";
+  const rows = r.mutants.map(m => m.caught
+    ? `<div class="case"><div class="case-head"><span class="ok">✔</span><span class="nm">${esc(m.bug)}</span></div>
+        <div class="case-body"><div class="sub">caught by: ${esc(m.caught_by.slice(0, 3).join(" · "))}</div></div></div>`
+    : `<div class="case"><div class="case-head"><span class="bad">✘</span><span class="nm"><i>Hidden bug ${esc(m.id)} survived</i></span>
+        <span class="dur">click to reveal</span></div>
+        <div class="case-body hidden"><div class="short" style="color:var(--yellow)">${esc(m.bug)}</div>
+        <div class="sub">Write a test that fails on code with this bug but passes on the correct solution.</div></div></div>`).join("");
+  $("#result").innerHTML = `<div class="verdict ${cls}">${all ? "All bugs caught" : `${r.caught} / ${r.total_mutants} bugs caught`}</div>
+    <div class="sub">${r.n_tests} tests · all pass on the reference${mine ? " · " + mine : ""} · ${r.elapsed}s</div>
+    <div class="bar" style="margin:0 0 14px"><span style="width:${r.total_mutants ? 100 * r.caught / r.total_mutants : 0}%"></span></div>
+    ${rows}`;
+  wireCases($("#result"));
+}
+$("#btn-run").onclick = run;
+$("#btn-submit").onclick = submit;
+$("#btn-reset").onclick = async () => {
+  const what = mode === "tests" ? "your tests with the empty template" : "your code with the starter code";
+  if (!confirm(`Replace ${what}? This cannot be undone.`)) return;
+  const url = mode === "tests" ? `/api/problems/${current.meta.id}/tests/reset` : `/api/problems/${current.meta.id}/reset`;
+  const { code } = await api("POST", url);
+  editor.set(code, mode); lastSaved[mode] = code;
+  dirty = isDirty("solution") || isDirty("tests"); paintSaveState();
+};
+document.addEventListener("keydown", e => {
+  const mod = e.metaKey || e.ctrlKey;
+  if (!current || !mod || location.hash.startsWith("#/cards")) return;
+  if (e.key === "Enter") { e.preventDefault(); submit(); }
+  else if (e.key === "'") { e.preventDefault(); run(); }
+  else if (e.key === "s") { e.preventDefault(); save(); }
+});
+// Pick up edits made in an external editor (VS Code) when the tab regains focus.
+window.addEventListener("focus", async () => {
+  if (!current || dirty) return;
+  try {
+    const data = await api("GET", `/api/problems/${encodeURIComponent(current.meta.id)}`);
+    if (dirty) return;
+    let changed = false;
+    if (data.code !== lastSaved.solution) { editor.set(data.code, "solution"); lastSaved.solution = data.code; changed = true; }
+    if (data.tests_mode && data.tests_code !== lastSaved.tests) { editor.set(data.tests_code, "tests"); lastSaved.tests = data.tests_code; changed = true; }
+    if (changed) paintSaveState("reloaded from disk");
+  } catch {}
+});
+window.addEventListener("beforeunload", () => {
+  if (!current || !dirty) return;
+  for (const kind of ["solution", "tests"]) {
+    if (!isDirty(kind)) continue;
+    fetch(`/api/problems/${current.meta.id}/code`, { method: "PUT", keepalive: true,
+      headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: editor.get(kind), kind }) });
+  }
+});
+
+// resizable panes
+function drag(gutter, onMove) {
+  gutter.addEventListener("mousedown", e => {
+    e.preventDefault();
+    const move = ev => { onMove(ev); editor && editor.refresh(); };
+    const up = () => { document.removeEventListener("mousemove", move); document.removeEventListener("mouseup", up); };
+    document.addEventListener("mousemove", move); document.addEventListener("mouseup", up);
+  });
+}
+drag($("#gx"), ev => { const w = Math.min(Math.max(ev.clientX - 8, 280), window.innerWidth - 360); $("#left").style.width = w + "px"; store.set("left-w", w); });
+drag($("#gy"), ev => { const r = $("#right").getBoundingClientRect(); const h = Math.min(Math.max(r.bottom - ev.clientY, 60), r.height - 140); $("#console").style.height = h + "px"; store.set("console-h", h); });
+if (store.get("left-w")) $("#left").style.width = store.get("left-w") + "px";
+if (store.get("console-h")) $("#console").style.height = store.get("console-h") + "px";
+
+// timer (per problem; mock rounds count down from 60 minutes)
+let timer = { id: null, base: 0, start: null, limit: 0 };
+function timerKey() { return "timer:" + current.meta.id; }
+function timerLoad() {
+  clearInterval(timer.id);
+  const saved = store.get(timerKey(), { base: 0 });
+  timer = { id: null, base: saved.base || 0, start: null, limit: (current.meta.parts > 1 ? 60 : current.meta.minutes || 0) * 60 };
+  timerPaint();
+}
+function elapsed() { return timer.base + (timer.start ? (Date.now() - timer.start) / 1000 : 0); }
+function timerPaint() {
+  const s = Math.floor(elapsed()), mm = String(Math.floor(s / 60)).padStart(2, "0"), ss = String(s % 60).padStart(2, "0");
+  const el = $("#timer");
+  el.textContent = `⏱ ${mm}:${ss}${timer.limit ? ` / ${Math.round(timer.limit / 60)}m` : ""}`;
+  el.classList.toggle("running", !!timer.start);
+  el.classList.toggle("over", timer.limit && s > timer.limit);
+}
+function timerStop() { if (!timer.start) return; timer.base = elapsed(); timer.start = null; clearInterval(timer.id); store.set(timerKey(), { base: timer.base }); timerPaint(); }
+$("#timer").onclick = () => {
+  if (timer.start) return timerStop();
+  timer.start = Date.now(); timer.id = setInterval(timerPaint, 1000); timerPaint();
+};
+$("#timer").ondblclick = () => { timerStop(); timer.base = 0; store.set(timerKey(), { base: 0 }); timerPaint(); };
+
+// --------------------------------------------------------------- flashcards
+let cards = [], deck = [], ci = 0, shown = false;
+async function showCards() {
+  if (!cards.length) {
+    cards = await api("GET", "/api/flashcards");
+    const topics = [...new Set(cards.map(c => c.topic))];
+    topics.forEach(t => $("#c-topic").add(new Option(t, t)));
+  }
+  if (!problems.length) { problems = await api("GET", "/api/problems"); renderStats(); }
+  buildDeck();
+}
+function known() { return new Set(store.get("cards-known", [])); }
+function buildDeck() {
+  const t = $("#c-topic").value, mode = $("#c-mode").value, k = known();
+  deck = cards.filter(c => (!t || c.topic === t) && (mode === "all" || !k.has(c.id)));
+  ci = Math.min(ci, Math.max(0, deck.length - 1)); shown = false; paintCard();
+}
+function paintCard() {
+  const k = known();
+  $("#c-count").textContent = `${deck.length ? ci + 1 : 0} / ${deck.length} · ${k.size}/${cards.length} known`;
+  const c = deck[ci];
+  if (!c) { $("#card").innerHTML = '<div class="empty">No cards here. Switch to "All cards" or another topic.</div>'; return; }
+  $("#card").innerHTML = `<div class="topic">${esc(c.topic)}</div><div class="q">${esc(c.q)}</div>
+    ${shown ? `<div class="a md" style="padding:14px 0 0">${md(c.a)}</div>` : '<div class="sub">Say your answer out loud, then reveal.</div>'}`;
+}
+$("#c-show").onclick = () => { shown = !shown; paintCard(); };
+$("#c-next").onclick = () => { if (deck.length) { ci = (ci + 1) % deck.length; shown = false; paintCard(); } };
+$("#c-prev").onclick = () => { if (deck.length) { ci = (ci - 1 + deck.length) % deck.length; shown = false; paintCard(); } };
+$("#c-again").onclick = () => { const k = known(); if (deck[ci]) k.delete(deck[ci].id); store.set("cards-known", [...k]); $("#c-next").onclick(); };
+$("#c-known").onclick = () => {
+  const c = deck[ci]; if (!c) return;
+  const k = known(); k.add(c.id); store.set("cards-known", [...k]);
+  if ($("#c-mode").value === "due") { deck.splice(ci, 1); ci = deck.length ? ci % deck.length : 0; shown = false; paintCard(); }
+  else $("#c-next").onclick();
+};
+$("#c-shuffle").onclick = () => { deck.sort(() => Math.random() - .5); ci = 0; shown = false; paintCard(); };
+$("#c-topic").oninput = buildDeck; $("#c-mode").oninput = buildDeck;
+document.addEventListener("keydown", e => {
+  if (location.hash !== "#/cards" || e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
+  if (e.key === " ") { e.preventDefault(); $("#c-show").onclick(); }
+  else if (e.key === "ArrowRight") $("#c-next").onclick();
+  else if (e.key === "ArrowLeft") $("#c-prev").onclick();
+});
+
+// -------------------------------------------------------------------- debug
+// The Debugging Practical: a multi-file buggy repo copied to debug-workspace/<set>/.
+const dbg = { sid: null, data: null, cm: null, ta: null, docs: {}, saved: {}, file: null, timer: null, saveTimer: null, sets: [] };
+const dbgApi = (method, action, body, query) =>
+  api(method, `/api/debug/sets/${dbg.sid}${action ? "/" + action : ""}${query ? "?" + new URLSearchParams(query) : ""}`, body);
+const dbgStatus = s => s.progress?.solved ? "solved" : s.progress?.runs ? "attempted" : "todo";
+
+async function dbgList() {
+  const { sets, weak_spots } = await api("GET", "/api/debug/sets");
+  dbg.sets = sets;
+  const fill = (sel, vals) => { const el = $(sel); if (el.options.length === 1) vals.forEach(v => el.add(new Option(v, v))); };
+  fill("#d-diff", [...new Set(sets.map(s => s.difficulty))].filter(Boolean));
+  fill("#d-domain", [...new Set(sets.map(s => s.domain))].sort());
+  const solved = sets.filter(s => dbgStatus(s) === "solved");
+  const clean = solved.filter(s => s.progress.solved_before_reveal && !s.progress.hints_used);
+  const cell = (n, l, a, b, color) => `<div class="stat"><div class="n" style="color:${color || "inherit"}">${n}</div><div class="l">${l}</div><div class="bar"><span style="width:${b ? 100 * a / b : 0}%"></span></div></div>`;
+  const by = len => { const all = sets.filter(s => s.length === len); return [all.filter(s => dbgStatus(s) === "solved").length, all.length]; };
+  const [m1, m2] = by("MINI"), [f1, f2] = by("FULL");
+  const times = solved.map(s => s.progress.time_s).filter(Boolean);
+  $("#dbg-stats").innerHTML =
+    cell(`${solved.length}/${sets.length}`, "Sets solved", solved.length, sets.length) +
+    cell(`${m1}/${m2}`, "MINI (3 bugs, 30 min)", m1, m2, "var(--easy)") +
+    cell(`${f1}/${f2}`, "FULL (6 bugs, 60 min)", f1, f2, "var(--hard)") +
+    cell(`${clean.length}`, "Solved with no hints, before the answer key", clean.length, Math.max(solved.length, 1), "var(--green)") +
+    cell(times.length ? `${Math.round(times.reduce((a, b) => a + b, 0) / times.length / 60)}m` : "–", "Average time to solve", 0, 0);
+  const weak = weak_spots.filter(w => w.missed);
+  $("#dbg-weak").innerHTML = weak.length ? `<div class="group-title">Bug types you've missed (from revealed answer keys)</div>
+    <table class="problems weak" style="margin-bottom:16px"><tbody>${weak.slice(0, 8).map(w =>
+      `<tr><td style="width:240px"><code>${esc(w.type)}</code></td><td class="bad">missed ${w.missed}</td><td class="ok">found ${w.found}</td></tr>`).join("")}</tbody></table>` : "";
+  $("#solved-pill").innerHTML = `<b>${solved.length}</b> / ${sets.length} sets solved`;
+  dbgRenderRows();
+}
+function dbgFiltered() {
+  const q = $("#dq").value.trim().toLowerCase(), len = $("#d-length").value, df = $("#d-diff").value,
+        dom = $("#d-domain").value, st = $("#d-status").value;
+  return dbg.sets.filter(s => (!q || `${s.id} ${s.title} ${s.domain}`.toLowerCase().includes(q)) &&
+    (!len || s.length === len) && (!df || s.difficulty === df) && (!dom || s.domain === dom) && (!st || dbgStatus(s) === st));
+}
+function dbgRenderRows() {
+  $("#dbg-rows").innerHTML = dbgFiltered().map(s => {
+    const st = dbgStatus(s), p = s.progress || {};
+    const icon = st === "solved" ? '<span class="ok">✔</span>' : st === "attempted" ? '<span class="warn">●</span>' : "";
+    const extra = st === "attempted" && p.total ? `<span class="tags"> · best ${p.best_passed}/${p.total}</span>` : "";
+    const lvl = s.difficulty === "easy" ? "Easy" : s.difficulty === "hard" ? "Hard" : "Medium";
+    return `<tr data-set="${esc(s.id)}"><td class="st">${icon}</td><td class="id">${esc(s.id.slice(4))}</td>
+      <td>${esc(s.title)}${extra}</td><td class="tagcol tags">${esc(s.domain.replace(/_/g, " "))}</td>
+      <td class="tst tags">${s.length === "MINI" ? "MINI · 3 bugs" : "FULL · 6 bugs"}</td>
+      <td class="lvl lvl-${lvl}">${esc(s.difficulty)}</td><td class="min">${s.minutes}m</td></tr>`;
+  }).join("") || '<tr><td class="empty">No sets match.</td></tr>';
+  $$("#dbg-rows tr[data-set]").forEach(tr => tr.onclick = () => location.hash = "#/debug/" + tr.dataset.set);
+}
+["#dq", "#d-length", "#d-diff", "#d-domain", "#d-status"].forEach(sel => $(sel).addEventListener("input", dbgRenderRows));
+$("#d-pick").onclick = () => {
+  const pool = dbgFiltered().filter(s => dbgStatus(s) !== "solved");
+  if (!pool.length) return alert("Nothing left here. Nice.");
+  location.hash = "#/debug/" + pool[Math.floor(Math.random() * pool.length)].id;
+};
+
+function dbgEnsureEditor() {
+  if (dbg.cm || dbg.ta) return;
+  const host = $("#dbg-editor-host");
+  if (window.CodeMirror) {
+    dbg.cm = CodeMirror(host, {
+      theme: "material-darker", lineNumbers: true, indentUnit: 4, tabSize: 4, indentWithTabs: false,
+      matchBrackets: true, autoCloseBrackets: true, styleActiveLine: true,
+      extraKeys: {
+        "Tab": c => c.somethingSelected() ? c.indentSelection("add") : c.replaceSelection("    ", "end"),
+        "Shift-Tab": c => c.indentSelection("subtract"),
+        "Cmd-/": "toggleComment", "Ctrl-/": "toggleComment",
+        "Cmd-Enter": () => dbgRun(null), "Ctrl-Enter": () => dbgRun(null),
+        "Cmd-S": () => dbgSaveAll(), "Ctrl-S": () => dbgSaveAll(),
+      },
+    });
+    dbg.cm.on("change", dbgOnEdit);
+  } else {
+    dbg.ta = document.createElement("textarea");
+    dbg.ta.className = "fallback"; dbg.ta.spellcheck = false;
+    dbg.ta.addEventListener("input", dbgOnEdit);
+    host.appendChild(dbg.ta);
+  }
+}
+const dbgMode = path => path.endsWith(".py") ? "python" : path.endsWith(".md") ? "markdown" : null;
+function dbgText(path) {
+  if (dbg.cm) return dbg.docs[path] ? dbg.docs[path].getValue() : dbg.saved[path];
+  return path === dbg.file ? dbg.ta.value : (dbg.docs[path] ?? dbg.saved[path]);
+}
+const dbgDirty = path => dbg.saved[path] !== undefined && dbgText(path) !== dbg.saved[path];
+const dbgDirtyFiles = () => Object.keys(dbg.saved).filter(dbgDirty);
+const dbgMeta = path => dbg.data.files.find(f => f.path === path) || {};
+
+async function dbgOpen(sid) {
+  if (dbg.sid && dbg.sid !== sid) await dbgLeave();
+  dbgEnsureEditor();
+  dbg.sid = sid;
+  dbg.docs = {}; dbg.saved = {}; dbg.file = null;
+  const data = await dbgApi("GET", "");
+  dbg.data = data;
+  $("#ws-title").textContent = `${sid}. ${data.title}`;
+  document.title = `${sid} · Debug · Backend Prep`;
+  $("#dbg-brief").innerHTML = md(data.readme) + `<hr class="part-sep"><p class="sub">Your copy: <code>${esc(data.workspace)}/</code>
+    (you can also edit it in VS Code). <code>tests/</code>, <code>data/</code> and this README are read-only, and tests always
+    run against the originals. Code marked <code># VERIFIED</code> is correct: changing it means the set won't count as solved.</p>`;
+  $("#dbg-notes").innerHTML = `<p class="sub" style="margin-top:0">The round asks you to explain where and why each bug fails.
+    Write it here as you go (file / symptom / root cause / fix), then compare with the answer key.</p>
+    <textarea class="notes" id="dbg-notes-text" spellcheck="false"></textarea><div class="sub" id="dbg-notes-state"></div>`;
+  $("#dbg-notes-text").value = data.notes;
+  let nt;
+  $("#dbg-notes-text").oninput = () => {
+    $("#dbg-notes-state").textContent = "unsaved";
+    clearTimeout(nt);
+    nt = setTimeout(async () => { await dbgApi("PUT", "notes", { text: $("#dbg-notes-text").value }); $("#dbg-notes-state").textContent = "saved"; }, 800);
+  };
+  $("#dbg-ask").innerHTML = `<p class="sub" style="margin-top:0">In the round you can ask the interviewer (or an assistant) how
+    the code works. These answers describe what the code does, not where the bugs are.</p>` +
+    (data.questions.length ? data.questions.map(q => `<details class="qa"><summary>${esc(q.q)}</summary><div style="margin-top:8px">${md(q.a)}</div></details>`).join("")
+      : '<div class="empty">No questions for this set.</div>');
+  dbgRenderKeyGate();
+  $("#dbg-test-btns").innerHTML = data.tests.map(t => `<button class="btn chipbtn" data-dtest="${t.n}" title="${esc(t.label)}">Test ${t.n}</button>`).join("");
+  $$("[data-dtest]").forEach(b => b.onclick = () => dbgRun(Number(b.dataset.dtest)));
+  dbgRenderFiles();
+  const first = data.files.find(f => !f.locked && f.path.endsWith(".py") && f.path !== "main.py" && !f.path.endsWith("__init__.py")) || data.files[0];
+  await dbgShow(first.path);
+  const last = store.get("dbg-last:" + sid, null);
+  $("#dbg-results").innerHTML = last ? "" : '<div class="empty">Run the tests to see what fails. Start with Test 1.</div>';
+  if (last) dbgRenderResult(last);
+  dbgConsoleTab("results");
+  dbgLeftTab("brief");
+  dbgTimerLoad();
+}
+async function dbgLeave() {
+  await dbgSaveAll();
+  dbgTimerStop();
+  dbg.sid = null;
+}
+function dbgRenderFiles() {
+  let lastDir = null, html = "";
+  for (const f of dbg.data.files) {
+    const dir = f.path.includes("/") ? f.path.split("/").slice(0, -1).join("/") + "/" : "";
+    if (dir !== lastDir) { html += `<div class="dir">${esc(dir || "/")}</div>`; lastDir = dir; }
+    const name = f.path.split("/").pop();
+    html += `<div class="f ${f.path === dbg.file ? "active" : ""}" data-path="${esc(f.path)}" title="${esc(f.path)}">
+      ${dbgDirty(f.path) ? '<span class="dot">●</span> ' : ""}${esc(name)}${f.verified ? '<span class="badge v">VERIFIED</span>' : ""}${f.locked ? '<span class="badge l">🔒</span>' : ""}</div>`;
+  }
+  $("#dbg-files").innerHTML = html;
+  $$("#dbg-files .f").forEach(el => el.onclick = () => dbgShow(el.dataset.path));
+}
+async function dbgShow(path) {
+  if (dbg.ta && dbg.file) dbg.docs[dbg.file] = dbg.ta.value;
+  if (dbg.saved[path] === undefined) {
+    const { content } = await dbgApi("GET", "file", null, { path });
+    dbg.saved[path] = content;
+    if (dbg.cm) dbg.docs[path] = CodeMirror.Doc(content, dbgMode(path));
+    else dbg.docs[path] = content;
+  }
+  dbg.file = path;
+  const locked = dbgMeta(path).locked;
+  if (dbg.cm) { dbg.cm.swapDoc(dbg.docs[path]); dbg.cm.setOption("readOnly", !!locked); }
+  else { dbg.ta.value = dbg.docs[path]; dbg.ta.readOnly = !!locked; }
+  $("#dbg-file-name").textContent = path + (locked ? "  (read-only)" : "");
+  $("#dbg-save-state").textContent = locked ? "" : dbgDirty(path) ? "unsaved" : "saved";
+  dbgRenderFiles();
+  setTimeout(() => dbg.cm && dbg.cm.refresh(), 0);
+}
+function dbgOnEdit() {
+  if (!dbg.sid || !dbg.file) return;
+  if (dbg.ta) dbg.docs[dbg.file] = dbg.ta.value;
+  $("#dbg-save-state").textContent = dbgDirty(dbg.file) ? "unsaved" : "saved";
+  dbgRenderFiles();
+  clearTimeout(dbg.saveTimer);
+  dbg.saveTimer = setTimeout(dbgSaveAll, 900);
+}
+async function dbgSaveAll() {
+  if (!dbg.sid) return;
+  for (const path of dbgDirtyFiles()) {
+    if (dbgMeta(path).locked) continue;
+    const content = dbgText(path);
+    await dbgApi("PUT", "file", { path, content });
+    dbg.saved[path] = content;
+  }
+  if (dbg.file) $("#dbg-save-state").textContent = dbgMeta(dbg.file).locked ? "" : dbgDirty(dbg.file) ? "unsaved" : "saved";
+  dbgRenderFiles();
+}
+function dbgBusy(on) { ["#dbg-all", "#dbg-main", "#dbg-hint", "#dbg-reset"].forEach(s => $(s).disabled = on); $$("[data-dtest]").forEach(b => b.disabled = on); }
+
+async function dbgRun(n) {
+  if (!dbg.sid || $("#dbg-all").disabled) return;
+  await dbgSaveAll();
+  dbgBusy(true); dbgConsoleTab("results");
+  $("#dbg-results").innerHTML = `<div class="sub"><span class="spinner"></span>Running ${n ? "Test " + n : "all tests"}…</div>`;
+  try {
+    if (!dbg.timer.start && !dbg.timer.base) dbgTimerToggle();
+    const r = await dbgApi("POST", "test", { test: n, elapsed_s: dbgElapsed() });
+    store.set("dbg-last:" + dbg.sid, r);
+    dbgRenderResult(r);
+    if (r.scope === "all" && r.all_pass && !r.tampered.length && !r.verified_changed.length) dbgTimerStop();
+  } catch (e) { $("#dbg-results").innerHTML = `<pre class="out bad">${esc(e.message)}</pre>`; }
+  dbgBusy(false);
+}
+function dbgRenderResult(r) {
+  const solved = r.scope === "all" && r.all_pass && !r.tampered.length && !r.verified_changed.length;
+  const verdict = solved ? "All tests pass. Set solved." : r.all_pass ? `${r.scope === "all" ? "All tests" : r.scope} pass`
+    : r.error && !r.total ? "Could not run" : `${r.total - r.passed} failing`;
+  const cls = r.all_pass ? (solved || r.scope !== "all" ? "ok" : "warn") : "bad";
+  const chips = `<div class="parts">${r.tests.map(t => `<span class="part-chip ${t.total && t.passed === t.total ? "ok" : t.total ? "bad" : ""}">${esc(t.label)}: ${t.passed}/${t.total}</span>`).join("")}</div>`;
+  const warns = [
+    ...r.tampered.map(f => `<div class="warnbox">⚠ <code>${esc(f)}</code> differs from the original. It was ignored: the tests ran on the original file.</div>`),
+    ...r.verified_changed.map(v => `<div class="warnbox">⚠ You changed VERIFIED code: <code>${esc(v)}</code>. It's correct as written; this set won't count as solved until you put it back.</div>`),
+  ].join("");
+  const groups = r.tests.map(t => {
+    const cs = r.cases.filter(c => c.file === t.file);
+    if (!cs.length) return "";
+    return `<div class="group-title" style="margin-top:12px">${esc(t.label)}</div>` + caseList(cs, false);
+  }).join("");
+  $("#dbg-results").innerHTML = `<div class="verdict ${cls}">${verdict}</div>
+    <div class="sub">${r.passed} / ${r.total} tests passing · ${r.elapsed}s${solved && r.progress?.solved_before_reveal === false ? " · (after viewing the answer key)" : ""}</div>
+    ${chips}${warns}${r.error ? `<pre class="out bad">${esc(r.error)}</pre>` : ""}${groups}
+    ${solved ? '<div class="sub" style="margin-top:12px">Now explain each bug out loud (or in My notes), then open the Answer key to compare and try its follow-up questions.</div>' : ""}`;
+  wireCases($("#dbg-results"));
+}
+$("#dbg-all").onclick = () => dbgRun(null);
+$("#dbg-main").onclick = async () => {
+  await dbgSaveAll(); dbgBusy(true); dbgConsoleTab("output");
+  $("#dbg-output").innerHTML = '<div class="sub"><span class="spinner"></span>Running main.py…</div>';
+  try {
+    const r = await dbgApi("POST", "main", {});
+    $("#dbg-output").innerHTML = `<div class="sub">python main.py · exit code ${r.exit_code} · ${r.elapsed}s</div>
+      ${r.stdout ? `<pre class="out">${esc(r.stdout)}</pre>` : ""}${r.stderr ? `<pre class="out bad">${esc(r.stderr)}</pre>` : ""}
+      ${!r.stdout && !r.stderr ? '<div class="empty">(no output)</div>' : ""}`;
+  } catch (e) { $("#dbg-output").innerHTML = `<pre class="out bad">${esc(e.message)}</pre>`; }
+  dbgBusy(false);
+};
+$("#dbg-diff").onclick = async () => {
+  await dbgSaveAll(); dbgConsoleTab("diff");
+  const { diff } = await dbgApi("GET", "diff");
+  $("#dbg-diffout").innerHTML = diff ? `<pre class="out">${diff.split("\n").map(l =>
+    `<span style="color:${l.startsWith("+") && !l.startsWith("+++") ? "var(--green)" : l.startsWith("-") && !l.startsWith("---") ? "var(--red)" : l.startsWith("@@") ? "var(--blue)" : "inherit"}">${esc(l)}</span>`).join("\n")}</pre>`
+    : '<div class="empty">No changes yet.</div>';
+};
+$("#dbg-hint").onclick = async () => {
+  if (!confirm("Take a hint? Hints are counted, and the real round has none.")) return;
+  await dbgSaveAll();
+  const h = await dbgApi("POST", "hint", {});
+  dbgConsoleTab("results");
+  $("#dbg-results").insertAdjacentHTML("afterbegin", `<div class="warnbox" style="color:var(--text)">💡 ${h.bug ? `<b>${esc(h.bug)}</b> (hint ${h.level}/${h.of}): ` : ""}${esc(h.hint)}</div>`);
+};
+$("#dbg-reset").onclick = async () => {
+  if (!confirm("Throw away ALL your changes in this set and start from the original buggy repo? Your notes are kept.")) return;
+  const { files } = await dbgApi("POST", "reset", {});
+  dbg.data.files = files; dbg.docs = {}; dbg.saved = {};
+  store.set("dbg-last:" + dbg.sid, null);
+  $("#dbg-results").innerHTML = '<div class="empty">Reset. Run the tests to see what fails.</div>';
+  await dbgShow(dbg.file && files.some(f => f.path === dbg.file) ? dbg.file : files[0].path);
+};
+
+function dbgRenderKeyGate() {
+  $("#dbg-key").innerHTML = `<h2 style="margin-top:0">Answer key</h2>
+    <p class="sub">Every bug: where it is, why it fails, the fix, and the follow-up questions an interviewer would ask.
+    Try to get all tests passing and write your explanation first. Opening this is recorded.</p>
+    <button class="btn" id="dbg-reveal">Reveal answer key</button>`;
+  $("#dbg-reveal").onclick = async () => {
+    if (!confirm("Reveal the answer key for this set?")) return;
+    await dbgSaveAll();
+    dbgRenderKey(await dbgApi("POST", "reveal", {}));
+  };
+}
+function dbgRenderKey(k) {
+  const bugs = k.bugs.map(b => `<div class="keybug">
+      <h3>${b.you_fixed ? '<span class="ok">✔ found</span>' : '<span class="bad">✘ still in your code</span>'} · Bug ${b.n}: ${esc(b.title)}</h3>
+      <div class="meta-row"><span class="chip">${esc(b.type)}</span><span class="chip"><code>${esc(b.file)}</code>${b.function ? ` · ${esc(b.function)}()` : ""}</span>
+        ${b.masked_by.length ? `<span class="chip">masked by ${esc(b.masked_by.join(", "))}</span>` : ""}</div>
+      <p><b>Symptom.</b> ${esc(b.symptom)}</p><p><b>Why.</b> ${esc(b.why)}</p>
+      ${b.unblocks ? `<p class="sub"><b>Fixing it unblocks:</b> ${esc(b.unblocks)}</p>` : ""}
+      <pre class="out"><span style="color:var(--red)">${esc(b.buggy.split("\n").map(l => "- " + l).join("\n"))}</span>
+<span style="color:var(--green)">${esc(b.fixed.split("\n").map(l => "+ " + l).join("\n"))}</span></pre>
+      ${b.probes.length ? `<details><summary>Follow-up questions</summary><ul>${b.probes.map(p => `<li>${esc(p)}</li>`).join("")}</ul></details>` : ""}
+    </div>`).join("");
+  const verified = k.verified.length ? `<h2>The VERIFIED code (correct, even if it looks suspicious)</h2>` + k.verified.map(v =>
+    `<div class="keybug"><h3><code>${esc(v.file)}</code> · ${esc(v.symbol)}</h3><p>${esc(v.why_correct)}</p></div>`).join("") : "";
+  $("#dbg-key").innerHTML = `<h2 style="margin-top:0">Answer key · you found ${k.found} / ${k.bugs.length}</h2>
+    <p class="sub">"Found" means the planted code is gone from your copy. Compare the <b>why</b> with your notes: explaining
+    it is half the score in the real round.</p>${bugs}${verified}`;
+}
+
+function dbgLeftTab(t) {
+  $$("[data-dtab]").forEach(b => b.classList.toggle("active", b.dataset.dtab === t));
+  ["brief", "notes", "ask", "key"].forEach(x => $("#dbg-" + x).classList.toggle("hidden", x !== t));
+}
+$$("[data-dtab]").forEach(b => b.onclick = () => dbgLeftTab(b.dataset.dtab));
+function dbgConsoleTab(t) {
+  $$("[data-dctab]").forEach(b => b.classList.toggle("active", b.dataset.dctab === t));
+  $("#dbg-results").classList.toggle("hidden", t !== "results");
+  $("#dbg-output").classList.toggle("hidden", t !== "output");
+  $("#dbg-diffout").classList.toggle("hidden", t !== "diff");
+}
+$$("[data-dctab]").forEach(b => b.onclick = () => dbgConsoleTab(b.dataset.dctab));
+
+// timer: counts against 30 (MINI) or 60 (FULL) minutes; starts on your first test run
+function dbgTimerLoad() {
+  if (dbg.timer?.id) clearInterval(dbg.timer.id);
+  const saved = store.get("dbg-timer:" + dbg.sid, { base: 0 });
+  dbg.timer = { id: null, base: saved.base || 0, start: null, limit: dbg.data.minutes * 60 };
+  dbgTimerPaint();
+}
+function dbgElapsed() { return dbg.timer ? dbg.timer.base + (dbg.timer.start ? (Date.now() - dbg.timer.start) / 1000 : 0) : 0; }
+function dbgTimerPaint() {
+  const s = Math.floor(dbgElapsed()), el = $("#dbg-timer");
+  el.textContent = `⏱ ${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")} / ${dbg.timer.limit / 60}m`;
+  el.classList.toggle("running", !!dbg.timer.start);
+  el.classList.toggle("over", s > dbg.timer.limit);
+}
+function dbgTimerToggle() {
+  if (dbg.timer.start) return dbgTimerStop();
+  dbg.timer.start = Date.now(); dbg.timer.id = setInterval(dbgTimerPaint, 1000); dbgTimerPaint();
+}
+function dbgTimerStop() {
+  if (!dbg.timer?.start) return;
+  dbg.timer.base = dbgElapsed(); dbg.timer.start = null; clearInterval(dbg.timer.id);
+  store.set("dbg-timer:" + dbg.sid, { base: dbg.timer.base }); dbgTimerPaint();
+}
+$("#dbg-timer").onclick = () => dbgTimerToggle();
+$("#dbg-timer").ondblclick = () => { dbgTimerStop(); dbg.timer.base = 0; store.set("dbg-timer:" + dbg.sid, { base: 0 }); dbgTimerPaint(); };
+
+drag($("#dgx"), ev => { const w = Math.min(Math.max(ev.clientX - 8, 260), window.innerWidth - 420); $("#dbg-left").style.width = w + "px"; dbg.cm && dbg.cm.refresh(); });
+drag($("#dgy"), ev => { const r = $("#dbg-right").getBoundingClientRect(); const h = Math.min(Math.max(r.bottom - ev.clientY, 60), r.height - 160); $("#dbg-console").style.height = h + "px"; dbg.cm && dbg.cm.refresh(); });
+document.addEventListener("keydown", e => {
+  if (!dbg.sid || !(e.metaKey || e.ctrlKey) || !location.hash.startsWith("#/debug/")) return;
+  if (e.key === "Enter") { e.preventDefault(); dbgRun(null); }
+  else if (e.key === "s") { e.preventDefault(); dbgSaveAll(); }
+});
+window.addEventListener("focus", async () => {
+  if (!dbg.sid || !dbg.file || dbgDirtyFiles().length) return;
+  try {
+    const { content } = await dbgApi("GET", "file", null, { path: dbg.file });
+    if (content !== dbg.saved[dbg.file] && !dbgDirty(dbg.file)) {
+      dbg.saved[dbg.file] = content;
+      if (dbg.cm) { dbg.docs[dbg.file] = CodeMirror.Doc(content, dbgMode(dbg.file)); dbg.cm.swapDoc(dbg.docs[dbg.file]); }
+      else { dbg.docs[dbg.file] = content; dbg.ta.value = content; }
+      $("#dbg-save-state").textContent = "reloaded from disk";
+    }
+  } catch {}
+});
+window.addEventListener("beforeunload", () => {
+  if (!dbg.sid) return;
+  for (const path of dbgDirtyFiles()) {
+    fetch(`/api/debug/sets/${dbg.sid}/file`, { method: "PUT", keepalive: true, headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path, content: dbgText(path) }) });
+  }
+});
+
+
+route();
+</script>
+</body>
+</html>

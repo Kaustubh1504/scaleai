@@ -1,0 +1,122 @@
+[
+  {
+    "id": "m1",
+    "bug": "Part 1: Accepts whitespace-only text instead of reporting missing_text",
+    "edits": [
+      {
+        "find": "        elif not isinstance(obj.get(\"text\"), str) or not obj[\"text\"].strip():",
+        "replace": "        elif not isinstance(obj.get(\"text\"), str) or not obj[\"text\"]:"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Part 1: Numbers only the non-blank lines, so error line numbers drift after a blank line",
+    "edits": [
+      {
+        "find": "    for n, line in enumerate(text.splitlines(), start=1):",
+        "replace": "    for n, line in enumerate((l for l in text.splitlines() if l.strip()), start=1):"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Part 1: Stores an empty batch and returns 201 when no line is valid, instead of 422",
+    "edits": [
+      {
+        "find": "        if not rows:\n            return JSONResponse({\"detail\": \"no valid rows\", \"errors\": errors}, status_code=422)\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Part 1: Decodes with errors=\"replace\", so a non-UTF-8 file is accepted instead of rejected with 400",
+    "edits": [
+      {
+        "find": "    text = raw.decode(\"utf-8\")",
+        "replace": "    text = raw.decode(\"utf-8\", errors=\"replace\")"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Part 2: Off by one on retries: only 2 attempts for a RetryableError instead of 3",
+    "edits": [
+      {
+        "find": "        for attempt in range(1, MAX_ATTEMPTS + 1):",
+        "replace": "        for attempt in range(1, MAX_ATTEMPTS):"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Part 2: Retries permanent (non-Retryable) errors as if they were transient",
+    "edits": [
+      {
+        "find": "                        if not isinstance(exc, RetryableError):\n                            break\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Part 2: Never marks the job running: it stays queued until it completes",
+    "edits": [
+      {
+        "find": "            with self.db() as con:\n                con.execute(\"UPDATE jobs SET status = 'running' WHERE id = ?\", (job_id,))\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m8",
+    "bug": "Part 2: Processes a job's rows in reverse upload order",
+    "edits": [
+      {
+        "find": "\"AND status = 'pending' ORDER BY idx LIMIT 1\"",
+        "replace": "\"AND status = 'pending' ORDER BY idx DESC LIMIT 1\""
+      }
+    ]
+  },
+  {
+    "id": "m9",
+    "bug": "Part 3: Resumes unfinished jobs newest first instead of in creation order",
+    "edits": [
+      {
+        "find": "\"SELECT id FROM jobs WHERE status IN ('queued', 'running') ORDER BY rowid\"",
+        "replace": "\"SELECT id FROM jobs WHERE status IN ('queued', 'running') ORDER BY rowid DESC\""
+      }
+    ]
+  },
+  {
+    "id": "m10",
+    "bug": "Part 3: Restarts an interrupted job from scratch, re-classifying rows that were already done",
+    "edits": [
+      {
+        "find": "                self.jobs.put(job_id)\n        threading",
+        "replace": "                con.execute(\"UPDATE rows SET status = 'pending', label = NULL, attempts = 0, error = NULL \"\n                            \"WHERE job_id = ?\", (job_id,))\n                self.jobs.put(job_id)\n        threading"
+      }
+    ]
+  },
+  {
+    "id": "m11",
+    "bug": "Part 3: No nothing_to_do check: re-processing a finished batch creates a new empty job (202)",
+    "edits": [
+      {
+        "find": "            if pending == 0:\n                return 200, {\"job_id\": None, \"status\": \"nothing_to_do\"}\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m12",
+    "bug": "Part 3: Only treats a queued job as active, so once the worker has started (running) a second process call creates a duplicate job",
+    "edits": [
+      {
+        "find": "\"AND status IN ('queued', 'running')\", (batch_id,)).fetchone()",
+        "replace": "\"AND status = 'queued'\", (batch_id,)).fetchone()"
+      }
+    ]
+  }
+]

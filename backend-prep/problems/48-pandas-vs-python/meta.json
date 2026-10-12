@@ -1,0 +1,10 @@
+{
+  "id": "48",
+  "title": "Aggregations: plain Python vs pandas",
+  "group": "9. Python fluency",
+  "level": "Easy",
+  "minutes": 10,
+  "daily": false,
+  "tags": ["aggregation", "group by", "pivot", "pandas", "csv"],
+  "parts": 1
+}

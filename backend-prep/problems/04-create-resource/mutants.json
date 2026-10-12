@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Sends the body with data= (form-encoded) instead of json=, so the server answers 415",
+    "edits": [
+      {
+        "find": "client.post(\"/v1/projects\", json=",
+        "replace": "client.post(\"/v1/projects\", data="
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Always sends description and tags, as null when they were not given",
+    "edits": [
+      {
+        "find": "json={k: v for k, v in body.items() if v is not None}",
+        "replace": "json=body"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Checks tags for truthiness, so an explicit empty tags list is dropped from the body",
+    "edits": [
+      {
+        "find": "if v is not None}",
+        "replace": "if v is not None and v != []}"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Always drops the first loc element, so [\"query\", \"dry_run\"] becomes \"dry_run\"",
+    "edits": [
+      {
+        "find": "loc = e[\"loc\"][1:] if e[\"loc\"][:1] == [\"body\"] else e[\"loc\"]",
+        "replace": "loc = e[\"loc\"][1:]"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Reports only the first validation error instead of every entry in detail",
+    "edits": [
+      {
+        "find": "raise ValidationFailed(errors)",
+        "replace": "raise ValidationFailed(errors[:1])"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Doesn't map 409 to AlreadyExists: a duplicate name raises the base ProjectApiError",
+    "edits": [
+      {
+        "find": "    if resp.status_code == 409:\n        raise AlreadyExists(resp.json()[\"existing_id\"])\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Sends the raw token as the Authorization header, without the \"Bearer \" scheme",
+    "edits": [
+      {
+        "find": "{\"Authorization\": f\"Bearer {token}\"}",
+        "replace": "{\"Authorization\": token}"
+      }
+    ]
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "id": "01",
+  "title": "Status code triage",
+  "group": "1. HTTP and API basics",
+  "level": "Easy",
+  "minutes": 12,
+  "daily": true,
+  "tags": ["http", "status-codes", "retries", "idempotency", "dataclasses"],
+  "parts": 1
+}

@@ -1,0 +1,11 @@
+project_id,name,priority,headcount,required_skill,required_course
+P01,Search relevance eval,2,2,python,ML-101
+p02,Image QA sprint,1,2,labeling,QA-110
+P03,Pipeline backfill,3,2,spark,DE-201
+P04,SQL audit,4,2,sql,
+P05,Chatbot red-team,5,0,python,
+P06,Labeling overflow,6,3,labeling,
+P07,Python tooling,7,2,Python ,
+P08,Warehouse cleanup, 8,1,sql,
+P09,Spark tuning,9,2,spark,
+P10,Eval harness,10,1,python,

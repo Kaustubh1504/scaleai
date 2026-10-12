@@ -1,0 +1,17 @@
+{
+  "id": "42",
+  "title": "Write the tests: catch the buggy clients",
+  "group": "8. Production quality",
+  "level": "Medium",
+  "minutes": 30,
+  "daily": true,
+  "tags": [
+    "testing",
+    "pytest",
+    "mocking",
+    "retries",
+    "mutation testing"
+  ],
+  "parts": 1,
+  "tests_mode": false
+}

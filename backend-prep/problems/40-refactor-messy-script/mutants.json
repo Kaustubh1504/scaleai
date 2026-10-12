@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Truncates the senior bonus instead of rounding half up to a whole cent",
+    "edits": [
+      {
+        "find": "(c * SENIOR_PCT + 50) // 100",
+        "replace": "c * SENIOR_PCT // 100"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Stops paginating one page early (page + 1 >= total_pages)",
+    "edits": [
+      {
+        "find": "if page >= body[\"total_pages\"]:",
+        "replace": "if page + 1 >= body[\"total_pages\"]:"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Breaks amount ties by annotator_id descending (sorts the whole key with reverse=True)",
+    "edits": [
+      {
+        "find": "return sorted(payouts, key=lambda p: (-p.amount_cents, p.annotator_id))",
+        "replace": "return sorted(payouts, key=lambda p: (p.amount_cents, p.annotator_id), reverse=True)"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Pays for every submission from an active annotator, not just accepted ones",
+    "edits": [
+      {
+        "find": "if sub[\"status\"] != \"accepted\" or aid not in active:",
+        "replace": "if aid not in active:"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Hard-codes per_page=50 instead of sending config.per_page",
+    "edits": [
+      {
+        "find": "params={\"page\": page, \"per_page\": self.config.per_page},",
+        "replace": "params={\"page\": page, \"per_page\": 50},"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Lets a non-JSON body escape as a raw JSONDecodeError instead of raising ApiError",
+    "edits": [
+      {
+        "find": "            try:\n                body = resp.raise_for_status().json()\n            except (httpx.HTTPStatusError, ValueError):\n                raise ApiError(resp.status_code, path) from None\n",
+        "replace": "            if not resp.is_success:\n                raise ApiError(resp.status_code, path)\n            body = resp.json()\n"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Does not strip required variables, so a whitespace-only PAYOUT_API_URL counts as set",
+    "edits": [
+      {
+        "find": "if not env.get(name, \"\").strip():",
+        "replace": "if not env.get(name, \"\"):"
+      }
+    ]
+  }
+]

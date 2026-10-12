@@ -1,0 +1,10 @@
+{
+  "id": "25",
+  "title": "Ragged rows, repeated headers and footers",
+  "group": "5. Data cleaning",
+  "level": "Medium",
+  "minutes": 25,
+  "daily": true,
+  "tags": ["csv", "validation", "line-numbers", "error-reporting"],
+  "parts": 1
+}

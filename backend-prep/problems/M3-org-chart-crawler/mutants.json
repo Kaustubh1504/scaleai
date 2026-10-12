@@ -1,0 +1,126 @@
+[
+  {
+    "id": "m1",
+    "bug": "Part 1: Uses the queue as a stack (pops from the end), so orgs are visited depth-first instead of BFS",
+    "edits": [
+      {
+        "find": "        org_id = queue[0]  # only dequeue",
+        "replace": "        org_id = queue[-1]  # only dequeue"
+      },
+      {
+        "find": "        queue.popleft()\n",
+        "replace": "        queue.pop()\n"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Part 1: Skips only orgs already crawled, not ones already queued, so an org with two parents is requested twice",
+    "edits": [
+      {
+        "find": "                if child not in seen:",
+        "replace": "                if child not in state[\"order\"]:"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Part 1: Sums member counts over the subtree instead of counting distinct person_ids",
+    "edits": [
+      {
+        "find": "        headcount[org] = len({p for o in reach for p in members[o]})",
+        "replace": "        headcount[org] = sum(len(members[o]) for o in reach)"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Part 1: Treats a 404 child as fatal instead of recording it as dangling",
+    "edits": [
+      {
+        "find": "            if org_id == root_id or exc.status not in (403, 404):",
+        "replace": "            if org_id == root_id or exc.status != 403:"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Part 2: Proactive refresh has no 5 s margin: only refreshes once the token has already expired",
+    "edits": [
+      {
+        "find": "self.clock.time() >= self.expires_at - REFRESH_MARGIN_S:",
+        "replace": "self.clock.time() >= self.expires_at:"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Part 2: On a 401 resends with the same token: the refresh call doesn't force a new token",
+    "edits": [
+      {
+        "find": "                self.ensure_token(force=True)",
+        "replace": "                self.ensure_token()"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Part 2: Records a 403 org as dangling instead of inaccessible",
+    "edits": [
+      {
+        "find": "            state[\"dangling\" if exc.status == 404 else \"inaccessible\"].append(org_id)",
+        "replace": "            state[\"dangling\"].append(org_id)"
+      }
+    ]
+  },
+  {
+    "id": "m8",
+    "bug": "Part 2: Fetches a new token before every request instead of reusing it",
+    "edits": [
+      {
+        "find": "        if force or self.token is None or self.clock.time() >= self.expires_at - REFRESH_MARGIN_S:",
+        "replace": "        if True:"
+      }
+    ]
+  },
+  {
+    "id": "m9",
+    "bug": "Part 3: Waits until X-RateLimit-Reset after every response, not only when Remaining is 0",
+    "edits": [
+      {
+        "find": "        if resp.headers.get(\"X-RateLimit-Remaining\") == \"0\" and \"X-RateLimit-Reset\" in resp.headers:",
+        "replace": "        if \"X-RateLimit-Reset\" in resp.headers:"
+      }
+    ]
+  },
+  {
+    "id": "m10",
+    "bug": "Part 3: Off by one on the 429 limit: raises on the 6th 429 in a row instead of the 5th",
+    "edits": [
+      {
+        "find": "                if throttled >= MAX_429_IN_A_ROW:",
+        "replace": "                if throttled > MAX_429_IN_A_ROW:"
+      }
+    ]
+  },
+  {
+    "id": "m11",
+    "bug": "Part 3: Writes the checkpoint straight onto its final name instead of temp file + os.replace",
+    "edits": [
+      {
+        "find": "            tmp = ckpt.with_name(ckpt.name + \".tmp\")\n            tmp.write_text(json.dumps(state))\n            os.replace(tmp, ckpt)",
+        "replace": "            ckpt.write_text(json.dumps(state))"
+      }
+    ]
+  },
+  {
+    "id": "m12",
+    "bug": "Part 3: Leaves the checkpoint file behind after the crawl completes",
+    "edits": [
+      {
+        "find": "    if ckpt:\n        ckpt.unlink(missing_ok=True)\n",
+        "replace": ""
+      }
+    ]
+  }
+]

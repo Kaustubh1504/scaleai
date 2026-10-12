@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Page-number off by one: stops one page before total_pages, losing the last page of customers",
+    "edits": [
+      {
+        "find": "        pages = body[\"total_pages\"]",
+        "replace": "        pages = body[\"total_pages\"] - 1"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Checks for unknown products before unknown customers, so an order with both is reported as unknown_product",
+    "edits": [
+      {
+        "find": "        if cid not in customers:\n            orphans.append({\"order_id\": order[\"id\"], \"reason\": \"unknown_customer\", \"ref\": cid})\n        elif unknown is not None:\n            orphans.append({\"order_id\": order[\"id\"], \"reason\": \"unknown_product\", \"ref\": unknown})\n",
+        "replace": "        if unknown is not None:\n            orphans.append({\"order_id\": order[\"id\"], \"reason\": \"unknown_product\", \"ref\": unknown})\n        elif cid not in customers:\n            orphans.append({\"order_id\": order[\"id\"], \"reason\": \"unknown_customer\", \"ref\": cid})\n"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Reports the last unknown product in an order as the ref instead of the first",
+    "edits": [
+      {
+        "find": "        unknown = next((p for p in pids if p not in prices), None)",
+        "replace": "        bad = [p for p in pids if p not in prices]\n        unknown = bad[-1] if bad else None"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Picks top_product by revenue instead of by quantity",
+    "edits": [
+      {
+        "find": "key=lambda p: (-qtys[cid][p], p)",
+        "replace": "key=lambda p: (-qtys[cid][p] * prices[p], p)"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "top_product ties on quantity go to the larger product_id",
+    "edits": [
+      {
+        "find": "min(qtys[cid], key=lambda p: (-qtys[cid][p], p), default=None)",
+        "replace": "max(qtys[cid], key=lambda p: (qtys[cid][p], p), default=None)"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Leaves out customers who have no valid orders instead of listing them with zeros",
+    "edits": [
+      {
+        "find": "            for cid, c in sorted(customers.items())]",
+        "replace": "            for cid, c in sorted(customers.items()) if cid in order_count]"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Doesn't check the HTTP status, so a 503 mid-crawl crashes with KeyError instead of raising ApiError",
+    "edits": [
+      {
+        "find": "    if not resp.is_success:\n        raise ApiError(resp.status_code, path, resp.text)\n",
+        "replace": ""
+      }
+    ]
+  }
+]

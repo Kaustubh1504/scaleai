@@ -1,0 +1,10 @@
+{
+  "id": "19",
+  "title": "Unwrapping inconsistent envelopes",
+  "group": "4. Parsing and processing",
+  "level": "Easy",
+  "minutes": 15,
+  "daily": true,
+  "tags": ["json", "envelopes", "normalization", "httpx"],
+  "parts": 1
+}

@@ -1,0 +1,84 @@
+[
+  {
+    "id": "m1",
+    "bug": "Walks depth-first (recursion) instead of BFS, so with max_depth an org reached first by a longer path gets the wrong depth",
+    "edits": [
+      {
+        "find": "    queue = deque([(root_id, 0)])\n    visited = 0\n    teams: set[str] = set()\n    missing: list[str] = []\n    while queue:\n        org_id, depth = queue.popleft()\n        resp = client.get(f\"/v1/orgs/{org_id}\")\n        if resp.status_code == 404 and depth > 0:\n            missing.append(org_id)\n            continue\n        if not resp.is_success:\n            raise ApiError(resp.status_code, f\"/v1/orgs/{org_id}\", resp.text)\n        node = resp.json()\n        visited += 1\n        teams.update(node[\"team_ids\"])\n        if max_depth is None or depth < max_depth:\n            for child in node[\"children\"]:\n                if child not in seen:\n                    seen.add(child)\n                    queue.append((child, depth + 1))\n",
+        "replace": "    visited = 0\n    teams: set[str] = set()\n    missing: list[str] = []\n\n    def walk(org_id: str, depth: int) -> None:\n        nonlocal visited\n        resp = client.get(f\"/v1/orgs/{org_id}\")\n        if resp.status_code == 404 and depth > 0:\n            missing.append(org_id)\n            return\n        if not resp.is_success:\n            raise ApiError(resp.status_code, f\"/v1/orgs/{org_id}\", resp.text)\n        node = resp.json()\n        visited += 1\n        teams.update(node[\"team_ids\"])\n        if max_depth is None or depth < max_depth:\n            for child in node[\"children\"]:\n                if child not in seen:\n                    seen.add(child)\n                    walk(child, depth + 1)\n\n    walk(root_id, 0)\n"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Marks orgs as seen when they are dequeued instead of when enqueued, so duplicate and shared children are fetched twice",
+    "edits": [
+      {
+        "find": "        org_id, depth = queue.popleft()\n",
+        "replace": "        org_id, depth = queue.popleft()\n        seen.add(org_id)\n"
+      },
+      {
+        "find": "                    seen.add(child)\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Follows the parent link as well as children, crawling up out of the requested subtree",
+    "edits": [
+      {
+        "find": "            for child in node[\"children\"]:",
+        "replace": "            for child in node[\"children\"] + ([node[\"parent\"]] if node.get(\"parent\") else []):"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Treats any HTTP error as a missing org, so a 500 on a child is silently reported in missing_orgs",
+    "edits": [
+      {
+        "find": "        if resp.status_code == 404 and depth > 0:",
+        "replace": "        if resp.status_code >= 400 and depth > 0:"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Off by one on max_depth: expands nodes at depth == max_depth, going one level too deep",
+    "edits": [
+      {
+        "find": "        if max_depth is None or depth < max_depth:",
+        "replace": "        if max_depth is None or depth <= max_depth:"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Fetches children before checking max_depth, so it requests orgs one level deeper than allowed",
+    "edits": [
+      {
+        "find": "        if max_depth is None or depth < max_depth:",
+        "replace": "        if True:"
+      },
+      {
+        "find": "        node = resp.json()\n",
+        "replace": "        node = resp.json()\n        if max_depth is not None and depth > max_depth:\n            continue\n"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Collects team_ids in a list, so a team shared by two orgs is reported twice",
+    "edits": [
+      {
+        "find": "    teams: set[str] = set()",
+        "replace": "    teams: list[str] = []"
+      },
+      {
+        "find": "        teams.update(node[\"team_ids\"])",
+        "replace": "        teams.extend(node[\"team_ids\"])"
+      }
+    ]
+  }
+]

@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Wrong envelope precedence: checks 'items' before 'results' before 'data'",
+    "edits": [
+      {
+        "find": "for k in (\"data\", \"results\", \"items\")",
+        "replace": "for k in (\"items\", \"results\", \"data\")"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "{\"data\": null} raises UnexpectedShape instead of meaning an empty list",
+    "edits": [
+      {
+        "find": "    if value is None:\n        return []\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "A single record under 'data' raises UnexpectedShape instead of becoming a one-element list",
+    "edits": [
+      {
+        "find": "        return [value]\n",
+        "replace": "        raise UnexpectedShape(sorted(body))\n"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Treats any inner 'items'/'results' key as the record list without checking it is a list",
+    "edits": [
+      {
+        "find": "            if isinstance(value.get(inner), list):",
+        "replace": "            if inner in value:"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Returns [] for a body that is neither list nor dict instead of raising UnexpectedShape([])",
+    "edits": [
+      {
+        "find": "    if not isinstance(body, dict):\n        raise UnexpectedShape([])",
+        "replace": "    if not isinstance(body, dict):\n        return []"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Returns people in endpoint order instead of sorting by id",
+    "edits": [
+      {
+        "find": "    return sorted(people, key=lambda p: p[\"id\"])",
+        "replace": "    return people"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Never checks the HTTP status, so a 500 is parsed as a body instead of raising ApiError",
+    "edits": [
+      {
+        "find": "        if not resp.is_success:\n            raise ApiError(resp.status_code, path, resp.text)\n",
+        "replace": ""
+      }
+    ]
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "m1",
+    "bug": "Compares the method case-sensitively, so \"get\" is treated as non-idempotent",
+    "edits": [
+      {
+        "find": "if method.upper() in",
+        "replace": "if method in"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Downgrades every retryable status on a keyless POST, so a 429 becomes give_up instead of back_off",
+    "edits": [
+      {
+        "find": "        return Triage(\"client\", True, \"back_off\")\n",
+        "replace": "        if not (method.upper() in {\"GET\", \"HEAD\", \"OPTIONS\", \"PUT\", \"DELETE\"} or idempotency_key):\n            return Triage(\"server\", False, \"give_up\")\n        return Triage(\"client\", True, \"back_off\")\n"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Ignores the idempotency key: a 5xx on POST gives up even when the server can de-duplicate",
+    "edits": [
+      {
+        "find": " or idempotency_key:",
+        "replace": ":"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Treats PUT and DELETE as non-idempotent, so their 5xx responses give up instead of retrying",
+    "edits": [
+      {
+        "find": ", \"PUT\", \"DELETE\"}",
+        "replace": "}"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Treats 3xx redirects as success instead of raising ValueError",
+    "edits": [
+      {
+        "find": "if 200 <= status <= 299:",
+        "replace": "if 200 <= status <= 399:"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Marks 429 as non-retryable like every other 4xx",
+    "edits": [
+      {
+        "find": "Triage(\"client\", True, \"back_off\")",
+        "replace": "Triage(\"client\", False, \"back_off\")"
+      }
+    ]
+  }
+]

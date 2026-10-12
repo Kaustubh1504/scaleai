@@ -1,0 +1,40 @@
+[
+  {
+    "id": "m1",
+    "bug": "Builds a new Idempotency-Key for every attempt, so a retry after a committed timeout charges twice",
+    "edits": [{"find": "            resp = client.post(\"/v1/payments\", json=body, headers=headers)", "replace": "            headers = {\"Idempotency-Key\": f\"pay:{order_id}:{attempt}\"}\n            resp = client.post(\"/v1/payments\", json=body, headers=headers)"}]
+  },
+  {
+    "id": "m2",
+    "bug": "Uses a random uuid4 key per pay() call, so re-running the script charges the customer again",
+    "edits": [
+      {"find": "import random\n", "replace": "import random\nimport uuid\n"},
+      {"find": "    headers = {\"Idempotency-Key\": f\"pay:{order_id}\"}", "replace": "    headers = {\"Idempotency-Key\": uuid.uuid4().hex}"}
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Treats a timeout as a failed payment and raises instead of retrying with the same key",
+    "edits": [{"find": "            status = None  # the server may have charged; retrying with the same key is safe", "replace": "            raise PaymentError(None, order_id, \"transport error\")"}]
+  },
+  {
+    "id": "m4",
+    "bug": "Raises PaymentError on a truncated 2xx body instead of retrying (the payment may well have gone through)",
+    "edits": [{"find": "                except ValueError:\n                    pass", "replace": "                except ValueError:\n                    raise PaymentError(status, order_id, \"2xx with a body that is not valid JSON\")"}]
+  },
+  {
+    "id": "m5",
+    "bug": "Doesn't special-case 409, so a key reused with a different amount raises a plain PaymentError instead of IdempotencyConflictError",
+    "edits": [{"find": "            elif status == 409:\n                raise IdempotencyConflictError(status, order_id, resp.text)\n", "replace": ""}]
+  },
+  {
+    "id": "m6",
+    "bug": "Retries a 422 validation error as if it were transient",
+    "edits": [{"find": "            elif status not in (500, 502, 503, 504):\n                raise PaymentError(status, order_id, resp.text)\n", "replace": ""}]
+  },
+  {
+    "id": "m7",
+    "bug": "Sleeps after the final attempt before giving up",
+    "edits": [{"find": "        if attempt < max_attempts:\n            d =", "replace": "        if True:\n            d ="}]
+  }
+]

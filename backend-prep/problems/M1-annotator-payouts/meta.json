@@ -1,0 +1,10 @@
+{
+  "id": "M1",
+  "title": "Annotator payouts",
+  "group": "Mock rounds",
+  "level": "Hard",
+  "minutes": 60,
+  "daily": false,
+  "tags": ["pagination", "oauth", "messy data", "money", "retries", "idempotency"],
+  "parts": 3
+}

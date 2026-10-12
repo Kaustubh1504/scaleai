@@ -1,0 +1,10 @@
+{
+  "id": "33",
+  "title": "asyncio fan-out with a semaphore",
+  "group": "6. Concurrency",
+  "level": "Medium",
+  "minutes": 20,
+  "daily": false,
+  "tags": ["concurrency", "asyncio", "semaphore", "gather", "httpx"],
+  "parts": 1
+}

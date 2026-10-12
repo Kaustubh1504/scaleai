@@ -1,0 +1,10 @@
+{
+  "id": "35",
+  "title": "FastAPI CRUD: Projects",
+  "group": "7. Building a service",
+  "level": "Medium",
+  "minutes": 30,
+  "daily": false,
+  "tags": ["fastapi", "pydantic", "rest", "validation", "crud"],
+  "parts": 1
+}

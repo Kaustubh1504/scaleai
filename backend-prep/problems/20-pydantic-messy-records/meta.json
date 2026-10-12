@@ -1,0 +1,10 @@
+{
+  "id": "20",
+  "title": "Validating messy records with Pydantic",
+  "group": "4. Parsing and processing",
+  "level": "Medium",
+  "minutes": 25,
+  "daily": true,
+  "tags": ["pydantic", "validation", "datetimes", "error reporting"],
+  "parts": 1
+}

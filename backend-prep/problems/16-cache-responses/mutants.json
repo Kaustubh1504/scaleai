@@ -1,0 +1,40 @@
+[
+  {
+    "id": "m1",
+    "bug": "No negative caching: a 404 user (None) is treated as a miss and re-fetched for every order",
+    "edits": [{"find": "        if uid not in users:", "replace": "        if users.get(uid) is None:"}]
+  },
+  {
+    "id": "m2",
+    "bug": "Mutates the caller's order dicts by writing \"user\" into them instead of building new dicts",
+    "edits": [{"find": "        out.append({**order, \"user\": users[uid]})", "replace": "        order[\"user\"] = users[uid]\n        out.append(order)"}]
+  },
+  {
+    "id": "m3",
+    "bug": "Swallows every HTTP error as \"user not found\" (None) instead of raising ApiError on a 500",
+    "edits": [
+      {"find": "            if resp.status_code != 404 and not resp.is_success:", "replace": "            if False:"},
+      {"find": "            users[uid] = None if resp.status_code == 404 else resp.json()", "replace": "            users[uid] = None if resp.status_code >= 400 else resp.json()"}
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Off by one on expiry: an entry is still served at exactly set_time + ttl",
+    "edits": [{"find": "        if self.clock.time() >= expires_at:", "replace": "        if self.clock.time() > expires_at:"}]
+  },
+  {
+    "id": "m5",
+    "bug": "get() doesn't refresh recency, so eviction is FIFO instead of LRU",
+    "edits": [{"find": "            return default\n        self.data.move_to_end(key)\n", "replace": "            return default\n"}]
+  },
+  {
+    "id": "m6",
+    "bug": "get_or_load treats a cached None as a miss and calls the loader again",
+    "edits": [{"find": "        value = self.get(key, _MISSING)\n        if value is _MISSING:", "replace": "        value = self.get(key)\n        if value is None:"}]
+  },
+  {
+    "id": "m7",
+    "bug": "Re-setting a key keeps its original expiry instead of restarting the TTL",
+    "edits": [{"find": "        self.data[key] = (self.clock.time() + self.ttl_s, value)", "replace": "        old = self.data.get(key)\n        self.data[key] = (old[0] if old else self.clock.time() + self.ttl_s, value)"}]
+  }
+]

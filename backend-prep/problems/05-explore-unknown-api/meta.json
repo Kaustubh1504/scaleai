@@ -1,0 +1,10 @@
+{
+  "id": "05",
+  "title": "Explore an unknown API via OpenAPI",
+  "group": "2. Exploring an unknown API",
+  "level": "Medium",
+  "minutes": 25,
+  "daily": true,
+  "tags": ["openapi", "exploration", "pagination", "cursor", "aggregation", "auth"],
+  "parts": 1
+}

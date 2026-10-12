@@ -1,0 +1,10 @@
+{
+  "id": "06",
+  "title": "Fix the broken API script",
+  "group": "2. Exploring an unknown API",
+  "level": "Medium",
+  "minutes": 15,
+  "daily": true,
+  "tags": ["debugging", "httpx", "auth", "query-params", "json-body"],
+  "parts": 1
+}

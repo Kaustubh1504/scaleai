@@ -1,0 +1,62 @@
+[
+  {
+    "id": "m1",
+    "bug": "Trusts total_pages over empty data: keeps requesting pages after an early empty page",
+    "edits": [
+      {
+        "find": "if not body[\"data\"] or page >= body[\"total_pages\"]:",
+        "replace": "if page >= body[\"total_pages\"]:"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Off by one at the end: uses page > total_pages, so it always requests one page too many",
+    "edits": [
+      {
+        "find": "page >= body[\"total_pages\"]",
+        "replace": "page > body[\"total_pages\"]"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Starts at page 0 although pages are 1-based",
+    "edits": [
+      {
+        "find": "count(1)",
+        "replace": "count(0)"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Ignores total_pages and only stops on an empty page, costing an extra request every crawl",
+    "edits": [
+      {
+        "find": "if not body[\"data\"] or page >= body[\"total_pages\"]:",
+        "replace": "if not body[\"data\"]:"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Doesn't check the status code: parses an error response as if it were a page",
+    "edits": [
+      {
+        "find": "        if not resp.is_success:\n            raise ApiError(resp.status_code, \"/v1/products\", resp.text)\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Puts the full URL with query string in ApiError.path instead of the request path",
+    "edits": [
+      {
+        "find": "raise ApiError(resp.status_code, \"/v1/products\", resp.text)",
+        "replace": "raise ApiError(resp.status_code, str(resp.request.url), resp.text)"
+      }
+    ]
+  }
+]

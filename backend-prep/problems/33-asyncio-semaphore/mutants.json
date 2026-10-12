@@ -1,0 +1,66 @@
+[
+  {
+    "id": "m1",
+    "bug": "Awaits each request in turn inside a loop, so nothing runs concurrently",
+    "edits": [
+      {
+        "find": "return list(await asyncio.gather(*(fetch(rid) for rid in ids)))",
+        "replace": "return [await fetch(rid) for rid in ids]"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Creates the semaphore but never acquires it, so all requests go out at once",
+    "edits": [
+      {
+        "find": "        async with sem:\n            resp = await client.get(f\"/v1/responses/{rid}\")",
+        "replace": "        resp = await client.get(f\"/v1/responses/{rid}\")"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Off by one: the semaphore allows limit + 1 requests in flight",
+    "edits": [
+      {
+        "find": "sem = asyncio.Semaphore(limit)",
+        "replace": "sem = asyncio.Semaphore(limit + 1)"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Passes return_exceptions=True to gather, so a 404 comes back as a list item instead of raising ApiError",
+    "edits": [
+      {
+        "find": "await asyncio.gather(*(fetch(rid) for rid in ids))",
+        "replace": "await asyncio.gather(*(fetch(rid) for rid in ids), return_exceptions=True)"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Returns the bodies sorted by id instead of in input order",
+    "edits": [
+      {
+        "find": "return list(await asyncio.gather(*(fetch(rid) for rid in ids)))",
+        "replace": "return sorted(await asyncio.gather(*(fetch(rid) for rid in ids)), key=lambda r: r[\"id\"])"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Creates the semaphore once at module level, so it keeps the first call's limit and is bound to the first event loop",
+    "edits": [
+      {
+        "find": "async def fetch_all(",
+        "replace": "_SEM: asyncio.Semaphore | None = None\n\n\nasync def fetch_all("
+      },
+      {
+        "find": "    sem = asyncio.Semaphore(limit)\n",
+        "replace": "    global _SEM\n    if _SEM is None:\n        _SEM = asyncio.Semaphore(limit)\n    sem = _SEM\n"
+      }
+    ]
+  }
+]

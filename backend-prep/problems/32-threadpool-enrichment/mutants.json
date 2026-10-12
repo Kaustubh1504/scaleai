@@ -1,0 +1,62 @@
+[
+  {
+    "id": "m1",
+    "bug": "Returns the records sorted by task id instead of in input order",
+    "edits": [
+      {
+        "find": "    return [by_id[tid] for tid in task_ids]",
+        "replace": "    return [by_id[tid] for tid in sorted(task_ids)]"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Doesn't dedupe the ids, so a repeated id is fetched once per occurrence",
+    "edits": [
+      {
+        "find": "unique = list(dict.fromkeys(task_ids))",
+        "replace": "unique = list(task_ids)"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Waits for each future right after submitting it, so requests run one at a time",
+    "edits": [
+      {
+        "find": "pool.map(fetch, unique)",
+        "replace": "[pool.submit(fetch, tid).result() for tid in unique]"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Ignores max_workers and uses the executor's default pool size",
+    "edits": [
+      {
+        "find": "with ThreadPoolExecutor(max_workers=max_workers) as pool:",
+        "replace": "with ThreadPoolExecutor() as pool:"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Swallows a failed response and returns None for that id instead of raising ApiError",
+    "edits": [
+      {
+        "find": "            raise ApiError(resp.status_code, tid, resp.text)",
+        "replace": "            return None"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Calls resp.raise_for_status(), so callers get httpx.HTTPStatusError instead of ApiError with status and task_id",
+    "edits": [
+      {
+        "find": "        if not resp.is_success:\n            raise ApiError(resp.status_code, tid, resp.text)",
+        "replace": "        resp.raise_for_status()"
+      }
+    ]
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "id": "38",
+  "title": "Async job API with background workers",
+  "group": "7. Building a service",
+  "level": "Hard",
+  "minutes": 45,
+  "daily": false,
+  "tags": ["fastapi", "threading", "queue", "lifespan", "background-jobs"],
+  "parts": 1
+}

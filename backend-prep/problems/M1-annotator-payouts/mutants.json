@@ -1,0 +1,122 @@
+[
+  {
+    "id": "m1",
+    "bug": "Part 1: Treats period_end as inclusive, so a submission at exactly period_end is counted",
+    "edits": [
+      {
+        "find": "        if not period_start <= submitted < period_end:",
+        "replace": "        if not period_start <= submitted <= period_end:"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Part 1: Breaks reviewed_at ties by list order (last one listed wins) instead of the greatest review id",
+    "edits": [
+      {
+        "find": "max(reviews, key=lambda x: x[:2])",
+        "replace": "max(reversed(reviews), key=lambda x: x[0])"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Part 1: Drops the last page of submissions: returns as soon as next_cursor is null without keeping that page",
+    "edits": [
+      {
+        "find": "            out += body[\"results\"]\n            if not body.get(\"next_cursor\"):\n                return out",
+        "replace": "            if not body.get(\"next_cursor\"):\n                return out\n            out += body[\"results\"]"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Part 1: Counts a submission with no reviews as rejected instead of pending",
+    "edits": [
+      {
+        "find": "if reviews else \"pending\"",
+        "replace": "if reviews else \"rejected\""
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Part 2: Treats epoch milliseconds as seconds (no >= 10**11 check)",
+    "edits": [
+      {
+        "find": "datetime.fromtimestamp(value / 1000 if abs(value) >= 10**11 else value, timezone.utc)",
+        "replace": "datetime.fromtimestamp(value, timezone.utc)"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Part 2: Only accepts int reward_cents, so a digit string like \" 40 \" becomes an unknown reward",
+    "edits": [
+      {
+        "find": "        if isinstance(r, str) and r.strip().isascii() and r.strip().isdigit():\n            r = int(r)\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Part 2: Includes on-hold annotators' earnings in total_cents",
+    "edits": [
+      {
+        "find": "        \"total_cents\": sum(r[\"amount_cents\"] for r in ordered if not r[\"on_hold\"]),",
+        "replace": "        \"total_cents\": sum(r[\"amount_cents\"] for r in ordered),"
+      }
+    ]
+  },
+  {
+    "id": "m8",
+    "bug": "Part 2: Forgets to dedupe, so a submission served twice is counted twice",
+    "edits": [
+      {
+        "find": "        if sub[\"id\"] in seen:\n            continue\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m9",
+    "bug": "Part 3: Sleeps after the final attempt before raising (4 failures -> 4 sleeps instead of 3)",
+    "edits": [
+      {
+        "find": "            if failures >= 4:\n                raise ApiError(status, path, f\"gave up after {failures} attempts\")\n            d = min(8.0, 0.5 * 2 ** (failures - 1))\n            self.clock.sleep(self.rng.uniform(d / 2, d))",
+        "replace": "            d = min(8.0, 0.5 * 2 ** (failures - 1))\n            self.clock.sleep(self.rng.uniform(d / 2, d))\n            if failures >= 4:\n                raise ApiError(status, path, f\"gave up after {failures} attempts\")"
+      }
+    ]
+  },
+  {
+    "id": "m10",
+    "bug": "Part 3: Counts each 429 as a failed attempt, so 429s eat into the 4-attempt budget",
+    "edits": [
+      {
+        "find": "                        self.clock.sleep(1.0)\n                    continue",
+        "replace": "                        self.clock.sleep(1.0)\n                    failures += 1\n                    if failures >= 4:\n                        raise ApiError(429, path, \"gave up\")\n                    continue"
+      }
+    ]
+  },
+  {
+    "id": "m11",
+    "bug": "Part 3: Uses a fresh random Idempotency-Key per publish instead of <period>:<annotator_id>, so a re-run pays again",
+    "edits": [
+      {
+        "find": "headers={\"Idempotency-Key\": f\"{period}:{aid}\"})",
+        "replace": "headers={\"Idempotency-Key\": f\"{period}:{aid}:{client.rng.random()}\"})"
+      }
+    ]
+  },
+  {
+    "id": "m12",
+    "bug": "Part 3: On a 401 retries with the same expired token instead of fetching a new one",
+    "edits": [
+      {
+        "find": "                self.token, refreshed = None, True",
+        "replace": "                refreshed = True"
+      }
+    ]
+  }
+]

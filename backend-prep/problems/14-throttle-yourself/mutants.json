@@ -1,0 +1,37 @@
+[
+  {
+    "id": "m1",
+    "bug": "Sleeps a fixed 1 s when the budget runs out instead of sleeping until X-RateLimit-Reset",
+    "edits": [{"find": "        if self.remaining == 0 and wait > 0:\n            self.clock.sleep(wait)", "replace": "        if self.remaining == 0:\n            self.clock.sleep(1.0)"}]
+  },
+  {
+    "id": "m2",
+    "bug": "Off by one: waits for the reset when Remaining is 1, wasting the last request in each window",
+    "edits": [{"find": "if self.remaining == 0 and wait > 0:", "replace": "if self.remaining is not None and self.remaining <= 1 and wait > 0:"}]
+  },
+  {
+    "id": "m3",
+    "bug": "Doesn't check whether Reset already passed, so it tries to sleep a negative duration",
+    "edits": [{"find": "if self.remaining == 0 and wait > 0:", "replace": "if self.remaining == 0:"}]
+  },
+  {
+    "id": "m4",
+    "bug": "Treats X-RateLimit-Reset as seconds-to-wait instead of a unix timestamp",
+    "edits": [{"find": "        wait = self.reset - self.clock.time()", "replace": "        wait = self.reset"}]
+  },
+  {
+    "id": "m5",
+    "bug": "TokenBucket refill is not capped at burst, so a long idle period banks unlimited tokens",
+    "edits": [{"find": "self.tokens = min(self.burst, self.tokens + (now - self.updated) * self.rate)", "replace": "self.tokens = self.tokens + (now - self.updated) * self.rate"}]
+  },
+  {
+    "id": "m6",
+    "bug": "TokenBucket always sleeps a full 1 / rate when short, ignoring partially refilled tokens",
+    "edits": [{"find": "self.clock.sleep((1 - self.tokens) / self.rate)", "replace": "self.clock.sleep(1 / self.rate)"}]
+  },
+  {
+    "id": "m7",
+    "bug": "TokenBucket starts empty instead of full, so the first burst sleeps",
+    "edits": [{"find": "        self.tokens = float(burst)\n", "replace": "        self.tokens = 0.0\n"}]
+  }
+]

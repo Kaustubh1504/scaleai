@@ -1,0 +1,10 @@
+{
+  "id": "39",
+  "title": "Caching proxy with TTL and stale fallback",
+  "group": "7. Building a service",
+  "level": "Medium",
+  "minutes": 35,
+  "daily": false,
+  "tags": ["fastapi", "caching", "ttl", "httpx", "resilience"],
+  "parts": 1
+}

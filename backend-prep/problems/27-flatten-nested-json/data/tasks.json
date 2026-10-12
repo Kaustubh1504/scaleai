@@ -1,0 +1,30 @@
+[
+  {
+    "task_id": "t-1",
+    "project": {"id": "p-9", "name": "Street signs"},
+    "status": "done",
+    "annotations": [
+      {"label": "stop_sign", "bbox": [10, 20, 50, 60], "confidence": 0.98},
+      {"label": "yield", "bbox": [5, 5, 15, 15], "confidence": 0.61}
+    ],
+    "tags": ["night", "rain"],
+    "reviewer": null,
+    "meta": {}
+  },
+  {
+    "task_id": "t-2",
+    "project": {"id": "p-9", "name": "Street signs"},
+    "status": "skipped",
+    "annotations": [],
+    "tags": ["blurry"],
+    "reviewer": {"id": "r-3", "note": "Too blurry, \"unusable\""},
+    "flagged": true
+  },
+  {
+    "task_id": "t-3",
+    "project": {"id": "p-4", "name": "Receipts, scanned"},
+    "status": "done",
+    "annotations": [{"label": "total", "text": "$12.50\nincl. tax"}],
+    "tags": []
+  }
+]

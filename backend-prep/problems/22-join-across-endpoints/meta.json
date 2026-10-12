@@ -1,0 +1,10 @@
+{
+  "id": "22",
+  "title": "Joining three paginated endpoints",
+  "group": "4. Parsing and processing",
+  "level": "Medium",
+  "minutes": 30,
+  "daily": true,
+  "tags": ["joins", "pagination", "lookup tables", "httpx", "orphans"],
+  "parts": 1
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "m1",
+    "bug": "Compares submitted_at and created_at as strings instead of as instants",
+    "edits": [{"find": "and submitted < created:", "replace": "and s[\"submitted_at\"] < task[\"created_at\"]:"}]
+  },
+  {
+    "id": "m2",
+    "bug": "Accepts naive timestamps (no Z or offset) as valid instead of bad_timestamp",
+    "edits": [{"find": "return dt if dt.tzinfo is not None else None", "replace": "return dt if dt.tzinfo is not None else dt.astimezone()"}]
+  },
+  {
+    "id": "m3",
+    "bug": "Accepts True as a reward_cents int because bool is a subclass of int",
+    "edits": [{"find": "if type(t[\"reward_cents\"]) is not int or", "replace": "if not isinstance(t[\"reward_cents\"], int) or"}]
+  },
+  {
+    "id": "m4",
+    "bug": "Indexes records by id with the last occurrence winning instead of the first",
+    "edits": [{"find": "{rid: recs[0] for rid, recs in copies.items()}", "replace": "{rid: recs[-1] for rid, recs in copies.items()}"}]
+  },
+  {
+    "id": "m5",
+    "bug": "Reports one duplicate violation per extra copy instead of once per id",
+    "edits": [{"find": "out.append(Violation(entity, rid, rule, f\"{len(recs)} copies\"))", "replace": "out.extend(Violation(entity, rid, rule, f\"copy {i}\") for i in range(1, len(recs)))"}]
+  },
+  {
+    "id": "m6",
+    "bug": "Treats a task with a bad status as unknown, reporting unknown_task for submissions that point at it",
+    "edits": [{"find": "        task, annotator = tasks.get(s[\"task_id\"]), annotators.get(s[\"annotator_id\"])\n", "replace": "        task, annotator = tasks.get(s[\"task_id\"]), annotators.get(s[\"annotator_id\"])\n        if task is not None and task[\"status\"] not in TASK_STATUSES:\n            task = None\n"}]
+  },
+  {
+    "id": "m7",
+    "bug": "Tests confidence with truthiness, so a confidence of exactly 0 is reported as bad_confidence",
+    "edits": [{"find": "if type(conf) not in (int, float) or", "replace": "if not conf or type(conf) not in (int, float) or"}]
+  }
+]

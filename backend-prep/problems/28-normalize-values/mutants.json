@@ -1,0 +1,37 @@
+[
+  {
+    "id": "m1",
+    "bug": "Uses bool(str), so 'false', 'no', '0' and 'maybe' all come back True",
+    "edits": [{"find": "        word = str(v).lower()\n        if word in TRUE_WORDS:\n            return True\n        if word in FALSE_WORDS:\n            return False", "replace": "        return bool(v)"}]
+  },
+  {
+    "id": "m2",
+    "bug": "Converts digit-only ids through int(), losing leading zeros ('007' becomes '7')",
+    "edits": [{"find": "        return v.upper()", "replace": "        return str(int(v)) if v.isdigit() else v.upper()"}]
+  },
+  {
+    "id": "m3",
+    "bug": "Accepts whole floats as ids (7.0 becomes '7') instead of raising ValueError",
+    "edits": [{"find": "    if type(v) is int and v >= 0:", "replace": "    if isinstance(v, float) and v.is_integer():\n        v = int(v)\n    if type(v) is int and v >= 0:"}]
+  },
+  {
+    "id": "m4",
+    "bug": "Converts floats with Decimal(v), so 0.1 becomes 0.1000000000000000055511151231257827...",
+    "edits": [{"find": "d = Decimal(str(v))", "replace": "d = Decimal(v)"}]
+  },
+  {
+    "id": "m5",
+    "bug": "Treats 0, 0.0 and False as missing because it tests truthiness",
+    "edits": [{"find": "        return None\n    return v\n", "replace": "        return None\n    return v or None\n"}]
+  },
+  {
+    "id": "m6",
+    "bug": "Dedupes split_multi with a set and sorts, losing first-occurrence order",
+    "edits": [{"find": "return list(dict.fromkeys(p for p in parts if p))", "replace": "return sorted({p for p in parts if p})"}]
+  },
+  {
+    "id": "m7",
+    "bug": "Lets a later canonical silently overwrite a shared synonym instead of rejecting the ambiguous mapping",
+    "edits": [{"find": "            if lookup.setdefault(_key(name), canonical) != canonical:\n                raise ValueError(f\"ambiguous mapping: {name!r}\")", "replace": "            lookup[_key(name)] = canonical"}]
+  }
+]

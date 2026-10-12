@@ -1,0 +1,11 @@
+{"id": "r1", "text": "The product arrived broken and support never answered.", "source": "zendesk"}
+{"id": "r2", "text": "Love it, works exactly as described!"}
+{"id": "r3", "text": "[flaky] Shipping was fine I guess."}
+
+{"id": "r4", "text": "   "}
+{"id": "r2", "text": "duplicate id, dropped"}
+{"text": "no id here"}
+["not", "an", "object"]
+{"id": "r5", "text": "[bad] \u0000 garbage the model chokes on"}
+{"id": "r6", "text": "Refund took three weeks. Terrible.
+{"id": "r7", "text": "Great value for money, would buy again."}

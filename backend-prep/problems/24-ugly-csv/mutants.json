@@ -1,0 +1,37 @@
+[
+  {
+    "id": "m1",
+    "bug": "Splits the text into lines before handing it to csv.reader, so a quoted newline breaks the record in two",
+    "edits": [{"find": "csv.reader(io.StringIO(text, newline=\"\"), delimiter=", "replace": "csv.reader(text.splitlines(), delimiter="}]
+  },
+  {
+    "id": "m2",
+    "bug": "Silently falls back to Latin-1 when the bytes aren't valid UTF-8 instead of raising CsvFormatError",
+    "edits": [{"find": "        raise CsvFormatError(f\"{path}: not valid UTF-8\") from None", "replace": "        text = Path(path).read_bytes().decode(\"latin-1\")"}]
+  },
+  {
+    "id": "m3",
+    "bug": "Doesn't number duplicate headers, so later 'score' columns overwrite the first",
+    "edits": [{"find": "header.append(name if seen[name] == 1 else f\"{name}_{seen[name]}\")", "replace": "header.append(name)"}]
+  },
+  {
+    "id": "m4",
+    "bug": "Names empty headers with a 0-based position (column_4 instead of column_5)",
+    "edits": [{"find": "for i, col in enumerate(values, start=1):", "replace": "for i, col in enumerate(values):"}]
+  },
+  {
+    "id": "m5",
+    "bug": "Only skips truly empty lines, so a whitespace-only record like '   ,  ,  ' becomes a row",
+    "edits": [{"find": "        if not any(values):\n            continue", "replace": "        if not record:\n            continue"}]
+  },
+  {
+    "id": "m6",
+    "bug": "Rejects any record with more fields than the header, even when the extras are blank trailing delimiters",
+    "edits": [{"find": "        if any(values[len(header):]):", "replace": "        if values[len(header):]:"}]
+  },
+  {
+    "id": "m7",
+    "bug": "Forgets to strip cell values (' Ana Lima ' stays padded)",
+    "edits": [{"find": "        rows.append(dict(zip(header, values)))", "replace": "        rows.append(dict(zip(header, record + [\"\"] * (len(header) - len(record)))))"}]
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "id": "41",
+  "title": "Secrets and config from the environment",
+  "group": "8. Production quality",
+  "level": "Easy",
+  "minutes": 15,
+  "daily": true,
+  "tags": ["config", "environment", "secrets", "dataclasses", "validation"],
+  "parts": 1
+}

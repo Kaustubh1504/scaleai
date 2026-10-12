@@ -1,0 +1,10 @@
+{
+  "id": "M4",
+  "title": "Ingestion service",
+  "group": "Mock rounds",
+  "level": "Hard",
+  "minutes": 60,
+  "daily": false,
+  "tags": ["fastapi", "sqlite", "background jobs", "retries", "idempotency", "restarts"],
+  "parts": 3
+}

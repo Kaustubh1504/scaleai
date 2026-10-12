@@ -1,0 +1,66 @@
+[
+  {
+    "id": "m1",
+    "bug": "top_n_annotators sorts (total, annotator) with reverse=True, so ties come out annotator descending",
+    "edits": [
+      {
+        "find": "key=lambda kv: (-kv[1], kv[0]))[:n]",
+        "replace": "key=lambda kv: (kv[1], kv[0]), reverse=True)[:n]"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "top_n_annotators ranks individual payout rows instead of per-annotator totals",
+    "edits": [
+      {
+        "find": "sorted(total_by_annotator(rows).items(),",
+        "replace": "sorted(((r[\"annotator\"], r[\"amount_cents\"]) for r in rows),"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "monthly_pivot only includes the months a project had payouts in, instead of filling 0 for every month",
+    "edits": [
+      {
+        "find": "        cells = pivot.setdefault(row[\"project\"], dict.fromkeys(months, 0))\n        cells[row[\"date\"][:7]] += row[\"amount_cents\"]",
+        "replace": "        cells = pivot.setdefault(row[\"project\"], {})\n        cells[row[\"date\"][:7]] = cells.get(row[\"date\"][:7], 0) + row[\"amount_cents\"]"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "monthly_pivot returns projects in first-seen order instead of ascending",
+    "edits": [
+      {
+        "find": "for row in sorted(rows, key=lambda r: r[\"project\"]):",
+        "replace": "for row in rows:"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "monthly_pivot lists months in first-seen order instead of ascending",
+    "edits": [
+      {
+        "find": "months = sorted({row[\"date\"][:7] for row in rows})",
+        "replace": "months = list(dict.fromkeys(row[\"date\"][:7] for row in rows))"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "monthly_pivot keys months by the full date instead of \"YYYY-MM\"",
+    "edits": [
+      {
+        "find": "months = sorted({row[\"date\"][:7] for row in rows})",
+        "replace": "months = sorted({row[\"date\"] for row in rows})"
+      },
+      {
+        "find": "cells[row[\"date\"][:7]] += row[\"amount_cents\"]",
+        "replace": "cells[row[\"date\"]] += row[\"amount_cents\"]"
+      }
+    ]
+  }
+]

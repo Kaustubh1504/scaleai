@@ -1,0 +1,60 @@
+[
+  {
+    "id": "m1",
+    "bug": "Advances offset by the requested limit instead of the number of items returned",
+    "edits": [
+      {
+        "find": "    out = []\n",
+        "replace": "    out = []\n    offset = 0\n"
+      },
+      {
+        "find": "\"offset\": len(out)",
+        "replace": "\"offset\": offset"
+      },
+      {
+        "find": "        out.extend(body[\"items\"])\n",
+        "replace": "        out.extend(body[\"items\"])\n        offset += limit\n"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Compares the page size with the limit it asked for, not the limit the server reported",
+    "edits": [
+      {
+        "find": "len(body[\"items\"]) < body[\"limit\"]",
+        "replace": "len(body[\"items\"]) < limit"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Trusts total: stops once offset reaches the reported total",
+    "edits": [
+      {
+        "find": "len(body[\"items\"]) < body[\"limit\"]",
+        "replace": "len(out) >= body[\"total\"]"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Only stops on an empty page, making an extra request after a short page",
+    "edits": [
+      {
+        "find": "if not body[\"items\"] or len(body[\"items\"]) < body[\"limit\"]:",
+        "replace": "if not body[\"items\"]:"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Doesn't check the status code: parses an error response as if it were a page",
+    "edits": [
+      {
+        "find": "        if not resp.is_success:\n            raise ApiError(resp.status_code, \"/v1/annotations\", resp.text)\n",
+        "replace": ""
+      }
+    ]
+  }
+]

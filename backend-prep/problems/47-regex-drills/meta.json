@@ -1,0 +1,10 @@
+{
+  "id": "47",
+  "title": "Regex drills",
+  "group": "9. Python fluency",
+  "level": "Easy",
+  "minutes": 10,
+  "daily": false,
+  "tags": ["re", "regex", "parsing", "PII"],
+  "parts": 1
+}

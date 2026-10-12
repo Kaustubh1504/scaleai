@@ -1,0 +1,80 @@
+[
+  {
+    "id": "m1",
+    "bug": "Compares updated_at as strings instead of UTC instants, so offsets order wrongly",
+    "edits": [
+      {
+        "find": "        key = (at, ev[\"version\"])",
+        "replace": "        key = (ev[\"updated_at\"], ev[\"version\"])"
+      },
+      {
+        "find": "    for rid, ((at, _), ev) in sorted(best.items()):\n",
+        "replace": "    for rid, (_, ev) in sorted(best.items()):\n        at = _utc(ev[\"updated_at\"])\n"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Picks the winner by version first instead of by the latest updated_at",
+    "edits": [
+      {
+        "find": "        key = (at, ev[\"version\"])",
+        "replace": "        key = (ev[\"version\"], at)"
+      },
+      {
+        "find": "    for rid, ((at, _), ev) in sorted(best.items()):",
+        "replace": "    for rid, ((_, at), ev) in sorted(best.items()):"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "On an exact tie (same instant and version) the earlier event wins instead of the later one",
+    "edits": [
+      {
+        "find": "key >= best[ev[\"id\"]][0]:",
+        "replace": "key > best[ev[\"id\"]][0]:"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Drops an id if any of its versions is a tombstone, even when a newer live version exists",
+    "edits": [
+      {
+        "find": "        if not ev.get(\"deleted\"):",
+        "replace": "        if not any(e[\"id\"] == rid and e.get(\"deleted\") for e in events):"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Keeps the \"deleted\" key in the output records",
+    "edits": [
+      {
+        "find": "            out = {k: v for k, v in ev.items() if k != \"deleted\"}",
+        "replace": "            out = dict(ev)"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Compares raw events for conflicts, so identical duplicates with a differently spelled timestamp (or no deleted key) count as conflicts",
+    "edits": [
+      {
+        "find": ".append(content)",
+        "replace": ".append(dict(ev))"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Outputs updated_at as originally spelled instead of normalizing it to UTC Z format",
+    "edits": [
+      {
+        "find": "            out[\"updated_at\"] = at.strftime(FMT)\n",
+        "replace": ""
+      }
+    ]
+  }
+]

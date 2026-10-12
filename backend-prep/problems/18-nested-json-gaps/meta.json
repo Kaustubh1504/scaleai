@@ -1,0 +1,10 @@
+{
+  "id": "18",
+  "title": "Nested JSON with gaps",
+  "group": "4. Parsing and processing",
+  "level": "Easy",
+  "minutes": 20,
+  "daily": true,
+  "tags": ["json", "nested data", "defaults", "normalization"],
+  "parts": 1
+}

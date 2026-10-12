@@ -1,0 +1,20 @@
+{"user_id": "u1", "score": 0.9, "label": "positive"}
+{"userId": "u2", "score": "0.75", "label": "neutral"}
+
+```json {"uid": "u3", "score": "90%", "label": "positive"} ```
+{"user_id": "u4", "score": 0.5, "label": "negative",}
+```json
+{"user_id": "u5",
+ "score": 1,
+ "label": "positive"}
+```
+[1, 2, 3]
+42
+{"uid": "u6", "userId": "u7", "score": 0.1}
+{"label": "positive", "score": 0.3}
+{"user_id": "u8", "score": "high"}
+{"user_id": "u9", "score": "120%"}
+{"user_id": 10, "label": "neutral"}
+Model output truncated, retrying...
+```
+{"user_id": "u11", "score": 0.2}

@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Uses Counter.most_common(n), which breaks ties by first appearance instead of label ascending",
+    "edits": [
+      {
+        "find": "return sorted(Counter(labels).items(), key=lambda kv: (-kv[1], kv[0]))[:n]",
+        "replace": "return Counter(labels).most_common(n)"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Returns the defaultdict itself, so looking up an unknown annotator silently inserts []",
+    "edits": [
+      {
+        "find": "return dict(groups)",
+        "replace": "return groups"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Keeps an event that is exactly window_s old (drops with < instead of <=)",
+    "edits": [
+      {
+        "find": "while self.events and self.events[0] <= now - self.window_s:",
+        "replace": "while self.events and self.events[0] < now - self.window_s:"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "get() does not refresh recency, so a recently read key can still be evicted",
+    "edits": [
+      {
+        "find": "            return default\n        self.data.move_to_end(key)\n",
+        "replace": "            return default\n"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "put() on an existing key updates the value but does not mark it most recently used",
+    "edits": [
+      {
+        "find": "        self.data[key] = value\n        self.data.move_to_end(key)\n",
+        "replace": "        self.data[key] = value\n"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Evicts one entry too early (len >= capacity), so the cache never holds capacity items",
+    "edits": [
+      {
+        "find": "if len(self.data) > self.capacity:",
+        "replace": "if len(self.data) >= self.capacity:"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Accepts capacity 0 (checks capacity < 0) instead of raising ValueError",
+    "edits": [
+      {
+        "find": "if capacity < 1:",
+        "replace": "if capacity < 0:"
+      }
+    ]
+  }
+]

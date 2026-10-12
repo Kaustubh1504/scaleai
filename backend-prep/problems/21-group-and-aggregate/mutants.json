@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Takes the month from the local offset instead of converting to UTC first",
+    "edits": [
+      {
+        "find": "datetime.fromisoformat(ts).astimezone(timezone.utc).strftime",
+        "replace": "datetime.fromisoformat(ts).strftime"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Uses round(), which rounds half to even (2.5 -> 2), instead of rounding half up",
+    "edits": [
+      {
+        "find": "    return (2 * a + b) // (2 * b)",
+        "replace": "    return round(a / b)"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Wrong tie-break: customers tied on cents are ordered by id descending",
+    "edits": [
+      {
+        "find": "sorted(custs.items(), key=lambda kv: (-kv[1], kv[0]))[:k]",
+        "replace": "sorted(custs.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)[:k]"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Ranks customers by their spend across all regions instead of their spend in that region",
+    "edits": [
+      {
+        "find": "    for o in orders:\n        per_region[o[\"region\"]][o[\"customer_id\"]] += o[\"total_cents\"]\n",
+        "replace": "    overall: dict[str, int] = defaultdict(int)\n    for o in orders:\n        overall[o[\"customer_id\"]] += o[\"total_cents\"]\n    for o in orders:\n        per_region[o[\"region\"]][o[\"customer_id\"]] = overall[o[\"customer_id\"]]\n"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "For an even count the median takes the upper middle value instead of the half-up mean of the two",
+    "edits": [
+      {
+        "find": "        median = s[mid] if len(s) % 2 else _half_up(s[mid - 1] + s[mid], 2)",
+        "replace": "        median = s[mid]"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Doesn't validate k, so k=0 silently returns empty lists instead of raising ValueError",
+    "edits": [
+      {
+        "find": "    if k < 1:\n        raise ValueError(\"k must be at least 1\")\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Takes the median of the values in input order without sorting them first",
+    "edits": [
+      {
+        "find": "        s = sorted(vals)\n",
+        "replace": "        s = list(vals)\n"
+      }
+    ]
+  }
+]

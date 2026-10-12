@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Parses dollars through float, so \"19.99\" becomes 1998 cents",
+    "edits": [
+      {
+        "find": "return int(Decimal(cleaned) * 100)",
+        "replace": "return int(float(cleaned) * 100)"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Validates with regex match instead of fullmatch, so \"1.234\" and \"1e3\" slip through",
+    "edits": [
+      {
+        "find": "if not re.fullmatch(r\"\\d+(?:\\.\\d{1,2})?|\\.\\d{1,2}\", cleaned):",
+        "replace": "if not re.match(r\"\\d+(?:\\.\\d{1,2})?|\\.\\d{1,2}\", cleaned):"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Forgets to strip thousands separators, so \"$1,234.50\" is rejected",
+    "edits": [
+      {
+        "find": ".removeprefix(\"$\").replace(\",\", \"\")",
+        "replace": ".removeprefix(\"$\")"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "split_cents gives the leftover cents to the last parts instead of the first",
+    "edits": [
+      {
+        "find": "return [base + 1 if i < leftover else base for i in range(n)]",
+        "replace": "return [base + 1 if i >= n - leftover else base for i in range(n)]"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "tax_cents defaults to ROUND_HALF_EVEN instead of ROUND_HALF_UP",
+    "edits": [
+      {
+        "find": "def tax_cents(amount_cents: int, rate_percent: str | Decimal, rounding: str = ROUND_HALF_UP) -> int:",
+        "replace": "def tax_cents(amount_cents: int, rate_percent: str | Decimal, rounding: str = ROUND_HALF_EVEN) -> int:"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "tax_cents accepts a float rate instead of raising TypeError",
+    "edits": [
+      {
+        "find": "    if not isinstance(rate_percent, (str, Decimal)):\n",
+        "replace": "    if not isinstance(rate_percent, (str, Decimal, float)):\n"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "total_dollars sums the amounts as floats and then converts to Decimal, so 1.005 rounds to 1.00",
+    "edits": [
+      {
+        "find": "return sum(map(Decimal, amounts), Decimal(0)).quantize(",
+        "replace": "return Decimal(sum(map(float, amounts))).quantize("
+      }
+    ]
+  }
+]

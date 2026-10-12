@@ -1,0 +1,10 @@
+{
+  "id": "23",
+  "title": "Latest record wins (CDC stream)",
+  "group": "4. Parsing and processing",
+  "level": "Medium",
+  "minutes": 25,
+  "daily": true,
+  "tags": ["dedupe", "change data capture", "tombstones", "datetimes", "sorting"],
+  "parts": 1
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "m1",
+    "bug": "On a tie in open-ticket count, picks the largest customer_id instead of the smallest",
+    "edits": [
+      {
+        "find": "min(counts.items(), key=lambda kv: (-kv[1], kv[0]))",
+        "replace": "max(counts.items(), key=lambda kv: (kv[1], kv[0]))"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Drops the last page of tickets: stops when next_cursor is null without counting that page",
+    "edits": [
+      {
+        "find": "        counts.update(t[\"customer_id\"] for t in body[\"results\"])\n        if body.get(\"next_cursor\") is None:\n            break\n",
+        "replace": "        if body.get(\"next_cursor\") is None:\n            break\n        counts.update(t[\"customer_id\"] for t in body[\"results\"])\n"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Forgets the status=open filter, so tickets of every status are counted",
+    "edits": [
+      {
+        "find": "{\"status\": \"open\", \"limit\": 50}",
+        "replace": "{\"limit\": 50}"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Forgets the API key header on the single-customer lookup, which then fails with 401",
+    "edits": [
+      {
+        "find": "client.get(f\"/v1/customers/{customer_id}\", headers=headers)",
+        "replace": "client.get(f\"/v1/customers/{customer_id}\")"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Doesn't handle zero open tickets: crashes on an empty Counter instead of returning None",
+    "edits": [
+      {
+        "find": "    if not counts:\n        return None\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Asks for limit=100 on /v1/tickets, above the spec's maximum of 50, and gets a 400",
+    "edits": [
+      {
+        "find": "\"limit\": 50}",
+        "replace": "\"limit\": 100}"
+      }
+    ]
+  }
+]

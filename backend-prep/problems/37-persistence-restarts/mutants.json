@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Answers a retried create with 201 instead of 200",
+    "edits": [
+      {
+        "find": "                response.status_code = 200\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Idempotency check compares only the title, so a re-POST with a different assignee is a 200 instead of 409",
+    "edits": [
+      {
+        "find": "if (existing[\"title\"], existing[\"assignee\"]) != (body.title, body.assignee):",
+        "replace": "if existing[\"title\"] != body.title:"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "A retry echoes the request (status reset to open) instead of returning the stored task as it is now",
+    "edits": [
+      {
+        "find": "                return existing",
+        "replace": "                return {**body.model_dump(), \"status\": \"open\"}"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "PUT re-inserts the task at the end, so updating a task moves it in the list order",
+    "edits": [
+      {
+        "find": "            tasks[task_id] = {\"id\": task_id, **body.model_dump()}",
+        "replace": "            del tasks[task_id]\n            tasks[task_id] = {\"id\": task_id, **body.model_dump()}"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "PUT merges instead of replacing: a missing assignee keeps the old value instead of becoming null",
+    "edits": [
+      {
+        "find": "            tasks[task_id] = {\"id\": task_id, **body.model_dump()}",
+        "replace": "            old = tasks[task_id][\"assignee\"]\n            tasks[task_id] = {\"id\": task_id, **body.model_dump(),\n                              \"assignee\": old if body.assignee is None else body.assignee}"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Does not persist updates: PUT changes memory only, so a restart loses them",
+    "edits": [
+      {
+        "find": "            tasks[task_id] = {\"id\": task_id, **body.model_dump()}\n            save()\n",
+        "replace": "            tasks[task_id] = {\"id\": task_id, **body.model_dump()}\n"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Non-atomic save: copies the temp file over the store instead of renaming it, leaving .tmp files behind",
+    "edits": [
+      {
+        "find": "        os.replace(tmp, path)",
+        "replace": "        path.write_text(tmp.read_text())"
+      }
+    ]
+  }
+]

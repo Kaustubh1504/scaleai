@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Rejects a non-.csv filename with 400 instead of 415 Unsupported Media Type",
+    "edits": [
+      {
+        "find": "raise HTTPException(415, \"only .csv files are accepted\")",
+        "replace": "raise HTTPException(400, \"only .csv files are accepted\")"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Checks the .csv extension case-sensitively, so EXPORT.CSV is rejected",
+    "edits": [
+      {
+        "find": "if not (file.filename or \"\").lower().endswith(\".csv\"):",
+        "replace": "if not (file.filename or \"\").endswith(\".csv\"):"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Counts task_ids from invalid rows as taken, so a later valid row is wrongly flagged duplicate",
+    "edits": [
+      {
+        "find": "            failed = next(((field, msg) for field, bad, msg in rules if bad), None)\n",
+        "replace": "            failed = next(((field, msg) for field, bad, msg in rules if bad), None)\n            seen.add(task_id)\n"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Reports only the first missing required column instead of naming every missing one",
+    "edits": [
+      {
+        "find": "raise HTTPException(400, \"missing required columns: \" + \", \".join(missing))",
+        "replace": "raise HTTPException(400, \"missing required columns: \" + missing[0])"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Stores submitted_at in its original offset instead of converting it to UTC",
+    "edits": [
+      {
+        "find": "return dt.astimezone(timezone.utc).strftime(",
+        "replace": "return dt.strftime("
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Accepts naive timestamps with no UTC offset (and plain dates) as valid",
+    "edits": [
+      {
+        "find": "if dt.tzinfo else None",
+        "replace": "if dt.tzinfo else dt.strftime(\"%Y-%m-%dT%H:%M:%SZ\")"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Treats blank lines as rows, reporting them as field-count errors and shifting row numbers",
+    "edits": [
+      {
+        "find": "rows = [r for r in csv.reader(io.StringIO(text)) if r]",
+        "replace": "rows = [r for i, r in enumerate(csv.reader(io.StringIO(text))) if r or i > 0]"
+      }
+    ]
+  }
+]

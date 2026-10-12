@@ -1,0 +1,62 @@
+[
+  {
+    "id": "m1",
+    "bug": "Sends the raw token in Authorization without the \"Bearer \" scheme",
+    "edits": [
+      {
+        "find": "\"Authorization\": f\"Bearer {token}\"",
+        "replace": "\"Authorization\": token"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Sends the page size as per-page instead of per_page, which the server rejects with 400",
+    "edits": [
+      {
+        "find": "{\"page\": page, \"per_page\": page_size}",
+        "replace": "{\"page\": page, \"per-page\": page_size}"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Sends the assignment as a form body (data=) instead of JSON, which the server rejects with 415",
+    "edits": [
+      {
+        "find": "json={\"annotator_id\": annotator_id},",
+        "replace": "data={\"annotator_id\": annotator_id},"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Stops one page early: never requests the page equal to total_pages",
+    "edits": [
+      {
+        "find": "if page >= body[\"total_pages\"]:",
+        "replace": "if page + 1 >= body[\"total_pages\"]:"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Round-robins over every annotator instead of only the active ones",
+    "edits": [
+      {
+        "find": "active = list_annotators(client, token, status=\"active\")",
+        "replace": "active = list_annotators(client, token)"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Doesn't check for an empty active list, so it crashes with ZeroDivisionError instead of ValueError",
+    "edits": [
+      {
+        "find": "    if not active:\n        raise ValueError(\"no active annotators\")\n",
+        "replace": ""
+      }
+    ]
+  }
+]

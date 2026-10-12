@@ -1,0 +1,10 @@
+{
+  "id": "24",
+  "title": "Read an ugly CSV export",
+  "group": "5. Data cleaning",
+  "level": "Medium",
+  "minutes": 25,
+  "daily": true,
+  "tags": ["csv", "encoding", "bom", "sniffer", "headers"],
+  "parts": 1
+}

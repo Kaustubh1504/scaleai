@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Tests min_total_cents for truthiness, so min_total_cents=0 is never sent",
+    "edits": [
+      {
+        "find": "if min_total_cents is not None:",
+        "replace": "if min_total_cents:"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Tests include_archived for truthiness, so include_archived=False is never sent",
+    "edits": [
+      {
+        "find": "if include_archived is not None:",
+        "replace": "if include_archived:"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Joins statuses into one comma-separated param (status=paid,shipped) instead of repeating status=",
+    "edits": [
+      {
+        "find": "params = [(\"status\", s) for s in status or []]",
+        "replace": "params = [(\"status\", \",\".join(status))] if status else []"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Formats the datetime in its own timezone with a Z suffix instead of converting to UTC first",
+    "edits": [
+      {
+        "find": "dt.astimezone(timezone.utc).strftime(\"%Y-%m-%dT%H:%M:%SZ\")",
+        "replace": "dt.strftime(\"%Y-%m-%dT%H:%M:%SZ\")"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Keeps microseconds in the timestamp (isoformat) instead of whole seconds",
+    "edits": [
+      {
+        "find": "dt.astimezone(timezone.utc).strftime(\"%Y-%m-%dT%H:%M:%SZ\")",
+        "replace": "dt.astimezone(timezone.utc).isoformat().replace(\"+00:00\", \"Z\")"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Silently assumes naive datetimes are UTC instead of raising ValueError",
+    "edits": [
+      {
+        "find": "                raise ValueError(f\"{name} must be timezone-aware\")\n",
+        "replace": "                dt = dt.replace(tzinfo=timezone.utc)\n"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Never calls raise_for_status, so a 500 surfaces as a KeyError instead of httpx.HTTPStatusError",
+    "edits": [
+      {
+        "find": "    resp.raise_for_status()\n",
+        "replace": ""
+      }
+    ]
+  }
+]

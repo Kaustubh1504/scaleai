@@ -1,0 +1,10 @@
+{
+  "id": "04",
+  "title": "Create a project (POST + error mapping)",
+  "group": "1. HTTP and API basics",
+  "level": "Easy",
+  "minutes": 18,
+  "daily": true,
+  "tags": ["httpx", "post", "json-body", "validation-errors", "exceptions"],
+  "parts": 1
+}

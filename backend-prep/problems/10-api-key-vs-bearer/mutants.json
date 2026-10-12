@@ -1,0 +1,62 @@
+[
+  {
+    "id": "m1",
+    "bug": "Sends the token request as JSON (json=) instead of form-encoded (data=)",
+    "edits": [
+      {
+        "find": "self.http.post(\"/oauth/token\", data=",
+        "replace": "self.http.post(\"/oauth/token\", json="
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Never caches the access token, so every list_orders call fetches a new one",
+    "edits": [
+      {
+        "find": "        if self.token is None:\n",
+        "replace": "        if True:\n"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Fetches the token eagerly in __init__ instead of on first use",
+    "edits": [
+      {
+        "find": "        self.token = None\n",
+        "replace": "        self.token = http.post(\"/oauth/token\", data={\"grant_type\": \"client_credentials\",\n                               \"client_id\": client_id, \"client_secret\": client_secret}).json()[\"access_token\"]\n"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Uses the lowercase token_type as the scheme: sends \"bearer <token>\" instead of \"Bearer <token>\"",
+    "edits": [
+      {
+        "find": "f\"Bearer {self.token}\"",
+        "replace": "f\"bearer {self.token}\""
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Leaks the API key through CatalogClient's repr",
+    "edits": [
+      {
+        "find": "class CatalogClient:\n",
+        "replace": "class CatalogClient:\n    def __repr__(self) -> str:\n        return f\"CatalogClient(api_key={self.api_key!r})\"\n\n"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Treats a 401 like any other error, raising plain ApiError instead of AuthError",
+    "edits": [
+      {
+        "find": "    if resp.status_code == 401:\n        raise AuthError(401, path, \"unauthorized\")  # don't echo a body that may quote credentials\n",
+        "replace": ""
+      }
+    ]
+  }
+]

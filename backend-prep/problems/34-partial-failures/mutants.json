@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m1",
+    "bug": "Catches the KeyError from a malformed 2xx record and turns it into a failure instead of letting the bug propagate",
+    "edits": [
+      {
+        "find": "                return {k: body[k] for k in (\"id\", \"title\", \"pages\")}",
+        "replace": "                try:\n                    return {k: body[k] for k in (\"id\", \"title\", \"pages\")}\n                except KeyError as exc:\n                    return {\"id\": doc_id, \"error_type\": \"other\", \"message\": f\"bad record: {exc}\"}"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "Never retries a 5xx: the first server error is reported as a failure",
+    "edits": [
+      {
+        "find": "if status >= 500 and attempt == 1:",
+        "replace": "if status >= 500 and attempt == 0:"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Retries every non-404 error status, including 4xx like 403",
+    "edits": [
+      {
+        "find": "if status >= 500 and attempt == 1:",
+        "replace": "if status != 404 and attempt == 1:"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "Retries timeouts as well as 5xx",
+    "edits": [
+      {
+        "find": "                kind = \"timeout\" if isinstance(exc, httpx.TimeoutException) else \"other\"\n",
+        "replace": "                kind = \"timeout\" if isinstance(exc, httpx.TimeoutException) else \"other\"\n                if kind == \"timeout\" and attempt == 1:\n                    continue\n"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Only catches timeouts, so a ConnectError crashes the whole batch instead of becoming an 'other' failure",
+    "edits": [
+      {
+        "find": "            except httpx.HTTPError as exc:",
+        "replace": "            except httpx.TimeoutException as exc:"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "Returns failures in completion/input order instead of sorted by id",
+    "edits": [
+      {
+        "find": "sorted((o for o in outcomes if \"error_type\" in o), key=lambda o: o[\"id\"])",
+        "replace": "[o for o in outcomes if \"error_type\" in o]"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Returns the whole response body as the result instead of only id, title and pages",
+    "edits": [
+      {
+        "find": "                return {k: body[k] for k in (\"id\", \"title\", \"pages\")}",
+        "replace": "                {k: body[k] for k in (\"id\", \"title\", \"pages\")}\n                return body"
+      }
+    ]
+  }
+]

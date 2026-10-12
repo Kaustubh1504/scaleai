@@ -1,0 +1,40 @@
+[
+  {
+    "id": "m1",
+    "bug": "Keeps empty dicts and lists as their own columns instead of omitting them",
+    "edits": [{"find": "    def walk(value, prefix):\n        if isinstance(value, dict):", "replace": "    def walk(value, prefix):\n        if prefix and (value == {} or value == []) and isinstance(value, (dict, list)):\n            out[prefix] = value\n            return\n        if isinstance(value, dict):"}]
+  },
+  {
+    "id": "m2",
+    "bug": "Doesn't reject dict keys containing the separator, so 'model.version' silently becomes a nested path",
+    "edits": [{"find": "if not key or sep in key:", "replace": "if not key:"}]
+  },
+  {
+    "id": "m3",
+    "bug": "Sorts the CSV columns alphabetically instead of keeping first-seen order",
+    "edits": [{"find": "columns = list(dict.fromkeys(key for row in flat for key in row))", "replace": "columns = sorted({key for row in flat for key in row})"}]
+  },
+  {
+    "id": "m4",
+    "bug": "Writes booleans with str(), giving 'True'/'False' instead of 'true'/'false'",
+    "edits": [{"find": "[str(v).lower() if isinstance(v, bool) else v for v in values]", "replace": "values"}]
+  },
+  {
+    "id": "m5",
+    "bug": "Writes CSV without quoting (escaping instead), so cells with commas, quotes or newlines don't round-trip",
+    "edits": [{"find": "writer = csv.writer(buf, lineterminator=\"\\n\")", "replace": "writer = csv.writer(buf, lineterminator=\"\\n\", quoting=csv.QUOTE_NONE, escapechar=\"\\\\\")"}]
+  },
+  {
+    "id": "m6",
+    "bug": "Treats any digit string, including '01', as a list index",
+    "edits": [{"find": "r\"0|[1-9][0-9]*\"", "replace": "r\"[0-9]+\""}]
+  },
+  {
+    "id": "m7",
+    "bug": "Doesn't check that list indexes are exactly 0..n-1, so gaps like {'a.1': 1} are accepted",
+    "edits": [
+      {"find": "if not all(is_index) or sorted(map(int, node)) != list(range(len(node))):", "replace": "if not all(is_index):"},
+      {"find": "return [node[str(i)] for i in range(len(node))]", "replace": "return [node[k] for k in sorted(node, key=int)]"}
+    ]
+  }
+]

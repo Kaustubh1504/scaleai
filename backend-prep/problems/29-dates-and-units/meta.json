@@ -1,0 +1,10 @@
+{
+  "id": "29",
+  "title": "Timestamps, durations and money units",
+  "group": "5. Data cleaning",
+  "level": "Medium",
+  "minutes": 30,
+  "daily": true,
+  "tags": ["datetime", "timezones", "zoneinfo", "dst", "decimal", "units"],
+  "parts": 1
+}

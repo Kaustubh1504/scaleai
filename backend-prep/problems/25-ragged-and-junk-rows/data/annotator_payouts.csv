@@ -1,0 +1,22 @@
+# Payout export v3, generated 2024-06-01
+# columns: annotator_id,task_id,hours,amount_usd,note
+annotator_id,task_id,hours,amount_usd,note
+ann_01,t-100,2.5,37.50,
+ann_02,t-101,1.0,15.00,"QA pass, no issues"
+ann_03,t-102,3.0,45.00,"Reviewer said:
+""redo spans 4-7""
+then approved"
+ann_04,t-103,2.0,30.00
+ann_05,t-104,1.5,22.50,ok,EXTRA
+
+,t-105,1.0,15.00,missing annotator
+TOTAL,,,165.00,
+Exported 6 rows
+# export 2 (appended)
+annotator_id,task_id,hours,amount_usd,note
+ann_06,t-106,4.0,60.00,"multi
+line"
+ann_07,t-107,0.5,,
+  ann_08 , t-108 , 1.0 , 15.00 , padded  
+TOTAL,,,75.00,
+Exported 3 rows

@@ -1,0 +1,76 @@
+[
+  {
+    "id": "m1",
+    "bug": "PATCH re-validates the body as a full create, so fields left out (priority, tags) reset to their defaults",
+    "edits": [
+      {
+        "find": "        project.update(changes)",
+        "replace": "        project.update(ProjectCreate(**{\"name\": project[\"name\"], **changes}).model_dump())"
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "bug": "POST /projects returns 200 instead of 201 Created",
+    "edits": [
+      {
+        "find": "@app.post(\"/projects\", status_code=201)",
+        "replace": "@app.post(\"/projects\")"
+      }
+    ]
+  },
+  {
+    "id": "m3",
+    "bug": "Checks name uniqueness case-sensitively, so 'STREET signs' is allowed next to 'Street signs'",
+    "edits": [
+      {
+        "find": "p[\"name\"].casefold() == name.casefold()",
+        "replace": "p[\"name\"] == name"
+      }
+    ]
+  },
+  {
+    "id": "m4",
+    "bug": "PATCH doesn't exclude the project itself from the name check, so renaming to its own name in other case is a 409",
+    "edits": [
+      {
+        "find": "check_name(changes[\"name\"], project_id)",
+        "replace": "check_name(changes[\"name\"])"
+      }
+    ]
+  },
+  {
+    "id": "m5",
+    "bug": "Assigns ids as len(store) + 1, so an id is reused after a delete",
+    "edits": [
+      {
+        "find": "        pid = next(ids)",
+        "replace": "        pid = len(projects) + 1"
+      }
+    ]
+  },
+  {
+    "id": "m6",
+    "bug": "List total is the size of the returned page instead of the filtered count",
+    "edits": [
+      {
+        "find": "\"total\": len(matching)}",
+        "replace": "\"total\": len(matching[offset:offset + limit])}"
+      }
+    ]
+  },
+  {
+    "id": "m7",
+    "bug": "Keeps the store at module level, so every create_app() shares the same projects",
+    "edits": [
+      {
+        "find": "def create_app(clock=None) -> FastAPI:",
+        "replace": "_STORE: dict = {}\n\n\ndef create_app(clock=None) -> FastAPI:"
+      },
+      {
+        "find": "    projects: dict[int, dict] = {}",
+        "replace": "    projects: dict[int, dict] = _STORE"
+      }
+    ]
+  }
+]
