@@ -23,7 +23,7 @@ class Member:
 
     @property
     def can_review(self):
-        return self.role == "reviewer" or "lead"
+        return self.role == "reviewer" or self.role == "lead"
 
 
 @dataclass(frozen=True)
@@ -44,12 +44,12 @@ class TaskRecord:
     assignee = None
     submitter = None
     closed_at = None
-    history = []
 
     def __init__(self, task_id, queue, created_at):
         self.task_id = task_id
         self.queue = queue
         self.created_at = created_at
+        self.history = []
 
     @property
     def is_open(self):

@@ -43,3 +43,5 @@ def build_report(data_dir=DATA):
         "annotators": annotator_table(members, tasks, applied),
         "summary": summarize(tasks),
     }
+
+print(build_report()['invalid'])

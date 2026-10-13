@@ -1,0 +1,8 @@
+﻿user_id, name ,email,team
+U01,Ada Lovelace,ada@example.com,labeling
+U02,  Grace Hopper  ,grace@example.com , eval
+U03,"Turing, Alan",alan@example.com,moderation
+U04,"Katherine ""Kat"" Johnson",kat@example.com,eval
+U02,Grace Duplicate,dup@example.com,eval
+U05,Linus Pauling,linus@example.com,audio
+ U06 ,Margaret Hamilton,margaret@example.com,labeling

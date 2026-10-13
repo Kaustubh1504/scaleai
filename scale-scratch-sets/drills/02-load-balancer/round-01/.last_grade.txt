@@ -1,0 +1,370 @@
+EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE            [100%]
+==================================== ERRORS ====================================
+___________________ ERROR at setup of test_enums_and_values ____________________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_______________ ERROR at setup of test_allowed_transitions_table _______________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+__________ ERROR at setup of test_invalid_transition_is_an_exception ___________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_________________ ERROR at setup of test_register_starts_idle __________________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+__________ ERROR at setup of test_register_duplicate_and_bad_capacity __________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+______________ ERROR at setup of test_unknown_ids_raise_keyerror _______________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_________________ ERROR at setup of test_submit_new_is_pending _________________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+__________ ERROR at setup of test_submit_is_idempotent_in_every_state __________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_______ ERROR at setup of test_duplicate_submit_does_not_change_priority _______
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+____________ ERROR at setup of test_dispatch_highest_priority_first ____________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+________________ ERROR at setup of test_priority_ties_are_fifo _________________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+___________ ERROR at setup of test_least_loaded_worker_with_capacity ___________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+________ ERROR at setup of test_least_loaded_ties_by_registration_order ________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+________ ERROR at setup of test_least_loaded_counts_in_flight_not_ratio ________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+___ ERROR at setup of test_dispatch_stops_when_no_worker_and_leaves_pending ____
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_________ ERROR at setup of test_dispatch_with_no_workers_or_no_tasks __________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_________________ ERROR at setup of test_busy_idle_bookkeeping _________________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+__________________ ERROR at setup of test_complete_frees_slot __________________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+__ ERROR at setup of test_complete_mismatches_return_false_and_change_nothing __
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_________________ ERROR at setup of test_dynamic_registration __________________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+___________ ERROR at setup of test_heartbeat_unknown_raises_keyerror ___________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+______________ ERROR at setup of test_heartbeat_timeout_is_strict ______________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_____________ ERROR at setup of test_heartbeat_keeps_worker_alive ______________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_______________ ERROR at setup of test_custom_heartbeat_timeout ________________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_________ ERROR at setup of test_heartbeat_failure_requeues_in_flight __________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+___________ ERROR at setup of test_heartbeat_recovers_failed_worker ____________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_________ ERROR at setup of test_task_timeout_is_strict_and_frees_slot _________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_____________ ERROR at setup of test_stale_complete_after_timeout ______________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+___ ERROR at setup of test_stale_complete_from_old_worker_after_reassignment ___
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+____________ ERROR at setup of test_fail_requeues_with_next_attempt ____________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+______________ ERROR at setup of test_fail_mismatch_returns_false ______________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+____________ ERROR at setup of test_exactly_four_attempts_then_dead ____________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+__________ ERROR at setup of test_max_retries_zero_means_one_attempt ___________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+___________ ERROR at setup of test_dead_letter_order_is_death_order ____________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_____________ ERROR at setup of test_timeouts_count_toward_retries _____________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_________ ERROR at setup of test_requeued_task_keeps_original_position _________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+___________ ERROR at setup of test_expired_task_is_never_dispatched ____________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+__________________ ERROR at setup of test_deadline_is_strict ___________________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_________ ERROR at setup of test_tick_expires_pending_but_not_assigned _________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+__________ ERROR at setup of test_requeued_task_past_deadline_expires __________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+________________ ERROR at setup of test_tick_does_not_dispatch _________________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+______ ERROR at setup of test_heartbeat_failure_runs_before_task_timeout _______
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+____________ ERROR at setup of test_heartbeat_failure_can_kill_task ____________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_______ ERROR at setup of test_drain_idle_worker_is_removed_immediately ________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_____________ ERROR at setup of test_drain_unknown_raises_keyerror _____________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+___________ ERROR at setup of test_drain_busy_lifecycle_via_complete ___________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_______________ ERROR at setup of test_drain_lifecycle_via_fail ________________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+___________ ERROR at setup of test_drain_lifecycle_via_task_timeout ____________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+________ ERROR at setup of test_draining_worker_heartbeats_and_can_fail ________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_____ ERROR at setup of test_drain_failed_worker_goes_straight_to_removed ______
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+__________ ERROR at setup of test_illegal_transitions_via_public_api ___________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+________ ERROR at setup of test_removed_worker_is_never_failed_by_tick _________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_____________ ERROR at setup of test_scale_up_threshold_is_strict ______________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+______________ ERROR at setup of test_scale_up_with_zero_capacity ______________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+____________ ERROR at setup of test_scale_down_threshold_is_strict _____________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_____________ ERROR at setup of test_no_scale_down_with_one_worker _____________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+________ ERROR at setup of test_draining_and_failed_workers_not_counted ________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+________________ ERROR at setup of test_cooldown_after_nonzero _________________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+_________ ERROR at setup of test_zero_decision_does_not_start_cooldown _________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+__________ ERROR at setup of test_cooldown_applies_across_directions ___________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+___________________ ERROR at setup of test_spec_walkthrough ____________________
+No module named 'lb.balancer'
+
+During handling of the above exception, another exception occurred:
+could not import lb.balancer from /Users/kaustubh/Desktop/scaleai/scale-scratch-sets/drills/02-load-balancer/round-01: No module named 'lb.balancer'
+=========================== short test summary info ============================
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_enums_and_values
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_allowed_transitions_table
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_invalid_transition_is_an_exception
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_register_starts_idle
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_register_duplicate_and_bad_capacity
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_unknown_ids_raise_keyerror
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_submit_new_is_pending
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_submit_is_idempotent_in_every_state
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_duplicate_submit_does_not_change_priority
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_dispatch_highest_priority_first
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_priority_ties_are_fifo
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_least_loaded_worker_with_capacity
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_least_loaded_ties_by_registration_order
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_least_loaded_counts_in_flight_not_ratio
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_dispatch_stops_when_no_worker_and_leaves_pending
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_dispatch_with_no_workers_or_no_tasks
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_busy_idle_bookkeeping
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_complete_frees_slot
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_complete_mismatches_return_false_and_change_nothing
+ERROR ../../../02-load-balancer/_grader/test_part1.py::test_dynamic_registration
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_heartbeat_unknown_raises_keyerror
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_heartbeat_timeout_is_strict
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_heartbeat_keeps_worker_alive
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_custom_heartbeat_timeout
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_heartbeat_failure_requeues_in_flight
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_heartbeat_recovers_failed_worker
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_task_timeout_is_strict_and_frees_slot
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_stale_complete_after_timeout
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_stale_complete_from_old_worker_after_reassignment
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_fail_requeues_with_next_attempt
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_fail_mismatch_returns_false
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_exactly_four_attempts_then_dead
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_max_retries_zero_means_one_attempt
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_dead_letter_order_is_death_order
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_timeouts_count_toward_retries
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_requeued_task_keeps_original_position
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_expired_task_is_never_dispatched
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_deadline_is_strict
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_tick_expires_pending_but_not_assigned
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_requeued_task_past_deadline_expires
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_tick_does_not_dispatch
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_heartbeat_failure_runs_before_task_timeout
+ERROR ../../../02-load-balancer/_grader/test_part2.py::test_heartbeat_failure_can_kill_task
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_drain_idle_worker_is_removed_immediately
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_drain_unknown_raises_keyerror
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_drain_busy_lifecycle_via_complete
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_drain_lifecycle_via_fail
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_drain_lifecycle_via_task_timeout
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_draining_worker_heartbeats_and_can_fail
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_drain_failed_worker_goes_straight_to_removed
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_illegal_transitions_via_public_api
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_removed_worker_is_never_failed_by_tick
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_scale_up_threshold_is_strict
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_scale_up_with_zero_capacity
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_scale_down_threshold_is_strict
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_no_scale_down_with_one_worker
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_draining_and_failed_workers_not_counted
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_cooldown_after_nonzero
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_zero_decision_does_not_start_cooldown
+ERROR ../../../02-load-balancer/_grader/test_part3.py::test_cooldown_applies_across_directions
+ERROR ../../../02-load-balancer/_grader/test_walkthrough.py::test_spec_walkthrough
+61 errors in 0.14s

@@ -69,20 +69,32 @@ class LoadBalancer:
         self.registry = WorkerRegistry()
         self.failed: list[tuple[Task, str]] = []  # (task, reason) for tasks given up on
         self._next = 0  # round-robin position
+        self._states = {}
+        self._overloaded_at = {}
 
     # ------------------------------------------------------------ membership
 
     def add_worker(self, worker: Worker) -> None:
+        if self.registry.get(worker.id) is not None:
+            raise ValueError("worker id already present")
         self.registry.register(worker)
+        self._states[worker.worker_id] = WorkerState.ACTIVE
         log.info("worker %s joined", worker.worker_id)
 
     def remove_worker(self, worker_id: str) -> None:
+        if self.registry.get(worker_id) is None:
+            raise KeyError("worker id not present")
         self.registry.unregister(worker_id)
+        self._states
         log.info("worker %s left", worker_id)
 
     def worker_state(self, worker_id: str) -> WorkerState:
-        raise NotImplementedError("worker states are not tracked yet")
-
+        if self.registry.get(worker_id) is None:
+            raise KeyError("worker id not present")
+        self._current_state(worker_id)
+    
+    def _current_state(self, worker_id):
+        state = self._states[worker_id]
     # --------------------------------------------------------------- routing
 
     def dispatch(self, task: Task) -> DispatchResult:
