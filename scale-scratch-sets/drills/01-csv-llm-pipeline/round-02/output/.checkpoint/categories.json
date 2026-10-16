@@ -1,0 +1,14 @@
+{
+  "0860f758e8eed42bfcc19641b98670feae1c2c5d68185119588232fefc92a3b9": "transcription",
+  "4e444d288dc6e0c831c00ad588d9f6dc99f8cde6e6eff17acbc55e7c98460540": "data_labeling",
+  "0bf9086b56d34cd0f7d29fecc8771e440548f2a1e62f633e0eca1d3ef1a0ed0b": "model_evaluation",
+  "88c1150ace2119c81b36134b0a43be4a4d219139d7f7d6d210f88d7ec2e73c1a": "content_moderation",
+  "322046d8f9f4a3935bcf945db85eb3d7460be17881bb2b8b7f4580dbb6168771": "data_labeling",
+  "0acd3a27b217a79cd4a0977e9bab52ee5597ace6e30953ebe554045a9cef6282": "model_evaluation",
+  "75c4985df184f476913fd0cc3b60640c1b3978e83ef7181e20682eeb26c35a04": "content_moderation",
+  "ef147d8afe3ed05958532cb395aac8bcb8e87d4a6f6f9026a6c959ac82887277": "transcription",
+  "66ffa727eaf37bc3cb6b3ffd93c8718341c7852db644469ef6883fd347e6ad95": "data_labeling",
+  "feabca8b223df596e79ed58d71107c5f34b3272d82db3f6516ce17f4e70b80d8": "model_evaluation",
+  "4be3452a361bd03d0da2389edf3c2aef8059231c6f6912e8aad4b4e79759ae4e": "model_evaluation",
+  "9be932affc93464864a1279d2f05eb17736d19aadf1736ead1fd2d6876475c83": "content_moderation"
+}
