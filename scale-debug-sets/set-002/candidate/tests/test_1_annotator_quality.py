@@ -1,9 +1,6 @@
 import unittest
 
 from consensus.reports import build_report
-import logging
-
-logger = logging.getLogger(__name__)
 
 EXPECTED = {
     "ann-01": {"accuracy": 1.0, "gold_answered": 2, "blocked": False},

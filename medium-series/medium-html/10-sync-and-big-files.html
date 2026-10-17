@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Incremental Sync and Huge Files in Python, Step by Step</title>
+<style>
+  body { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; font: 18px/1.6 Georgia, serif; color: #222; background: #fff; }
+  .bar { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 1px solid #ddd; margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  button { font: 600 15px system-ui, sans-serif; padding: 10px 18px; border: 0; border-radius: 20px; background: #1a8917; color: #fff; cursor: pointer; }
+  .hint { font: 14px system-ui, sans-serif; color: #666; }
+  a.back { font: 14px system-ui, sans-serif; color: #1a8917; }
+  pre { background: #f2f2f2; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.45; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 0.85em; background: #f2f2f2; padding: 1px 4px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  blockquote { border-left: 3px solid #222; margin-left: 0; padding-left: 16px; font-style: italic; }
+</style></head>
+<body>
+<div class="bar">
+  <a class="back" href="index.html">&larr; All articles</a>
+  <button id="copy">Copy for Medium</button>
+  <span class="hint" id="hint">Click, then paste into a new Medium story (Cmd+V).</span>
+</div>
+<article id="article">
+<h1>Incremental Sync and Huge Files in Python, Step by Step</h1>
+<h3>Keep a local copy of an API in sync, and process files too big for memory</h3>
+<p>Two jobs come up in almost every data backend:</p>
+<ul>
+<li><strong>Mirror an upstream API</strong> without downloading everything every time, and without losing deletes.</li>
+<li><strong>Process files bigger than RAM</strong>, and resume after a crash without duplicating output.</li>
+</ul>
+<p>We'll build two standalone snippets: <code>sync()</code> with <code>apply_changes()</code>, and the JSONL helpers <code>iter_jsonl()</code>, <code>append_jsonl()</code> and <code>count_complete_lines()</code>.</p>
+<p><strong>What you need:</strong> Python 3.9+. Standard library only.</p>
+<hr />
+<h2>Part 1: Incremental sync</h2>
+<h3>Step 1: Why a full re-download doesn't scale</h3>
+<p>Fetching all 2 million records every five minutes is slow, expensive, and hard on the upstream. Most APIs let you ask for changes only: <code>GET /records?updated_since=...</code>.</p>
+<h3>Step 2: Keep a watermark</h3>
+<p>The <strong>watermark</strong> is the highest <code>updated_at</code> value you've fully processed. Next run, ask for everything changed since then. Save it alongside your data.</p>
+<h3>Step 3: Ask for <code>&gt;=</code>, not <code>&gt;</code></h3>
+<p>If two records share the same timestamp and your previous run stopped between them, <code>updated_since &gt; watermark</code> skips the second one forever. Ask for <strong>at or after</strong> the watermark, and make replays harmless (next step).</p>
+<h3>Step 4: Make applying a change idempotent</h3>
+<p>When a record arrives, compare versions:</p>
+<ul>
+<li><strong>Newer than what you have:</strong> store it.</li>
+<li><strong>Same or older:</strong> skip it. It's a replay, or it arrived out of order.</li>
+</ul>
+<p>Now re-running a sync, or overlapping two pages, can never corrupt your data.</p>
+<h3>Step 5: Keep deletes as tombstones</h3>
+<p>If the upstream marks a deletion with <code>"deleted": true</code> and you simply drop the row, an <em>older</em> update replayed later brings it back. Keep the deletion record as a <strong>tombstone</strong> (it has the newest version, so older updates are skipped), and filter tombstones out when reading.</p>
+<h3>Step 6: Move the watermark only after the data is safe</h3>
+<p>Move the watermark forward <strong>after</strong> every page has been applied. If you crash halfway, the next run starts from the old watermark and replays pages, which Step 4 makes harmless. If you saved the watermark first and then crashed, those records would be lost for good.</p>
+<h3>The complete snippet</h3>
+<pre><code class="language-python">def apply_changes(store: dict, records, key: str = &quot;id&quot;, version: str = &quot;updated_at&quot;) -&gt; dict:
+    &quot;&quot;&quot;Upsert into store {id: record}: newer version wins, older or equal replays are skipped.
+    Deletes arrive as records with &quot;deleted&quot;: true and are kept as tombstones (so an old update
+    can't resurrect them). Live rows: [r for r in store.values() if not r.get(&quot;deleted&quot;)].&quot;&quot;&quot;
+    counts = {&quot;upserted&quot;: 0, &quot;deleted&quot;: 0, &quot;skipped&quot;: 0, &quot;max_version&quot;: None}
+    for rec in records:
+        k, v = rec[key], rec[version]
+        if counts[&quot;max_version&quot;] is None or v &gt; counts[&quot;max_version&quot;]:
+            counts[&quot;max_version&quot;] = v
+        current = store.get(k)
+        if current is not None and current[version] &gt;= v:
+            counts[&quot;skipped&quot;] += 1
+            continue
+        store[k] = rec
+        counts[&quot;deleted&quot; if rec.get(&quot;deleted&quot;) else &quot;upserted&quot;] += 1
+    return counts
+
+
+def sync(fetch_page, store: dict, state: dict, key: str = &quot;id&quot;, version: str = &quot;updated_at&quot;) -&gt; dict:
+    &quot;&quot;&quot;fetch_page(since, cursor) -&gt; (records, next_cursor), records changed at/after `since`.
+    Applies every page, then advances state[&quot;watermark&quot;]. Re-running after a crash is safe:
+    replays are skipped. Persist store + state (atomically) after it returns.&quot;&quot;&quot;
+    since, cursor = state.get(&quot;watermark&quot;), None
+    totals = {&quot;upserted&quot;: 0, &quot;deleted&quot;: 0, &quot;skipped&quot;: 0}
+    high = since
+    while True:
+        records, cursor = fetch_page(since, cursor)
+        c = apply_changes(store, records, key, version)
+        for k in totals:
+            totals[k] += c[k]
+        if c[&quot;max_version&quot;] is not None and (high is None or c[&quot;max_version&quot;] &gt; high):
+            high = c[&quot;max_version&quot;]
+        if not cursor:
+            break
+    state[&quot;watermark&quot;] = high
+    return totals
+</code></pre>
+<h3>Step 7: Run it and persist the result</h3>
+<pre><code class="language-python">store = load_cache(&quot;output/store.json&quot;)         # json_cache snippet from part 4
+state = load_cache(&quot;output/state.json&quot;)
+
+def fetch_page(since, cursor):
+    params = {&quot;updated_since&quot;: since} if since else {}
+    if cursor:
+        params[&quot;cursor&quot;] = cursor
+    body = request_with_retries(&quot;GET&quot;, f&quot;{BASE}/records&quot;, params=params).json()
+    return body[&quot;data&quot;], body.get(&quot;next_cursor&quot;)
+
+totals = sync(fetch_page, store, state)
+save_cache(&quot;output/store.json&quot;, store)          # data first
+save_cache(&quot;output/state.json&quot;, state)          # then the watermark
+</code></pre>
+<hr />
+<h2>Part 2: Files too big for memory</h2>
+<h3>Step 8: Use JSONL for big data</h3>
+<p>A single JSON array has to be parsed all at once. <strong>JSON Lines</strong>, one object per line, can be read one line at a time, appended to without rewriting the file, and survives a crash with at most one damaged line at the end.</p>
+<h3>Step 9: Stream it in, and skip bad lines</h3>
+<p>Iterate over the open file instead of calling <code>read()</code>, so memory stays flat whether the file is 1 MB or 50 GB. Record bad lines (with their line numbers) instead of crashing on them.</p>
+<h3>Step 10: Append safely</h3>
+<p>Open in append mode, write each record followed by <code>\n</code>, then <code>flush()</code> and <code>fsync()</code> so the data really reaches the disk before you count it as done.</p>
+<h3>Step 11: Resume from where you stopped</h3>
+<p>After a crash, count the lines that end with a newline. A half-written last line doesn't count. That number tells you how many records were finished, so you continue from the next one.</p>
+<h3>The complete snippet</h3>
+<pre><code class="language-python">import json
+import os
+
+
+def iter_jsonl(path, errors=None):
+    &quot;&quot;&quot;Yield (line_no, obj) one line at a time (constant memory). Bad lines -&gt; errors, skipped.&quot;&quot;&quot;
+    with open(path, encoding=&quot;utf-8&quot;) as f:
+        for n, line in enumerate(f, 1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                yield n, json.loads(line)
+            except ValueError:
+                if errors is not None:
+                    errors.append({&quot;line&quot;: n, &quot;error&quot;: &quot;invalid_json&quot;})
+
+
+def append_jsonl(path, records) -&gt; int:
+    &quot;&quot;&quot;Append records, one JSON object per line, and fsync. Returns how many were written.&quot;&quot;&quot;
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    n = 0
+    with open(path, &quot;a&quot;, encoding=&quot;utf-8&quot;) as f:
+        for rec in records:
+            f.write(json.dumps(rec, ensure_ascii=False) + &quot;\n&quot;)
+            n += 1
+        f.flush()
+        os.fsync(f.fileno())
+    return n
+
+
+def count_complete_lines(path) -&gt; int:
+    &quot;&quot;&quot;Lines that end in a newline: where to resume after a crash (a torn last line doesn't count).&quot;&quot;&quot;
+    if not os.path.exists(path):
+        return 0
+    with open(path, &quot;rb&quot;) as f:
+        return sum(chunk.count(b&quot;\n&quot;) for chunk in iter(lambda: f.read(1 &lt;&lt; 20), b&quot;&quot;))
+</code></pre>
+<h3>Step 12: A resumable export</h3>
+<pre><code class="language-python">done = count_complete_lines(&quot;output/export.jsonl&quot;)
+batch = []
+for n, record in iter_jsonl(&quot;data/huge_input.jsonl&quot;, errors):
+    if n &lt;= done:
+        continue                               # finished before the crash
+    batch.append(transform(record))
+    if len(batch) == 500:
+        append_jsonl(&quot;output/export.jsonl&quot;, batch)
+        batch = []
+append_jsonl(&quot;output/export.jsonl&quot;, batch)
+</code></pre>
+<p>This uses line numbers as the resume key and assumes no blank lines in the input. For an input with blank or invalid lines, save the last processed <code>n</code> in a small checkpoint file instead.</p>
+<hr />
+<h2>Testing</h2>
+<pre><code class="language-python">def test_sync_handles_deletes_and_replays():
+    pages = {(None, None): ([{&quot;id&quot;: &quot;a&quot;, &quot;updated_at&quot;: 1}, {&quot;id&quot;: &quot;b&quot;, &quot;updated_at&quot;: 2}], &quot;p2&quot;),
+             (None, &quot;p2&quot;): ([{&quot;id&quot;: &quot;a&quot;, &quot;updated_at&quot;: 3, &quot;deleted&quot;: True}], None)}
+    store, state = {}, {}
+    sync(lambda since, cur: pages[(since, cur)], store, state)
+    assert state[&quot;watermark&quot;] == 3
+    assert [r[&quot;id&quot;] for r in store.values() if not r.get(&quot;deleted&quot;)] == [&quot;b&quot;]
+    assert apply_changes(store, [{&quot;id&quot;: &quot;a&quot;, &quot;updated_at&quot;: 1}])[&quot;skipped&quot;] == 1   # no resurrection
+
+
+def test_torn_last_line(tmp_path):
+    p = tmp_path / &quot;x.jsonl&quot;
+    append_jsonl(p, [{&quot;a&quot;: 1}, {&quot;a&quot;: 2}])
+    with open(p, &quot;a&quot;) as f:
+        f.write('{&quot;torn&quot;')                     # simulated crash mid-write
+    assert count_complete_lines(p) == 2
+</code></pre>
+<hr />
+<h2>Recap</h2>
+<ol>
+<li><strong>Sync from a watermark,</strong> asking for changes <em>at or after</em> it.</li>
+<li><strong>Apply changes idempotently:</strong> newer versions win, replays are skipped.</li>
+<li><strong>Keep deletes as tombstones</strong> so old updates can't bring rows back.</li>
+<li><strong>Advance the watermark only after the data is saved.</strong></li>
+<li>For huge data, <strong>stream JSONL</strong>: read line by line, append with <code>fsync</code>, and resume by counting complete lines.</li>
+</ol>
+</article>
+<script>
+const btn = document.getElementById("copy");
+if (btn) btn.addEventListener("click", () => {
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById("article"));
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  sel.removeAllRanges();
+  document.getElementById("hint").textContent = ok
+    ? "Copied. Paste into a new Medium story with Cmd+V."
+    : "Copy was blocked. Select the article text and press Cmd+C.";
+});
+</script>
+</body></html>

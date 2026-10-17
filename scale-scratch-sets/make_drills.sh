@@ -18,6 +18,7 @@ make_round() {  # $1 = problem dir, $2 = round number
   mkdir -p "$dest/tests"
   cp "$prob/SPEC.md" "$dest/"
   [ -d "$prob/data" ] && cp -R "$prob/data" "$dest/data"
+  [ -d "$prob/tools" ] && cp -R "$prob/tools" "$dest/tools"
   for code_dir in app lb output; do
     [ -d "$prob/$code_dir" ] && mkdir -p "$dest/$code_dir"
   done

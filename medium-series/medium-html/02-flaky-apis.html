@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calling Flaky APIs in Python: Retries, Pagination, and Concurrency, Step by Step</title>
+<style>
+  body { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; font: 18px/1.6 Georgia, serif; color: #222; background: #fff; }
+  .bar { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 1px solid #ddd; margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  button { font: 600 15px system-ui, sans-serif; padding: 10px 18px; border: 0; border-radius: 20px; background: #1a8917; color: #fff; cursor: pointer; }
+  .hint { font: 14px system-ui, sans-serif; color: #666; }
+  a.back { font: 14px system-ui, sans-serif; color: #1a8917; }
+  pre { background: #f2f2f2; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.45; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 0.85em; background: #f2f2f2; padding: 1px 4px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  blockquote { border-left: 3px solid #222; margin-left: 0; padding-left: 16px; font-style: italic; }
+</style></head>
+<body>
+<div class="bar">
+  <a class="back" href="index.html">&larr; All articles</a>
+  <button id="copy">Copy for Medium</button>
+  <span class="hint" id="hint">Click, then paste into a new Medium story (Cmd+V).</span>
+</div>
+<article id="article">
+<h1>Calling Flaky APIs in Python: Retries, Pagination, and Concurrency, Step by Step</h1>
+<h3>Four small functions that make any third-party API safe to depend on</h3>
+<p>Every backend eventually depends on someone else's API, and every API eventually has a bad day: rate limits, 502s, slow responses, pagination that loops forever. In this tutorial we'll build four standalone functions, one step at a time:</p>
+<ol>
+<li><code>request_with_retries()</code>: any HTTP call, retried safely</li>
+<li><code>fetch_all_pages()</code>: follow cursor pagination without infinite loops</li>
+<li><code>bounded_map()</code>: run many calls in parallel, but only N at a time</li>
+<li><code>bounded_gather()</code>: the same thing for async code</li>
+</ol>
+<p><strong>What you need:</strong> Python 3.9+ and <code>pip install httpx</code>.</p>
+<hr />
+<h2>Part 1: Retries</h2>
+<h3>Step 1: The naive call</h3>
+<pre><code class="language-python">r = httpx.get(f&quot;{base}/customers/{cid}&quot;)
+customer = r.json()
+</code></pre>
+<p>If the API returns a 503, <code>r.json()</code> might be an HTML error page, and your code crashes. If the network drops, <code>httpx</code> raises an exception. Neither should take down your request.</p>
+<h3>Step 2: Decide what's worth retrying</h3>
+<p>Before writing a loop, sort the possible failures into two groups:</p>
+<ul>
+<li><strong>Temporary, so retry:</strong> 429 Too Many Requests, any 5xx, timeouts, connection errors.</li>
+<li><strong>Permanent, so don't retry:</strong> 400, 401, 403, 404, 422. The same request will fail the same way every time.</li>
+</ul>
+<h3>Step 3: Write the loop</h3>
+<pre><code class="language-python">for attempt in range(retries + 1):
+    try:
+        r = http.request(method, url, **kwargs)
+    except httpx.TransportError:          # timeouts + connection errors
+        continue
+    if r.status_code != 429 and r.status_code &lt; 500:
+        return r                          # success OR permanent failure: stop
+return None                               # every attempt failed
+</code></pre>
+<p>Notice that the loop doesn't decide what <em>success</em> means. It returns the first response that isn't worth retrying, and lets the caller judge it. A 404 might be an error for one caller and an answer ("customer doesn't exist") for another.</p>
+<h3>Step 4: Wait longer between attempts</h3>
+<p>Retrying instantly makes an overloaded server worse. Wait with exponential backoff: 0.5 s, 1 s, 2 s…</p>
+<pre><code class="language-python">    if attempt:
+        time.sleep(backoff * 2 ** (attempt - 1))
+</code></pre>
+<blockquote>
+<p><strong>Production tip:</strong> add jitter (<code>random.uniform(d / 2, d)</code>) so a thousand clients that failed together don't all retry at the same instant. If a 429 response includes a <code>Retry-After</code> header, wait that long instead.</p>
+</blockquote>
+<h3>Step 5: Default timeout, and close what you open</h3>
+<p>Always set a timeout; otherwise a slow server can hang the call far longer than you'd expect. Accept an optional client so tests can inject a fake one, and close the client only if you created it.</p>
+<h3>The complete function</h3>
+<pre><code class="language-python">import time
+
+import httpx
+
+
+def request_with_retries(method: str, url: str, *, retries: int = 3, backoff: float = 0.5,
+                         client=None, **kwargs):
+    &quot;&quot;&quot;Retry 429 / 5xx / timeouts / connection errors with exponential backoff.
+
+    Returns the first non-retryable Response (2xx or another 4xx) for you to judge,
+    or None if every attempt failed. kwargs go to httpx: json=, params=, headers=, content=, timeout=
+    &quot;&quot;&quot;
+    http = client or httpx.Client()
+    kwargs.setdefault(&quot;timeout&quot;, 10)
+    try:
+        for attempt in range(retries + 1):
+            if attempt:
+                time.sleep(backoff * 2 ** (attempt - 1))
+            try:
+                r = http.request(method, url, **kwargs)
+            except httpx.TransportError:
+                continue
+            if r.status_code != 429 and r.status_code &lt; 500:
+                return r
+        return None
+    finally:
+        if client is None:
+            http.close()
+</code></pre>
+<h3>Step 6: Turn the result into a decision</h3>
+<p>Because the function returns the response rather than a bare <code>True</code>/<code>False</code>, each caller can map outcomes to whatever its own error handling needs:</p>
+<pre><code class="language-python">r = request_with_retries(&quot;GET&quot;, f&quot;{base}/customers/{cid}&quot;, headers={&quot;Authorization&quot;: f&quot;Bearer {token}&quot;})
+if r is None:
+    customer, err = None, &quot;upstream_unavailable&quot;     # network / 429 / 5xx even after retries
+elif r.status_code == 404:
+    customer, err = None, &quot;unknown_customer&quot;
+elif r.is_success:
+    customer, err = r.json(), None
+else:
+    customer, err = None, &quot;upstream_error&quot;
+</code></pre>
+<hr />
+<h2>Part 2: Pagination</h2>
+<h3>Step 7: Follow the cursor</h3>
+<p>Most list APIs return a page of items plus a cursor for the next page. The basic loop:</p>
+<pre><code class="language-python">items, cursor = [], None
+while True:
+    body = httpx.get(url, params={&quot;cursor&quot;: cursor} if cursor else {}).json()
+    items.extend(body[&quot;data&quot;])
+    cursor = body.get(&quot;next_cursor&quot;)
+    if not cursor:
+        break
+</code></pre>
+<h3>Step 8: Guard against loops</h3>
+<p>If the API has a bug and returns the same cursor twice, this runs forever and burns through your rate limit. Track the cursors you've already seen, and cap the total page count:</p>
+<pre><code class="language-python">def fetch_all_pages(fetch_page, max_pages: int = 10_000) -&gt; list:
+    &quot;&quot;&quot;fetch_page(cursor) -&gt; (items, next_cursor). Stops on a falsy cursor; guards against loops.&quot;&quot;&quot;
+    items, cursor, seen = [], None, set()
+    for _ in range(max_pages):
+        page_items, cursor = fetch_page(cursor)
+        items.extend(page_items)
+        if not cursor:
+            return items
+        if cursor in seen:
+            raise RuntimeError(f&quot;repeated cursor {cursor!r}&quot;)
+        seen.add(cursor)
+    raise RuntimeError(&quot;too many pages&quot;)
+</code></pre>
+<p>The function doesn't know about HTTP. You pass in a small <code>fetch_page(cursor)</code> function, so it works with any API shape:</p>
+<pre><code class="language-python">def page(cursor):
+    r = request_with_retries(&quot;GET&quot;, url, params={&quot;cursor&quot;: cursor} if cursor else {})
+    if r is None or not r.is_success:
+        raise RuntimeError(&quot;page fetch failed&quot;)
+    body = r.json()
+    return body[&quot;data&quot;], body.get(&quot;next_cursor&quot;)
+
+everything = fetch_all_pages(page)
+</code></pre>
+<hr />
+<h2>Part 3: Doing many calls at once</h2>
+<h3>Step 9: Sequential is too slow</h3>
+<p>200 items × 1 second per call = more than 3 minutes:</p>
+<pre><code class="language-python">results = [enrich(item) for item in items]
+</code></pre>
+<h3>Step 10: Unbounded is dangerous</h3>
+<p>Starting all 200 calls at once gets you rate-limited, or knocks over a small server. You want <strong>N at a time</strong>.</p>
+<h3>Step 11: A bounded thread pool, with results in order</h3>
+<pre><code class="language-python">from concurrent.futures import ThreadPoolExecutor
+
+
+def bounded_map(fn, items, max_workers: int = 5) -&gt; list:
+    &quot;&quot;&quot;fn(item) for every item, at most max_workers at once, results in input order.&quot;&quot;&quot;
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        return list(pool.map(fn, items))
+</code></pre>
+<p><code>max_workers</code> caps how many calls are in flight. <code>pool.map</code> returns results <strong>in input order</strong>, no matter which call finishes first. That matters when the output has to line up with the input.</p>
+<pre><code class="language-python">results = bounded_map(enrich, items, max_workers=5)
+</code></pre>
+<h3>Step 12: The async version</h3>
+<p>If your code is <code>async</code>, an <code>asyncio.Semaphore</code> does the same job:</p>
+<pre><code class="language-python">import asyncio
+
+
+async def bounded_gather(fn, items, limit: int = 5) -&gt; list:
+    &quot;&quot;&quot;await fn(item) for every item, at most `limit` at once, results in input order.&quot;&quot;&quot;
+    sem = asyncio.Semaphore(limit)
+
+    async def run(item):
+        async with sem:
+            return await fn(item)
+
+    return await asyncio.gather(*(run(i) for i in items))
+</code></pre>
+<p><code>asyncio.gather</code> also preserves order. To use a sync function (like <code>request_with_retries</code>) from async code, wrap it in <code>asyncio.to_thread</code>:</p>
+<pre><code class="language-python">results = await bounded_gather(lambda item: asyncio.to_thread(enrich, item), items, limit=5)
+</code></pre>
+<hr />
+<h2>Step 13: Test the limits, not just the results</h2>
+<p>Use the <code>fake_http</code> helper from the first article in this series. It records every request and the highest number in flight at once. Add a small delay so calls actually overlap:</p>
+<pre><code class="language-python">def test_retries():
+    client, stats = fake_http([502])
+    assert request_with_retries(&quot;GET&quot;, &quot;http://x&quot;, backoff=0, client=client) is None
+    assert len(stats[&quot;requests&quot;]) == 4                    # 1 + 3 retries
+
+    client, stats = fake_http([500, 404])
+    assert request_with_retries(&quot;GET&quot;, &quot;http://x&quot;, backoff=0, client=client).status_code == 404
+    assert len(stats[&quot;requests&quot;]) == 2                    # 404 is not retried
+
+
+def test_concurrency_is_bounded_and_ordered():
+    client, stats = fake_http([200], delay=0.02)
+    out = bounded_map(lambda i: (i, client.get(&quot;http://x&quot;).status_code), range(30), 5)
+    assert out == [(i, 200) for i in range(30)]           # input order kept
+    assert 1 &lt; stats[&quot;max_in_flight&quot;] &lt;= 5                # parallel, but bounded
+</code></pre>
+<p>The <code>&gt; 1</code> check matters too: it proves the calls really ran in parallel and didn't silently fall back to sequential.</p>
+<hr />
+<h2>Recap</h2>
+<ol>
+<li><strong>Retry only</strong> 429s, 5xx errors and network errors, with exponential backoff.</li>
+<li><strong>Return the response</strong> and let each caller decide what it means.</li>
+<li><strong>Guard pagination</strong> against repeated cursors.</li>
+<li><strong>Bound concurrency</strong> and keep input order, using threads for sync code and a semaphore for async.</li>
+<li><strong>Test the call counts and the in-flight maximum,</strong> not just the final result.</li>
+</ol>
+<p><em>Next: signed webhooks with idempotency keys.</em></p>
+</article>
+<script>
+const btn = document.getElementById("copy");
+if (btn) btn.addEventListener("click", () => {
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById("article"));
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  sel.removeAllRanges();
+  document.getElementById("hint").textContent = ok
+    ? "Copied. Paste into a new Medium story with Cmd+V."
+    : "Copy was blocked. Select the article text and press Cmd+C.";
+});
+</script>
+</body></html>

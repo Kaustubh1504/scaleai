@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medium articles</title>
+<style>
+  body { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; font: 18px/1.6 Georgia, serif; color: #222; background: #fff; }
+  .bar { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 1px solid #ddd; margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  button { font: 600 15px system-ui, sans-serif; padding: 10px 18px; border: 0; border-radius: 20px; background: #1a8917; color: #fff; cursor: pointer; }
+  .hint { font: 14px system-ui, sans-serif; color: #666; }
+  a.back { font: 14px system-ui, sans-serif; color: #1a8917; }
+  pre { background: #f2f2f2; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.45; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 0.85em; background: #f2f2f2; padding: 1px 4px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  blockquote { border-left: 3px solid #222; margin-left: 0; padding-left: 16px; font-style: italic; }
+</style></head>
+<body>
+<div class="bar">
+  
+  
+  <span class="hint" id="hint"></span>
+</div>
+<article id="article">
+<h1>Medium articles</h1><p>Open an article, click <b>Copy for Medium</b>, and paste into a new story.</p><ol><li><a href="01-reliable-llm-call.html">How to Call an LLM From Your Backend Without Crashing It: A Step-by-Step Guide</a></li><li><a href="02-flaky-apis.html">Calling Flaky APIs in Python: Retries, Pagination, and Concurrency, Step by Step</a></li><li><a href="03-webhooks.html">Signed Webhooks in Python, Step by Step: HMAC, Idempotency Keys, and Retries</a></li><li><a href="04-csv-endpoint.html">Build a FastAPI Endpoint That Processes Untrusted CSV Files, Step by Step</a></li><li><a href="05-fastapi-blocks.html">Four FastAPI Building Blocks, Step by Step: Request IDs, Rate Limits, Background Jobs, and Optimistic Locking</a></li><li><a href="06-logic-patterns.html">Backend Logic Patterns in Python, Step by Step: Grouping, Deduping, Voting, and Scheduling</a></li><li><a href="07-messy-data.html">Taming Messy API Data in Python: A Step-by-Step Guide to Normalizing JSON and Redacting PII</a></li><li><a href="08-state-and-leases.html">State Machines and Leases in Python, Step by Step: Handing Out Work Without Losing or Duplicating It</a></li><li><a href="09-api-clients.html">Building Well-Behaved API Clients in Python: Auth Tokens, Rate Limits, and Caching, Step by Step</a></li><li><a href="10-sync-and-big-files.html">Incremental Sync and Huge Files in Python, Step by Step</a></li><li><a href="11-queues-and-budgets.html">Job Queues in Python, Step by Step: Priorities, Retries, Dead Letters, and LLM Budgets</a></li><li><a href="12-reports-and-apis.html">Backend Building Blocks in Python, Step by Step: Rankings, Pagination, Audit Logs, Uploads, and IoU</a></li><li><a href="13-batching-llm-calls.html">Batching LLM Calls in Python, Step by Step: Classify Hundreds of Items in a Handful of Requests</a></li><li><a href="14-idempotent-intake.html">Idempotency Keys, Per-Tenant Rate Limits, and SQLite Under Load: A Step-by-Step Python Guide</a></li><li><a href="15-scheduled-retries-and-crawls.html">Scheduled Retries, Rate-Limited Crawls, and Async Fetching in Python, Step by Step</a></li><li><a href="16-routing-and-reports.html">Load Balancers, Worker Pools, and Reports in Python, Step by Step</a></li></ol>
+</article>
+<script>
+const btn = document.getElementById("copy");
+if (btn) btn.addEventListener("click", () => {
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById("article"));
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  sel.removeAllRanges();
+  document.getElementById("hint").textContent = ok
+    ? "Copied. Paste into a new Medium story with Cmd+V."
+    : "Copy was blocked. Select the article text and press Cmd+C.";
+});
+</script>
+</body></html>

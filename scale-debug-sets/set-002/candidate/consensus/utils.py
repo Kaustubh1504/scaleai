@@ -20,10 +20,7 @@ def norm_label(value):
 
 
 def parse_bool(value):
-    if str(value).lower() in ['true','yes','y','1']:
-        return True
-    else:
-        return False
+    return bool(value)
 
 
 # VERIFIED

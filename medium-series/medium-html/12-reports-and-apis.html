@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backend Building Blocks in Python, Step by Step: Rankings, Pagination, Audit Logs, Uploads, and IoU</title>
+<style>
+  body { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; font: 18px/1.6 Georgia, serif; color: #222; background: #fff; }
+  .bar { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 1px solid #ddd; margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  button { font: 600 15px system-ui, sans-serif; padding: 10px 18px; border: 0; border-radius: 20px; background: #1a8917; color: #fff; cursor: pointer; }
+  .hint { font: 14px system-ui, sans-serif; color: #666; }
+  a.back { font: 14px system-ui, sans-serif; color: #1a8917; }
+  pre { background: #f2f2f2; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.45; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 0.85em; background: #f2f2f2; padding: 1px 4px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  blockquote { border-left: 3px solid #222; margin-left: 0; padding-left: 16px; font-style: italic; }
+</style></head>
+<body>
+<div class="bar">
+  <a class="back" href="index.html">&larr; All articles</a>
+  <button id="copy">Copy for Medium</button>
+  <span class="hint" id="hint">Click, then paste into a new Medium story (Cmd+V).</span>
+</div>
+<article id="article">
+<h1>Backend Building Blocks in Python, Step by Step: Rankings, Pagination, Audit Logs, Uploads, and IoU</h1>
+<h3>Five small snippets that come up in almost every reporting or data-quality service</h3>
+<p>This last tutorial collects five smaller patterns. Each is short, and each has a classic bug that's easy to ship:</p>
+<ol>
+<li><strong>Ranking with ties:</strong> is it 1, 2, 2, 3 or 1, 2, 2, 4?</li>
+<li><strong>Paginating your own API:</strong> why offset pagination skips rows.</li>
+<li><strong>Audit logs and metrics:</strong> an answer to "what happened, and how slow was it?"</li>
+<li><strong>File uploads:</strong> size, type and encoding checks <em>before</em> parsing.</li>
+<li><strong>IoU for bounding boxes:</strong> for when you need to score annotation quality.</li>
+</ol>
+<p><strong>What you need:</strong> Python 3.9+, <code>pip install fastapi python-multipart</code> for the upload section.</p>
+<hr />
+<h2>1. Ranking with ties</h2>
+<h3>Step 1: Sorting isn't ranking</h3>
+<p><code>enumerate(sorted(...), 1)</code> gives two players with the same score different ranks. Tied scores should share a rank.</p>
+<h3>Step 2: Choose a tie style</h3>
+<ul>
+<li><strong>Competition ranking (1, 2, 2, 4):</strong> sports and most leaderboards. After a tie, the next rank skips ahead.</li>
+<li><strong>Dense ranking (1, 2, 2, 3):</strong> no gaps.</li>
+</ul>
+<h3>Step 3: Make the order inside a tie deterministic</h3>
+<p>Tied players still need a stable order in the output (by name or ID), or your API returns them in a different order on each request.</p>
+<pre><code class="language-python">def rank(items, score, tiebreak=None, method: str = &quot;competition&quot;, descending: bool = True) -&gt; list:
+    &quot;&quot;&quot;[(rank, item)]. Ties share a rank. competition: 1, 2, 2, 4   dense: 1, 2, 2, 3.
+    `tiebreak(item)` orders tied items (e.g. by name) so the output is deterministic.&quot;&quot;&quot;
+    def sort_key(it):
+        s = score(it)
+        return (-s if descending else s, tiebreak(it) if tiebreak else 0)
+
+    out, prev, current = [], object(), 0
+    for i, it in enumerate(sorted(items, key=sort_key), 1):
+        s = score(it)
+        if s != prev:
+            current = i if method == &quot;competition&quot; else current + 1
+            prev = s
+        out.append((current, it))
+    return out
+</code></pre>
+<pre><code class="language-python">for r, row in rank(annotators, score=lambda a: a[&quot;accuracy&quot;], tiebreak=lambda a: a[&quot;id&quot;]):
+    print(r, row[&quot;id&quot;], row[&quot;accuracy&quot;])
+</code></pre>
+<hr />
+<h2>2. Paginating your own endpoint</h2>
+<h3>Step 4: Why <code>?page=2</code> breaks</h3>
+<p>Offset pagination (<code>items[20:40]</code>) shifts when rows are inserted. If a new row lands on page 1 while a client is reading, the last item of page 1 moves to page 2 and is shown twice, or a deleted row makes another one disappear.</p>
+<h3>Step 5: Keyset pagination</h3>
+<p>Sort by a unique key, and return the items <strong>after the last key the client saw</strong>. New rows can't shift a page the client hasn't asked for yet.</p>
+<h3>Step 6: Make the cursor opaque</h3>
+<p>Encode the last key as base64 JSON. Clients pass it back without depending on its format, so you can change it later. A cursor that won't decode means a <strong>400</strong>.</p>
+<h3>Step 7: Clamp the limit</h3>
+<p>Never let <code>?limit=1000000</code> through. Clamp it to a maximum.</p>
+<pre><code class="language-python">import base64
+import json
+
+
+def encode_cursor(value) -&gt; str:
+    return base64.urlsafe_b64encode(json.dumps(value).encode()).decode()
+
+
+def decode_cursor(cursor: str):
+    &quot;&quot;&quot;ValueError on garbage (map to 400).&quot;&quot;&quot;
+    try:
+        value = json.loads(base64.urlsafe_b64decode(cursor.encode()))
+    except Exception:
+        raise ValueError(&quot;invalid cursor&quot;) from None
+    return tuple(value) if isinstance(value, list) else value
+
+
+def paginate(items, limit: int = 20, cursor=None, key=lambda it: it[&quot;id&quot;], max_limit: int = 100) -&gt; dict:
+    &quot;&quot;&quot;Sort by key, return up to `limit` items after the cursor + next_cursor (None on the last page).
+    Keyset, not offset: rows added between requests don't shift pages. Filter items before calling.&quot;&quot;&quot;
+    limit = max(1, min(int(limit), max_limit))
+    ordered = sorted(items, key=key)
+    if cursor:
+        after = decode_cursor(cursor)
+        ordered = [it for it in ordered if key(it) &gt; after]
+    page = ordered[:limit]
+    next_cursor = encode_cursor(key(page[-1])) if len(ordered) &gt; limit else None
+    return {&quot;data&quot;: page, &quot;next_cursor&quot;: next_cursor}
+</code></pre>
+<pre><code class="language-python">@app.get(&quot;/tasks&quot;)
+def list_tasks(status: str = None, limit: int = Query(20, ge=1, le=100), cursor: str = None):
+    rows = [t for t in TASKS if status is None or t[&quot;status&quot;] == status]     # filter first
+    try:
+        return paginate(rows, limit, cursor, key=lambda t: (-t[&quot;created_ts&quot;], t[&quot;id&quot;]))  # newest first
+    except ValueError:
+        raise HTTPException(400, &quot;invalid cursor&quot;)
+</code></pre>
+<p>Including the ID in the key makes it unique even when two rows share a timestamp.</p>
+<hr />
+<h2>3. Audit logs and metrics</h2>
+<h3>Step 8: Use an append-only audit log</h3>
+<p>For anything a person might question later (payouts, status changes, deletions), append one JSON line per event, with a UTC timestamp. Never rewrite these lines. A lock keeps lines written by different threads from interleaving.</p>
+<h3>Step 9: Use counters and timings for metrics</h3>
+<p>Count events (<code>llm.calls</code>, <code>cache.hits</code>) and time operations with a context manager. Report percentiles (p50, p95) rather than averages, because averages hide the slow tail that users actually notice.</p>
+<pre><code class="language-python">import json
+import os
+import threading
+import time
+from contextlib import contextmanager
+from datetime import datetime, timezone
+
+_audit_lock = threading.Lock()
+
+
+def audit_log(path, event: str, **fields) -&gt; None:
+    &quot;&quot;&quot;Append one JSON line: {&quot;ts&quot;, &quot;event&quot;, ...fields}. Append-only; never rewrite history.&quot;&quot;&quot;
+    line = json.dumps({&quot;ts&quot;: datetime.now(timezone.utc).isoformat(), &quot;event&quot;: event, **fields},
+                      ensure_ascii=False, default=str)
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    with _audit_lock, open(path, &quot;a&quot;, encoding=&quot;utf-8&quot;) as f:
+        f.write(line + &quot;\n&quot;)
+
+
+def new_metrics() -&gt; dict:
+    return {&quot;counts&quot;: {}, &quot;timings&quot;: {}, &quot;lock&quot;: threading.Lock()}
+
+
+def inc(metrics: dict, name: str, n: int = 1) -&gt; None:
+    with metrics[&quot;lock&quot;]:
+        metrics[&quot;counts&quot;][name] = metrics[&quot;counts&quot;].get(name, 0) + n
+
+
+@contextmanager
+def timed(metrics: dict, name: str):
+    start = time.perf_counter()
+    try:
+        yield
+    finally:
+        ms = (time.perf_counter() - start) * 1000
+        with metrics[&quot;lock&quot;]:
+            metrics[&quot;timings&quot;].setdefault(name, []).append(ms)
+
+
+def snapshot(metrics: dict) -&gt; dict:
+    &quot;&quot;&quot;{&quot;counts&quot;: {...}, &quot;timings&quot;: {name: {&quot;count&quot;, &quot;p50_ms&quot;, &quot;p95_ms&quot;, &quot;max_ms&quot;}}}: serve at GET /metrics.&quot;&quot;&quot;
+    def pct(values, p):
+        return round(values[min(len(values) - 1, int(round(p * (len(values) - 1))))], 2)
+
+    with metrics[&quot;lock&quot;]:
+        timings = {k: sorted(v) for k, v in metrics[&quot;timings&quot;].items()}
+        counts = dict(metrics[&quot;counts&quot;])
+    return {&quot;counts&quot;: counts,
+            &quot;timings&quot;: {k: {&quot;count&quot;: len(v), &quot;p50_ms&quot;: pct(v, 0.5), &quot;p95_ms&quot;: pct(v, 0.95),
+                            &quot;max_ms&quot;: round(v[-1], 2)} for k, v in timings.items() if v}}
+</code></pre>
+<pre><code class="language-python">metrics = new_metrics()
+
+def classify(item):
+    inc(metrics, &quot;llm.calls&quot;)
+    with timed(metrics, &quot;llm.latency&quot;):
+        label = ask_llm(...)
+    if label is None:
+        inc(metrics, &quot;llm.failures&quot;)
+    audit_log(&quot;output/audit.jsonl&quot;, &quot;classified&quot;, item_id=item[&quot;id&quot;], label=label)
+    return label
+
+@app.get(&quot;/metrics&quot;)
+def get_metrics():
+    return snapshot(metrics)
+</code></pre>
+<p>Never log secrets or raw PII here. Run text through the <code>redact</code> snippet from part 7 first.</p>
+<hr />
+<h2>4. Validating file uploads</h2>
+<h3>Step 10: Check the cheap things first</h3>
+<p>Check the extension before reading anything (<strong>415 Unsupported Media Type</strong>).</p>
+<h3>Step 11: Never read an unbounded upload</h3>
+<p><code>await file.read()</code> loads the whole upload into memory. Read at most <code>max_bytes + 1</code>. If you got more than <code>max_bytes</code>, the file is too large (<strong>413</strong>), and you never held more than the limit in memory.</p>
+<h3>Step 12: Decode and check it isn't empty</h3>
+<p>Decode with <code>utf-8-sig</code> (which strips Excel's BOM). Invalid bytes or a blank file mean <strong>422</strong>.</p>
+<pre><code class="language-python">from pathlib import Path
+
+from fastapi import HTTPException, UploadFile
+
+
+async def read_upload(file: UploadFile, max_bytes: int = 5_000_000, extensions=(&quot;.csv&quot;,)) -&gt; str:
+    &quot;&quot;&quot;415 wrong extension, 413 too large, 422 empty or not UTF-8. Returns the decoded text (BOM stripped).
+    Reads at most max_bytes + 1, so a huge upload is never fully loaded.&quot;&quot;&quot;
+    if not file.filename or Path(file.filename).suffix.lower() not in extensions:
+        raise HTTPException(415, f&quot;expected one of {', '.join(extensions)}&quot;)
+    data = await file.read(max_bytes + 1)
+    if len(data) &gt; max_bytes:
+        raise HTTPException(413, f&quot;file larger than {max_bytes} bytes&quot;)
+    try:
+        text = data.decode(&quot;utf-8-sig&quot;)
+    except UnicodeDecodeError:
+        raise HTTPException(422, &quot;file is not valid UTF-8&quot;) from None
+    if not text.strip():
+        raise HTTPException(422, &quot;file is empty&quot;)
+    return text
+</code></pre>
+<pre><code class="language-python">@app.post(&quot;/upload&quot;)
+async def upload(file: UploadFile = File(...)):
+    text = await read_upload(file, max_bytes=5_000_000)
+    records = [[v.strip() for v in row] for row in csv.reader(io.StringIO(text, newline=&quot;&quot;))]
+    ...
+</code></pre>
+<hr />
+<h2>5. IoU for bounding boxes</h2>
+<h3>Step 13: Intersection over union</h3>
+<p>To compare two boxes, divide the area where they overlap by the total area they cover together. 1.0 is a perfect match, 0.0 is no overlap. Clamp negative overlaps to zero, and guard against zero-area boxes to avoid dividing by zero.</p>
+<h3>Step 14: Know your box format</h3>
+<p>APIs mix <code>(x1, y1, x2, y2)</code> corners with <code>(x, y, width, height)</code>. Convert to one format before comparing. This is the most common IoU bug.</p>
+<h3>Step 15: Match boxes one-to-one</h3>
+<p>To score an annotator's boxes against gold boxes, pair them greedily, best IoU first, and use each box at most once. Pairs below the threshold (often 0.5) don't count. Then precision = matches / predictions, and recall = matches / gold boxes.</p>
+<pre><code class="language-python">def xywh_to_xyxy(box):
+    x, y, w, h = box
+    return (x, y, x + w, y + h)
+
+
+def iou(a, b) -&gt; float:
+    &quot;&quot;&quot;Boxes as (x1, y1, x2, y2). 0.0 when they don't overlap or have zero area.&quot;&quot;&quot;
+    ix = max(0.0, min(a[2], b[2]) - max(a[0], b[0]))
+    iy = max(0.0, min(a[3], b[3]) - max(a[1], b[1]))
+    inter = ix * iy
+    union = (a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - inter
+    return inter / union if union &gt; 0 else 0.0
+
+
+def match_boxes(preds, golds, threshold: float = 0.5):
+    &quot;&quot;&quot;Greedy one-to-one matching, best IoU first. Returns (matches [(pred_i, gold_i, iou)],
+    unmatched_pred_indexes, unmatched_gold_indexes). precision = matches/len(preds), recall = matches/len(golds).&quot;&quot;&quot;
+    pairs = sorted(((iou(p, g), i, j) for i, p in enumerate(preds) for j, g in enumerate(golds)),
+                   key=lambda t: (-t[0], t[1], t[2]))
+    used_p, used_g, matches = set(), set(), []
+    for score, i, j in pairs:
+        if score &lt; threshold:
+            break
+        if i in used_p or j in used_g:
+            continue
+        used_p.add(i)
+        used_g.add(j)
+        matches.append((i, j, round(score, 4)))
+    return (matches, [i for i in range(len(preds)) if i not in used_p],
+            [j for j in range(len(golds)) if j not in used_g])
+</code></pre>
+<pre><code class="language-python">matches, extra, missed = match_boxes([xywh_to_xyxy(b) for b in annotator_boxes],
+                                     [xywh_to_xyxy(b) for b in gold_boxes], threshold=0.5)
+precision = len(matches) / len(annotator_boxes) if annotator_boxes else 1.0
+recall = len(matches) / len(gold_boxes) if gold_boxes else 1.0
+</code></pre>
+<hr />
+<h2>Testing</h2>
+<pre><code class="language-python">def test_rank_ties():
+    rows = [{&quot;n&quot;: &quot;b&quot;, &quot;s&quot;: 9}, {&quot;n&quot;: &quot;a&quot;, &quot;s&quot;: 9}, {&quot;n&quot;: &quot;c&quot;, &quot;s&quot;: 7}]
+    assert [r for r, _ in rank(rows, lambda r: r[&quot;s&quot;], tiebreak=lambda r: r[&quot;n&quot;])] == [1, 1, 3]
+
+
+def test_pages_dont_shift():
+    items = [{&quot;id&quot;: i} for i in range(5)]
+    p1 = paginate(items, limit=2)
+    p2 = paginate(items + [{&quot;id&quot;: -1}], limit=2, cursor=p1[&quot;next_cursor&quot;])   # row added meanwhile
+    assert [i[&quot;id&quot;] for i in p2[&quot;data&quot;]] == [2, 3]
+
+
+def test_iou():
+    assert iou((0, 0, 2, 2), (1, 1, 3, 3)) == pytest.approx(1 / 7)
+    assert iou((0, 0, 1, 1), (2, 2, 3, 3)) == 0
+</code></pre>
+<hr />
+<h2>Recap</h2>
+<ol>
+<li><strong>Rank</strong> with shared ranks for ties, and a deterministic order within ties.</li>
+<li><strong>Paginate</strong> with a key cursor, not offsets. Make it opaque and clamp the limit.</li>
+<li>Keep an <strong>append-only audit log</strong> and <strong>percentile timings</strong>.</li>
+<li><strong>Check uploads</strong> in order: type (415), bounded read (413), decoding (422).</li>
+<li><strong>IoU:</strong> normalize the box format, guard against division by zero, and match one-to-one before computing precision and recall.</li>
+</ol>
+</article>
+<script>
+const btn = document.getElementById("copy");
+if (btn) btn.addEventListener("click", () => {
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById("article"));
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  sel.removeAllRanges();
+  document.getElementById("hint").textContent = ok
+    ? "Copied. Paste into a new Medium story with Cmd+V."
+    : "Copy was blocked. Select the article text and press Cmd+C.";
+});
+</script>
+</body></html>

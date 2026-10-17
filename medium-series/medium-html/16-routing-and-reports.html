@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Load Balancers, Worker Pools, and Reports in Python, Step by Step</title>
+<style>
+  body { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; font: 18px/1.6 Georgia, serif; color: #222; background: #fff; }
+  .bar { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 1px solid #ddd; margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  button { font: 600 15px system-ui, sans-serif; padding: 10px 18px; border: 0; border-radius: 20px; background: #1a8917; color: #fff; cursor: pointer; }
+  .hint { font: 14px system-ui, sans-serif; color: #666; }
+  a.back { font: 14px system-ui, sans-serif; color: #1a8917; }
+  pre { background: #f2f2f2; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.45; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 0.85em; background: #f2f2f2; padding: 1px 4px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  blockquote { border-left: 3px solid #222; margin-left: 0; padding-left: 16px; font-style: italic; }
+</style></head>
+<body>
+<div class="bar">
+  <a class="back" href="index.html">&larr; All articles</a>
+  <button id="copy">Copy for Medium</button>
+  <span class="hint" id="hint">Click, then paste into a new Medium story (Cmd+V).</span>
+</div>
+<article id="article">
+<h1>Load Balancers, Worker Pools, and Reports in Python, Step by Step</h1>
+<h3>Route work to healthy workers, detect silent ones with heartbeats, and compute report numbers correctly</h3>
+<p>Two kinds of problem show up constantly in backend work:</p>
+<ul>
+<li><strong>Routing:</strong> send each task to a worker that's up and not overloaded, fail over when one breaks, and notice workers that went quiet.</li>
+<li><strong>Reporting:</strong> medians, completion rates and per-customer rollups that are correct at the edges: no tasks, missing values, ties.</li>
+</ul>
+<p>We'll build two standalone snippets: <code>worker_routing</code> and <code>stats_helpers</code>.</p>
+<p><strong>What you need:</strong> Python 3.9+. Standard library only.</p>
+<hr />
+<h2>Part 1: Routing and health</h2>
+<h3>Step 1: Store workers as plain records</h3>
+<pre><code class="language-python">workers = {&quot;w1&quot;: new_worker(&quot;w1&quot;, seq=0, now=clock.time()), ...}
+</code></pre>
+<p>Each record has a registration <code>seq</code> (for ordering), a <code>state</code> (<code>active</code>, <code>overloaded</code> or <code>unreachable</code>), <code>last_seen</code>, the reported load, and an overload cooldown.</p>
+<h3>Step 2: Round robin that survives removals</h3>
+<p>"Start at the worker after the one tried last, wrap around, try each worker once." The naive version stores an <em>index</em>, which breaks as soon as a worker is removed and everything shifts. Store the last tried worker's <strong><code>seq</code></strong> instead. The next pass starts with the first worker whose <code>seq</code> is higher, then wraps. That still works if the last tried worker no longer exists.</p>
+<h3>Step 3: Least loaded, with a deterministic tie-break</h3>
+<p>To balance by load instead, pick the eligible worker with the smallest load, and break ties by registration order, so the result never depends on how a dict happens to be ordered.</p>
+<h3>Step 4: Heartbeats use <em>your</em> clock</h3>
+<p>Validate every heartbeat: it must be a dict, <code>worker_id</code> a string, and <code>in_flight</code>/<code>capacity</code> real integers (<code>True</code> is an <code>int</code> in Python, so exclude booleans). Ignore malformed heartbeats and unknown workers silently. Record <code>last_seen = now</code> from <strong>your</strong> clock, never the payload's <code>ts</code>: worker clocks can be wrong.</p>
+<h3>Step 5: Load decides state, and cooldowns expire lazily</h3>
+<p><code>in_flight &gt;= capacity</code> means <code>overloaded</code> until <code>now + cooldown</code>. A lower-load heartbeat brings the worker back right away. <code>state_at()</code> checks the cooldown whenever you look at the worker, so no background timer is needed.</p>
+<h3>Step 6: Health checks only demote</h3>
+<p><code>check_health()</code> marks workers silent for <strong>more than</strong> the timeout as <code>unreachable</code> (exactly at the timeout is still fine). It never revives anyone. Only a real heartbeat does that, because a worker that's silent is not proof that it's back.</p>
+<h3>The complete snippet</h3>
+<pre><code class="language-python">def new_worker(worker_id: str, seq: int, now: float) -&gt; dict:
+    return {&quot;id&quot;: worker_id, &quot;seq&quot;: seq, &quot;state&quot;: &quot;active&quot;, &quot;last_seen&quot;: now,
+            &quot;in_flight&quot;: 0, &quot;capacity&quot;: 1, &quot;cooldown_until&quot;: None}
+
+
+def rotation(workers: list, last_seq=None) -&gt; list:
+    &quot;&quot;&quot;One round-robin pass: workers registered after the last one tried, then wrap around.
+    `workers` is in registration order with increasing &quot;seq&quot;. Works if the last tried worker was removed.&quot;&quot;&quot;
+    if last_seq is None:
+        return list(workers)
+    return [w for w in workers if w[&quot;seq&quot;] &gt; last_seq] + [w for w in workers if w[&quot;seq&quot;] &lt;= last_seq]
+
+
+def least_loaded(workers: list, load, eligible=lambda w: True):
+    &quot;&quot;&quot;Eligible worker with the lowest load(w); ties go to the earliest in the list. None if none eligible.&quot;&quot;&quot;
+    best = None
+    for w in workers:
+        if eligible(w) and (best is None or load(w) &lt; load(best)):
+            best = w
+    return best
+
+
+def state_at(worker: dict, now: float) -&gt; str:
+    &quot;&quot;&quot;Overloaded workers become active again once their cooldown has passed.&quot;&quot;&quot;
+    if worker[&quot;state&quot;] == &quot;overloaded&quot; and worker[&quot;cooldown_until&quot;] is not None and now &gt;= worker[&quot;cooldown_until&quot;]:
+        worker.update(state=&quot;active&quot;, cooldown_until=None)
+    return worker[&quot;state&quot;]
+
+
+def on_heartbeat(workers: dict, payload, now: float, cooldown: float = 5.0) -&gt; bool:
+    &quot;&quot;&quot;Apply a heartbeat {&quot;worker_id&quot;, &quot;in_flight&quot;, &quot;capacity&quot;, ...}. Ignores malformed payloads and unknown ids.
+    Uses OUR clock (now), never payload[&quot;ts&quot;]. Load decides state, even for an unreachable worker.&quot;&quot;&quot;
+    def is_int(v):
+        return isinstance(v, int) and not isinstance(v, bool)
+
+    if not (isinstance(payload, dict) and isinstance(payload.get(&quot;worker_id&quot;), str)
+            and is_int(payload.get(&quot;in_flight&quot;)) and is_int(payload.get(&quot;capacity&quot;))
+            and payload[&quot;in_flight&quot;] &gt;= 0 and payload[&quot;capacity&quot;] &gt;= 1):
+        return False
+    w = workers.get(payload[&quot;worker_id&quot;])
+    if w is None:
+        return False
+    w.update(last_seen=now, in_flight=payload[&quot;in_flight&quot;], capacity=payload[&quot;capacity&quot;])
+    if payload[&quot;in_flight&quot;] &gt;= payload[&quot;capacity&quot;]:
+        w.update(state=&quot;overloaded&quot;, cooldown_until=now + cooldown)
+    else:
+        w.update(state=&quot;active&quot;, cooldown_until=None)
+    return True
+
+
+def check_health(workers: dict, now: float, timeout: float) -&gt; list:
+    &quot;&quot;&quot;Silent for MORE than `timeout` seconds -&gt; unreachable. Never revives a worker (only heartbeats do).&quot;&quot;&quot;
+    changed = []
+    for wid, w in workers.items():
+        if now - w[&quot;last_seen&quot;] &gt; timeout and w[&quot;state&quot;] != &quot;unreachable&quot;:
+            w[&quot;state&quot;] = &quot;unreachable&quot;
+            changed.append(wid)
+    return changed
+</code></pre>
+<h3>Step 7: Dispatch with failover</h3>
+<pre><code class="language-python">def dispatch(task, workers, state, now):
+    for w in rotation(list(workers.values()), state.get(&quot;last_seq&quot;)):
+        if state_at(w, now) != &quot;active&quot;:
+            continue
+        state[&quot;last_seq&quot;] = w[&quot;seq&quot;]                     # &quot;tried&quot; counts whatever the outcome
+        task[&quot;attempts&quot;] += 1
+        try:
+            return w[&quot;client&quot;].process(task[&quot;payload&quot;], timeout=2.0)
+        except OverloadedError:
+            w.update(state=&quot;overloaded&quot;, cooldown_until=now + 5.0)
+        except (UnreachableError, TimeoutError):
+            w[&quot;state&quot;] = &quot;unreachable&quot;
+    raise NoWorkersAvailable(task[&quot;id&quot;])
+</code></pre>
+<p>For a priority queue with retry budgets on top of this, see part 11 (the <code>priority_queue</code> and <code>retry_pool</code> snippets).</p>
+<hr />
+<h2>Part 2: Report math that's right at the edges</h2>
+<h3>Step 8: A missing median is <code>None</code>, not 0</h3>
+<p>A project with no completed tasks has no median. Returning 0 makes it look like tasks finished instantly. Skip <code>None</code> values, and return <code>None</code> when nothing is left.</p>
+<h3>Step 9: Rates handle a zero denominator</h3>
+<p><code>completion_rate = completed / total</code> divides by zero for an empty project. Decide what the spec wants (0.0 or <code>None</code>), make it a parameter, and round as the spec says (4 decimal places is common).</p>
+<h3>Step 10: Roll up sums, then compute rates</h3>
+<p>The classic mistake: a customer's completion rate computed by <em>averaging</em> its projects' rates. A 1-task project then counts as much as a 1,000-task project. Sum the counts per customer, <strong>then</strong> divide.</p>
+<h3>The complete snippet</h3>
+<pre><code class="language-python">import math
+import statistics
+
+
+def median(values):
+    &quot;&quot;&quot;Median ignoring None; None for no values (not 0, which would look like real data).&quot;&quot;&quot;
+    vals = [v for v in values if v is not None]
+    return statistics.median(vals) if vals else None
+
+
+def rate(part, whole, ndigits: int = 4, empty=0.0):
+    &quot;&quot;&quot;part / whole rounded; `empty` when whole is 0 (decide: 0.0 or None).&quot;&quot;&quot;
+    return round(part / whole, ndigits) if whole else empty
+
+
+def percentile(values, p: float):
+    &quot;&quot;&quot;Nearest-rank percentile, p in [0, 100]. None for no values.&quot;&quot;&quot;
+    vals = sorted(v for v in values if v is not None)
+    if not vals:
+        return None
+    return vals[max(1, math.ceil(p / 100 * len(vals))) - 1]
+
+
+def rollup(rows, key, fields) -&gt; list:
+    &quot;&quot;&quot;Sum `fields` per key(row): [{&quot;key&quot;: k, &quot;count&quot;: n, field: total, ...}] sorted by key.&quot;&quot;&quot;
+    out = {}
+    for r in rows:
+        k = key(r)
+        agg = out.setdefault(k, {&quot;key&quot;: k, &quot;count&quot;: 0, **{f: 0 for f in fields}})
+        agg[&quot;count&quot;] += 1
+        for f in fields:
+            agg[f] += r.get(f) or 0
+    return [out[k] for k in sorted(out)]
+</code></pre>
+<pre><code class="language-python">for c in rollup(projects, key=lambda p: p[&quot;customer_id&quot;], fields=[&quot;tasks_total&quot;, &quot;tasks_completed&quot;]):
+    c[&quot;completion_rate&quot;] = rate(c[&quot;tasks_completed&quot;], c[&quot;tasks_total&quot;])
+</code></pre>
+<p><code>rollup</code> returns rows sorted by key, so the report order is deterministic.</p>
+<hr />
+<h2>Testing</h2>
+<pre><code class="language-python">def test_rotation_survives_removal():
+    ws = {w: new_worker(w, i, 0) for i, w in enumerate([&quot;w1&quot;, &quot;w2&quot;, &quot;w3&quot;])}
+    assert [w[&quot;id&quot;] for w in rotation(list(ws.values()), last_seq=0)] == [&quot;w2&quot;, &quot;w3&quot;, &quot;w1&quot;]
+    del ws[&quot;w2&quot;]
+    assert [w[&quot;id&quot;] for w in rotation(list(ws.values()), last_seq=1)] == [&quot;w3&quot;, &quot;w1&quot;]
+
+
+def test_heartbeats_and_health():
+    ws = {&quot;w1&quot;: new_worker(&quot;w1&quot;, 0, 0), &quot;w3&quot;: new_worker(&quot;w3&quot;, 1, 0)}
+    assert not on_heartbeat(ws, {&quot;worker_id&quot;: &quot;w1&quot;, &quot;in_flight&quot;: True, &quot;capacity&quot;: 2}, now=1)  # bool rejected
+    on_heartbeat(ws, {&quot;worker_id&quot;: &quot;w1&quot;, &quot;in_flight&quot;: 2, &quot;capacity&quot;: 2}, now=10, cooldown=5)
+    assert state_at(ws[&quot;w1&quot;], 14) == &quot;overloaded&quot; and state_at(ws[&quot;w1&quot;], 15) == &quot;active&quot;
+    assert check_health(ws, now=13, timeout=3) == [&quot;w3&quot;]       # w1 seen at 10: exactly 3 s is fine
+
+
+def test_rates_from_sums():
+    rows = [{&quot;c&quot;: &quot;a&quot;, &quot;done&quot;: 1, &quot;total&quot;: 1}, {&quot;c&quot;: &quot;a&quot;, &quot;done&quot;: 0, &quot;total&quot;: 99}]
+    (agg,) = rollup(rows, lambda r: r[&quot;c&quot;], [&quot;done&quot;, &quot;total&quot;])
+    assert rate(agg[&quot;done&quot;], agg[&quot;total&quot;]) == 0.01            # not the 0.5 that averaging gives
+</code></pre>
+<hr />
+<h2>Recap</h2>
+<ol>
+<li><strong>Round robin by registration <code>seq</code>,</strong> not by index, so it survives removals.</li>
+<li><strong>Least loaded,</strong> with ties broken by registration order.</li>
+<li><strong>Heartbeats:</strong> validate strictly (no booleans as integers), use your own clock, and let load decide the state.</li>
+<li><strong>Health checks only demote,</strong> and only <em>strictly</em> after the timeout.</li>
+<li><strong>Reports:</strong> a missing median is <code>None</code>, rates handle a zero total, and rates come from summed counts.</li>
+</ol>
+</article>
+<script>
+const btn = document.getElementById("copy");
+if (btn) btn.addEventListener("click", () => {
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById("article"));
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  sel.removeAllRanges();
+  document.getElementById("hint").textContent = ok
+    ? "Copied. Paste into a new Medium story with Cmd+V."
+    : "Copy was blocked. Select the article text and press Cmd+C.";
+});
+</script>
+</body></html>

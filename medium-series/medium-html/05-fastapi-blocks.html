@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Four FastAPI Building Blocks, Step by Step: Request IDs, Rate Limits, Background Jobs, and Optimistic Locking</title>
+<style>
+  body { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; font: 18px/1.6 Georgia, serif; color: #222; background: #fff; }
+  .bar { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 1px solid #ddd; margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  button { font: 600 15px system-ui, sans-serif; padding: 10px 18px; border: 0; border-radius: 20px; background: #1a8917; color: #fff; cursor: pointer; }
+  .hint { font: 14px system-ui, sans-serif; color: #666; }
+  a.back { font: 14px system-ui, sans-serif; color: #1a8917; }
+  pre { background: #f2f2f2; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.45; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 0.85em; background: #f2f2f2; padding: 1px 4px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  blockquote { border-left: 3px solid #222; margin-left: 0; padding-left: 16px; font-style: italic; }
+</style></head>
+<body>
+<div class="bar">
+  <a class="back" href="index.html">&larr; All articles</a>
+  <button id="copy">Copy for Medium</button>
+  <span class="hint" id="hint">Click, then paste into a new Medium story (Cmd+V).</span>
+</div>
+<article id="article">
+<h1>Four FastAPI Building Blocks, Step by Step: Request IDs, Rate Limits, Background Jobs, and Optimistic Locking</h1>
+<h3>Each one is a single function you can add to any app</h3>
+<p>These four problems only show up once real traffic arrives:</p>
+<ul>
+<li>an error you can't trace through the logs,</li>
+<li>one client flooding the API,</li>
+<li>requests that take too long to answer while the client waits,</li>
+<li>two users silently overwriting each other's edits.</li>
+</ul>
+<p>We'll fix each one with a single function. Each section starts from the problem, builds the fix step by step, and ends with the complete code.</p>
+<p><strong>What you need:</strong> Python 3.9+, <code>pip install fastapi uvicorn</code>.</p>
+<pre><code class="language-python">from fastapi import FastAPI
+app = FastAPI()
+</code></pre>
+<hr />
+<h2>1. Request IDs: trace any request through your logs</h2>
+<h3>The problem</h3>
+<p>A user reports "it failed at 3:02 PM." Your logs have 4,000 lines from that minute. Which ones belong to that request?</p>
+<h3>Step 1: Give every request an ID</h3>
+<p>Add a middleware that reuses the <code>X-Request-ID</code> header if the caller sent one (so the same ID follows a request across services), or generates a new one otherwise. Return it in the response, so users can quote it in bug reports.</p>
+<h3>Step 2: Make the ID available everywhere, without passing it around</h3>
+<p>A global variable would be shared by every concurrent request. Use a <code>ContextVar</code> instead: each request gets its own value, even with hundreds running at once.</p>
+<h3>Step 3: Stamp it on every log line automatically</h3>
+<p>Rather than adding the ID to each <code>log.info(...)</code> call by hand, add a logging <strong>filter</strong> that copies it onto every record. Then the formatter can print it.</p>
+<h3>The complete function</h3>
+<pre><code class="language-python">import logging
+import uuid
+from contextvars import ContextVar
+
+request_id = ContextVar(&quot;request_id&quot;, default=&quot;-&quot;)
+
+
+def add_request_id(app, logger_name: str = &quot;app&quot;) -&gt; logging.Logger:
+    &quot;&quot;&quot;Adds X-Request-ID middleware and returns a logger whose lines include the id.&quot;&quot;&quot;
+    class Filter(logging.Filter):
+        def filter(self, record):
+            record.request_id = request_id.get()
+            return True
+
+    log = logging.getLogger(logger_name)
+    handler = logging.StreamHandler()
+    handler.addFilter(Filter())
+    handler.setFormatter(logging.Formatter(&quot;%(asctime)s [%(request_id)s] %(levelname)s %(message)s&quot;))
+    log.addHandler(handler)
+    log.setLevel(logging.INFO)
+
+    @app.middleware(&quot;http&quot;)
+    async def middleware(request, call_next):
+        rid = request.headers.get(&quot;X-Request-ID&quot;) or str(uuid.uuid4())
+        token = request_id.set(rid)
+        try:
+            response = await call_next(request)
+        finally:
+            request_id.reset(token)
+        response.headers[&quot;X-Request-ID&quot;] = rid
+        return response
+
+    return log
+</code></pre>
+<pre><code class="language-python">log = add_request_id(app)
+
+@app.get(&quot;/orders&quot;)
+def list_orders():
+    log.info(&quot;listing orders&quot;)      # 2024-05-01 15:02:11 [3f2a9c...] INFO listing orders
+    return []
+</code></pre>
+<hr />
+<h2>2. Rate limiting: one client shouldn't take everyone down</h2>
+<h3>Step 1: Choose an algorithm</h3>
+<p>A <strong>token bucket</strong> allows short bursts but caps the long-run rate. Each client has a bucket holding up to <code>burst</code> tokens. It refills at <code>rate</code> tokens per second, and each request spends one token. An empty bucket means 429.</p>
+<h3>Step 2: Refill lazily</h3>
+<p>You don't need a timer. When a request arrives, add the tokens earned since the client's last request:</p>
+<pre><code class="language-python">tokens = min(burst, tokens + (now - last) * rate)
+</code></pre>
+<p>Use <code>time.monotonic()</code>, not <code>time.time()</code>. The wall clock can jump backwards when the system syncs its time.</p>
+<h3>Step 3: Tell the client when to come back</h3>
+<p>On a 429, compute how long until one token is available, and send it in <code>Retry-After</code>. Well-behaved clients will wait exactly that long.</p>
+<h3>The complete function</h3>
+<pre><code class="language-python">import math
+import time
+
+from fastapi.responses import JSONResponse
+
+
+def add_rate_limit(app, rate: float = 5, burst: int = 10, key=None):
+    &quot;&quot;&quot;429 + Retry-After when a client exceeds `rate` req/s (bursts up to `burst`). Per process.&quot;&quot;&quot;
+    buckets: dict[str, tuple[float, float]] = {}
+    key = key or (lambda req: req.headers.get(&quot;X-API-Key&quot;) or req.client.host)
+
+    def allow(k: str) -&gt; tuple[bool, float]:
+        now = time.monotonic()
+        tokens, last = buckets.get(k, (burst, now))
+        tokens = min(burst, tokens + (now - last) * rate)
+        if tokens &lt; 1:
+            buckets[k] = (tokens, now)
+            return False, (1 - tokens) / rate
+        buckets[k] = (tokens - 1, now)
+        return True, 0.0
+
+    @app.middleware(&quot;http&quot;)
+    async def middleware(request, call_next):
+        ok, wait = allow(key(request))
+        if not ok:
+            return JSONResponse({&quot;detail&quot;: &quot;rate limit exceeded&quot;}, status_code=429,
+                                headers={&quot;Retry-After&quot;: str(math.ceil(wait))})
+        return await call_next(request)
+
+    return allow
+</code></pre>
+<pre><code class="language-python">add_rate_limit(app, rate=5, burst=10)                                          # by API key or IP
+add_rate_limit(app, rate=1, burst=3, key=lambda req: req.headers.get(&quot;X-User-ID&quot;, &quot;anon&quot;))
+</code></pre>
+<p><strong>Limits to know about:</strong></p>
+<ul>
+<li>The buckets live in one process. With four workers, each client effectively gets 4× the limit. For a shared limit, keep the buckets in Redis.</li>
+<li>The dict grows by one entry per client. Evict idle entries in long-running services.</li>
+</ul>
+<hr />
+<h2>3. Background jobs: answer now, work later</h2>
+<h3>The problem</h3>
+<p>A request that processes 10,000 rows takes minutes. Clients, proxies and load balancers will time out long before it finishes.</p>
+<h3>Step 1: Accept the job immediately</h3>
+<p>Return <code>202 Accepted</code> with a job ID and a URL the client can poll.</p>
+<h3>Step 2: Run the work after the response</h3>
+<p>FastAPI's <code>BackgroundTasks</code> runs a function once the response has been sent.</p>
+<h3>Step 3: Always record the outcome</h3>
+<p>If the work raises and you don't catch it, the job stays <code>running</code> forever, and clients poll forever. Wrap it, and store either the result or the error.</p>
+<h3>The complete function</h3>
+<pre><code class="language-python">import uuid
+
+from fastapi import BackgroundTasks, HTTPException
+
+JOBS: dict[str, dict] = {}
+
+
+def start_job(background_tasks: BackgroundTasks, fn, *args) -&gt; dict:
+    &quot;&quot;&quot;Runs fn(job, *args) after the response. fn can set job[&quot;progress&quot;]; result/error recorded.&quot;&quot;&quot;
+    job_id = str(uuid.uuid4())
+    job = JOBS[job_id] = {&quot;id&quot;: job_id, &quot;status&quot;: &quot;queued&quot;, &quot;progress&quot;: 0, &quot;result&quot;: None, &quot;error&quot;: None}
+
+    def run():
+        job[&quot;status&quot;] = &quot;running&quot;
+        try:
+            job[&quot;result&quot;] = fn(job, *args)
+            job[&quot;status&quot;] = &quot;done&quot;
+        except Exception as e:
+            job[&quot;status&quot;], job[&quot;error&quot;] = &quot;failed&quot;, str(e)
+
+    background_tasks.add_task(run)
+    return {&quot;job_id&quot;: job_id, &quot;status_url&quot;: f&quot;/jobs/{job_id}&quot;}
+
+
+def get_job(job_id: str) -&gt; dict:
+    if job_id not in JOBS:
+        raise HTTPException(404, &quot;unknown job&quot;)
+    return JOBS[job_id]
+</code></pre>
+<pre><code class="language-python">from fastapi import BackgroundTasks
+
+def import_rows(job, n):
+    for i in range(n):
+        ...                                         # do one unit of work
+        job[&quot;progress&quot;] = round((i + 1) / n * 100)
+    return {&quot;imported&quot;: n}
+
+@app.post(&quot;/jobs&quot;, status_code=202)
+def create(bg: BackgroundTasks):
+    return start_job(bg, import_rows, 10_000)
+
+@app.get(&quot;/jobs/{job_id}&quot;)
+def status(job_id: str):
+    return get_job(job_id)
+</code></pre>
+<p><strong>Moving to production:</strong> <code>JOBS</code> lives in one process's memory, so it's lost on restart and not shared between workers. Keep the same two endpoints, but store job state in a database and run the work in a queue worker.</p>
+<hr />
+<h2>4. Optimistic locking: no more silent overwrites</h2>
+<h3>The problem</h3>
+<p>Alice and Bob both open document version 1. Alice saves. Bob saves a second later, and Alice's change disappears without anyone noticing. This is the <strong>lost update</strong> problem.</p>
+<h3>Step 1: Version every record</h3>
+<p>Add a <code>version</code> integer column, and increment it on every write.</p>
+<h3>Step 2: Write only if the version hasn't changed</h3>
+<p>Do the check <em>in the same statement</em> as the update. Checking first and writing second leaves a gap where another request can slip in.</p>
+<h3>The complete function</h3>
+<pre><code class="language-python">import sqlite3
+
+
+def update_if_version(db_path: str, doc_id: str, expected_version: int, title: str) -&gt; bool:
+    &quot;&quot;&quot;Compare-and-set in one statement. False -&gt; someone changed it first (return 412).&quot;&quot;&quot;
+    with sqlite3.connect(db_path) as conn:
+        cur = conn.execute(
+            &quot;UPDATE documents SET title = ?, version = version + 1 WHERE id = ? AND version = ?&quot;,
+            (title, doc_id, expected_version))
+        return cur.rowcount == 1
+</code></pre>
+<h3>Step 3: Expose it over HTTP with ETag and If-Match</h3>
+<p>HTTP has standard headers for this. <code>GET</code> returns the version as an <code>ETag</code>, and <code>PUT</code> must send it back in <code>If-Match</code>:</p>
+<pre><code class="language-python">from fastapi import Header, HTTPException, Response
+
+@app.put(&quot;/documents/{doc_id}&quot;)
+def update(doc_id: str, body: dict, response: Response, if_match: str = Header(None)):
+    if if_match is None:
+        raise HTTPException(428, &quot;If-Match header required&quot;)
+    version = int(if_match.strip('&quot;'))                   # ETags are quoted: &quot;3&quot;
+    if not update_if_version(&quot;app.db&quot;, doc_id, version, body[&quot;title&quot;]):
+        raise HTTPException(412, &quot;document changed; re-fetch and retry&quot;)
+    response.headers[&quot;ETag&quot;] = f'&quot;{version + 1}&quot;'
+    return {&quot;ok&quot;: True}
+</code></pre>
+<ul>
+<li><strong>428 Precondition Required:</strong> the client didn't send <code>If-Match</code>. Without this, clients could skip the check just by leaving the header out.</li>
+<li><strong>412 Precondition Failed:</strong> someone else changed the document first. The client should re-fetch and retry.</li>
+</ul>
+<hr />
+<h2>Testing all four</h2>
+<pre><code class="language-python">from fastapi import BackgroundTasks, FastAPI
+from fastapi.testclient import TestClient
+
+app = FastAPI()
+log = add_request_id(app)
+add_rate_limit(app, rate=0.001, burst=2)
+
+
+@app.get(&quot;/x&quot;)
+def x():
+    return {}
+
+
+@app.post(&quot;/jobs&quot;, status_code=202)
+def create(bg: BackgroundTasks):
+    return start_job(bg, lambda job, n: n * 2, 21)
+
+
+def test_everything(tmp_path):
+    c = TestClient(app)
+    assert c.get(&quot;/x&quot;, headers={&quot;X-Request-ID&quot;: &quot;abc&quot;}).headers[&quot;X-Request-ID&quot;] == &quot;abc&quot;
+    job = c.post(&quot;/jobs&quot;).json()
+    assert JOBS[job[&quot;job_id&quot;]][&quot;result&quot;] == 42           # TestClient runs background tasks
+    r = c.get(&quot;/x&quot;)                                      # bucket of 2 is now empty
+    assert r.status_code == 429 and &quot;Retry-After&quot; in r.headers
+</code></pre>
+<hr />
+<h2>Recap</h2>
+<ul>
+<li><strong>Request IDs:</strong> middleware + <code>ContextVar</code> + a logging filter, so every line is traceable.</li>
+<li><strong>Rate limits:</strong> a token bucket per client, <code>time.monotonic()</code>, and <code>Retry-After</code>.</li>
+<li><strong>Background jobs:</strong> return 202 plus a status URL, and always record the result or the error.</li>
+<li><strong>Optimistic locking:</strong> <code>UPDATE ... WHERE version = ?</code> in one statement, exposed with <code>ETag</code>, <code>If-Match</code>, 428 and 412.</li>
+</ul>
+<p><em>Next: the backend logic patterns I write every week.</em></p>
+</article>
+<script>
+const btn = document.getElementById("copy");
+if (btn) btn.addEventListener("click", () => {
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById("article"));
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  sel.removeAllRanges();
+  document.getElementById("hint").textContent = ok
+    ? "Copied. Paste into a new Medium story with Cmd+V."
+    : "Copy was blocked. Select the article text and press Cmd+C.";
+});
+</script>
+</body></html>

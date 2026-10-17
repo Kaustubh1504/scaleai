@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building Well-Behaved API Clients in Python: Auth Tokens, Rate Limits, and Caching, Step by Step</title>
+<style>
+  body { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; font: 18px/1.6 Georgia, serif; color: #222; background: #fff; }
+  .bar { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 1px solid #ddd; margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  button { font: 600 15px system-ui, sans-serif; padding: 10px 18px; border: 0; border-radius: 20px; background: #1a8917; color: #fff; cursor: pointer; }
+  .hint { font: 14px system-ui, sans-serif; color: #666; }
+  a.back { font: 14px system-ui, sans-serif; color: #1a8917; }
+  pre { background: #f2f2f2; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.45; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 0.85em; background: #f2f2f2; padding: 1px 4px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  blockquote { border-left: 3px solid #222; margin-left: 0; padding-left: 16px; font-style: italic; }
+</style></head>
+<body>
+<div class="bar">
+  <a class="back" href="index.html">&larr; All articles</a>
+  <button id="copy">Copy for Medium</button>
+  <span class="hint" id="hint">Click, then paste into a new Medium story (Cmd+V).</span>
+</div>
+<article id="article">
+<h1>Building Well-Behaved API Clients in Python: Auth Tokens, Rate Limits, and Caching, Step by Step</h1>
+<h3>Three small snippets for when someone else's API has rules</h3>
+<p>When your backend calls an upstream API, that API sets the rules. Tokens expire every hour. You're allowed 10 requests per second. And the same customer gets looked up 200 times in one batch.</p>
+<p>In this tutorial we'll build three standalone snippets:</p>
+<ol>
+<li><strong><code>make_token_getter</code> + <code>call_with_token</code>:</strong> cache an auth token, refresh it before expiry, and recover from a 401.</li>
+<li><strong><code>make_rate_limiter</code> + <code>retry_after_seconds</code>:</strong> stay under a request rate, and respect <code>Retry-After</code>.</li>
+<li><strong><code>make_cached</code>:</strong> a TTL cache where ten simultaneous requests for the same key make one upstream call.</li>
+</ol>
+<p><strong>What you need:</strong> Python 3.9+, <code>pip install httpx</code>.</p>
+<hr />
+<h2>Part 1: Auth tokens</h2>
+<h3>Step 1: The naive version</h3>
+<pre><code class="language-python">def get_projects():
+    token = httpx.post(f&quot;{BASE}/oauth/token&quot;, json=creds).json()[&quot;access_token&quot;]
+    return httpx.get(f&quot;{BASE}/projects&quot;, headers={&quot;Authorization&quot;: f&quot;Bearer {token}&quot;})
+</code></pre>
+<p>This fetches a new token on <em>every</em> call. That doubles your traffic, and many token endpoints are themselves rate-limited.</p>
+<h3>Step 2: Cache the token until shortly before it expires</h3>
+<p>Token responses usually include <code>expires_in</code> (in seconds). Store the token with its expiry time, and reuse it until <code>refresh_margin</code> seconds before it expires. The margin covers clock skew and requests that are still in flight.</p>
+<h3>Step 3: Recover from an early 401</h3>
+<p>Tokens can be revoked or expire early. When a call returns 401, refresh <strong>once</strong> and retry <strong>once</strong>. Never loop: if a fresh token also gets a 401, your credentials are wrong.</p>
+<h3>Step 4: Don't refresh ten times at once</h3>
+<p>If ten threads get a 401 at the same moment, you want one refresh, not ten. Each thread tells the getter <em>which</em> token failed (<code>invalid=token</code>). The getter refreshes only if that token is still the current one; otherwise another thread already refreshed it, and the new token is returned. A lock makes the check-and-refresh atomic.</p>
+<h3>The complete snippet</h3>
+<pre><code class="language-python">import threading
+import time
+
+
+def make_token_getter(fetch_token, refresh_margin: float = 30.0, clock=time.time):
+    &quot;&quot;&quot;fetch_token() -&gt; (token, expires_in_seconds). Returns get_token(invalid=None):
+    cached until `refresh_margin` s before expiry; pass the token that got a 401 as `invalid`
+    to force a refresh (only one thread refreshes; others reuse the new token).&quot;&quot;&quot;
+    state = {&quot;token&quot;: None, &quot;expires_at&quot;: 0.0}
+    lock = threading.Lock()
+
+    def get_token(invalid=None):
+        with lock:
+            stale = state[&quot;token&quot;] is None or clock() &gt;= state[&quot;expires_at&quot;] - refresh_margin
+            if stale or (invalid is not None and invalid == state[&quot;token&quot;]):
+                token, expires_in = fetch_token()
+                state[&quot;token&quot;], state[&quot;expires_at&quot;] = token, clock() + float(expires_in)
+            return state[&quot;token&quot;]
+
+    return get_token
+
+
+def call_with_token(get_token, send):
+    &quot;&quot;&quot;send(token) -&gt; httpx.Response. On 401: refresh the token and retry once.&quot;&quot;&quot;
+    token = get_token()
+    r = send(token)
+    if r.status_code == 401:
+        r = send(get_token(invalid=token))
+    return r
+</code></pre>
+<pre><code class="language-python">def fetch_token():
+    body = httpx.post(f&quot;{BASE}/oauth/token&quot;, json={&quot;client_id&quot;: cid, &quot;client_secret&quot;: secret}).json()
+    return body[&quot;access_token&quot;], body[&quot;expires_in&quot;]
+
+get_token = make_token_getter(fetch_token)
+
+r = call_with_token(get_token, lambda t: httpx.get(f&quot;{BASE}/projects&quot;,
+                                                  headers={&quot;Authorization&quot;: f&quot;Bearer {t}&quot;}))
+</code></pre>
+<hr />
+<h2>Part 2: Rate limiting your own calls</h2>
+<h3>Step 5: Why retrying 429s isn't enough</h3>
+<p>If you send 50 requests per second to an API that allows 10, you get 40 errors per second, and the retries make it worse. Pace yourself <em>before</em> sending.</p>
+<h3>Step 6: A token bucket that waits instead of rejecting</h3>
+<p>The server-side rate limiter from part 5 of this series <em>rejected</em> requests. On the client side, we <em>wait</em> until we're allowed to send. The bucket refills at <code>rate</code> tokens per second; each request takes a token; an empty bucket means sleeping until the next one arrives.</p>
+<h3>Step 7: Share one limiter across all workers</h3>
+<p>The limit applies to your whole process, not to each thread. Create one limiter and call <code>acquire()</code> before every request, from every worker. A lock keeps the bucket consistent.</p>
+<h3>Step 8: Respect <code>Retry-After</code></h3>
+<p>When you still get a 429, the server often tells you how long to wait. The header can be a number of seconds or an HTTP date. Cap the wait, so a broken header can't stall you for an hour.</p>
+<h3>The complete snippet</h3>
+<pre><code class="language-python">import threading
+import time
+from email.utils import parsedate_to_datetime
+
+
+def make_rate_limiter(rate: float, burst: int = 1, clock=time.monotonic, sleep=time.sleep):
+    &quot;&quot;&quot;Returns acquire(): blocks until one more request is allowed (`rate` per second, bursts up to `burst`).
+    Thread-safe: share one limiter across all workers hitting the same API.&quot;&quot;&quot;
+    state = {&quot;tokens&quot;: float(burst), &quot;last&quot;: clock()}
+    lock = threading.Lock()
+
+    def acquire():
+        while True:
+            with lock:
+                now = clock()
+                state[&quot;tokens&quot;] = min(burst, state[&quot;tokens&quot;] + (now - state[&quot;last&quot;]) * rate)
+                state[&quot;last&quot;] = now
+                if state[&quot;tokens&quot;] &gt;= 1:
+                    state[&quot;tokens&quot;] -= 1
+                    return
+                wait = (1 - state[&quot;tokens&quot;]) / rate
+            sleep(wait)
+
+    return acquire
+
+
+def retry_after_seconds(response, default: float = 1.0, cap: float = 60.0) -&gt; float:
+    &quot;&quot;&quot;Seconds to wait from a Retry-After header (number of seconds or an HTTP date).&quot;&quot;&quot;
+    value = response.headers.get(&quot;Retry-After&quot;)
+    if not value:
+        return default
+    try:
+        return min(cap, max(0.0, float(value)))
+    except ValueError:
+        pass
+    try:
+        return min(cap, max(0.0, parsedate_to_datetime(value).timestamp() - time.time()))
+    except (TypeError, ValueError):
+        return default
+</code></pre>
+<pre><code class="language-python">limit = make_rate_limiter(rate=10, burst=10)
+
+def fetch(item_id):
+    for attempt in range(4):
+        limit()
+        r = httpx.get(f&quot;{BASE}/items/{item_id}&quot;)
+        if r.status_code != 429:
+            return r
+        time.sleep(retry_after_seconds(r))
+    return r
+</code></pre>
+<p>The <code>clock</code> and <code>sleep</code> parameters let tests check the pacing without waiting in real time.</p>
+<hr />
+<h2>Part 3: A TTL cache that coalesces requests</h2>
+<h3>Step 9: Cache with an expiry</h3>
+<p>Customer records, exchange rates and config change slowly. Remember each result for <code>ttl</code> seconds, using <code>time.monotonic()</code> so changes to the system clock can't affect expiry.</p>
+<h3>Step 10: Prevent the stampede</h3>
+<p>Plain caches have a gap. Ten threads miss the same key at the same moment, and all ten call the upstream. The fix is <strong>request coalescing</strong>: the first thread (the "leader") makes the call, and the others wait on an <code>Event</code> and share its result.</p>
+<h3>Step 11: Never cache failures</h3>
+<p>If the upstream errors, the leader re-raises, the waiting threads get the same error, and <em>nothing is stored</em>, so the next request tries again. <code>None</code> (for example "not found") is cached only if you ask for it.</p>
+<h3>Step 12: Count hits and misses</h3>
+<p>Return a <code>stats</code> dictionary. Exposing hits, misses and coalesced calls on a <code>/metrics</code> endpoint is how you show the cache is doing its job.</p>
+<h3>The complete snippet</h3>
+<pre><code class="language-python">import threading
+import time
+
+
+def make_cached(fn, ttl: float = 60.0, cache_none: bool = False, clock=time.monotonic):
+    &quot;&quot;&quot;Returns (cached, stats). cached(key) -&gt; fn(key), remembered for `ttl` seconds.
+    Concurrent misses for the same key make ONE call; the others wait and share its result or error.
+    Errors are never cached; None is cached only if cache_none.&quot;&quot;&quot;
+    entries = {}                                          # key -&gt; (value, expires_at)
+    inflight = {}                                         # key -&gt; {&quot;event&quot;, &quot;value&quot;/&quot;error&quot;}
+    lock = threading.Lock()
+    stats = {&quot;hits&quot;: 0, &quot;misses&quot;: 0, &quot;calls&quot;: 0, &quot;coalesced&quot;: 0}
+
+    def cached(key):
+        with lock:
+            hit = entries.get(key)
+            if hit is not None and hit[1] &gt; clock():
+                stats[&quot;hits&quot;] += 1
+                return hit[0]
+            slot = inflight.get(key)
+            leader = slot is None
+            if leader:
+                slot = inflight[key] = {&quot;event&quot;: threading.Event()}
+                stats[&quot;misses&quot;] += 1
+                stats[&quot;calls&quot;] += 1
+            else:
+                stats[&quot;coalesced&quot;] += 1
+        if not leader:
+            slot[&quot;event&quot;].wait()
+            if &quot;error&quot; in slot:
+                raise slot[&quot;error&quot;]
+            return slot[&quot;value&quot;]
+        try:
+            value = fn(key)
+            slot[&quot;value&quot;] = value
+            with lock:
+                if value is not None or cache_none:
+                    entries[key] = (value, clock() + ttl)
+            return value
+        except Exception as e:
+            slot[&quot;error&quot;] = e
+            raise
+        finally:
+            with lock:
+                inflight.pop(key, None)
+            slot[&quot;event&quot;].set()
+
+    return cached, stats
+</code></pre>
+<pre><code class="language-python">get_customer, cache_stats = make_cached(lambda cid: fetch_customer(cid), ttl=300)
+customers = bounded_map(lambda t: get_customer(t[&quot;customer_id&quot;]), tickets, 5)
+</code></pre>
+<hr />
+<h2>Testing</h2>
+<pre><code class="language-python">def test_token_refreshes_once_on_401():
+    issued = []
+    def fetch():
+        issued.append(f&quot;tok{len(issued)}&quot;)
+        return issued[-1], 3600
+    get = make_token_getter(fetch)
+    sent = []
+    def send(tok):
+        sent.append(tok)
+        return httpx.Response(401 if tok == &quot;tok0&quot; else 200)
+    assert call_with_token(get, send).status_code == 200
+    assert sent == [&quot;tok0&quot;, &quot;tok1&quot;]
+
+
+def test_ten_threads_one_call():
+    calls = []
+    def slow(k):
+        calls.append(k)
+        time.sleep(0.05)
+        return k * 2
+    cached, stats = make_cached(slow, ttl=10)
+    threads = [threading.Thread(target=cached, args=(1,)) for _ in range(10)]
+    [t.start() for t in threads]
+    [t.join() for t in threads]
+    assert calls == [1] and stats[&quot;coalesced&quot;] == 9
+</code></pre>
+<hr />
+<h2>Recap</h2>
+<ol>
+<li><strong>Cache tokens</strong> until just before expiry. On a 401, refresh once and retry once, and only the thread holding the stale token refreshes.</li>
+<li><strong>Pace your requests</strong> with a shared token bucket, and honor <code>Retry-After</code>.</li>
+<li><strong>Cache slow lookups with a TTL</strong>, coalesce concurrent misses into one call, and never cache errors.</li>
+</ol>
+</article>
+<script>
+const btn = document.getElementById("copy");
+if (btn) btn.addEventListener("click", () => {
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById("article"));
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  sel.removeAllRanges();
+  document.getElementById("hint").textContent = ok
+    ? "Copied. Paste into a new Medium story with Cmd+V."
+    : "Copy was blocked. Select the article text and press Cmd+C.";
+});
+</script>
+</body></html>

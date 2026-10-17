@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>State Machines and Leases in Python, Step by Step: Handing Out Work Without Losing or Duplicating It</title>
+<style>
+  body { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; font: 18px/1.6 Georgia, serif; color: #222; background: #fff; }
+  .bar { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 1px solid #ddd; margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  button { font: 600 15px system-ui, sans-serif; padding: 10px 18px; border: 0; border-radius: 20px; background: #1a8917; color: #fff; cursor: pointer; }
+  .hint { font: 14px system-ui, sans-serif; color: #666; }
+  a.back { font: 14px system-ui, sans-serif; color: #1a8917; }
+  pre { background: #f2f2f2; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.45; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 0.85em; background: #f2f2f2; padding: 1px 4px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  blockquote { border-left: 3px solid #222; margin-left: 0; padding-left: 16px; font-style: italic; }
+</style></head>
+<body>
+<div class="bar">
+  <a class="back" href="index.html">&larr; All articles</a>
+  <button id="copy">Copy for Medium</button>
+  <span class="hint" id="hint">Click, then paste into a new Medium story (Cmd+V).</span>
+</div>
+<article id="article">
+<h1>State Machines and Leases in Python, Step by Step: Handing Out Work Without Losing or Duplicating It</h1>
+<h3>The pattern behind task queues, annotation tools, and seat holds</h3>
+<p>Any system that hands work to workers has the same problems. A worker takes a task and crashes. Two workers grab the same task. A "completed" task gets moved back to "pending" by a bug. A slow worker finishes <em>after</em> its task was given to someone else, and overwrites the newer result.</p>
+<p>Two patterns fix all of these:</p>
+<ol>
+<li><strong>A state machine</strong> that only allows legal status changes.</li>
+<li><strong>Leases</strong>: time-limited claims on a task, with heartbeats and tokens.</li>
+</ol>
+<p><strong>What you need:</strong> Python 3.9+. Standard library only.</p>
+<hr />
+<h2>Part 1: A state machine</h2>
+<h3>Step 1: Write the allowed transitions down as data</h3>
+<p>Statuses changed with scattered <code>if</code> statements drift over time. Put every legal move in one dictionary:</p>
+<pre><code class="language-python">TRANSITIONS = {
+    &quot;pending&quot;: {&quot;leased&quot;, &quot;cancelled&quot;},
+    &quot;leased&quot;: {&quot;pending&quot;, &quot;completed&quot;, &quot;failed&quot;},
+    &quot;failed&quot;: {&quot;pending&quot;, &quot;dead&quot;},
+    &quot;completed&quot;: set(),       # terminal
+    &quot;dead&quot;: set(),            # terminal
+    &quot;cancelled&quot;: set(),       # terminal
+}
+</code></pre>
+<p>The whole lifecycle now fits on one screen, and an empty set marks a terminal state.</p>
+<h3>Step 2: Reject illegal moves loudly</h3>
+<p><code>completed → pending</code> should be an error, not something that silently happens. Raise a specific exception that your API maps to <strong>409 Conflict</strong>.</p>
+<h3>Step 3: Make repeats harmless</h3>
+<p>Clients retry. If a task is already <code>completed</code> and the same "complete" request arrives again, that should succeed as a no-op, not fail with "invalid transition". Moving to the current state returns <code>False</code> and changes nothing.</p>
+<h3>Step 4: Record every change</h3>
+<p>Pass a list (or a function that writes to your audit log), and append <code>{id, from, to, at}</code> for every real transition. When someone asks "why is this task dead?", you have the history.</p>
+<h3>The complete snippet</h3>
+<pre><code class="language-python">import time
+
+TRANSITIONS = {
+    &quot;pending&quot;: {&quot;leased&quot;, &quot;cancelled&quot;},
+    &quot;leased&quot;: {&quot;pending&quot;, &quot;completed&quot;, &quot;failed&quot;},
+    &quot;failed&quot;: {&quot;pending&quot;, &quot;dead&quot;},
+    &quot;completed&quot;: set(),
+    &quot;dead&quot;: set(),
+    &quot;cancelled&quot;: set(),
+}
+
+
+class InvalidTransition(Exception):
+    &quot;&quot;&quot;Map to 409 Conflict.&quot;&quot;&quot;
+
+
+def transition(task: dict, to: str, transitions=TRANSITIONS, audit=None) -&gt; bool:
+    &quot;&quot;&quot;Move task[&quot;status&quot;] to `to`. Same state again -&gt; no-op, returns False (safe to retry).
+    Not allowed -&gt; InvalidTransition. Appends {&quot;id&quot;, &quot;from&quot;, &quot;to&quot;, &quot;at&quot;} to `audit` if given.&quot;&quot;&quot;
+    current = task[&quot;status&quot;]
+    if current == to:
+        return False
+    if to not in transitions.get(current, set()):
+        raise InvalidTransition(f&quot;{task.get('id')}: {current} -&gt; {to} not allowed&quot;)
+    task[&quot;status&quot;] = to
+    if audit is not None:
+        audit.append({&quot;id&quot;: task.get(&quot;id&quot;), &quot;from&quot;: current, &quot;to&quot;: to, &quot;at&quot;: time.time()})
+    return True
+</code></pre>
+<pre><code class="language-python">@app.post(&quot;/tasks/{task_id}/complete&quot;)
+def complete_task(task_id: str):
+    task = tasks.get(task_id) or raise_404()
+    try:
+        changed = transition(task, &quot;completed&quot;, audit=audit_events)
+    except InvalidTransition as e:
+        raise HTTPException(409, str(e))
+    return {&quot;task&quot;: task, &quot;changed&quot;: changed}
+</code></pre>
+<hr />
+<h2>Part 2: Leases</h2>
+<h3>Step 5: Why a plain "assigned_to" field isn't enough</h3>
+<p>If you set <code>task["worker"] = "w1"</code> and w1 crashes, the task is stuck forever. A <strong>lease</strong> expires on its own: w1 owns the task for 30 seconds, and if it doesn't check in, the task becomes available again.</p>
+<h3>Step 6: Heartbeats keep long work alive</h3>
+<p>Work that takes longer than the lease calls <code>heartbeat()</code> every <code>ttl / 3</code> seconds to extend it. If the worker dies, the heartbeats stop and the lease expires.</p>
+<h3>Step 7: Tokens protect against stale workers</h3>
+<p>This is the subtle bug. w1's lease expires while it's merely slow, so the task goes to w2. Then w1 finishes and calls <code>complete()</code>. Without protection, w1's stale result overwrites w2's work.</p>
+<p>The fix: every lease gets a fresh random <strong>token</strong>. Only the holder of the <em>current</em> token can heartbeat, complete or fail. w1's old token no longer matches, so its call returns <code>False</code>.</p>
+<h3>Step 8: Count attempts, then give up</h3>
+<p>Every acquisition increments <code>attempts</code>. When a lease expires (or the worker calls <code>fail()</code>) on the last allowed attempt, the task becomes <code>dead</code> instead of <code>pending</code>. That's your dead-letter state: a task that keeps crashing workers stops being retried forever.</p>
+<h3>Step 9: Expire lazily</h3>
+<p>You don't need a background timer. <code>acquire()</code> calls <code>reap_expired()</code> first, so expired leases are cleaned up whenever someone asks for work. For a status endpoint, call <code>reap_expired()</code> before reading.</p>
+<h3>The complete snippet</h3>
+<pre><code class="language-python">import time
+import uuid
+
+
+def new_item(item_id, payload=None) -&gt; dict:
+    return {&quot;id&quot;: item_id, &quot;payload&quot;: payload, &quot;status&quot;: &quot;pending&quot;, &quot;attempts&quot;: 0,
+            &quot;worker&quot;: None, &quot;token&quot;: None, &quot;expires_at&quot;: 0.0}
+
+
+def reap_expired(items: dict, max_attempts: int = 3, now=None) -&gt; list:
+    &quot;&quot;&quot;Expired leases go back to pending, or to dead after max_attempts. Returns changed ids.&quot;&quot;&quot;
+    now = time.monotonic() if now is None else now
+    changed = []
+    for it in items.values():
+        if it[&quot;status&quot;] == &quot;leased&quot; and it[&quot;expires_at&quot;] &lt;= now:
+            it[&quot;status&quot;] = &quot;dead&quot; if it[&quot;attempts&quot;] &gt;= max_attempts else &quot;pending&quot;
+            it[&quot;worker&quot;] = it[&quot;token&quot;] = None
+            changed.append(it[&quot;id&quot;])
+    return changed
+
+
+def acquire(items: dict, worker: str, ttl: float = 30.0, max_attempts: int = 3, now=None):
+    &quot;&quot;&quot;Lease the oldest pending item. Returns (item, token) or None. Hold a lock around calls if threaded.&quot;&quot;&quot;
+    now = time.monotonic() if now is None else now
+    reap_expired(items, max_attempts, now)
+    for it in items.values():
+        if it[&quot;status&quot;] == &quot;pending&quot;:
+            it.update(status=&quot;leased&quot;, worker=worker, token=uuid.uuid4().hex,
+                      expires_at=now + ttl, attempts=it[&quot;attempts&quot;] + 1)
+            return it, it[&quot;token&quot;]
+    return None
+
+
+def _holds(it, token, now) -&gt; bool:
+    return it is not None and it[&quot;status&quot;] == &quot;leased&quot; and it[&quot;token&quot;] == token and it[&quot;expires_at&quot;] &gt; now
+
+
+def heartbeat(items: dict, item_id, token: str, ttl: float = 30.0, now=None) -&gt; bool:
+    &quot;&quot;&quot;Extend the lease. False if the lease expired or someone else holds it now.&quot;&quot;&quot;
+    now = time.monotonic() if now is None else now
+    it = items.get(item_id)
+    if not _holds(it, token, now):
+        return False
+    it[&quot;expires_at&quot;] = now + ttl
+    return True
+
+
+def complete(items: dict, item_id, token: str, result=None, now=None) -&gt; bool:
+    &quot;&quot;&quot;Only the current holder can complete. Repeating the same completion returns True (idempotent).&quot;&quot;&quot;
+    now = time.monotonic() if now is None else now
+    it = items.get(item_id)
+    if it is not None and it[&quot;status&quot;] == &quot;completed&quot;:
+        return it.get(&quot;completed_token&quot;) == token
+    if not _holds(it, token, now):
+        return False
+    it.update(status=&quot;completed&quot;, result=result, completed_token=token, token=None, worker=None)
+    return True
+
+
+def fail(items: dict, item_id, token: str, max_attempts: int = 3, now=None) -&gt; bool:
+    &quot;&quot;&quot;Holder gives up: back to pending, or dead after max_attempts.&quot;&quot;&quot;
+    now = time.monotonic() if now is None else now
+    it = items.get(item_id)
+    if not _holds(it, token, now):
+        return False
+    it.update(status=&quot;dead&quot; if it[&quot;attempts&quot;] &gt;= max_attempts else &quot;pending&quot;, token=None, worker=None)
+    return True
+</code></pre>
+<p>Every function takes an optional <code>now</code>, which makes the expiry logic testable without sleeping.</p>
+<h3>Step 10: Use it from a worker loop</h3>
+<pre><code class="language-python">import threading, time
+
+lock = threading.Lock()
+items = {t[&quot;id&quot;]: new_item(t[&quot;id&quot;], t) for t in tasks}
+
+def worker(name):
+    while True:
+        with lock:
+            lease = acquire(items, name, ttl=30)
+        if lease is None:
+            return
+        item, token = lease
+        try:
+            result = process(item[&quot;payload&quot;])          # call heartbeat() inside long work
+            with lock:
+                complete(items, item[&quot;id&quot;], token, result=result)
+        except Exception:
+            with lock:
+                fail(items, item[&quot;id&quot;], token)
+</code></pre>
+<p>The functions change shared dictionaries, so wrap each call in one lock when several threads use them. In a database, the same logic becomes one conditional <code>UPDATE ... WHERE id = ? AND token = ? AND expires_at &gt; now</code>.</p>
+<hr />
+<h2>Testing with a fake clock</h2>
+<pre><code class="language-python">def test_lease_lifecycle():
+    items = {i: new_item(i) for i in [&quot;a&quot;, &quot;b&quot;]}
+    item, tok = acquire(items, &quot;w1&quot;, ttl=10, now=0)
+    assert heartbeat(items, &quot;a&quot;, tok, ttl=10, now=5)            # extends to 15
+    assert acquire(items, &quot;w2&quot;, ttl=10, now=20)[0][&quot;id&quot;] == &quot;a&quot; # expired -&gt; re-leased
+    assert not complete(items, &quot;a&quot;, tok, now=21)                # stale worker rejected
+
+
+def test_gives_up_after_max_attempts():
+    items = {&quot;x&quot;: new_item(&quot;x&quot;)}
+    for t in range(3):
+        acquire(items, &quot;w&quot;, ttl=1, max_attempts=3, now=t * 10)
+    reap_expired(items, max_attempts=3, now=100)
+    assert items[&quot;x&quot;][&quot;status&quot;] == &quot;dead&quot;
+</code></pre>
+<hr />
+<h2>Recap</h2>
+<ol>
+<li>Keep <strong>legal transitions in one table.</strong> Raise (409) on illegal moves, and treat repeats as no-ops.</li>
+<li><strong>Audit every transition.</strong></li>
+<li>Use <strong>leases with expiry</strong> instead of permanent assignment.</li>
+<li><strong>Heartbeat</strong> during long work.</li>
+<li>Give <strong>every lease a new token</strong>, so stale workers can't overwrite newer work.</li>
+<li><strong>Count attempts</strong> and move repeat offenders to <code>dead</code>.</li>
+</ol>
+</article>
+<script>
+const btn = document.getElementById("copy");
+if (btn) btn.addEventListener("click", () => {
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById("article"));
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  sel.removeAllRanges();
+  document.getElementById("hint").textContent = ok
+    ? "Copied. Paste into a new Medium story with Cmd+V."
+    : "Copy was blocked. Select the article text and press Cmd+C.";
+});
+</script>
+</body></html>

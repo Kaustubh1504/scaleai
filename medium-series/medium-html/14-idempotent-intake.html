@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Idempotency Keys, Per-Tenant Rate Limits, and SQLite Under Load: A Step-by-Step Python Guide</title>
+<style>
+  body { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; font: 18px/1.6 Georgia, serif; color: #222; background: #fff; }
+  .bar { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 1px solid #ddd; margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  button { font: 600 15px system-ui, sans-serif; padding: 10px 18px; border: 0; border-radius: 20px; background: #1a8917; color: #fff; cursor: pointer; }
+  .hint { font: 14px system-ui, sans-serif; color: #666; }
+  a.back { font: 14px system-ui, sans-serif; color: #1a8917; }
+  pre { background: #f2f2f2; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.45; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 0.85em; background: #f2f2f2; padding: 1px 4px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  blockquote { border-left: 3px solid #222; margin-left: 0; padding-left: 16px; font-style: italic; }
+</style></head>
+<body>
+<div class="bar">
+  <a class="back" href="index.html">&larr; All articles</a>
+  <button id="copy">Copy for Medium</button>
+  <span class="hint" id="hint">Click, then paste into a new Medium story (Cmd+V).</span>
+</div>
+<article id="article">
+<h1>Idempotency Keys, Per-Tenant Rate Limits, and SQLite Under Load: A Step-by-Step Python Guide</h1>
+<h3>Make a POST endpoint safe to retry, fair across tenants, and correct with 20 threads hitting it at once</h3>
+<p>Clients retry. A POST that timed out on the client may have succeeded on the server, so the retry creates a duplicate. One tenant's batch job floods the API and slows everyone else down. Then you add a database, and under parallel requests it starts throwing <code>database is locked</code>.</p>
+<p>This tutorial builds four standalone snippets that fix those problems, plus the test clock that makes them testable:</p>
+<ol>
+<li><code>fake_clock()</code>: test time-based logic without sleeping</li>
+<li><code>run_idempotent()</code>: idempotency keys for your own endpoints</li>
+<li><code>make_bucket_store()</code>: a token bucket per tenant</li>
+<li><code>get_conn()</code> and <code>write_tx()</code>: SQLite that stays correct across threads and restarts</li>
+</ol>
+<p><strong>What you need:</strong> Python 3.9+, <code>pip install fastapi</code>.</p>
+<hr />
+<h2>Step 1: Inject the clock</h2>
+<p>Expiry, rate limits and leases all depend on time. If your code calls <code>time.time()</code> directly, tests have to <code>sleep(86400)</code> to check a 24-hour expiry. Instead, accept a <code>clock</code> and pass a fake one in tests:</p>
+<pre><code class="language-python">from types import SimpleNamespace
+
+
+def fake_clock(start: float = 1_700_000_000.0):
+    &quot;&quot;&quot;clock.time(), clock.monotonic(), clock.sleep(s) (returns instantly), clock.advance(s), clock.sleeps.
+    Inject it wherever code would call time.time() / time.monotonic() / time.sleep().&quot;&quot;&quot;
+    state = {&quot;now&quot;: float(start)}
+    sleeps = []
+
+    def advance(seconds: float) -&gt; None:
+        state[&quot;now&quot;] += seconds
+
+    def sleep(seconds: float) -&gt; None:
+        sleeps.append(seconds)
+        advance(seconds)
+
+    return SimpleNamespace(time=lambda: state[&quot;now&quot;], monotonic=lambda: state[&quot;now&quot;],
+                           sleep=sleep, advance=advance, sleeps=sleeps)
+</code></pre>
+<pre><code class="language-python">clock = fake_clock()
+app = create_app(storage_dir, clock=clock)
+clock.advance(86_400)            # a day passes instantly
+</code></pre>
+<hr />
+<h2>Part 1: Idempotency keys</h2>
+<h3>Step 2: The contract</h3>
+<p>The client sends <code>Idempotency-Key: &lt;unique string&gt;</code> with a POST. The server promises:</p>
+<ul>
+<li><strong>Same key, same body:</strong> return the <em>original</em> response again (a replay), and don't create a second resource.</li>
+<li><strong>Same key, different body:</strong> <strong>409</strong>. That's a client bug.</li>
+<li><strong>Same key while the first request is still running:</strong> <strong>409</strong> ("in progress"), so concurrent retries can't both create.</li>
+<li><strong>The first attempt failed</strong> (an exception, or a 429): store nothing, so a retry can succeed.</li>
+</ul>
+<h3>Step 3: Fingerprint the body</h3>
+<p>To decide "same body", hash a <em>canonical</em> JSON form, with sorted keys and no extra whitespace. Then <code>{"a":1,"b":2}</code> and <code>{"b": 2, "a": 1}</code> match.</p>
+<h3>Step 4: Reserve the key before doing the work</h3>
+<p>The race to avoid: two identical requests arrive together, both see "no record", and both create. The fix is to insert an <code>in_progress</code> record <strong>under a lock before calling <code>create()</code></strong>. The second request then sees the record and gets a 409.</p>
+<h3>Step 5: Scope keys per tenant, and expire them</h3>
+<p>Key <code>"abc"</code> from tenant A and key <code>"abc"</code> from tenant B are different keys, so the record key is <code>(tenant, key)</code>. Records expire after a TTL (24 hours is common), after which the key can be used again.</p>
+<h3>The complete snippet</h3>
+<pre><code class="language-python">import hashlib
+import json
+import re
+import threading
+import time
+
+KEY_RE = re.compile(r&quot;[A-Za-z0-9_-]{1,64}&quot;)
+RECORDS: dict = {}               # (scope, key) -&gt; record; persist it (atomically) if it must survive restarts
+LOCK = threading.Lock()
+
+
+def fingerprint(body) -&gt; str:
+    return hashlib.sha256(json.dumps(body, sort_keys=True, separators=(&quot;,&quot;, &quot;:&quot;)).encode()).hexdigest()
+
+
+def run_idempotent(scope: str, key, body, create, ttl: float = 86_400, clock=time.time,
+                   records: dict = RECORDS, lock=LOCK):
+    &quot;&quot;&quot;Run create() -&gt; (status, response_body) at most once per (scope, key). Returns (status, body, replayed).
+
+    key None          -&gt; just create()
+    key malformed     -&gt; ValueError (map to 400)
+    seen, same body   -&gt; the stored response, replayed=True (send header Idempotent-Replayed: true)
+    seen, other body  -&gt; (409, ...)
+    first still running (concurrent retry) -&gt; (409, ...)
+    create() raises or returns non-2xx -&gt; nothing stored; the key can be retried
+    record older than ttl -&gt; ignored; the key is reusable
+    &quot;&quot;&quot;
+    if key is None:
+        status, resp = create()
+        return status, resp, False
+    if not KEY_RE.fullmatch(key):
+        raise ValueError(&quot;invalid Idempotency-Key&quot;)
+    fp, rk = fingerprint(body), (scope, key)
+    with lock:
+        rec = records.get(rk)
+        if rec is not None and clock() &gt;= rec[&quot;created_at&quot;] + ttl:
+            records.pop(rk)
+            rec = None
+        if rec is not None:
+            if rec[&quot;fingerprint&quot;] != fp:
+                return 409, {&quot;detail&quot;: &quot;Idempotency-Key was used with a different request&quot;}, False
+            if rec[&quot;state&quot;] == &quot;in_progress&quot;:
+                return 409, {&quot;detail&quot;: &quot;a request with this key is in progress&quot;}, False
+            return rec[&quot;status&quot;], rec[&quot;body&quot;], True
+        records[rk] = {&quot;fingerprint&quot;: fp, &quot;state&quot;: &quot;in_progress&quot;, &quot;created_at&quot;: clock()}
+    try:
+        status, resp = create()
+    except BaseException:
+        with lock:
+            records.pop(rk, None)
+        raise
+    with lock:
+        if 200 &lt;= status &lt; 300:
+            records[rk].update(state=&quot;done&quot;, status=status, body=resp)
+        else:
+            records.pop(rk, None)
+    return status, resp, False
+</code></pre>
+<h3>Step 6: Wire it into FastAPI</h3>
+<pre><code class="language-python">@app.post(&quot;/tasks&quot;, status_code=201)
+def create_task(body: TaskIn, response: Response, x_tenant_id: str = Header(...),
+                idempotency_key: str = Header(None)):
+    try:
+        status, data, replayed = run_idempotent(x_tenant_id, idempotency_key, body.dict(),
+                                                lambda: (201, save_task(x_tenant_id, body)))
+    except ValueError:
+        raise HTTPException(400, &quot;invalid Idempotency-Key&quot;)
+    if status == 409:
+        raise HTTPException(409, data[&quot;detail&quot;])
+    if replayed:
+        response.headers[&quot;Idempotent-Replayed&quot;] = &quot;true&quot;
+    return data
+</code></pre>
+<p><strong>Order of checks</strong> matters, and specs usually define it: tenant header (400/403), key format (400), body (422), idempotency (replay/409), rate limit (429), and only then create (201). A replay costs no rate-limit token.</p>
+<p><strong>Restarts:</strong> <code>RECORDS</code> is a plain dict. To survive restarts, save it with an atomic write after every change, or keep the records in a SQLite table (Part 3).</p>
+<hr />
+<h2>Part 2: A token bucket per tenant</h2>
+<h3>Step 7: Server side means non-blocking</h3>
+<p>The client-side limiter in part 9 of this series <em>waits</em>. A server can't make a request wait, so it <em>rejects</em> with 429 and tells the client how long to wait.</p>
+<h3>Step 8: Refill continuously, fractions included</h3>
+<p>After 0.5 seconds at 1 token/s there's half a token. Store <code>(tokens, last_time)</code> per key, and on every request add <code>elapsed * refill_per_s</code>, capped at <code>burst</code>.</p>
+<h3>Step 9: <code>Retry-After</code> rounds up and is at least 1</h3>
+<p>With 0.875 tokens and a refill rate of 0.25 per second, the next whole token arrives in 0.5 s, so the header must say <code>1</code>, not <code>0</code>. Round up, with a floor of 1. The snippet rounds to 9 decimal places before taking the ceiling, so floating-point noise like <code>3.0000000000000004</code> doesn't become 4.</p>
+<h3>Step 10: One lock for concurrency</h3>
+<p>Ten simultaneous requests from a tenant with <code>burst=5</code> must produce exactly five 201s and five 429s. A single lock around the read-modify-write guarantees that.</p>
+<h3>The complete snippet</h3>
+<pre><code class="language-python">import math
+import threading
+import time
+
+
+def make_bucket_store(clock=time.monotonic):
+    &quot;&quot;&quot;take(key, burst, refill_per_s, cost=1) -&gt; (allowed, retry_after_s).
+    Each key has its own bucket: starts full, refills continuously (fractional tokens count), never above burst.
+    retry_after_s = seconds until `cost` tokens exist, rounded UP, at least 1 (0 when allowed). Thread-safe.&quot;&quot;&quot;
+    buckets: dict = {}
+    lock = threading.Lock()
+
+    def take(key, burst: float, refill_per_s: float, cost: float = 1.0):
+        with lock:
+            now = clock()
+            tokens, last = buckets.get(key, (float(burst), now))
+            tokens = min(float(burst), tokens + (now - last) * refill_per_s)
+            if tokens &gt;= cost:
+                buckets[key] = (tokens - cost, now)
+                return True, 0
+            buckets[key] = (tokens, now)
+            return False, max(1, math.ceil(round((cost - tokens) / refill_per_s, 9)))
+
+    return take
+</code></pre>
+<pre><code class="language-python">take = make_bucket_store(clock.time)
+ok, wait = take(tenant_id, plan[&quot;burst&quot;], plan[&quot;refill_per_s&quot;])
+if not ok:
+    raise HTTPException(429, &quot;rate limit exceeded&quot;, headers={&quot;Retry-After&quot;: str(wait)})
+</code></pre>
+<hr />
+<h2>Part 3: SQLite that survives many threads</h2>
+<h3>Step 11: One connection per thread</h3>
+<p>A <code>sqlite3.Connection</code> must not be shared between threads. FastAPI runs <code>def</code> endpoints in a thread pool, and tests often fire requests from several threads. Keep connections in <code>threading.local()</code>.</p>
+<h3>Step 12: WAL mode and a busy timeout</h3>
+<ul>
+<li><strong><code>journal_mode=WAL</code></strong> lets reads continue while a write is in progress.</li>
+<li><strong><code>busy_timeout</code></strong> makes a writer <em>wait</em> for the lock instead of failing immediately with <code>database is locked</code>.</li>
+</ul>
+<h3>Step 13: <code>BEGIN IMMEDIATE</code> for read-then-write</h3>
+<p>"Find the oldest pending task, then lease it" is two statements. With a plain <code>BEGIN</code>, two threads can both read the same row before either writes. <code>BEGIN IMMEDIATE</code> takes the write lock <strong>before</strong> the read, so the whole claim is atomic, across threads and across processes.</p>
+<h3>The complete snippet</h3>
+<pre><code class="language-python">import sqlite3
+import threading
+from contextlib import contextmanager
+
+_local = threading.local()
+
+
+def get_conn(path: str) -&gt; sqlite3.Connection:
+    &quot;&quot;&quot;One connection per thread per file (connections must not be shared across threads).
+    WAL lets readers run during writes; busy_timeout makes writers wait instead of failing.&quot;&quot;&quot;
+    conns = getattr(_local, &quot;conns&quot;, None)
+    if conns is None:
+        conns = _local.conns = {}
+    conn = conns.get(path)
+    if conn is None:
+        conn = sqlite3.connect(path, timeout=30, isolation_level=None)    # we control transactions
+        conn.row_factory = sqlite3.Row
+        conn.execute(&quot;PRAGMA journal_mode=WAL&quot;)
+        conn.execute(&quot;PRAGMA busy_timeout=30000&quot;)
+        conns[path] = conn
+    return conn
+
+
+@contextmanager
+def write_tx(path: str):
+    &quot;&quot;&quot;BEGIN IMMEDIATE takes the write lock up front, so read-then-write logic (claim the oldest task,
+    check-then-insert) is atomic across threads AND processes. Commits on success, rolls back on error.&quot;&quot;&quot;
+    conn = get_conn(path)
+    conn.execute(&quot;BEGIN IMMEDIATE&quot;)
+    try:
+        yield conn
+    except BaseException:
+        conn.execute(&quot;ROLLBACK&quot;)
+        raise
+    conn.execute(&quot;COMMIT&quot;)
+</code></pre>
+<pre><code class="language-python">with write_tx(DB) as db:
+    row = db.execute(&quot;SELECT id FROM tasks WHERE state = 'pending' ORDER BY seq LIMIT 1&quot;).fetchone()
+    if row:
+        db.execute(&quot;UPDATE tasks SET state = 'leased', annotator = ?, expires_at = ? WHERE id = ?&quot;,
+                   (annotator, now + lease_s, row[&quot;id&quot;]))
+</code></pre>
+<p>Durability comes free: a new app started over the same file sees every task, lease and idempotency record.</p>
+<hr />
+<h2>Testing</h2>
+<pre><code class="language-python">def test_idempotent_replay_and_conflict():
+    clock, records, lock = fake_clock(0), {}, threading.Lock()
+    kw = dict(clock=clock.time, records=records, lock=lock)
+    create = lambda: (201, {&quot;id&quot;: &quot;t1&quot;})
+    assert run_idempotent(&quot;acme&quot;, &quot;k1&quot;, {&quot;a&quot;: 1}, create, **kw) == (201, {&quot;id&quot;: &quot;t1&quot;}, False)
+    assert run_idempotent(&quot;acme&quot;, &quot;k1&quot;, {&quot;a&quot;: 1}, create, **kw)[2] is True       # replay
+    assert run_idempotent(&quot;acme&quot;, &quot;k1&quot;, {&quot;a&quot;: 2}, create, **kw)[0] == 409        # different body
+    clock.advance(86_400)
+    assert run_idempotent(&quot;acme&quot;, &quot;k1&quot;, {&quot;a&quot;: 2}, create, **kw)[0] == 201        # expired
+
+
+def test_retry_after_rounds_up():
+    clock = fake_clock(0)
+    take = make_bucket_store(clock.time)
+    take(&quot;a&quot;, 2, 0.25); take(&quot;a&quot;, 2, 0.25)
+    assert take(&quot;a&quot;, 2, 0.25) == (False, 4)
+    clock.advance(3.5)                                                          # 0.875 tokens
+    assert take(&quot;a&quot;, 2, 0.25) == (False, 1)
+
+
+def test_twenty_threads_claim_each_task_once(tmp_path):
+    ...  # 5 pending rows, 20 threads each run the claim above -&gt; 5 distinct ids claimed
+</code></pre>
+<hr />
+<h2>Recap</h2>
+<ol>
+<li><strong>Inject a clock</strong> so time-based rules can be tested instantly.</li>
+<li><strong>Idempotency keys:</strong> fingerprint the body, reserve the key <em>before</em> working, replay on a match, return 409 on a mismatch or while in progress, never store failures, and expire records.</li>
+<li><strong>Per-tenant token bucket:</strong> refill continuously, reject with 429, round <code>Retry-After</code> up to at least 1, and use one lock.</li>
+<li><strong>SQLite under load:</strong> a connection per thread, WAL plus <code>busy_timeout</code>, and <code>BEGIN IMMEDIATE</code> around read-then-write.</li>
+</ol>
+</article>
+<script>
+const btn = document.getElementById("copy");
+if (btn) btn.addEventListener("click", () => {
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById("article"));
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  sel.removeAllRanges();
+  document.getElementById("hint").textContent = ok
+    ? "Copied. Paste into a new Medium story with Cmd+V."
+    : "Copy was blocked. Select the article text and press Cmd+C.";
+});
+</script>
+</body></html>

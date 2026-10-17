@@ -16,6 +16,8 @@ _grader/    hidden acceptance tests + a reference solution. DON'T OPEN until you
 | 03 | CSV upload endpoint (multipart, size/type checks, reuse 01) | 30 min | `app/main.py` |
 | 04 | Single LLM-call feature (`/triage`, structured JSON, failure codes) | 30 min | `app/main.py` |
 | 05 | Task processor (deadline heap, subtask deps, lazy deletion) | 30 min | `processor.py` |
+| 06 | Ticket enrichment: CSV + Customer REST API (retries, per-id cache) + LLM urgency/SLA | 60 min | `app/main.py` (FastAPI) |
+| 07 | Labeling pipeline (Scale-style, 3 parts; details in SPEC) | 60 min | `app/main.py` (FastAPI) |
 
 ## Setup (once)
 

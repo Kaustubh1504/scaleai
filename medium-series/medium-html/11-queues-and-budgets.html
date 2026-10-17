@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Queues in Python, Step by Step: Priorities, Retries, Dead Letters, and LLM Budgets</title>
+<style>
+  body { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; font: 18px/1.6 Georgia, serif; color: #222; background: #fff; }
+  .bar { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 1px solid #ddd; margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  button { font: 600 15px system-ui, sans-serif; padding: 10px 18px; border: 0; border-radius: 20px; background: #1a8917; color: #fff; cursor: pointer; }
+  .hint { font: 14px system-ui, sans-serif; color: #666; }
+  a.back { font: 14px system-ui, sans-serif; color: #1a8917; }
+  pre { background: #f2f2f2; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.45; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 0.85em; background: #f2f2f2; padding: 1px 4px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  blockquote { border-left: 3px solid #222; margin-left: 0; padding-left: 16px; font-style: italic; }
+</style></head>
+<body>
+<div class="bar">
+  <a class="back" href="index.html">&larr; All articles</a>
+  <button id="copy">Copy for Medium</button>
+  <span class="hint" id="hint">Click, then paste into a new Medium story (Cmd+V).</span>
+</div>
+<article id="article">
+<h1>Job Queues in Python, Step by Step: Priorities, Retries, Dead Letters, and LLM Budgets</h1>
+<h3>Three snippets for running lots of work without losing control of order, failures, or cost</h3>
+<p>Once a backend processes more than a handful of jobs, three questions come up:</p>
+<ul>
+<li><strong>Which job runs next,</strong> and what if its priority changes while it waits?</li>
+<li><strong>What happens when a job keeps failing?</strong></li>
+<li><strong>How do we stop an LLM batch from spending $500 overnight?</strong></li>
+</ul>
+<p>We'll build three standalone snippets: a priority queue with updates, a retrying worker pool with a dead-letter list, and a token budget.</p>
+<p><strong>What you need:</strong> Python 3.9+. Standard library only.</p>
+<hr />
+<h2>Part 1: A priority queue you can update</h2>
+<h3>Step 1: <code>heapq</code> gives you the minimum fast</h3>
+<p><code>heapq.heappush</code> and <code>heapq.heappop</code> give you the smallest item in O(log n). Push <code>(deadline, task_id)</code> tuples, and the earliest deadline pops first.</p>
+<h3>Step 2: Make ties first-in, first-out</h3>
+<p>With equal deadlines, tuples fall back to comparing <code>task_id</code>, which isn't arrival order. And if your payload is a dict, comparing two dicts raises a <code>TypeError</code>. Add an increasing sequence number as the second element: <code>(deadline, seq, task_id)</code>. Ties now pop in arrival order, and payloads are never compared.</p>
+<h3>Step 3: Updating a priority, without searching the heap</h3>
+<p>Finding an entry inside a heap is O(n). Instead, use <strong>lazy deletion</strong>:</p>
+<ul>
+<li>Keep a <code>live</code> dict mapping <code>id → (priority, seq, payload)</code>.</li>
+<li>To update, push a <em>new</em> heap entry with a new <code>seq</code>, and overwrite <code>live[id]</code>.</li>
+<li>When popping, skip any heap entry whose <code>seq</code> no longer matches <code>live[id]</code>. It's stale.</li>
+</ul>
+<p>Removing an item works the same way: delete it from <code>live</code>, and its heap entry is skipped later.</p>
+<h3>The complete snippet</h3>
+<pre><code class="language-python">import heapq
+import itertools
+
+
+def pq_new() -&gt; dict:
+    return {&quot;heap&quot;: [], &quot;live&quot;: {}, &quot;seq&quot;: itertools.count()}
+
+
+def pq_push(pq: dict, item_id, priority, payload=None) -&gt; None:
+    &quot;&quot;&quot;Add, or change the priority of an existing id. Lower priority value pops first; ties pop FIFO.&quot;&quot;&quot;
+    seq = next(pq[&quot;seq&quot;])
+    pq[&quot;live&quot;][item_id] = (priority, seq, payload)
+    heapq.heappush(pq[&quot;heap&quot;], (priority, seq, item_id))
+
+
+def pq_remove(pq: dict, item_id) -&gt; bool:
+    return pq[&quot;live&quot;].pop(item_id, None) is not None
+
+
+def pq_pop(pq: dict):
+    &quot;&quot;&quot;(item_id, priority, payload) of the smallest live entry, or None. Stale heap entries are skipped.&quot;&quot;&quot;
+    while pq[&quot;heap&quot;]:
+        priority, seq, item_id = heapq.heappop(pq[&quot;heap&quot;])
+        live = pq[&quot;live&quot;].get(item_id)
+        if live is not None and live[1] == seq:
+            del pq[&quot;live&quot;][item_id]
+            return item_id, priority, live[2]
+    return None
+
+
+def pq_peek(pq: dict):
+    while pq[&quot;heap&quot;]:
+        priority, seq, item_id = pq[&quot;heap&quot;][0]
+        live = pq[&quot;live&quot;].get(item_id)
+        if live is not None and live[1] == seq:
+            return item_id, priority, live[2]
+        heapq.heappop(pq[&quot;heap&quot;])
+    return None
+</code></pre>
+<pre><code class="language-python">pq = pq_new()
+pq_push(pq, &quot;t1&quot;, 10)
+pq_push(pq, &quot;t2&quot;, 5)
+pq_push(pq, &quot;t1&quot;, 1)            # t1's deadline moved up
+pq_pop(pq)                       # (&quot;t1&quot;, 1, None)
+</code></pre>
+<p>For several sort keys, push a tuple as the priority: <code>(deadline, -importance)</code>.</p>
+<hr />
+<h2>Part 2: Retries and a dead-letter list</h2>
+<h3>Step 4: Run jobs in parallel, in order</h3>
+<p>A thread pool with <code>pool.map</code> gives bounded parallelism and keeps results in input order (see part 2 of this series).</p>
+<h3>Step 5: Retry inside each job</h3>
+<p>Wrap the handler in a loop: try, and on an exception, wait with backoff and try again, up to <code>max_attempts</code> attempts in total.</p>
+<h3>Step 6: Don't retry everything</h3>
+<p>A <code>ValueError</code> from bad input will fail the same way every time. A <code>TimeoutError</code> might not. Let the caller pass <code>retryable(error)</code> to choose.</p>
+<h3>Step 7: Collect failures in a dead-letter list</h3>
+<p>A job that runs out of attempts, or hits a non-retryable error, goes into a <strong>dead-letter</strong> list with its error and attempt count, and its result slot becomes <code>None</code>. The batch carries on. Someone can inspect and replay the dead letters later.</p>
+<h3>The complete snippet</h3>
+<pre><code class="language-python">import time
+from concurrent.futures import ThreadPoolExecutor
+
+
+def run_jobs(jobs, handler, workers: int = 5, max_attempts: int = 3, backoff: float = 0.0,
+             retryable=lambda error: True):
+    &quot;&quot;&quot;handler(job) for each job, `workers` at a time. A job that raises is retried (max_attempts total)
+    while retryable(error); then it goes to the dead-letter list.
+    Returns (results in input order with None for dead jobs, dead_letters).&quot;&quot;&quot;
+    dead = []
+
+    def run(job):
+        for attempt in range(1, max_attempts + 1):
+            try:
+                return handler(job)
+            except Exception as e:
+                if attempt == max_attempts or not retryable(e):
+                    dead.append({&quot;job&quot;: job, &quot;error&quot;: f&quot;{type(e).__name__}: {e}&quot;, &quot;attempts&quot;: attempt})
+                    return None
+                time.sleep(backoff * 2 ** (attempt - 1))
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        results = list(pool.map(run, jobs))
+    return results, dead
+</code></pre>
+<pre><code class="language-python">results, dead = run_jobs(records, enrich, workers=5, max_attempts=3, backoff=0.5,
+                         retryable=lambda e: not isinstance(e, ValueError))
+atomic_write_json(&quot;output/results.json&quot;, results)
+atomic_write_json(&quot;output/dead_letters.json&quot;, dead)
+</code></pre>
+<hr />
+<h2>Part 3: Token budgets for LLM batches</h2>
+<h3>Step 8: Estimate before you call</h3>
+<p>You only know a call's exact token count afterwards. Before calling, use a rough estimate: about 4 characters per token, plus your expected output length.</p>
+<h3>Step 9: Reserve, then settle</h3>
+<p>With five threads running, checking "used &lt; limit" and <em>then</em> calling isn't safe: all five can pass the check at once and overshoot together. Instead:</p>
+<ol>
+<li><strong>Reserve</strong> the estimate under a lock. If it doesn't fit, skip the call.</li>
+<li>Make the call.</li>
+<li><strong>Settle:</strong> release the reservation and add the <em>real</em> usage from the response's <code>usage</code> field.</li>
+</ol>
+<h3>Step 10: Report the cost</h3>
+<p>Track prompt and completion tokens separately; most providers charge different rates for each. Pass in the prices rather than hardcoding them, because they change.</p>
+<h3>The complete snippet</h3>
+<pre><code class="language-python">import threading
+
+
+def new_budget(limit_tokens: int) -&gt; dict:
+    return {&quot;limit&quot;: limit_tokens, &quot;used&quot;: 0, &quot;reserved&quot;: 0, &quot;calls&quot;: 0,
+            &quot;prompt&quot;: 0, &quot;completion&quot;: 0, &quot;lock&quot;: threading.Lock()}
+
+
+def estimate_tokens(*texts: str) -&gt; int:
+    &quot;&quot;&quot;Rough upper-bound estimate (~4 chars per token) for reserving budget before a call.&quot;&quot;&quot;
+    return sum(len(t) for t in texts) // 4 + 1
+
+
+def reserve(budget: dict, estimate: int) -&gt; bool:
+    &quot;&quot;&quot;Reserve before calling. False -&gt; over budget: skip the call (mark the row budget_exceeded).&quot;&quot;&quot;
+    with budget[&quot;lock&quot;]:
+        if budget[&quot;used&quot;] + budget[&quot;reserved&quot;] + estimate &gt; budget[&quot;limit&quot;]:
+            return False
+        budget[&quot;reserved&quot;] += estimate
+        return True
+
+
+def settle(budget: dict, estimate: int, usage=None) -&gt; None:
+    &quot;&quot;&quot;After the call: release the reservation and record real usage (OpenAI's response[&quot;usage&quot;]).&quot;&quot;&quot;
+    usage = usage or {}
+    with budget[&quot;lock&quot;]:
+        budget[&quot;reserved&quot;] -= estimate
+        budget[&quot;used&quot;] += usage.get(&quot;total_tokens&quot;, estimate)
+        budget[&quot;prompt&quot;] += usage.get(&quot;prompt_tokens&quot;, 0)
+        budget[&quot;completion&quot;] += usage.get(&quot;completion_tokens&quot;, 0)
+        budget[&quot;calls&quot;] += 1
+
+
+def cost_usd(budget: dict, input_per_million: float, output_per_million: float) -&gt; float:
+    return round(budget[&quot;prompt&quot;] * input_per_million / 1e6
+                 + budget[&quot;completion&quot;] * output_per_million / 1e6, 6)
+</code></pre>
+<h3>Step 11: Wire it around a call</h3>
+<pre><code class="language-python">budget = new_budget(limit_tokens=200_000)
+
+def classify_within_budget(item):
+    text = json.dumps(item)
+    estimate = estimate_tokens(SYSTEM_PROMPT, text) + 50          # + expected output
+    if not reserve(budget, estimate):
+        return &quot;budget_exceeded&quot;
+    usage = None
+    try:
+        r = httpx.post(url, json=payload_for(text), headers=headers, timeout=10)
+        usage = r.json().get(&quot;usage&quot;)
+        return parse_label(r)
+    finally:
+        settle(budget, estimate, usage)
+
+results = bounded_map(classify_within_budget, items, 5)
+print(budget[&quot;used&quot;], cost_usd(budget, input_per_million=0.15, output_per_million=0.60))
+</code></pre>
+<hr />
+<h2>Testing</h2>
+<pre><code class="language-python">def test_priority_update_and_remove():
+    pq = pq_new()
+    for tid, d in [(&quot;a&quot;, 5), (&quot;b&quot;, 1), (&quot;c&quot;, 1)]:
+        pq_push(pq, tid, d)
+    pq_push(pq, &quot;a&quot;, 0)
+    pq_remove(pq, &quot;c&quot;)
+    assert [pq_pop(pq)[0] for _ in range(2)] == [&quot;a&quot;, &quot;b&quot;]
+
+
+def test_dead_letters():
+    def handler(j):
+        if j == &quot;bad&quot;:
+            raise ValueError(&quot;nope&quot;)
+        return j.upper()
+    results, dead = run_jobs([&quot;ok&quot;, &quot;bad&quot;], handler, retryable=lambda e: not isinstance(e, ValueError))
+    assert results == [&quot;OK&quot;, None] and dead[0][&quot;attempts&quot;] == 1
+
+
+def test_budget_never_overshoots():
+    b = new_budget(100)
+    assert reserve(b, 60) and not reserve(b, 50)
+    settle(b, 60, {&quot;total_tokens&quot;: 40})
+    assert b[&quot;used&quot;] == 40 and reserve(b, 50)
+</code></pre>
+<hr />
+<h2>Recap</h2>
+<ol>
+<li><strong>Priority queue:</strong> <code>(priority, seq, id)</code> for FIFO ties, and lazy deletion for O(log n) updates.</li>
+<li><strong>Worker pool:</strong> retry only what's retryable, with backoff, and send the rest to a dead-letter list without stopping the batch.</li>
+<li><strong>Budget:</strong> reserve before calling, settle with real usage after, and report the cost by token type.</li>
+</ol>
+</article>
+<script>
+const btn = document.getElementById("copy");
+if (btn) btn.addEventListener("click", () => {
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById("article"));
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  sel.removeAllRanges();
+  document.getElementById("hint").textContent = ok
+    ? "Copied. Paste into a new Medium story with Cmd+V."
+    : "Copy was blocked. Select the article text and press Cmd+C.";
+});
+</script>
+</body></html>

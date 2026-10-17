@@ -2,7 +2,7 @@ from .transitions import HANDLERS
 
 
 def replay(tasks, members, events):
-    """Apply events in order. Returns (applied events, invalid event ids)."""  
+    """Apply events in order. Returns (applied events, invalid event ids)."""
     applied, invalid = [], []
     for event in events:
         task = tasks.get(event.task_id)

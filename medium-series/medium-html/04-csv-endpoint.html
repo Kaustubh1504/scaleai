@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build a FastAPI Endpoint That Processes Untrusted CSV Files, Step by Step</title>
+<style>
+  body { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; font: 18px/1.6 Georgia, serif; color: #222; background: #fff; }
+  .bar { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 1px solid #ddd; margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  button { font: 600 15px system-ui, sans-serif; padding: 10px 18px; border: 0; border-radius: 20px; background: #1a8917; color: #fff; cursor: pointer; }
+  .hint { font: 14px system-ui, sans-serif; color: #666; }
+  a.back { font: 14px system-ui, sans-serif; color: #1a8917; }
+  pre { background: #f2f2f2; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.45; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 0.85em; background: #f2f2f2; padding: 1px 4px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  blockquote { border-left: 3px solid #222; margin-left: 0; padding-left: 16px; font-style: italic; }
+</style></head>
+<body>
+<div class="bar">
+  <a class="back" href="index.html">&larr; All articles</a>
+  <button id="copy">Copy for Medium</button>
+  <span class="hint" id="hint">Click, then paste into a new Medium story (Cmd+V).</span>
+</div>
+<article id="article">
+<h1>Build a FastAPI Endpoint That Processes Untrusted CSV Files, Step by Step</h1>
+<h3>Safe paths, messy rows, per-row errors, atomic writes, and resumable runs</h3>
+<p>"Read a CSV and write JSON" sounds like a warm-up exercise, until real files arrive. One starts with an invisible byte-order mark. Another has a description that contains a comma, a quote and a line break. One is Latin-1. And someone sends <code>../../etc/passwd.csv</code> as the file path.</p>
+<p>In this tutorial we'll build a <code>POST /convert</code> endpoint that joins a <code>tasks.csv</code> to a <code>users.csv</code> and writes JSON. Each step adds one standalone function you can reuse in any project.</p>
+<p><strong>What you need:</strong> Python 3.9+, <code>pip install fastapi uvicorn httpx</code>.</p>
+<p><strong>The request:</strong></p>
+<pre><code class="language-json">{&quot;tasks_path&quot;: &quot;data/tasks.csv&quot;, &quot;users_path&quot;: &quot;data/users.csv&quot;, &quot;output_path&quot;: &quot;output/tasks.json&quot;}
+</code></pre>
+<p><strong>The response:</strong> how many rows were written, plus a list of per-row errors.</p>
+<hr />
+<h2>Step 1: Sketch the endpoint and its status codes</h2>
+<p>Before writing any logic, decide which failure gets which status code, and in what order you check them:</p>
+<ul>
+<li><strong>503:</strong> the server is missing config (an API key, for example)</li>
+<li><strong>400:</strong> a bad path</li>
+<li><strong>404:</strong> an input file doesn't exist</li>
+<li><strong>422:</strong> a file is unreadable, or the request body is invalid</li>
+<li><strong>200:</strong> success, even if some <em>rows</em> had problems</li>
+</ul>
+<p>Here's a skeleton that encodes that order:</p>
+<pre><code class="language-python">import os
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+
+app = FastAPI()
+
+
+class Req(BaseModel):
+    input_path: str
+    output_path: str
+
+
+@app.post(&quot;/process&quot;)
+def process(req: Req):                        # def, not async: blocking work runs in a thread pool
+    # 1. config (503) -&gt; 2. paths (400) -&gt; 3. files exist (404) -&gt; 4. parse (422) -&gt; 5. work -&gt; 6. write
+    missing = [n for n in (&quot;OPENAI_API_KEY&quot;,) if not os.environ.get(n)]
+    if missing:
+        raise HTTPException(503, f&quot;missing config: {', '.join(missing)}&quot;)
+    errors: list[dict] = []
+    results: list[dict] = []
+    # ... paste safe_path / read_csv / rows_by_id / ask_llm / atomic_write_json here ...
+    return {&quot;rows_written&quot;: len(results), &quot;errors&quot;: errors}
+</code></pre>
+<p>Use a plain <code>def</code>, not <code>async def</code>. File reading is blocking, and FastAPI runs <code>def</code> endpoints in a thread pool for you. Pydantic already turns a malformed request body into a 422.</p>
+<hr />
+<h2>Step 2: Never trust a path</h2>
+<h3>The wrong way</h3>
+<pre><code class="language-python">if raw.startswith(&quot;data/&quot;):   # &quot;data/../secrets.csv&quot; passes!
+</code></pre>
+<p>Checking the string misses <code>..</code> segments and symlinks.</p>
+<h3>The right way: resolve first, then check</h3>
+<p><code>Path.resolve()</code> collapses <code>..</code> and follows symlinks. Only <em>then</em> do you check that the result is still inside the allowed folder:</p>
+<pre><code class="language-python">from pathlib import Path
+
+from fastapi import HTTPException
+
+
+def safe_path(raw: str, root: str, ext: str) -&gt; Path:
+    &quot;&quot;&quot;400 if absolute, wrong extension, or (after resolving .. and symlinks) outside root.&quot;&quot;&quot;
+    p = Path(raw)
+    if not raw or p.is_absolute() or p.suffix != ext:
+        raise HTTPException(400, f&quot;bad path: {raw}&quot;)
+    resolved = p.resolve()
+    if not resolved.is_relative_to(Path(root).resolve()):
+        raise HTTPException(400, f&quot;bad path: {raw}&quot;)
+    return resolved
+</code></pre>
+<p><strong>Validate every path before reading anything.</strong> If the output path is bad, you shouldn't have spent time parsing the inputs first.</p>
+<hr />
+<h2>Step 3: Read the CSV properly</h2>
+<p>We'll build this up from the naive version.</p>
+<p><strong>Naive:</strong> <code>line.split(",")</code> breaks on <code>"Smith, John"</code>. Use the <code>csv</code> module, which handles quoted commas, <code>""</code> escaped quotes, and fields that span several lines.</p>
+<p><strong>BOM:</strong> Excel often saves UTF-8 with an invisible byte-order mark at the start. Then your first header is <code>"﻿task_id"</code>, and every lookup by <code>task_id</code> fails. Decoding with <code>utf-8-sig</code> strips it.</p>
+<p><strong>Encoding:</strong> decode the bytes yourself, so a Latin-1 file becomes a clean 422 instead of a crash halfway through parsing.</p>
+<p><strong>Whitespace and blank lines:</strong> strip every value, and drop rows where every field is empty.</p>
+<p><strong>Row numbers:</strong> count <em>parsed records</em>, not file lines. A quoted field that spans two lines is still one record, and your error messages must point at the right row.</p>
+<p><strong>Headers:</strong> check only the <em>required</em> columns. Extra columns pass through untouched.</p>
+<p>Put together:</p>
+<pre><code class="language-python">import csv
+import io
+from pathlib import Path
+
+from fastapi import HTTPException
+
+
+def read_csv(path: Path, required: list[str]) -&gt; tuple[list[str], list[tuple[int, list[str]]]]:
+    &quot;&quot;&quot;(header, [(row_no, values)]); row_no counts records from 1, header excluded.
+    404 missing file, 422 not UTF-8 / empty / missing required header.&quot;&quot;&quot;
+    if not path.is_file():
+        raise HTTPException(404, f&quot;{path.name} not found&quot;)
+    try:
+        text = path.read_bytes().decode(&quot;utf-8-sig&quot;)
+    except UnicodeDecodeError:
+        raise HTTPException(422, f&quot;{path.name} is not valid UTF-8&quot;) from None
+    records = [[v.strip() for v in row] for row in csv.reader(io.StringIO(text, newline=&quot;&quot;))]
+    records = [r for r in records if any(r)]
+    if not records:
+        raise HTTPException(422, f&quot;{path.name} is empty&quot;)
+    header = records[0]
+    missing = [c for c in required if c not in header]
+    if missing:
+        raise HTTPException(422, f&quot;{path.name} missing columns: {', '.join(missing)}&quot;)
+    return header, list(enumerate(records[1:], 1))
+</code></pre>
+<hr />
+<h2>Step 4: Validate rows, and keep going when one is bad</h2>
+<p>One bad row must never fail the whole request. Instead, skip it (or keep it with a null) and record an error the caller can act on.</p>
+<p>Almost every CSV has an ID column, and the same three checks apply to it every time:</p>
+<pre><code class="language-python">def rows_by_id(header: list[str], rows, id_col: str, file: str, errors: list) -&gt; list[tuple[int, dict]]:
+    &quot;&quot;&quot;Skips malformed rows, empty ids and repeat ids (first wins); skipped rows aren't &quot;seen&quot;.
+    Appends {&quot;file&quot;, &quot;row&quot;, &quot;id&quot;, &quot;error&quot;} with malformed_row / missing_&lt;id_col&gt; / duplicate_&lt;id_col&gt;.&quot;&quot;&quot;
+    kept, seen = [], set()
+    for n, values in rows:
+        if len(values) != len(header):
+            errors.append({&quot;file&quot;: file, &quot;row&quot;: n, &quot;id&quot;: None, &quot;error&quot;: &quot;malformed_row&quot;})
+            continue
+        row = dict(zip(header, values))
+        rid = row[id_col]
+        if not rid:
+            errors.append({&quot;file&quot;: file, &quot;row&quot;: n, &quot;id&quot;: None, &quot;error&quot;: f&quot;missing_{id_col}&quot;})
+            continue
+        if rid in seen:
+            errors.append({&quot;file&quot;: file, &quot;row&quot;: n, &quot;id&quot;: rid, &quot;error&quot;: f&quot;duplicate_{id_col}&quot;})
+            continue
+        seen.add(rid)
+        kept.append((n, row))
+    return kept
+</code></pre>
+<p>Note the line <code>seen.add(rid)</code>: it runs only when a row is <em>kept</em>. A malformed row with ID <code>A</code> shouldn't make the next valid <code>A</code> look like a duplicate.</p>
+<p>Now add the rules specific to your data. For each rule, decide whether to <strong>skip the row</strong> or <strong>keep it with a null</strong>:</p>
+<ul>
+<li>A row with no ID can't be referenced, so skip it.</li>
+<li>A row with a bad priority is still a real task, so keep it with <code>priority: null</code> and report the error.</li>
+</ul>
+<pre><code class="language-python">errors = []
+uh, ur = read_csv(users_path, [&quot;user_id&quot;])
+users = {u[&quot;user_id&quot;]: u for _, u in rows_by_id(uh, ur, &quot;user_id&quot;, &quot;users&quot;, errors)}
+
+th, tr = read_csv(tasks_path, [&quot;task_id&quot;, &quot;title&quot;, &quot;user_id&quot;, &quot;priority&quot;])
+out = []
+for n, task in rows_by_id(th, tr, &quot;task_id&quot;, &quot;tasks&quot;, errors):
+    tid = task[&quot;task_id&quot;]
+    task[&quot;priority&quot;] = int(task[&quot;priority&quot;]) if task[&quot;priority&quot;] in (&quot;1&quot;, &quot;2&quot;, &quot;3&quot;) else None
+    if task[&quot;priority&quot;] is None:
+        errors.append({&quot;file&quot;: &quot;tasks&quot;, &quot;row&quot;: n, &quot;id&quot;: tid, &quot;error&quot;: &quot;invalid_priority&quot;})
+    task[&quot;user&quot;] = users.get(task[&quot;user_id&quot;])
+    if task[&quot;user&quot;] is None:
+        code = &quot;missing_user_id&quot; if not task[&quot;user_id&quot;] else &quot;unknown_user&quot;
+        errors.append({&quot;file&quot;: &quot;tasks&quot;, &quot;row&quot;: n, &quot;id&quot;: tid, &quot;error&quot;: code})
+    out.append(task)
+</code></pre>
+<p>Why <code>in ("1", "2", "3")</code> instead of <code>int(...)</code>? <code>int(" 2")</code> succeeds, but <code>int("2.0")</code> raises. An explicit allowlist can't surprise you.</p>
+<hr />
+<h2>Step 5: Write the output atomically</h2>
+<p>If you write straight to <code>output/tasks.json</code> and the process crashes halfway through, a reader sees half a file. And if the request fails, the previous good output is already gone.</p>
+<p>The fix: write to a temp file <strong>in the same folder</strong>, then <code>os.replace</code> it over the target. That rename is atomic, so readers see either the old file or the new one, never a mix.</p>
+<pre><code class="language-python">import json
+import os
+import tempfile
+from pathlib import Path
+
+
+def atomic_write_json(path: Path, data) -&gt; None:
+    &quot;&quot;&quot;Readers see the old file or the new one, never half. No temp file left behind on failure.&quot;&quot;&quot;
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = json.dumps(data, ensure_ascii=False, indent=2)          # fail before touching disk
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f&quot;.{path.name}.&quot;, suffix=&quot;.tmp&quot;)
+    try:
+        with os.fdopen(fd, &quot;w&quot;, encoding=&quot;utf-8&quot;) as f:
+            f.write(text)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+</code></pre>
+<p>Three details:</p>
+<ul>
+<li><strong>Serialize before touching the disk.</strong> A serialization error then leaves everything untouched.</li>
+<li><strong><code>fsync</code> before the rename,</strong> so a power cut can't leave you with a renamed but empty file.</li>
+<li><strong>Same folder, not <code>/tmp</code>.</strong> <code>os.replace</code> is only atomic within a single filesystem.</li>
+</ul>
+<hr />
+<h2>Step 6: Assemble the endpoint</h2>
+<pre><code class="language-python">from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+
+class ConvertRequest(BaseModel):
+    tasks_path: str
+    users_path: str
+    output_path: str
+
+
+@app.post(&quot;/convert&quot;)
+def convert(req: ConvertRequest):
+    tasks_path = safe_path(req.tasks_path, &quot;data&quot;, &quot;.csv&quot;)          # all paths first
+    users_path = safe_path(req.users_path, &quot;data&quot;, &quot;.csv&quot;)
+    output_path = safe_path(req.output_path, &quot;output&quot;, &quot;.json&quot;)
+
+    errors = []
+    uh, ur = read_csv(users_path, [&quot;user_id&quot;])
+    users = {u[&quot;user_id&quot;]: u for _, u in rows_by_id(uh, ur, &quot;user_id&quot;, &quot;users&quot;, errors)}
+
+    th, tr = read_csv(tasks_path, [&quot;task_id&quot;, &quot;title&quot;, &quot;user_id&quot;, &quot;priority&quot;])
+    out = []
+    for n, task in rows_by_id(th, tr, &quot;task_id&quot;, &quot;tasks&quot;, errors):
+        tid = task[&quot;task_id&quot;]
+        task[&quot;priority&quot;] = int(task[&quot;priority&quot;]) if task[&quot;priority&quot;] in (&quot;1&quot;, &quot;2&quot;, &quot;3&quot;) else None
+        if task[&quot;priority&quot;] is None:
+            errors.append({&quot;file&quot;: &quot;tasks&quot;, &quot;row&quot;: n, &quot;id&quot;: tid, &quot;error&quot;: &quot;invalid_priority&quot;})
+        task[&quot;user&quot;] = users.get(task[&quot;user_id&quot;])
+        if task[&quot;user&quot;] is None:
+            code = &quot;missing_user_id&quot; if not task[&quot;user_id&quot;] else &quot;unknown_user&quot;
+            errors.append({&quot;file&quot;: &quot;tasks&quot;, &quot;row&quot;: n, &quot;id&quot;: tid, &quot;error&quot;: code})
+        out.append(task)
+
+    atomic_write_json(output_path, out)
+    return {&quot;rows_written&quot;: len(out), &quot;errors&quot;: errors}
+</code></pre>
+<p>Run it with <code>uvicorn main:app --reload</code> from the folder that contains <code>data/</code> and <code>output/</code>.</p>
+<hr />
+<h2>Step 7: Make re-runs free (checkpoint and resume)</h2>
+<p>Suppose each row also needs an expensive call, such as an LLM classification. After a crash at row 1,500 of 2,000, you don't want to pay for rows 1 to 1,499 again. And when only one row changes, only that row should be recomputed.</p>
+<p>Cache each result under a hash of the inputs that affect it. Changed input means a new key, which means it gets recomputed:</p>
+<pre><code class="language-python">import hashlib
+import json
+import os
+import tempfile
+from pathlib import Path
+
+
+def cache_key(*parts) -&gt; str:
+    &quot;&quot;&quot;Stable key from the inputs that affect the result: changed input -&gt; new key -&gt; recompute.&quot;&quot;&quot;
+    return hashlib.sha256(json.dumps(parts, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+
+
+def load_cache(path) -&gt; dict:
+    try:
+        return json.loads(Path(path).read_text(encoding=&quot;utf-8&quot;))
+    except (OSError, ValueError):
+        return {}
+
+
+def save_cache(path, cache: dict) -&gt; None:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=path.parent, suffix=&quot;.tmp&quot;)
+    try:
+        with os.fdopen(fd, &quot;w&quot;, encoding=&quot;utf-8&quot;) as f:
+            json.dump(cache, f)
+        os.replace(tmp, path)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+</code></pre>
+<pre><code class="language-python">cache = load_cache(&quot;output/.cache.json&quot;)
+
+def classify_cached(task):
+    k = cache_key(task[&quot;title&quot;], task[&quot;description&quot;])
+    if k not in cache:
+        result = ask_llm(...)               # from part 1 of this series
+        if result is not None:              # don't cache failures: they retry next run
+            cache[k] = result
+    return cache.get(k)
+
+categories = bounded_map(classify_cached, out, 5)
+save_cache(&quot;output/.cache.json&quot;, cache)
+</code></pre>
+<hr />
+<h2>Step 8: Test the edge cases</h2>
+<pre><code class="language-python">import pytest
+from fastapi import HTTPException
+
+
+@pytest.fixture
+def cwd(tmp_path, monkeypatch):
+    (tmp_path / &quot;data&quot;).mkdir()
+    monkeypatch.chdir(tmp_path)
+    return tmp_path
+
+
+@pytest.mark.parametrize(&quot;raw&quot;, [&quot;../x.csv&quot;, &quot;/etc/x.csv&quot;, &quot;data/../x.csv&quot;, &quot;data/x.txt&quot;])
+def test_bad_paths(cwd, raw):
+    with pytest.raises(HTTPException) as e:
+        safe_path(raw, &quot;data&quot;, &quot;.csv&quot;)
+    assert e.value.status_code == 400
+
+
+def test_symlink_escape(cwd):
+    (cwd / &quot;secret.csv&quot;).write_text(&quot;x&quot;)
+    (cwd / &quot;data/link.csv&quot;).symlink_to(cwd / &quot;secret.csv&quot;)
+    with pytest.raises(HTTPException):
+        safe_path(&quot;data/link.csv&quot;, &quot;data&quot;, &quot;.csv&quot;)
+
+
+def test_messy_csv(cwd):
+    p = cwd / &quot;data/t.csv&quot;
+    p.write_text('﻿ id , name \nA,&quot;a, b&quot;\n\nA,dup\n,x\nB,&quot;l1\nl2&quot;\nC\n', encoding=&quot;utf-8&quot;)
+    header, rows = read_csv(p, [&quot;id&quot;])
+    errors = []
+    kept = rows_by_id(header, rows, &quot;id&quot;, &quot;t&quot;, errors)
+    assert kept == [(1, {&quot;id&quot;: &quot;A&quot;, &quot;name&quot;: &quot;a, b&quot;}), (4, {&quot;id&quot;: &quot;B&quot;, &quot;name&quot;: &quot;l1\nl2&quot;})]
+    assert [(e[&quot;row&quot;], e[&quot;error&quot;]) for e in errors] == [
+        (2, &quot;duplicate_id&quot;), (3, &quot;missing_id&quot;), (5, &quot;malformed_row&quot;)]
+
+
+def test_failed_write_keeps_old_file(cwd):
+    out = cwd / &quot;output/o.json&quot;
+    atomic_write_json(out, [1])
+    out.write_text(&quot;OLD&quot;)
+    with pytest.raises(TypeError):
+        atomic_write_json(out, [object()])
+    assert out.read_text() == &quot;OLD&quot;
+    assert [p.name for p in out.parent.iterdir()] == [&quot;o.json&quot;]
+</code></pre>
+<hr />
+<h2>Recap</h2>
+<ol>
+<li>Decide the <strong>status-code order</strong> up front: 503, 400, 404, 422, then 200.</li>
+<li><strong>Resolve paths, then check containment.</strong> Never check the path string.</li>
+<li>Read CSVs with <code>utf-8-sig</code> and the <code>csv</code> module, <strong>by header name</strong>, counting rows as parsed records.</li>
+<li><strong>Collect per-row errors,</strong> and decide per rule whether to skip or keep with a null.</li>
+<li><strong>Write atomically:</strong> temp file in the same folder, <code>fsync</code>, then <code>os.replace</code>.</li>
+<li><strong>Cache by content hash</strong> so re-runs only redo what changed or failed.</li>
+</ol>
+<p><em>Next: four FastAPI building blocks for production.</em></p>
+</article>
+<script>
+const btn = document.getElementById("copy");
+if (btn) btn.addEventListener("click", () => {
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById("article"));
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  sel.removeAllRanges();
+  document.getElementById("hint").textContent = ok
+    ? "Copied. Paste into a new Medium story with Cmd+V."
+    : "Copy was blocked. Select the article text and press Cmd+C.";
+});
+</script>
+</body></html>

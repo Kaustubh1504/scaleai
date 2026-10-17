@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backend Logic Patterns in Python, Step by Step: Grouping, Deduping, Voting, and Scheduling</title>
+<style>
+  body { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; font: 18px/1.6 Georgia, serif; color: #222; background: #fff; }
+  .bar { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 1px solid #ddd; margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  button { font: 600 15px system-ui, sans-serif; padding: 10px 18px; border: 0; border-radius: 20px; background: #1a8917; color: #fff; cursor: pointer; }
+  .hint { font: 14px system-ui, sans-serif; color: #666; }
+  a.back { font: 14px system-ui, sans-serif; color: #1a8917; }
+  pre { background: #f2f2f2; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.45; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 0.85em; background: #f2f2f2; padding: 1px 4px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  blockquote { border-left: 3px solid #222; margin-left: 0; padding-left: 16px; font-style: italic; }
+</style></head>
+<body>
+<div class="bar">
+  <a class="back" href="index.html">&larr; All articles</a>
+  <button id="copy">Copy for Medium</button>
+  <span class="hint" id="hint">Click, then paste into a new Medium story (Cmd+V).</span>
+</div>
+<article id="article">
+<h1>Backend Logic Patterns in Python, Step by Step: Grouping, Deduping, Voting, and Scheduling</h1>
+<h3>The small functions in the middle of every pipeline, and the bugs each one prevents</h3>
+<p>Most backend bugs aren't in the framework. They're in ten lines in the middle: a dedupe that kept the wrong row, a "latest" that meant latest to <em>arrive</em>, a vote threshold that failed on floating point, a total that was off by a cent.</p>
+<p>This tutorial builds those functions one at a time. Each section starts with the obvious version, shows where it breaks, and ends with a function you can copy.</p>
+<p><strong>What you need:</strong> Python 3.9+. Standard library only.</p>
+<hr />
+<h2>1. Grouping, counting, deduping, and "latest wins"</h2>
+<h3>Step 1: Group by any key</h3>
+<p>The obvious version checks <code>if key not in groups</code> every time. <code>defaultdict(list)</code> removes that check:</p>
+<pre><code class="language-python">groups = defaultdict(list)
+for order in orders:
+    groups[order[&quot;customer&quot;]].append(order)
+</code></pre>
+<p>Take a <code>key</code> function instead of a field name, so the same function can group by anything: <code>lambda o: o["created_at"].date()</code>.</p>
+<h3>Step 2: Count, and break ties deterministically</h3>
+<p><code>Counter(...).most_common(1)</code> picks arbitrarily between tied values, which depends on input order. That makes tests flaky. Sort by count descending, then by key ascending.</p>
+<h3>Step 3: Dedupe, keeping the first</h3>
+<p><code>list(set(items))</code> loses both the order and the "first one wins" rule. Use a set for the membership check and a list for the output.</p>
+<h3>Step 4: "Latest" means highest version, not last to arrive</h3>
+<p>Events arrive out of order: retries, multiple producers, replays. Compare a version or timestamp that's <em>inside the event</em>. A delete is just another event (a "tombstone") that wins on version and gets filtered out at the end.</p>
+<h3>The complete functions</h3>
+<pre><code class="language-python">from collections import Counter, defaultdict
+
+
+def group_by(items, key):
+    out = defaultdict(list)
+    for it in items:
+        out[key(it)].append(it)
+    return dict(out)
+
+
+def top_counts(items, key, n: int = 1):
+    &quot;&quot;&quot;Most common first; ties broken by the key ascending (deterministic).&quot;&quot;&quot;
+    return sorted(Counter(key(it) for it in items).items(), key=lambda kv: (-kv[1], kv[0]))[:n]
+
+
+def dedupe(items, key):
+    &quot;&quot;&quot;Keep the first occurrence of each key, preserve order.&quot;&quot;&quot;
+    seen, out = set(), []
+    for it in items:
+        k = key(it)
+        if k not in seen:
+            seen.add(k)
+            out.append(it)
+    return out
+
+
+def latest_by(items, key, version, deleted=lambda it: False):
+    &quot;&quot;&quot;Highest version wins regardless of arrival order; tombstones removed at the end.&quot;&quot;&quot;
+    best = {}
+    for it in items:
+        k = key(it)
+        if k not in best or version(it) &gt; version(best[k]):
+            best[k] = it
+    return [it for it in best.values() if not deleted(it)]
+</code></pre>
+<pre><code class="language-python">latest_by(events, key=lambda e: e[&quot;id&quot;], version=lambda e: e[&quot;version&quot;],
+          deleted=lambda e: e.get(&quot;deleted&quot;, False))
+</code></pre>
+<hr />
+<h2>2. Joining and diffing</h2>
+<h3>Step 1: Join with a lookup dict, not a nested loop</h3>
+<p>A nested loop over 10,000 × 10,000 rows is 100 million comparisons. Building an index first makes the join one pass over each list.</p>
+<h3>Step 2: Report unmatched rows, never drop them silently</h3>
+<p>A missing user is usually a data problem someone needs to hear about. Return the unmatched rows alongside the result.</p>
+<h3>Step 3: Diff two snapshots with set algebra</h3>
+<p>Use this for sync jobs, audits, and "what changed since yesterday": added, removed, changed.</p>
+<pre><code class="language-python">def left_join(left, right, left_key, right_key, as_field: str):
+    &quot;&quot;&quot;Attach the matching right row (or None) to a copy of each left row. Returns (rows, unmatched).&quot;&quot;&quot;
+    index = {right_key(r): r for r in right}
+    rows, unmatched = [], []
+    for l in left:
+        match = index.get(left_key(l))
+        if match is None:
+            unmatched.append(l)
+        rows.append({**l, as_field: match})
+    return rows, unmatched
+
+
+def diff(old: dict, new: dict) -&gt; dict:
+    &quot;&quot;&quot;Snapshots keyed by id -&gt; added / removed / changed ids (sorted).&quot;&quot;&quot;
+    o, n = set(old), set(new)
+    return {&quot;added&quot;: sorted(n - o), &quot;removed&quot;: sorted(o - n),
+            &quot;changed&quot;: sorted(k for k in o &amp; n if old[k] != new[k])}
+</code></pre>
+<pre><code class="language-python">rows, unknown = left_join(tasks, users, lambda t: t[&quot;user_id&quot;], lambda u: u[&quot;user_id&quot;], &quot;user&quot;)
+</code></pre>
+<hr />
+<h2>3. Majority vote with a threshold</h2>
+<p>Suppose several human annotators label each item, and you need one answer. The rules:</p>
+<ul>
+<li>Fewer than 3 votes: <strong>insufficient</strong>.</li>
+<li>The top label has at least two-thirds of the votes: <strong>agreed</strong>.</li>
+<li>Otherwise: <strong>disputed</strong>. Send it to a tiebreaker, such as an LLM or a senior reviewer.</li>
+</ul>
+<h3>Step 1: The float trap</h3>
+<pre><code class="language-python">if top / total &gt;= 0.67:      # 2/3 = 0.6666... -&gt; exactly two-thirds FAILS
+if top / total &gt;= 2 / 3:     # works here, but float comparisons are fragile in general
+</code></pre>
+<h3>Step 2: Compare with integers</h3>
+<p><code>top / total &gt;= 2/3</code> is the same as <code>top * 3 &gt;= total * 2</code>. Integers have no rounding, so exactly two-thirds always counts as agreed.</p>
+<h3>Step 3: Make ties deterministic, and handle zero votes</h3>
+<p>Sort by count, then by label. With no votes, return <code>agreement: None</code> rather than dividing by zero.</p>
+<pre><code class="language-python">from collections import Counter
+
+
+def consensus(labels: list[str], min_votes: int = 3, threshold: tuple[int, int] = (2, 3)) -&gt; dict:
+    &quot;&quot;&quot;Majority vote. threshold=(2, 3) means top label needs &gt;= 2/3 of votes (integer math, no float bugs).&quot;&quot;&quot;
+    votes = Counter(labels)
+    total = sum(votes.values())
+    if not total:
+        return {&quot;votes&quot;: {}, &quot;total&quot;: 0, &quot;agreement&quot;: None, &quot;status&quot;: &quot;insufficient&quot;, &quot;label&quot;: None}
+    label, top = sorted(votes.items(), key=lambda kv: (-kv[1], kv[0]))[0]
+    out = {&quot;votes&quot;: dict(votes), &quot;total&quot;: total, &quot;agreement&quot;: round(top / total, 2)}
+    if total &lt; min_votes:
+        return {**out, &quot;status&quot;: &quot;insufficient&quot;, &quot;label&quot;: None}
+    num, den = threshold
+    if top * den &gt;= total * num:
+        return {**out, &quot;status&quot;: &quot;agreed&quot;, &quot;label&quot;: label}
+    return {**out, &quot;status&quot;: &quot;disputed&quot;, &quot;label&quot;: None}
+</code></pre>
+<pre><code class="language-python">consensus([&quot;spam&quot;, &quot;spam&quot;, &quot;safe&quot;])      # agreed, label &quot;spam&quot;, agreement 0.67
+consensus([&quot;spam&quot;, &quot;safe&quot;, &quot;violence&quot;])  # disputed
+consensus([&quot;spam&quot;, &quot;spam&quot;])              # insufficient (only 2 votes)
+</code></pre>
+<hr />
+<h2>4. Time zones and money</h2>
+<h3>Time: store UTC, convert at the edge</h3>
+<p>An order at 20:00 UTC on March 3 is a <strong>March 4</strong> order in India. If you group by <code>created_at.date()</code> on UTC timestamps, your "orders per day" report is wrong for every user outside UTC. Convert to the user's time zone only when grouping or displaying.</p>
+<h3>Money: integer cents, round once</h3>
+<p><code>0.1 + 0.2 != 0.3</code> in floating point. Store money as integer cents, and convert with <code>Decimal</code> exactly once, at the end.</p>
+<pre><code class="language-python">from collections import Counter
+from datetime import timezone
+from decimal import ROUND_HALF_UP, Decimal
+
+
+def count_per_local_day(timestamps, tz=timezone.utc) -&gt; dict:
+    &quot;&quot;&quot;Aware datetimes (store UTC) -&gt; {&quot;YYYY-MM-DD&quot;: count} in the given timezone.&quot;&quot;&quot;
+    return dict(Counter(ts.astimezone(tz).date().isoformat() for ts in timestamps))
+
+
+def cents_to_dollars(cents: int) -&gt; Decimal:
+    &quot;&quot;&quot;Keep money as integer cents; convert/round once at the end.&quot;&quot;&quot;
+    return (Decimal(cents) / 100).quantize(Decimal(&quot;0.01&quot;), rounding=ROUND_HALF_UP)
+</code></pre>
+<pre><code class="language-python">IST = timezone(timedelta(hours=5, minutes=30))
+count_per_local_day([order[&quot;created_at&quot;] for order in orders], IST)
+cents_to_dollars(sum(o[&quot;total_cents&quot;] for o in orders))
+</code></pre>
+<hr />
+<h2>5. Chunking and graph walks</h2>
+<h3>Chunk for batch APIs</h3>
+<p>Most bulk endpoints cap batch size, often at 100 or 500. (On Python 3.12+, <code>itertools.batched</code> does this lazily.)</p>
+<h3>Breadth-first search: mark nodes as seen when you queue them</h3>
+<p>Mark nodes as seen when you <strong>queue</strong> them, not when you <strong>visit</strong> them. Otherwise a node reachable from many parents gets queued many times. Take a <code>neighbors</code> function, so the same code works for an org chart, a crawler, or a dependency tree.</p>
+<pre><code class="language-python">from collections import deque
+
+
+def chunks(items: list, size: int) -&gt; list[list]:
+    return [items[i:i + size] for i in range(0, len(items), size)]
+
+
+def bfs(start, neighbors, max_depth=None) -&gt; list[tuple]:
+    &quot;&quot;&quot;neighbors(node) -&gt; iterable. Returns [(node, depth)] in visit order; mark seen on enqueue.&quot;&quot;&quot;
+    queue, seen, order = deque([(start, 0)]), {start}, []
+    while queue:
+        node, depth = queue.popleft()
+        order.append((node, depth))
+        if max_depth is not None and depth &gt;= max_depth:
+            continue
+        for nxt in neighbors(node):
+            if nxt not in seen:
+                seen.add(nxt)
+                queue.append((nxt, depth + 1))
+    return order
+</code></pre>
+<pre><code class="language-python">for batch in chunks(user_ids, 100):
+    api.bulk_update(batch)
+
+graph = {&quot;root&quot;: [&quot;a&quot;, &quot;b&quot;], &quot;a&quot;: [&quot;b&quot;], &quot;b&quot;: [&quot;root&quot;]}
+bfs(&quot;root&quot;, lambda n: graph.get(n, []), max_depth=2)
+</code></pre>
+<hr />
+<h2>6. Scheduling tasks with dependencies and deadlines</h2>
+<h3>The problem</h3>
+<p>You have jobs that depend on other jobs, each with a deadline. Run every job after its dependencies, and among the jobs that are ready, always pick the most urgent.</p>
+<h3>Step 1: Count each job's prerequisites</h3>
+<p>For every job, <code>indegree</code> counts the dependencies that haven't finished yet. A job with <code>indegree == 0</code> is ready to run.</p>
+<h3>Step 2: Keep the ready jobs in a heap</h3>
+<p>A heap ordered by deadline always gives you the most urgent ready job in O(log n).</p>
+<h3>Step 3: Finishing a job may unlock others</h3>
+<p>When a job runs, decrement the count for each job that depends on it. Any job that reaches zero goes into the heap.</p>
+<h3>Step 4: Detect cycles for free</h3>
+<p>If some jobs never reach zero, they depend on each other in a loop, and fewer jobs come out than went in.</p>
+<pre><code class="language-python">import heapq
+from collections import defaultdict
+
+
+def schedule(tasks: dict) -&gt; list:
+    &quot;&quot;&quot;{id: {&quot;deadline&quot;: int, &quot;deps&quot;: [ids]}} -&gt; run order: deps first, earliest deadline among ready.
+    Raises ValueError on unknown deps or a cycle. O((V + E) log V).&quot;&quot;&quot;
+    indegree = {t: 0 for t in tasks}
+    children = defaultdict(list)
+    for t, spec in tasks.items():
+        for d in spec[&quot;deps&quot;]:
+            if d not in tasks:
+                raise ValueError(f&quot;{t} depends on unknown task {d}&quot;)
+            children[d].append(t)
+            indegree[t] += 1
+    ready = [(tasks[t][&quot;deadline&quot;], t) for t in tasks if indegree[t] == 0]
+    heapq.heapify(ready)
+    order = []
+    while ready:
+        _, t = heapq.heappop(ready)
+        order.append(t)
+        for c in children[t]:
+            indegree[c] -= 1
+            if indegree[c] == 0:
+                heapq.heappush(ready, (tasks[c][&quot;deadline&quot;], c))
+    if len(order) != len(tasks):
+        raise ValueError(&quot;cycle in dependencies&quot;)
+    return order
+</code></pre>
+<pre><code class="language-python">schedule({
+    &quot;deploy&quot;:  {&quot;deadline&quot;: 5, &quot;deps&quot;: [&quot;build&quot;, &quot;migrate&quot;]},
+    &quot;build&quot;:   {&quot;deadline&quot;: 3, &quot;deps&quot;: []},
+    &quot;migrate&quot;: {&quot;deadline&quot;: 1, &quot;deps&quot;: []},
+    &quot;notify&quot;:  {&quot;deadline&quot;: 9, &quot;deps&quot;: [&quot;deploy&quot;]},
+})
+# -&gt; ['migrate', 'build', 'deploy', 'notify']
+</code></pre>
+<p>This is Kahn's topological sort with a priority queue, and it runs in O((V + E) log V).</p>
+<hr />
+<h2>Recap</h2>
+<p>Most of these patterns come down to four habits:</p>
+<ol>
+<li><strong>Be deterministic:</strong> tie-breaks, versions instead of arrival order, sorted output.</li>
+<li><strong>Don't mutate inputs:</strong> <code>{**row, "user": match}</code> builds a copy.</li>
+<li><strong>Report problems instead of dropping them:</strong> unmatched rows, unknown dependencies, cycles.</li>
+<li><strong>Avoid floats where exactness matters:</strong> integer comparisons for thresholds, integer cents for money.</li>
+</ol>
+</article>
+<script>
+const btn = document.getElementById("copy");
+if (btn) btn.addEventListener("click", () => {
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById("article"));
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  sel.removeAllRanges();
+  document.getElementById("hint").textContent = ok
+    ? "Copied. Paste into a new Medium story with Cmd+V."
+    : "Copy was blocked. Select the article text and press Cmd+C.";
+});
+</script>
+</body></html>

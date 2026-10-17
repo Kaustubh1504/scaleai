@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signed Webhooks in Python, Step by Step: HMAC, Idempotency Keys, and Retries</title>
+<style>
+  body { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; font: 18px/1.6 Georgia, serif; color: #222; background: #fff; }
+  .bar { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 1px solid #ddd; margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  button { font: 600 15px system-ui, sans-serif; padding: 10px 18px; border: 0; border-radius: 20px; background: #1a8917; color: #fff; cursor: pointer; }
+  .hint { font: 14px system-ui, sans-serif; color: #666; }
+  a.back { font: 14px system-ui, sans-serif; color: #1a8917; }
+  pre { background: #f2f2f2; padding: 14px; overflow-x: auto; font-size: 14px; line-height: 1.45; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 0.85em; background: #f2f2f2; padding: 1px 4px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  blockquote { border-left: 3px solid #222; margin-left: 0; padding-left: 16px; font-style: italic; }
+</style></head>
+<body>
+<div class="bar">
+  <a class="back" href="index.html">&larr; All articles</a>
+  <button id="copy">Copy for Medium</button>
+  <span class="hint" id="hint">Click, then paste into a new Medium story (Cmd+V).</span>
+</div>
+<article id="article">
+<h1>Signed Webhooks in Python, Step by Step: HMAC, Idempotency Keys, and Retries</h1>
+<h3>Build the sender and the receiver, and see why each line is there</h3>
+<p>A webhook is just a POST from your server to someone else's. What makes it tricky is the network. A request can time out <em>after</em> the receiver already processed it. Retries cause duplicates. Anyone who discovers the URL can send fake events.</p>
+<p>In this tutorial we'll build both sides:</p>
+<ul>
+<li><strong>Sender:</strong> <code>send_webhook()</code> signs the body, adds an idempotency key, and retries safely.</li>
+<li><strong>Receiver:</strong> <code>verify_signature()</code> rejects forgeries, and <code>insert_once()</code> drops duplicates.</li>
+</ul>
+<p><strong>What you need:</strong> Python 3.9+, <code>pip install httpx fastapi uvicorn</code>.</p>
+<hr />
+<h2>The contract we're implementing</h2>
+<pre><code>POST https://customer.example.com/hooks
+Content-Type: application/json
+Idempotency-Key: P01
+X-Signature: sha256=&lt;hex HMAC-SHA256 of the exact body bytes, keyed with a shared secret&gt;
+
+{&quot;task_id&quot;:&quot;P01&quot;,&quot;label&quot;:&quot;spam&quot;}
+</code></pre>
+<hr />
+<h2>Part 1: The sender</h2>
+<h3>Step 1: The naive version</h3>
+<pre><code class="language-python">httpx.post(url, json={&quot;task_id&quot;: &quot;P01&quot;, &quot;label&quot;: &quot;spam&quot;})
+</code></pre>
+<p>Three problems:</p>
+<ul>
+<li>The receiver can't tell whether the request really came from us.</li>
+<li>If it times out, we don't know whether it arrived.</li>
+<li>If we retry, the receiver might process it twice.</li>
+</ul>
+<h3>Step 2: Serialize once, so you sign the exact bytes you send</h3>
+<p>The signature is computed over <strong>bytes</strong>. If you sign <code>json.dumps(payload)</code> and then call <code>httpx.post(url, json=payload)</code>, httpx serializes the payload <em>again</em>, possibly with different spacing, and the signature no longer matches.</p>
+<p>So serialize once, and send those exact bytes with <code>content=</code>:</p>
+<pre><code class="language-python">body = json.dumps(payload, separators=(&quot;,&quot;, &quot;:&quot;)).encode()
+</code></pre>
+<h3>Step 3: Sign with HMAC-SHA256</h3>
+<p>HMAC combines a shared secret with the body. Only someone who knows the secret can produce a matching signature:</p>
+<pre><code class="language-python">import hashlib, hmac
+
+signature = &quot;sha256=&quot; + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+</code></pre>
+<p>The <code>sha256=</code> prefix tells the receiver which algorithm you used, so you can change algorithms later without breaking anyone.</p>
+<h3>Step 4: Add an idempotency key</h3>
+<p>Give every event a stable ID and send it as <code>Idempotency-Key</code>. The important rule: <strong>every retry of the same event uses the same key.</strong> That's how the receiver recognizes a retry as a duplicate.</p>
+<pre><code class="language-python">headers = {
+    &quot;Content-Type&quot;: &quot;application/json&quot;,
+    &quot;Idempotency-Key&quot;: idempotency_key,
+    &quot;X-Signature&quot;: signature,
+}
+</code></pre>
+<h3>Step 5: Retry only what's temporary</h3>
+<ul>
+<li><strong>Any 2xx means delivered.</strong> Receivers use 200, 202 and 204 more or less at random.</li>
+<li><strong>429, 5xx, timeouts and connection errors are temporary:</strong> retry with backoff.</li>
+<li><strong>400 and 401 are permanent.</strong> A bad signature won't fix itself on a second try, so stop.</li>
+</ul>
+<h3>The complete sender</h3>
+<pre><code class="language-python">import hashlib
+import hmac
+import json
+import time
+
+import httpx
+
+
+def send_webhook(url: str, secret: str, payload: dict, idempotency_key: str, *,
+                 retries: int = 2, backoff: float = 0.2, timeout: float = 5, client=None) -&gt; bool:
+    &quot;&quot;&quot;POST signed JSON. Any 2xx -&gt; True. Retries 429/5xx/network errors with the SAME key.
+    Header: X-Signature: sha256=&lt;hex HMAC-SHA256 of the exact body bytes&gt;.&quot;&quot;&quot;
+    body = json.dumps(payload, separators=(&quot;,&quot;, &quot;:&quot;)).encode()      # sign exactly what we send
+    headers = {
+        &quot;Content-Type&quot;: &quot;application/json&quot;,
+        &quot;Idempotency-Key&quot;: idempotency_key,
+        &quot;X-Signature&quot;: &quot;sha256=&quot; + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest(),
+    }
+    http = client or httpx.Client()
+    try:
+        for attempt in range(retries + 1):
+            if attempt:
+                time.sleep(backoff * 2 ** (attempt - 1))
+            try:
+                r = http.post(url, content=body, headers=headers, timeout=timeout)
+            except httpx.TransportError:
+                continue
+            if r.is_success:
+                return True
+            if r.status_code != 429 and r.status_code &lt; 500:
+                return False                      # 400/401/...: retrying won't help
+        return False
+    finally:
+        if client is None:
+            http.close()
+</code></pre>
+<p>Send many events with a bounded thread pool, so you don't open 200 connections to a customer's small server:</p>
+<pre><code class="language-python">from concurrent.futures import ThreadPoolExecutor
+
+with ThreadPoolExecutor(max_workers=5) as pool:
+    delivered = list(pool.map(
+        lambda t: send_webhook(url, secret, {&quot;task_id&quot;: t[&quot;id&quot;], &quot;label&quot;: t[&quot;label&quot;]}, t[&quot;id&quot;]),
+        tasks))
+</code></pre>
+<hr />
+<h2>Part 2: The receiver</h2>
+<h3>Step 6: Verify against the raw bytes</h3>
+<p>The receiver recomputes the HMAC over the <strong>raw</strong> request body. If you call <code>await request.json()</code> and serialize it again, the bytes may differ and every signature will fail.</p>
+<p>Compare with <code>hmac.compare_digest</code>, not <code>==</code>. A normal string comparison stops at the first different character, so its timing can leak how much of a guess was correct. <code>compare_digest</code> always takes the same time.</p>
+<pre><code class="language-python">import hashlib
+import hmac
+
+
+def verify_signature(secret: str, body: bytes, header, prefix: str = &quot;sha256=&quot;) -&gt; bool:
+    &quot;&quot;&quot;Compare against the RAW request bytes (await request.body()), in constant time.&quot;&quot;&quot;
+    expected = prefix + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, header or &quot;&quot;)
+</code></pre>
+<h3>Step 7: Drop duplicates with a database constraint</h3>
+<p>An in-memory <code>set()</code> of seen IDs is lost on restart and isn't shared between workers. Let the database enforce uniqueness instead. <code>INSERT OR IGNORE</code> on a primary key is atomic, so even two simultaneous retries can't both get through:</p>
+<pre><code class="language-python">import sqlite3
+
+
+def insert_once(db_path: str, event_id: str, payload: str) -&gt; bool:
+    &quot;&quot;&quot;True if this event is new, False if it was already stored. Atomic even under concurrent retries.&quot;&quot;&quot;
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(&quot;CREATE TABLE IF NOT EXISTS events (id TEXT PRIMARY KEY, payload TEXT, &quot;
+                     &quot;status TEXT DEFAULT 'pending')&quot;)
+        cur = conn.execute(&quot;INSERT OR IGNORE INTO events (id, payload) VALUES (?, ?)&quot;, (event_id, payload))
+        return cur.rowcount == 1
+</code></pre>
+<p>In Postgres, the equivalent is <code>INSERT ... ON CONFLICT DO NOTHING</code>.</p>
+<h3>Step 8: Store first, answer second, work last</h3>
+<p>Put it together in the endpoint. The order of these steps matters:</p>
+<pre><code class="language-python">import json, os
+from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Request
+
+app = FastAPI()
+
+@app.post(&quot;/hooks&quot;)
+async def receive(request: Request, background: BackgroundTasks,
+                  x_signature: str = Header(None), idempotency_key: str = Header()):
+    body = await request.body()                                      # 1. raw bytes
+    if not verify_signature(os.environ[&quot;WEBHOOK_SECRET&quot;], body, x_signature):
+        raise HTTPException(401, &quot;bad signature&quot;)                    # 2. reject forgeries
+    if not insert_once(&quot;events.db&quot;, idempotency_key, body.decode()):
+        return {&quot;status&quot;: &quot;duplicate&quot;}                               # 3. still a 2xx!
+    background.add_task(process, idempotency_key)                    # 4. slow work later
+    return {&quot;status&quot;: &quot;accepted&quot;}                                    # 5. answer fast
+</code></pre>
+<ul>
+<li><strong>A duplicate still gets a 2xx.</strong> If you return an error, the sender keeps retrying something you already have.</li>
+<li><strong>The event is stored before you answer.</strong> Once you return 200, the sender forgets the event. The stored row is what survives if you crash a second later.</li>
+<li><strong>Slow work runs after the response.</strong> If you do it before answering, the sender may time out, assume failure, and retry.</li>
+</ul>
+<hr />
+<h2>Step 9: Test both sides together</h2>
+<p>Using the <code>fake_http</code> helper from part 1 of this series:</p>
+<pre><code class="language-python">def test_sender_signs_and_retries_with_same_key():
+    client, stats = fake_http([503, 204])
+    assert send_webhook(&quot;http://x&quot;, &quot;s3cret&quot;, {&quot;a&quot;: 1}, &quot;k1&quot;, backoff=0, client=client)
+    reqs = stats[&quot;requests&quot;]
+    assert {r.headers[&quot;Idempotency-Key&quot;] for r in reqs} == {&quot;k1&quot;}             # same key on retry
+    assert verify_signature(&quot;s3cret&quot;, reqs[0].content, reqs[0].headers[&quot;X-Signature&quot;])
+    assert not verify_signature(&quot;s3cret&quot;, reqs[0].content + b&quot; &quot;, reqs[0].headers[&quot;X-Signature&quot;])
+
+
+def test_permanent_failure_is_not_retried():
+    client, stats = fake_http([401])
+    assert not send_webhook(&quot;http://x&quot;, &quot;s&quot;, {}, &quot;k&quot;, backoff=0, client=client)
+    assert len(stats[&quot;requests&quot;]) == 1
+
+
+def test_receiver_dedupes(tmp_path):
+    db = str(tmp_path / &quot;e.db&quot;)
+    assert insert_once(db, &quot;e1&quot;, &quot;{}&quot;) is True
+    assert insert_once(db, &quot;e1&quot;, &quot;{}&quot;) is False
+</code></pre>
+<hr />
+<h2>Two questions you'll get asked</h2>
+<p><strong>"The request timed out, but the customer actually got it. Now what?"</strong>
+You mark it failed and retry with the <strong>same idempotency key</strong>. The receiver's <code>insert_once</code> sees the key, returns 200, and does nothing. Delivery is <em>at least once</em>; processing is <em>effectively once</em>.</p>
+<p><strong>"The customer's endpoint is down for six hours."</strong>
+Three retries over one second won't get you through that. Store each outbound event in an <code>outbox</code> table with <code>attempts</code> and <code>next_attempt_at</code> columns. A worker retries with growing gaps (1 min, 5 min, 30 min, 2 h…) for about a day, then marks the event <code>failed</code> and offers a "redeliver" button. Because of the idempotency key, redelivery is always safe.</p>
+<hr />
+<h2>Recap</h2>
+<ol>
+<li><strong>Serialize once</strong> and sign those exact bytes with HMAC-SHA256.</li>
+<li><strong>Keep the idempotency key identical</strong> across retries.</li>
+<li><strong>Retry only</strong> 429s, 5xx errors and network errors, and treat any 2xx as delivered.</li>
+<li><strong>Verify against the raw body</strong> using <code>compare_digest</code>.</li>
+<li><strong>Dedupe with a database constraint,</strong> store before you answer, and do the slow work later.</li>
+</ol>
+<p><em>Next: processing an untrusted CSV safely in FastAPI.</em></p>
+</article>
+<script>
+const btn = document.getElementById("copy");
+if (btn) btn.addEventListener("click", () => {
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById("article"));
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  sel.removeAllRanges();
+  document.getElementById("hint").textContent = ok
+    ? "Copied. Paste into a new Medium story with Cmd+V."
+    : "Copy was blocked. Select the article text and press Cmd+C.";
+});
+</script>
+</body></html>

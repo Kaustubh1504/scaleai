@@ -60,5 +60,5 @@ def load_events(path):
                 at=parse_when(row["at"]),
             ))
     # replay order: timestamp first, then event number
-    events.sort(key=lambda ev: (ev.at, ev.seq))
+    events.sort(key=lambda ev: (ev.at, ev.event_id))
     return events

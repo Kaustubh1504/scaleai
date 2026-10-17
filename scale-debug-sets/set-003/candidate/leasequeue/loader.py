@@ -28,7 +28,7 @@ def load_tasks(path):
             max_attempts = clean(row["max_attempts"])
             tasks.append(Task(
                 id=clean(row["task_id"]).upper(),
-                priority=int(clean(row["priority"])),
+                priority=clean(row["priority"]),
                 created_at=parse_ts(row["created_at"]),
                 max_attempts=int(max_attempts) if max_attempts else DEFAULT_MAX_ATTEMPTS,
             ))
